@@ -15,6 +15,7 @@ import {
   Maximize2,
   Minimize2,
 } from 'lucide-react';
+import { CANAIS_PADRAO } from '@/app/api/canais/route';
 
 export type FiltroAtivo =
   | 'Todos'
@@ -60,11 +61,11 @@ const FILTROS: Array<{ id: FiltroAtivo; label: string; icon: string }> = [
 ];
 
 export default function Home() {
-  const [canais, setCanais] = useState<Canal[]>([]);
+  const [canais, setCanais] = useState<Canal[]>(CANAIS_PADRAO);
   const [customChannels, setCustomChannels] = useState<Canal[]>([]);
-  const [canalAtivo, setCanalAtivo] = useState<Canal | null>(null);
+  const [canalAtivo, setCanalAtivo] = useState<Canal | null>(CANAIS_PADRAO[0] || null);
   const [streamIndex, setStreamIndex] = useState(0);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [busca, setBusca] = useState('');
   const [filtroAtivo, setFiltroAtivo] = useState<FiltroAtivo>('Todos');
   const [favorites, setFavorites] = useState<string[]>([]);

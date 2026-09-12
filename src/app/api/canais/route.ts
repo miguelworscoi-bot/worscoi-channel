@@ -290,7 +290,7 @@ const CANAIS_SUPERSPORT: CanalItem[] = [
 ];
 
 // CANAIS VIVO TV
-const CANAIS_VIVO_TV: CanalItem[] = [
+export const CANAIS_VIVO_TV: CanalItem[] = [
   {
     id: 'vivo-tv-hd-aovivo',
     nome: 'Vivo TV HD (Ao Vivo)',
@@ -359,6 +359,13 @@ const CANAIS_VIVO_TV: CanalItem[] = [
     rede: 'Vivo',
     grupo: 'Vivo TV',
   },
+];
+
+export const CANAIS_PADRAO: CanalItem[] = [
+  ...CANAIS_BEIN_SPORTS,
+  ...CANAIS_ZAP_ANGOLA,
+  ...CANAIS_SUPERSPORT,
+  ...CANAIS_VIVO_TV,
 ];
 
 function parseM3U(
@@ -523,6 +530,7 @@ export async function GET(request?: Request) {
     const results = await Promise.allSettled(
       sources.map(async (src) => {
         const response = await fetch(src.url, {
+          signal: AbortSignal.timeout(5000),
           // @ts-expect-error Next.js revalidate option
           next: { revalidate: 3600 },
         });
