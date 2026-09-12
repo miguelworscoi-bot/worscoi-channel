@@ -1,1 +1,33 @@
 @import "tailwindcss";
+
+@layer utilities {
+  /* Minimalist smooth scrollbar */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: #0a0a0b;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #27272a;
+    border-radius: 9999px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #00e676;
+  }
+
+  /* Subtle glow effects */
+  .glow-accent {
+    box-shadow: 0 0 25px -4px rgba(0, 230, 118, 0.35);
+  }
+  .glow-accent-sm {
+    box-shadow: 0 0 12px -2px rgba(0, 230, 118, 0.25);
+  }
+  .glow-purple-sm {
+    box-shadow: 0 0 12px -2px rgba(168, 85, 247, 0.3);
+  }
+  .glow-amber-sm {
+    box-shadow: 0 0 12px -2px rgba(245, 158, 11, 0.3);
+  }
+}

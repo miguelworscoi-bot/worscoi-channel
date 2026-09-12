@@ -35,6 +35,30 @@ const LOGO_SUPERSPORT =
     '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="16" fill="#002b66"/><text x="50" y="46" font-family="system-ui,-apple-system,sans-serif" font-weight="900" font-size="14" fill="#ffffff" text-anchor="middle">SUPER</text><text x="50" y="68" font-family="system-ui,-apple-system,sans-serif" font-weight="900" font-size="16" fill="#00bfff" text-anchor="middle">SPORT</text></svg>'
   );
 
+const LOGO_REDBULL =
+  'data:image/svg+xml;utf8,' +
+  encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="16" fill="#0c1831"/><text x="50" y="44" font-family="system-ui,-apple-system,sans-serif" font-weight="900" font-size="14" fill="#eb144c" text-anchor="middle" letter-spacing="1">RED BULL</text><text x="50" y="70" font-family="system-ui,-apple-system,sans-serif" font-weight="900" font-size="22" fill="#ffffff" text-anchor="middle">TV</text></svg>'
+  );
+
+const LOGO_ASPOR =
+  'data:image/svg+xml;utf8,' +
+  encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="16" fill="#008037"/><text x="50" y="46" font-family="system-ui,-apple-system,sans-serif" font-weight="900" font-size="26" fill="#ffffff" text-anchor="middle">A</text><text x="50" y="72" font-family="system-ui,-apple-system,sans-serif" font-weight="900" font-size="15" fill="#ffffff" text-anchor="middle" letter-spacing="1">SPOR</text></svg>'
+  );
+
+const LOGO_ACC =
+  'data:image/svg+xml;utf8,' +
+  encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="16" fill="#013ca6"/><text x="50" y="48" font-family="system-ui,-apple-system,sans-serif" font-weight="900" font-size="22" fill="#ffffff" text-anchor="middle">ACC</text><text x="50" y="70" font-family="system-ui,-apple-system,sans-serif" font-weight="800" font-size="12" fill="#ffd100" text-anchor="middle">SPORTS</text></svg>'
+  );
+
+const LOGO_GOLF =
+  'data:image/svg+xml;utf8,' +
+  encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="16" fill="#004d25"/><text x="50" y="48" font-family="system-ui,-apple-system,sans-serif" font-weight="900" font-size="18" fill="#ffffff" text-anchor="middle">GOLF</text><text x="50" y="70" font-family="system-ui,-apple-system,sans-serif" font-weight="800" font-size="12" fill="#80e0a7" text-anchor="middle">TOUR</text></svg>'
+  );
+
 const LOGO_VIVO =
   'data:image/svg+xml;utf8,' +
   encodeURIComponent(
@@ -121,7 +145,7 @@ const CANAIS_BEIN_SPORTS: CanalItem[] = [
 const CANAIS_ZAP_ANGOLA: CanalItem[] = [
   {
     id: 'zap-tv-zimbo-hd',
-    nome: 'TV Zimbo HD (ZAP Angola)',
+    nome: 'TV Zimbo HD (Angola)',
     logo: 'https://i.imgur.com/SFD8CBh.png',
     url: 'https://sgn-cdn-video.vods2africa.com/Tv-Zimbo/index.fmp4.m3u8',
     backupUrls: [
@@ -202,12 +226,11 @@ const CANAIS_ZAP_ANGOLA: CanalItem[] = [
   },
   {
     id: 'zap-desporto-girabola',
-    nome: 'ZAP Desporto HD (Girabola)',
-    logo: LOGO_ZAP,
-    url: 'https://rbmn-live.akamaized.net/hls/live/590964/BoRB-AT/master.m3u8',
+    nome: 'TV Zimbo Desporto (Giro Girabola)',
+    logo: 'https://i.imgur.com/SFD8CBh.png',
+    url: 'https://sgn-cdn-video.vods2africa.com/Tv-Zimbo/index.fmp4.m3u8',
     backupUrls: [
-      'https://raycom-accdn-firetv.amagi.tv/playlist.m3u8',
-      'https://sgn-cdn-video.vods2africa.com/Tv-Zimbo/index.fmp4.m3u8',
+      'https://sgn-cdn-video.vods2africa.com/Tv-Zimbo/tracks-v6/index.fmp4.m3u8',
     ],
     categoria: 'Esportes',
     pais: 'AO',
@@ -216,16 +239,15 @@ const CANAIS_ZAP_ANGOLA: CanalItem[] = [
   },
 ];
 
-// CANAIS SUPERSPORT
+// CANAIS SUPERSPORT & ESPORTES GLOBAIS
 const CANAIS_SUPERSPORT: CanalItem[] = [
   {
-    id: 'ss-premier-league-hd',
-    nome: 'SuperSport Premier League HD',
-    logo: LOGO_SUPERSPORT,
-    url: 'http://stream.mcquack.net/41/index.m3u8',
+    id: 'redbull-tv-sports-hd',
+    nome: 'Red Bull TV Sports & Ação HD',
+    logo: LOGO_REDBULL,
+    url: 'https://rbmn-live.akamaized.net/hls/live/590964/BoRB-AT/master.m3u8',
     backupUrls: [
       'https://raycom-accdn-firetv.amagi.tv/playlist.m3u8',
-      'https://rbmn-live.akamaized.net/hls/live/590964/BoRB-AT/master.m3u8',
     ],
     categoria: 'Esportes',
     pais: 'Global',
@@ -233,26 +255,24 @@ const CANAIS_SUPERSPORT: CanalItem[] = [
     grupo: 'SuperSport',
   },
   {
-    id: 'ss-football-hd',
-    nome: 'SuperSport Football HD',
-    logo: LOGO_SUPERSPORT,
-    url: 'https://raycom-accdn-firetv.amagi.tv/playlist.m3u8',
-    backupUrls: [
-      'https://rnttwmjcin.turknet.ercdn.net/lcpmvefbyo/aspor/aspor.m3u8',
-      'https://30a-tv.com/feeds/vidaa/golf.m3u8',
-    ],
-    categoria: 'Esportes',
-    pais: 'Global',
-    rede: 'SuperSport',
-    grupo: 'SuperSport',
-  },
-  {
-    id: 'ss-grandstand-hd',
-    nome: 'SuperSport Grandstand HD',
-    logo: LOGO_SUPERSPORT,
+    id: 'aspor-futebol-hd',
+    nome: 'A Spor HD (Futebol Europeu & Debate)',
+    logo: LOGO_ASPOR,
     url: 'https://rnttwmjcin.turknet.ercdn.net/lcpmvefbyo/aspor/aspor.m3u8',
     backupUrls: [
       'https://raycom-accdn-firetv.amagi.tv/playlist.m3u8',
+    ],
+    categoria: 'Esportes',
+    pais: 'Global',
+    rede: 'SuperSport',
+    grupo: 'SuperSport',
+  },
+  {
+    id: 'acc-sports-network-hd',
+    nome: 'ACC Sports Network HD (NCAA & Basquete)',
+    logo: LOGO_ACC,
+    url: 'https://raycom-accdn-firetv.amagi.tv/playlist.m3u8',
+    backupUrls: [
       'https://rbmn-live.akamaized.net/hls/live/590964/BoRB-AT/master.m3u8',
     ],
     categoria: 'Esportes',
@@ -261,9 +281,9 @@ const CANAIS_SUPERSPORT: CanalItem[] = [
     grupo: 'SuperSport',
   },
   {
-    id: 'ss-blitz-hd',
-    nome: 'SuperSport Blitz HD (Gols & Giro)',
-    logo: LOGO_SUPERSPORT,
+    id: 'golf-tour-tv-hd',
+    nome: '30A Golf Tour TV (PGA & Lazer)',
+    logo: LOGO_GOLF,
     url: 'https://30a-tv.com/feeds/vidaa/golf.m3u8',
     backupUrls: [
       'https://raycom-accdn-firetv.amagi.tv/playlist.m3u8',
@@ -275,12 +295,11 @@ const CANAIS_SUPERSPORT: CanalItem[] = [
   },
   {
     id: 'ss-action-hd',
-    nome: 'SuperSport Action HD',
+    nome: 'SuperSport Action (Red Bull Extreme)',
     logo: LOGO_SUPERSPORT,
     url: 'https://rbmn-live.akamaized.net/hls/live/590964/BoRB-AT/master.m3u8',
     backupUrls: [
       'https://raycom-accdn-firetv.amagi.tv/playlist.m3u8',
-      'https://bein-xtra-bein.amagi.tv/playlist.m3u8',
     ],
     categoria: 'Esportes',
     pais: 'Global',
@@ -293,25 +312,11 @@ const CANAIS_SUPERSPORT: CanalItem[] = [
 export const CANAIS_VIVO_TV: CanalItem[] = [
   {
     id: 'vivo-tv-hd-aovivo',
-    nome: 'Vivo TV HD (Ao Vivo)',
+    nome: 'Vivo TV HD (Variedades & Lazer)',
     logo: LOGO_VIVO,
     url: 'https://5eaccbab48461.streamlock.net:1936/8264/8264/playlist.m3u8',
     backupUrls: [
       'https://vivo.canaloncelive.tv/secureoncedos/oncedigital/playlist.m3u8',
-      'https://rbmn-live.akamaized.net/hls/live/590964/BoRB-AT/master.m3u8',
-    ],
-    categoria: 'Lazer',
-    pais: 'BR',
-    rede: 'Vivo',
-    grupo: 'Vivo TV',
-  },
-  {
-    id: 'vivo-canal-once-hd',
-    nome: 'Vivo Canal Once HD',
-    logo: LOGO_VIVO,
-    url: 'https://vivo.canaloncelive.tv/secureoncedos/oncedigital/playlist.m3u8',
-    backupUrls: [
-      'https://5eaccbab48461.streamlock.net:1936/8264/8264/playlist.m3u8',
       'https://cdn.freevisiontv.co.za/sttv/smil:1kzn.stream.smil/playlist.m3u8',
     ],
     categoria: 'Lazer',
@@ -320,9 +325,22 @@ export const CANAIS_VIVO_TV: CanalItem[] = [
     grupo: 'Vivo TV',
   },
   {
-    id: 'vivo-play-esportes-br',
-    nome: 'Vivo Play Esportes BR',
+    id: 'vivo-canal-once-hd',
+    nome: 'Canal Once HD (Cultura, Notícias & Esportes)',
     logo: LOGO_VIVO,
+    url: 'https://vivo.canaloncelive.tv/secureoncedos/oncedigital/playlist.m3u8',
+    backupUrls: [
+      'https://5eaccbab48461.streamlock.net:1936/8264/8264/playlist.m3u8',
+    ],
+    categoria: 'Lazer',
+    pais: 'BR',
+    rede: 'Vivo',
+    grupo: 'Vivo TV',
+  },
+  {
+    id: 'vivo-play-esportes-br',
+    nome: 'Red Bull Esportes & Ação Ao Vivo',
+    logo: LOGO_REDBULL,
     url: 'https://rbmn-live.akamaized.net/hls/live/590964/BoRB-AT/master.m3u8',
     backupUrls: [
       'https://raycom-accdn-firetv.amagi.tv/playlist.m3u8',
@@ -335,7 +353,7 @@ export const CANAIS_VIVO_TV: CanalItem[] = [
   },
   {
     id: 'vivo-tv-noticias-24h',
-    nome: 'Vivo TV Notícias 24h',
+    nome: '3AW Notícias & Jornalismo 24h',
     logo: LOGO_VIVO,
     url: 'https://3awlive.akamaized.net/hls/live/2032295/3AW/index.m3u8',
     backupUrls: [
@@ -348,7 +366,7 @@ export const CANAIS_VIVO_TV: CanalItem[] = [
   },
   {
     id: 'vivo-play-cinema-series',
-    nome: 'Vivo Play Cinema & Séries',
+    nome: 'Free Vision TV (Cinema & Séries)',
     logo: LOGO_VIVO,
     url: 'https://cdn.freevisiontv.co.za/sttv/smil:1kzn.stream.smil/playlist.m3u8',
     backupUrls: [

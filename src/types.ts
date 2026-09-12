@@ -1,5 +1,32 @@
 export type CurrencyCode = 'BRL' | 'USD' | 'EUR';
 
+export type FiltroAtivo =
+  | 'Todos'
+  | 'Favoritos'
+  | 'Meus Canais'
+  | 'beIN Sports'
+  | 'ZAP Angola'
+  | 'SuperSport'
+  | 'Vivo TV'
+  | 'Brasil'
+  | 'Futebol'
+  | 'Esportes'
+  | 'Notícias'
+  | 'Lazer';
+
+export interface Canal {
+  id?: string;
+  nome: string;
+  logo: string;
+  url: string;
+  backupUrls?: string[];
+  categoria?: 'Esportes' | 'Notícias' | 'Lazer';
+  pais?: 'BR' | 'AO' | 'Global';
+  rede?: 'beIN Sports' | 'ZAP' | 'SuperSport' | 'Vivo' | 'Personalizado' | 'Geral';
+  grupo?: string;
+  isCustom?: boolean;
+}
+
 export interface GameDeal {
   id: string;
   dealID: string;
