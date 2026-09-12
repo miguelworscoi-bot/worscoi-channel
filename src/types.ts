@@ -3,7 +3,12 @@ export type CurrencyCode = 'BRL' | 'USD' | 'EUR';
 export type FiltroAtivo =
   | 'Todos'
   | 'Favoritos'
-  | 'Meus Canais'
+  | 'Libertadores'
+  | 'Champions League'
+  | 'TNT Sports'
+  | 'LaLiga'
+  | 'NBA'
+  | 'MLS'
   | 'beIN Sports'
   | 'ZAP Angola'
   | 'SuperSport'
@@ -12,7 +17,8 @@ export type FiltroAtivo =
   | 'Futebol'
   | 'Esportes'
   | 'Notícias'
-  | 'Lazer';
+  | 'Lazer'
+  | 'Meus Canais';
 
 export interface Canal {
   id?: string;
@@ -22,8 +28,19 @@ export interface Canal {
   backupUrls?: string[];
   categoria?: 'Esportes' | 'Notícias' | 'Lazer';
   pais?: 'BR' | 'AO' | 'Global';
-  rede?: 'beIN Sports' | 'ZAP' | 'SuperSport' | 'Vivo' | 'Personalizado' | 'Geral';
+  rede?:
+    | 'TNT Sports'
+    | 'beIN Sports'
+    | 'ZAP'
+    | 'SuperSport'
+    | 'Vivo'
+    | 'ESPN'
+    | 'NBA TV'
+    | 'Fox Sports'
+    | 'Personalizado'
+    | 'Geral';
   grupo?: string;
+  competicoes?: string[];
   isCustom?: boolean;
 }
 

@@ -41,11 +41,18 @@ export function NowPlayingRail({
     return false;
   });
 
-  // Related channels (from same network or sport)
+  // Related channels (from same network or sport or competition)
   const relatedChannels = canalAtivo
     ? todosCanais.filter((c) => {
         if (c.url === canalAtivo.url && c.id === canalAtivo.id) return false;
         if (canalAtivo.rede && c.rede === canalAtivo.rede) return true;
+        if (
+          canalAtivo.competicoes &&
+          c.competicoes &&
+          canalAtivo.competicoes.some((comp) => c.competicoes?.includes(comp))
+        ) {
+          return true;
+        }
         if (getSportTag(canalAtivo) === getSportTag(c)) return true;
         return false;
       }).slice(0, 16)

@@ -8,11 +8,15 @@ import { ChannelSidebar } from '@/components/ChannelSidebar';
 import { NowPlayingRail } from '@/components/NowPlayingRail';
 import { CinemaPlayer } from '@/components/CinemaPlayer';
 import { AddChannelModal } from '@/components/AddChannelModal';
+import { AdminPanelModal } from '@/components/AdminPanelModal';
+import { AuthModal } from '@/components/AuthModal';
+import { useAuth } from '@/context/AuthContext';
 
 const LOCAL_STORAGE_FAVORITES_KEY = 'playsports_favorites';
 const LOCAL_STORAGE_CUSTOM_KEY = 'playsports_custom_channels';
 
 export default function Home() {
+  const { user, loading: authLoading, isAdmin } = useAuth();
   const [canais, setCanais] = useState<Canal[]>(CANAIS_PADRAO);
   const [customChannels, setCustomChannels] = useState<Canal[]>([]);
   const [canalAtivo, setCanalAtivo] = useState<Canal | null>(CANAIS_PADRAO[0] || null);
@@ -24,6 +28,7 @@ export default function Home() {
   const [useProxy, setUseProxy] = useState(false);
   const [isCinemaMode, setIsCinemaMode] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isAdminPanelOpen, setIsAdminPanelOpen] = useState(false);
 
   // Carrega favoritos e canais personalizados do localStorage ao inicializar
   useEffect(() => {
@@ -124,7 +129,24 @@ export default function Home() {
     }
   };
 
-  // Failover automático quando o player dispara erro
+  // Navegação rápida de canais (Zapping Anterior / Próximo)
+  const currentCanalIndex = todosCanais.findIndex(
+    (c) => (canalAtivo?.id && c.id === canalAtivo.id) || c.url === canalAtivo?.url
+  );
+
+  const handleNextCanal = useCallback(() => {
+    if (todosCanais.length === 0) return;
+    const nextIdx = (currentCanalIndex + 1) % todosCanais.length;
+    handleSelectCanal(todosCanais[nextIdx]);
+  }, [currentCanalIndex, todosCanais]);
+
+  const handlePrevCanal = useCallback(() => {
+    if (todosCanais.length === 0) return;
+    const prevIdx = (currentCanalIndex - 1 + todosCanais.length) % todosCanais.length;
+    handleSelectCanal(todosCanais[prevIdx]);
+  }, [currentCanalIndex, todosCanais]);
+
+  // Failover inteligente quando o player dispara erro ou timeout
   const handlePlayerError = () => {
     if (!canalAtivo) return;
     const streams = [canalAtivo.url, ...(canalAtivo.backupUrls || [])];
@@ -132,15 +154,24 @@ export default function Home() {
 
     if (nextIndex < streams.length) {
       setFailoverNotice(
-        `Servidor ${streamIndex + 1} indisponível. Alternando para o servidor reserva (${nextIndex + 1}/${streams.length})...`
+        `Sinal ${streamIndex + 1} instável. Alternando automaticamente para o servidor reserva (${nextIndex + 1}/${streams.length})...`
       );
       setStreamIndex(nextIndex);
       setTimeout(() => {
         setFailoverNotice(null);
-      }, 6000);
+      }, 5000);
+    } else if (!useProxy) {
+      setFailoverNotice(
+        'Sinais diretos instáveis. Ativando conexão protegida por Proxy Seguro...'
+      );
+      setUseProxy(true);
+      setStreamIndex(0);
+      setTimeout(() => {
+        setFailoverNotice(null);
+      }, 5000);
     } else {
       setFailoverNotice(
-        'Todos os servidores alternativos falharam. Ative o "Proxy Seguro" ou tente recarregar.'
+        'Todos os servidores falharam temporariamente. Tente recarregar ou escolha outro canal.'
       );
     }
   };
@@ -150,8 +181,12 @@ export default function Home() {
     setFailoverNotice(null);
   };
 
-  // Salvar novo canal personalizado
+  // Salvar novo canal personalizado (Permissão exclusiva de Administrador)
   const handleAddCustomChannel = (novoCanal: Canal) => {
+    if (!isAdmin) {
+      alert('Acesso restrito: Apenas a sessão de Administrador pode adicionar novos canais.');
+      return;
+    }
     const atualizados = [novoCanal, ...customChannels];
     setCustomChannels(atualizados);
     try {
@@ -165,9 +200,13 @@ export default function Home() {
     setFailoverNotice(null);
   };
 
-  // Excluir canal personalizado
-  const handleDeleteCustomChannel = (id: string, e: React.MouseEvent) => {
-    e.stopPropagation();
+  // Excluir canal personalizado (Permissão exclusiva de Administrador)
+  const handleDeleteCustomChannel = (id: string, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    if (!isAdmin) {
+      alert('Acesso restrito: Apenas a sessão de Administrador pode excluir canais.');
+      return;
+    }
     const atualizados = customChannels.filter((c) => c.id !== id);
     setCustomChannels(atualizados);
     try {
@@ -186,6 +225,22 @@ export default function Home() {
   const isCurrentCanalFavorited = isCanalFavorited(canalAtivo);
   const totalFavoritos = todosCanais.filter((c) => isCanalFavorited(c)).length;
 
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-[#0A0A0B] flex flex-col items-center justify-center">
+        <div className="relative flex items-center justify-center mb-3">
+          <span className="animate-ping absolute inline-flex h-12 w-12 rounded-full bg-[#00E676] opacity-30"></span>
+          <div className="w-10 h-10 rounded-full border-2 border-[#00E676] border-t-transparent animate-spin"></div>
+        </div>
+        <p className="text-xs font-semibold text-zinc-400">Verificando credenciais...</p>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <AuthModal />;
+  }
+
   return (
     <main className="min-h-screen bg-[#0A0A0B] text-zinc-100 font-sans antialiased selection:bg-[#00E676] selection:text-black">
       {/* 🚀 HEADER FIXO COM BUSCA, FAVORITOS E NOVO CANAL */}
@@ -194,6 +249,7 @@ export default function Home() {
         onSelectFiltro={setFiltroAtivo}
         totalFavoritos={totalFavoritos}
         onOpenAddChannel={() => setIsModalOpen(true)}
+        onOpenAdminPanel={() => setIsAdminPanelOpen(true)}
         todosCanais={todosCanais}
         onSelectCanal={handleSelectCanal}
       />
@@ -235,6 +291,8 @@ export default function Home() {
               failoverNotice={failoverNotice}
               onClearFailoverNotice={() => setFailoverNotice(null)}
               onPlayerError={handlePlayerError}
+              onNextCanal={handleNextCanal}
+              onPrevCanal={handlePrevCanal}
             />
           </div>
 
@@ -251,6 +309,7 @@ export default function Home() {
               customChannels={customChannels}
               onDeleteCustomChannel={handleDeleteCustomChannel}
               totalFavoritos={totalFavoritos}
+              isAdmin={isAdmin}
             />
           </div>
         </div>
@@ -278,6 +337,8 @@ export default function Home() {
           failoverNotice={failoverNotice}
           onClearFailoverNotice={() => setFailoverNotice(null)}
           onPlayerError={handlePlayerError}
+          onNextCanal={handleNextCanal}
+          onPrevCanal={handlePrevCanal}
         />
       )}
 
@@ -286,6 +347,16 @@ export default function Home() {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onAddChannel={handleAddCustomChannel}
+      />
+
+      {/* 👑 MODAL DE PAINEL ADMIN E GESTÃO DE SESSÕES */}
+      <AdminPanelModal
+        isOpen={isAdminPanelOpen}
+        onClose={() => setIsAdminPanelOpen(false)}
+        todosCanais={todosCanais}
+        customChannels={customChannels}
+        onOpenAddChannel={() => setIsModalOpen(true)}
+        onRemoveCustomChannel={(id) => handleDeleteCustomChannel(id)}
       />
     </main>
   );

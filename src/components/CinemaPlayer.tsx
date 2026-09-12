@@ -9,9 +9,13 @@ import {
   AlertCircle,
   X,
   CheckCircle2,
+  SkipBack,
+  SkipForward,
+  Zap,
 } from 'lucide-react';
 import { Canal } from '@/types';
-import { getNetworkBadge } from '@/utils/channelUtils';
+import { getNetworkBadge, getSportTag } from '@/utils/channelUtils';
+import { getChannelSchedule } from '@/utils/channelProgramExtractor';
 
 interface CinemaPlayerProps {
   canalAtivo: Canal;
@@ -24,6 +28,8 @@ interface CinemaPlayerProps {
   failoverNotice: string | null;
   onClearFailoverNotice: () => void;
   onPlayerError: (error: unknown) => void;
+  onNextCanal?: () => void;
+  onPrevCanal?: () => void;
 }
 
 export function CinemaPlayer({
@@ -37,23 +43,13 @@ export function CinemaPlayer({
   failoverNotice,
   onClearFailoverNotice,
   onPlayerError,
+  onNextCanal,
+  onPrevCanal,
 }: CinemaPlayerProps) {
-  const [isReady, setIsReady] = useState(false);
-
-  // Close on ESC and lock body scroll
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        onClose();
-      }
-    };
-    document.body.style.overflow = 'hidden';
-    window.addEventListener('keydown', handleKeyDown);
-    return () => {
-      document.body.style.overflow = '';
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [onClose]);
+  const [_isReady, setIsReady] = useState(false);
+  const [isBuffering, setIsBuffering] = useState(true);
+  const [hasFirstFrame, setHasFirstFrame] = useState(false);
+  const [loadSeconds, setLoadSeconds] = useState(0);
 
   const streamsDisponiveis = [canalAtivo.url, ...(canalAtivo.backupUrls || [])];
   const activeRawStreamUrl = streamsDisponiveis[streamIndex] || canalAtivo.url;
@@ -62,6 +58,56 @@ export function CinemaPlayer({
     : activeRawStreamUrl;
 
   const networkBadge = getNetworkBadge(canalAtivo);
+  const sportTag = getSportTag(canalAtivo);
+  const programaAtual = getChannelSchedule(canalAtivo)[0];
+
+  // Reset de estados
+  useEffect(() => {
+    setIsReady(false);
+    setIsBuffering(true);
+    setHasFirstFrame(false);
+    setLoadSeconds(0);
+  }, [canalAtivo.id, canalAtivo.url, streamIndex, useProxy]);
+
+  // Watchdog de failover automático no modo cinema (6s max sem sinal)
+  useEffect(() => {
+    if (hasFirstFrame) return;
+
+    const interval = setInterval(() => {
+      setLoadSeconds((prev) => {
+        const next = prev + 1;
+        if (next === 6 && !hasFirstFrame) {
+          if (streamsDisponiveis.length > 1 && streamIndex < streamsDisponiveis.length - 1) {
+            onStreamChange(streamIndex + 1);
+          }
+        }
+        return next;
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [hasFirstFrame, streamsDisponiveis.length, streamIndex, onStreamChange]);
+
+  // Teclado: ESC fecha cinema, Setas zapam canais, M muta
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      } else if (e.key === 'ArrowRight' || e.key === ']') {
+        onNextCanal?.();
+      } else if (e.key === 'ArrowLeft' || e.key === '[') {
+        onPrevCanal?.();
+      } else if (e.key.toLowerCase() === 'm') {
+        onToggleMute();
+      }
+    };
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.body.style.overflow = '';
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [onClose, onNextCanal, onPrevCanal, onToggleMute]);
 
   return (
     <div
@@ -90,7 +136,7 @@ export function CinemaPlayer({
                 Ao Vivo
               </span>
               <span className="text-xs text-zinc-400 font-semibold hidden sm:inline">
-                {networkBadge.label} • Modo Cinema
+                {networkBadge.label} • {sportTag}
               </span>
             </div>
             <h2 className="text-base sm:text-xl font-extrabold text-white tracking-tight">
@@ -101,6 +147,31 @@ export function CinemaPlayer({
 
         {/* RIGHT ACTIONS */}
         <div className="flex items-center gap-2 sm:gap-3">
+          {/* Zapping Rápido no Modo Cinema */}
+          {onPrevCanal && (
+            <button
+              type="button"
+              id="cinema-prev-canal"
+              onClick={onPrevCanal}
+              className="p-2 rounded-full bg-zinc-900/90 border border-zinc-700 text-zinc-300 hover:text-white transition-all cursor-pointer shadow-lg hover:scale-105"
+              title="Canal Anterior (Seta Esquerda)"
+            >
+              <SkipBack className="w-4 h-4" />
+            </button>
+          )}
+
+          {onNextCanal && (
+            <button
+              type="button"
+              id="cinema-next-canal"
+              onClick={onNextCanal}
+              className="p-2 rounded-full bg-zinc-900/90 border border-zinc-700 text-zinc-300 hover:text-white transition-all cursor-pointer shadow-lg hover:scale-105"
+              title="Próximo Canal (Seta Direita)"
+            >
+              <SkipForward className="w-4 h-4" />
+            </button>
+          )}
+
           {/* Seletor rápido de rota no modo cinema */}
           {streamsDisponiveis.length > 1 && (
             <div className="hidden md:flex items-center gap-1 bg-zinc-900/90 backdrop-blur-md border border-zinc-800 rounded-full px-2.5 py-1 text-xs">
@@ -135,6 +206,7 @@ export function CinemaPlayer({
                 ? 'bg-zinc-900/90 border-amber-500/40 text-amber-300'
                 : 'bg-zinc-900/90 border-zinc-700 text-zinc-200 hover:text-white'
             }`}
+            title="Pressione M para ativar ou silenciar som"
           >
             {isMuted ? <VolumeX className="w-3.5 h-3.5 text-amber-400" /> : <Volume2 className="w-3.5 h-3.5 text-[#00E676]" />}
             <span>{isMuted ? 'Ativar Áudio' : 'Mutar'}</span>
@@ -159,7 +231,7 @@ export function CinemaPlayer({
 
       {/* FAILOVER ALERT IN CINEMA */}
       {failoverNotice && (
-        <div className="absolute top-20 left-6 right-6 z-50 bg-zinc-900/90 backdrop-blur-md border border-amber-500/50 text-amber-300 text-xs px-4 py-2 rounded-xl flex items-center justify-between">
+        <div className="absolute top-20 left-6 right-6 z-50 bg-zinc-900/90 backdrop-blur-md border border-amber-500/50 text-amber-300 text-xs px-4 py-2 rounded-xl flex items-center justify-between shadow-xl">
           <div className="flex items-center gap-2">
             <AlertCircle className="w-4 h-4 text-amber-400" />
             <span>{failoverNotice}</span>
@@ -170,13 +242,69 @@ export function CinemaPlayer({
         </div>
       )}
 
-      {/* FULLSCREEN PLAYER */}
+      {/* FULLSCREEN PLAYER CONTAINER */}
       <div className="w-full h-full flex items-center justify-center p-0 md:p-4 relative">
-        {!isReady && (
-          <div className="absolute inset-0 flex items-center justify-center bg-black/60 pointer-events-none z-10">
-            <div className="w-10 h-10 rounded-full border-2 border-[#00E676] border-t-transparent animate-spin"></div>
+        {/* POSTER CINEMATOGRÁFICO DE CONEXÃO AO VIVO */}
+        {!hasFirstFrame && (
+          <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-zinc-950 overflow-hidden">
+            <img
+              src={
+                programaAtual?.imagemCapa ||
+                'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?q=80&w=1600&auto=format&fit=crop'
+              }
+              alt={canalAtivo.nome}
+              className="absolute inset-0 w-full h-full object-cover opacity-20 filter blur-md"
+            />
+            <div className="absolute inset-0 bg-radial from-transparent via-black/80 to-black" />
+
+            <div className="relative z-10 flex flex-col items-center text-center p-6 max-w-sm">
+              <div className="w-20 h-20 rounded-2xl bg-zinc-900 border border-zinc-700 p-2 shadow-2xl mb-4 relative">
+                <img
+                  src={canalAtivo.logo}
+                  alt={canalAtivo.nome}
+                  className="w-full h-full object-contain"
+                />
+                <span className="absolute -bottom-1 -right-1 flex h-4 w-4">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00E676] opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-4 w-4 bg-[#00E676]"></span>
+                </span>
+              </div>
+
+              <h2 className="text-xl font-black text-white">{canalAtivo.nome}</h2>
+              <div className="flex items-center gap-2 mt-2 px-3 py-1 rounded-full bg-zinc-900/90 border border-zinc-800 text-xs text-zinc-300">
+                <span className="w-2 h-2 rounded-full bg-[#00E676] animate-pulse"></span>
+                <span>
+                  {loadSeconds < 4
+                    ? 'Sintonizando sinal...'
+                    : 'Aguardando primeiros quadros...'}
+                </span>
+              </div>
+
+              {streamsDisponiveis.length > 1 && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    const next = (streamIndex + 1) % streamsDisponiveis.length;
+                    onStreamChange(next);
+                  }}
+                  className="mt-4 px-3.5 py-1.5 rounded-xl bg-amber-500/20 text-amber-300 border border-amber-500/40 text-xs font-bold flex items-center gap-1.5 transition-all shadow-lg hover:scale-105 active:scale-95"
+                >
+                  <Zap className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Mudar Servidor ({streamIndex + 1}/{streamsDisponiveis.length})</span>
+                </button>
+              )}
+            </div>
           </div>
         )}
+
+        {/* SPINNER DISCRETO DE REBUFFERING SE O VÍDEO JÁ ESTIVER RODANDO */}
+        {hasFirstFrame && isBuffering && (
+          <div className="absolute top-24 right-6 z-40 bg-black/80 backdrop-blur-md border border-[#00E676]/40 px-3 py-1.5 rounded-full flex items-center gap-2 text-xs text-white shadow-xl">
+            <div className="w-3 h-3 rounded-full border-2 border-[#00E676] border-t-transparent animate-spin"></div>
+            <span className="text-[11px] font-semibold text-zinc-300">Ajustando sinal...</span>
+          </div>
+        )}
+
         {React.createElement(
           ReactPlayer as unknown as React.ComponentType<Record<string, unknown>>,
           {
@@ -189,8 +317,40 @@ export function CinemaPlayer({
             width: '100%',
             height: '100%',
             playsinline: true,
-            config: { file: { forceHLS: true } },
+            config: {
+              file: {
+                forceHLS: true,
+                hlsOptions: {
+                  enableWorker: true,
+                  lowLatencyMode: true,
+                  backBufferLength: 30,
+                  maxBufferLength: 8,
+                  maxMaxBufferLength: 15,
+                  manifestLoadingTimeOut: 5000,
+                  manifestLoadingMaxRetry: 2,
+                  levelLoadingTimeOut: 5000,
+                  levelLoadingMaxRetry: 2,
+                  fragLoadingTimeOut: 6000,
+                  fragLoadingMaxRetry: 2,
+                  startLevel: -1,
+                },
+              },
+            },
             onReady: () => setIsReady(true),
+            onStart: () => {
+              setIsReady(true);
+              setIsBuffering(false);
+              setHasFirstFrame(true);
+            },
+            onPlay: () => {
+              setIsBuffering(false);
+              setHasFirstFrame(true);
+            },
+            onBuffer: () => setIsBuffering(true),
+            onBufferEnd: () => {
+              setIsBuffering(false);
+              setHasFirstFrame(true);
+            },
             onError: onPlayerError,
           }
         )}
@@ -198,3 +358,4 @@ export function CinemaPlayer({
     </div>
   );
 }
+

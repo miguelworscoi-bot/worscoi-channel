@@ -1,14 +1,16 @@
 'use client';
 import React, { useState, useRef, useEffect } from 'react';
-import { Search, Star, Plus, Radio, X, ArrowRight } from 'lucide-react';
+import { Search, Star, Plus, Radio, X, ArrowRight, LogOut, User as UserIcon, Crown, Shield } from 'lucide-react';
 import { Canal, FiltroAtivo } from '@/types';
 import { getChannelQuality, getNetworkBadge, getSportTag } from '@/utils/channelUtils';
+import { useAuth } from '@/context/AuthContext';
 
 interface HeaderProps {
   filtroAtivo: FiltroAtivo;
   onSelectFiltro: (filtro: FiltroAtivo) => void;
   totalFavoritos: number;
   onOpenAddChannel: () => void;
+  onOpenAdminPanel: () => void;
   todosCanais: Canal[];
   onSelectCanal: (canal: Canal) => void;
 }
@@ -18,9 +20,11 @@ export function Header({
   onSelectFiltro,
   totalFavoritos,
   onOpenAddChannel,
+  onOpenAdminPanel,
   todosCanais,
   onSelectCanal,
 }: HeaderProps) {
+  const { user, userProfile, isAdmin, signOut } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const searchContainerRef = useRef<HTMLDivElement>(null);
@@ -214,26 +218,50 @@ export function Header({
           )}
         </div>
 
-        {/* RIGHT CONTROLS: FAVORITOS + STATUS + ADICIONAR */}
-        <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
-          {/* Botão Adicionar Canal */}
+        {/* RIGHT CONTROLS: ADMIN PANEL + NOVO CANAL + FAVORITOS + SESSÃO + LOGOUT */}
+        <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
+          {/* Botão Painel Admin (Destaque para Administrador) */}
           <button
             type="button"
-            id="header-add-channel-btn"
-            onClick={onOpenAddChannel}
-            className="text-xs px-3.5 py-2 rounded-xl border border-[#00E676]/30 bg-[#00E676]/10 hover:bg-[#00E676]/20 text-[#00E676] font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-sm hover:scale-[1.02] active:scale-95"
-            title="Cadastrar canal personalizado HLS"
+            id="header-admin-panel-btn"
+            onClick={onOpenAdminPanel}
+            className={`text-xs px-3 py-2 rounded-xl border font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-sm hover:scale-[1.02] active:scale-95 ${
+              isAdmin
+                ? 'bg-amber-400/15 border-amber-500/40 text-amber-300 hover:bg-amber-400/25'
+                : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-zinc-200'
+            }`}
+            title="Abrir Painel de Gestão e Controle de Sessão"
           >
-            <Plus className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Novo Canal</span>
+            {isAdmin ? (
+              <Crown className="w-3.5 h-3.5 text-amber-400" />
+            ) : (
+              <Shield className="w-3.5 h-3.5 text-emerald-400" />
+            )}
+            <span className="hidden md:inline">
+              {isAdmin ? 'Painel Admin' : 'Sessão'}
+            </span>
           </button>
+
+          {/* Botão Adicionar Canal (Exclusivo ou indicado para Admin) */}
+          {isAdmin ? (
+            <button
+              type="button"
+              id="header-add-channel-btn"
+              onClick={onOpenAddChannel}
+              className="text-xs px-3.5 py-2 rounded-xl border border-[#00E676]/40 bg-[#00E676]/10 hover:bg-[#00E676]/20 text-[#00E676] font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-sm hover:scale-[1.02] active:scale-95"
+              title="Cadastrar canal personalizado HLS"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Novo Canal</span>
+            </button>
+          ) : null}
 
           {/* Pill de Favoritos com Contador e Glow */}
           <button
             type="button"
             id="header-favorites-pill"
             onClick={() => onSelectFiltro(filtroAtivo === 'Favoritos' ? 'Todos' : 'Favoritos')}
-            className={`text-xs px-3.5 py-2 rounded-xl border flex items-center gap-2 transition-all cursor-pointer select-none ${
+            className={`text-xs px-3 py-2 rounded-xl border flex items-center gap-1.5 sm:gap-2 transition-all cursor-pointer select-none ${
               filtroAtivo === 'Favoritos'
                 ? 'bg-amber-500 text-black border-amber-400 font-extrabold shadow-lg shadow-amber-500/20 glow-amber-sm'
                 : 'bg-[#121214] text-amber-300 border-zinc-800/90 hover:border-amber-500/50 hover:bg-zinc-800/40'
@@ -261,7 +289,7 @@ export function Header({
 
           {/* Status HLS Pulse */}
           <div
-            className="hidden lg:flex items-center gap-2 bg-[#121214] border border-zinc-800/90 rounded-xl px-3 py-1.5 text-xs select-none"
+            className="hidden xl:flex items-center gap-2 bg-[#121214] border border-zinc-800/90 rounded-xl px-3 py-1.5 text-xs select-none"
             title="Transmissão ao vivo HLS com failover automático ativo"
           >
             <span className="relative flex h-2 w-2">
@@ -272,6 +300,54 @@ export function Header({
               HLS LIVE
             </span>
           </div>
+
+          {/* User Account / Badge de Role / Sair */}
+          {user && (
+            <div className="flex items-center gap-1.5 sm:gap-2 pl-1 sm:pl-2 border-l border-zinc-800">
+              <button
+                type="button"
+                id="header-user-profile-badge"
+                onClick={onOpenAdminPanel}
+                className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl bg-zinc-900 hover:bg-zinc-850 border border-zinc-800 text-xs text-zinc-300 transition-colors cursor-pointer"
+                title={`Sessão: ${isAdmin ? 'Administrador' : 'Usuário Normal'} (${userProfile?.displayName || user.email}). Clique para abrir detalhes.`}
+              >
+                <div
+                  className={`w-5 h-5 rounded-full flex items-center justify-center font-bold text-[10px] ${
+                    isAdmin
+                      ? 'bg-amber-500/20 text-amber-400 ring-1 ring-amber-500/40'
+                      : 'bg-[#00E676]/20 text-[#00E676] ring-1 ring-[#00E676]/40'
+                  }`}
+                >
+                  {userProfile?.displayName?.[0]?.toUpperCase() ||
+                    user.email?.[0]?.toUpperCase() || <UserIcon className="w-3 h-3" />}
+                </div>
+                <div className="hidden lg:flex items-center gap-1.5">
+                  <span className="max-w-[85px] truncate font-medium">
+                    {userProfile?.displayName || user.email?.split('@')[0]}
+                  </span>
+                  <span
+                    className={`text-[9px] px-1.5 py-0.5 rounded-md font-black uppercase tracking-wider ${
+                      isAdmin
+                        ? 'bg-amber-400 text-black'
+                        : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                    }`}
+                  >
+                    {isAdmin ? 'ADMIN' : 'USUÁRIO'}
+                  </span>
+                </div>
+              </button>
+
+              <button
+                type="button"
+                id="header-signout-btn"
+                onClick={() => signOut()}
+                className="p-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-red-400 border border-zinc-800 hover:border-red-500/30 transition-all cursor-pointer"
+                title="Encerrar sessão"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </header>
