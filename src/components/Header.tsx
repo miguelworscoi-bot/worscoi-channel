@@ -13,8 +13,11 @@ import {
   KeyRound,
   Users,
   CreditCard,
+  Leaf,
+  ShieldCheck,
+  Zap,
 } from 'lucide-react';
-import { Canal, FiltroAtivo } from '@/types';
+import { Canal, FiltroAtivo, LatencyMode } from '@/types';
 import { getChannelQuality, getNetworkBadge, getSportTag } from '@/utils/channelUtils';
 import { useAuth } from '@/context/AuthContext';
 import { PLANS, isUserPlanExpired, getRemainingPlanTime } from '@/services/subscriptionService';
@@ -29,8 +32,11 @@ interface HeaderProps {
   onOpenRedeemToken: () => void;
   onOpenPaymentPlans?: () => void;
   onOpenUserProfile?: () => void;
+  onOpenAuth?: () => void;
   todosCanais: Canal[];
   onSelectCanal: (canal: Canal) => void;
+  latencyMode?: LatencyMode;
+  onToggleLatencyMode?: (mode?: LatencyMode) => void;
 }
 
 export function Header({
@@ -43,8 +49,11 @@ export function Header({
   onOpenRedeemToken,
   onOpenPaymentPlans,
   onOpenUserProfile,
+  onOpenAuth,
   todosCanais,
   onSelectCanal,
+  latencyMode,
+  onToggleLatencyMode,
 }: HeaderProps) {
   const { user, userProfile, isAdmin, signOut } = useAuth();
   const isPlanExpired = !isAdmin && isUserPlanExpired(userProfile);
@@ -321,6 +330,52 @@ export function Header({
             </button>
           ) : null}
 
+          {/* Botão de Economia de Dados & Desempenho de Rede */}
+          {latencyMode && onToggleLatencyMode && (
+            <button
+              type="button"
+              id="header-data-saver-pill"
+              onClick={() => onToggleLatencyMode()}
+              className={`text-xs px-2.5 sm:px-3 py-2 rounded-xl border flex items-center gap-1.5 transition-all cursor-pointer shadow-sm hover:scale-[1.02] active:scale-95 ${
+                latencyMode === 'economy'
+                  ? 'bg-emerald-500/15 border-[#00E676]/60 text-[#00E676] font-bold shadow-emerald-950/30 ring-1 ring-[#00E676]/30'
+                  : latencyMode === 'stable'
+                  ? 'bg-cyan-500/10 border-cyan-500/30 text-cyan-300 font-semibold hover:bg-cyan-500/20'
+                  : 'bg-amber-500/10 border-amber-500/30 text-amber-300 font-semibold hover:bg-amber-500/20'
+              }`}
+              title={
+                latencyMode === 'economy'
+                  ? 'Modo Economia de Dados ATIVO (Poupa até 75% de internet). Clique para alternar.'
+                  : latencyMode === 'stable'
+                  ? 'Modo Equilibrado HD (Buffer 14s). Clique para alternar.'
+                  : 'Modo Baixa Latência (Tempo Real). Clique para alternar.'
+              }
+            >
+              {latencyMode === 'economy' ? (
+                <>
+                  <Leaf className="w-3.5 h-3.5 text-[#00E676]" />
+                  <span className="hidden md:inline">Poupar Internet</span>
+                  <span className="md:hidden">Poupar</span>
+                  <span className="text-[10px] font-black px-1.5 py-0.5 rounded bg-[#00E676] text-black">
+                    -75%
+                  </span>
+                </>
+              ) : latencyMode === 'stable' ? (
+                <>
+                  <ShieldCheck className="w-3.5 h-3.5 text-cyan-400" />
+                  <span className="hidden md:inline">Modo HD</span>
+                  <span className="md:hidden">HD</span>
+                </>
+              ) : (
+                <>
+                  <Zap className="w-3.5 h-3.5 text-amber-400" />
+                  <span className="hidden md:inline">Ao Vivo</span>
+                  <span className="md:hidden">Live</span>
+                </>
+              )}
+            </button>
+          )}
+
           {/* Pill de Favoritos com Contador e Glow */}
           <button
             type="button"
@@ -429,6 +484,18 @@ export function Header({
                 <LogOut className="w-3.5 h-3.5" />
               </button>
             </div>
+          )}
+
+          {!user && (
+            <button
+              type="button"
+              id="header-login-btn"
+              onClick={onOpenAuth}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#00E676] hover:bg-[#00c864] text-black font-extrabold text-xs transition-all shadow-md shadow-[#00E676]/20 cursor-pointer"
+            >
+              <UserIcon className="w-3.5 h-3.5" />
+              <span>Entrar</span>
+            </button>
           )}
         </div>
       </div>

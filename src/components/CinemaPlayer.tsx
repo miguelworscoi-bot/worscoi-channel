@@ -14,6 +14,7 @@ import {
   Zap,
   ShieldCheck,
   Sliders,
+  Leaf,
 } from 'lucide-react';
 import { Canal, LatencyMode } from '@/types';
 import { getNetworkBadge, getSportTag, getChannelQuality } from '@/utils/channelUtils';
@@ -149,7 +150,7 @@ export function CinemaPlayer({
                 Ao Vivo
               </span>
               <span className="text-xs text-zinc-400 font-semibold hidden sm:inline">
-                {networkBadge.label} • {sportTag}
+                {networkBadge.label} • {sportTag} • {quality}
               </span>
             </div>
             <h2 className="text-base sm:text-xl font-extrabold text-white tracking-tight">
@@ -210,27 +211,37 @@ export function CinemaPlayer({
             </div>
           )}
 
-          {/* Alternador Rápido de Modo de Transmissão (Modo Estável vs Baixa Latência) */}
+          {/* Alternador Rápido de Modo de Transmissão (Economia vs Estável vs Baixa Latência) */}
           <button
             type="button"
             id="cinema-latency-mode-toggle"
             onClick={() => onToggleLatencyMode()}
             className={`px-3 py-1.5 rounded-full text-xs font-bold border backdrop-blur-md transition-all flex items-center gap-1.5 cursor-pointer shadow-lg ${
-              latencyMode === 'stable'
-                ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-300 hover:bg-emerald-500/30'
+              latencyMode === 'economy'
+                ? 'bg-emerald-500/20 border-[#00E676]/60 text-emerald-300 hover:bg-emerald-500/30 ring-1 ring-[#00E676]/30'
+                : latencyMode === 'stable'
+                ? 'bg-cyan-500/20 border-cyan-500/50 text-cyan-300 hover:bg-cyan-500/30'
                 : 'bg-amber-500/20 border-amber-500/50 text-amber-300 hover:bg-amber-500/30'
             }`}
             title={
-              latencyMode === 'stable'
-                ? 'Modo Estável Ativo (Buffer 30s para redes lentas). Clique para alternar para Baixa Latência (Pressione S).'
-                : 'Modo Baixa Latência Ativo (Tempo Real). Clique para alternar para Modo Estável (Pressione S).'
+              latencyMode === 'economy'
+                ? 'Modo Economia de Dados Ativo (Poupa até 75% de internet móvel). Pressione S para opções.'
+                : latencyMode === 'stable'
+                ? 'Modo Equilibrado HD Ativo (Buffer 14s). Pressione S para opções.'
+                : 'Modo Baixa Latência Ativo (Tempo Real). Pressione S para opções.'
             }
           >
-            {latencyMode === 'stable' ? (
+            {latencyMode === 'economy' ? (
               <>
-                <ShieldCheck className="w-3.5 h-3.5 text-[#00E676]" />
-                <span className="hidden sm:inline">Modo Estável (Buffer+)</span>
-                <span className="sm:hidden">Estável</span>
+                <Leaf className="w-3.5 h-3.5 text-[#00E676]" />
+                <span className="hidden sm:inline">Poupar Internet (-70%)</span>
+                <span className="sm:hidden">Poupar</span>
+              </>
+            ) : latencyMode === 'stable' ? (
+              <>
+                <ShieldCheck className="w-3.5 h-3.5 text-cyan-400" />
+                <span className="hidden sm:inline">Equilibrado (HD)</span>
+                <span className="sm:hidden">HD</span>
               </>
             ) : (
               <>
@@ -375,20 +386,7 @@ export function CinemaPlayer({
             config: {
               file: {
                 forceHLS: true,
-                hlsOptions: {
-                  enableWorker: true,
-                  lowLatencyMode: true,
-                  backBufferLength: 30,
-                  maxBufferLength: 10,
-                  maxMaxBufferLength: 20,
-                  manifestLoadingTimeOut: 12000,
-                  manifestLoadingMaxRetry: 3,
-                  levelLoadingTimeOut: 12000,
-                  levelLoadingMaxRetry: 3,
-                  fragLoadingTimeOut: 12000,
-                  fragLoadingMaxRetry: 3,
-                  startLevel: -1,
-                },
+                hlsOptions: getHlsOptionsForLatencyMode(latencyMode),
               },
             },
             onReady: () => setIsReady(true),
@@ -408,6 +406,22 @@ export function CinemaPlayer({
             },
             onError: onPlayerError,
           }
+        )}
+
+        {isSettingsOpen && (
+          <PlayerSettingsModal
+            isOpen={isSettingsOpen}
+            onClose={() => setIsSettingsOpen(false)}
+            latencyMode={latencyMode}
+            onSelectLatencyMode={(mode) => onToggleLatencyMode(mode)}
+            useProxy={useProxy}
+            onToggleProxy={onToggleProxy}
+            canalNome={canalAtivo.nome}
+            quality={quality}
+            streamsDisponiveis={streamsDisponiveis}
+            streamIndex={streamIndex}
+            onSelectStream={onStreamChange}
+          />
         )}
       </div>
     </div>

@@ -1,7 +1,34 @@
 import { NextResponse } from 'next/server';
+import {
+  CANAIS_BONECOS,
+  CANAIS_ESPORTES,
+  CANAIS_NOVELAS,
+  CANAIS_NOTICIAS,
+  CANAIS_MUSICAS,
+  CANAIS_FILMES,
+  TODOS_OS_CANAIS_CATALOGO,
+} from '@/data/channelsCatalog';
 
-export type CategoriaCanal = 'Esportes' | 'Notícias' | 'Lazer';
-export type PaisCanal = 'BR' | 'AO' | 'Global';
+export type CategoriaCanal =
+  | 'Esportes'
+  | 'Notícias'
+  | 'Lazer'
+  | 'Bonecos'
+  | 'Novelas'
+  | 'Músicas'
+  | 'Filmes';
+export type PaisCanal =
+  | 'BR'
+  | 'AO'
+  | 'PT'
+  | 'ES'
+  | 'US'
+  | 'FR'
+  | 'DE'
+  | 'JP'
+  | 'NL'
+  | 'UK'
+  | 'Global';
 export type RedeCanal =
   | 'TNT Sports'
   | 'beIN Sports'
@@ -9,9 +36,24 @@ export type RedeCanal =
   | 'SuperSport'
   | 'Vivo'
   | 'ESPN'
+  | 'DAZN'
+  | 'Sport TV'
+  | 'Sky Sports'
+  | 'Movistar'
+  | 'Ziggo'
   | 'NBA TV'
   | 'Fox Sports'
-  | 'Geral';
+  | 'Disney'
+  | 'Cartoon'
+  | 'Anime'
+  | 'Telecine'
+  | 'HBO'
+  | 'MTV'
+  | 'Stingray'
+  | 'Trace'
+  | 'Geral'
+  | string;
+
 
 export interface CanalItem {
   id: string;
@@ -741,7 +783,21 @@ export const CANAIS_VIVO_TV: CanalItem[] = [
   },
 ];
 
-export const CANAIS_PADRAO: CanalItem[] = [
+export function deduplicateCanais<T extends { id?: string; url?: string }>(items: T[]): T[] {
+  const seenIds = new Set<string>();
+  const result: T[] = [];
+  for (const item of items) {
+    const id = item.id ? item.id.trim() : (item.url ? item.url.trim().toLowerCase() : '');
+    if (id && seenIds.has(id)) continue;
+    if (id) seenIds.add(id);
+    result.push(item);
+  }
+  return result;
+}
+
+export const CANAIS_PADRAO: CanalItem[] = deduplicateCanais([
+  ...(TODOS_OS_CANAIS_CATALOGO as CanalItem[]),
+  ...(CANAIS_ESPORTES as CanalItem[]),
   ...CANAIS_TNT_SPORTS,
   ...CANAIS_CHAMPIONS_LEAGUE,
   ...CANAIS_LIBERTADORES,
@@ -752,7 +808,12 @@ export const CANAIS_PADRAO: CanalItem[] = [
   ...CANAIS_ZAP_ANGOLA,
   ...CANAIS_SUPERSPORT,
   ...CANAIS_VIVO_TV,
-];
+  ...(CANAIS_BONECOS as CanalItem[]),
+  ...(CANAIS_FILMES as CanalItem[]),
+  ...(CANAIS_NOVELAS as CanalItem[]),
+  ...(CANAIS_NOTICIAS as CanalItem[]),
+  ...(CANAIS_MUSICAS as CanalItem[]),
+]);
 
 function parseM3U(
   data: string,
@@ -834,6 +895,38 @@ function parseM3U(
         ) {
           categoria = 'Esportes';
         } else if (
+          combined.includes('kids') ||
+          combined.includes('animation') ||
+          combined.includes('boneco') ||
+          combined.includes('desenho') ||
+          combined.includes('cartoon') ||
+          combined.includes('infantil') ||
+          combined.includes('anime')
+        ) {
+          categoria = 'Bonecos';
+        } else if (
+          combined.includes('novela') ||
+          combined.includes('drama') ||
+          combined.includes('telenovela')
+        ) {
+          categoria = 'Novelas';
+        } else if (
+          combined.includes('movie') ||
+          combined.includes('cinema') ||
+          combined.includes('filme') ||
+          combined.includes('series') ||
+          combined.includes('cine')
+        ) {
+          categoria = 'Filmes';
+        } else if (
+          combined.includes('music') ||
+          combined.includes('musica') ||
+          combined.includes('música') ||
+          combined.includes('sound') ||
+          combined.includes('hits')
+        ) {
+          categoria = 'Músicas';
+        } else if (
           combined.includes('news') ||
           combined.includes('noticia') ||
           combined.includes('notícia') ||
@@ -841,20 +934,7 @@ function parseM3U(
           combined.includes('agro')
         ) {
           categoria = 'Notícias';
-        } else if (
-          combined.includes('entertainment') ||
-          combined.includes('music') ||
-          combined.includes('movie') ||
-          combined.includes('series') ||
-          combined.includes('lifestyle') ||
-          combined.includes('animation') ||
-          combined.includes('kids') ||
-          combined.includes('comedy') ||
-          combined.includes('relax') ||
-          combined.includes('lazer') ||
-          combined.includes('novela') ||
-          combined.includes('cultura')
-        ) {
+        } else {
           categoria = 'Lazer';
         }
       }
@@ -955,33 +1035,19 @@ export async function GET(request?: Request) {
       })
     );
 
-    let canais: CanalItem[] = [];
+    let canais: CanalItem[] = [...CANAIS_PADRAO];
 
-    // Coloca os canais solicitados (TNT, Champions, Libertadores, LaLiga, NBA, MLS) em destaque no topo
-    canais = canais.concat(CANAIS_TNT_SPORTS);
-    canais = canais.concat(CANAIS_CHAMPIONS_LEAGUE);
-    canais = canais.concat(CANAIS_LIBERTADORES);
-    canais = canais.concat(CANAIS_LALIGA);
-    canais = canais.concat(CANAIS_NBA);
-    canais = canais.concat(CANAIS_MLS);
-    canais = canais.concat(CANAIS_BEIN_SPORTS);
-    canais = canais.concat(CANAIS_ZAP_ANGOLA);
-    canais = canais.concat(CANAIS_SUPERSPORT);
-    canais = canais.concat(CANAIS_VIVO_TV);
-
-    // Conjunto para rastrear URLs já adicionadas e evitar canais duplicados
-    const addedUrls = new Set<string>();
+    // Conjunto para rastrear IDs já adicionados e evitar canais duplicados
+    const addedIds = new Set<string>();
     canais.forEach((c) => {
-      if (c.url) addedUrls.add(c.url.trim().toLowerCase());
+      if (c.id) addedIds.add(c.id);
     });
 
     for (const r of results) {
       if (r.status === 'fulfilled') {
         for (const item of r.value) {
-          const normUrl = item.url ? item.url.trim().toLowerCase() : '';
-          // Se a URL já foi incluída por um canal curado, ignora para não duplicar
-          if (normUrl && !addedUrls.has(normUrl)) {
-            addedUrls.add(normUrl);
+          if (item.id && !addedIds.has(item.id)) {
+            addedIds.add(item.id);
             canais.push(item);
           }
         }

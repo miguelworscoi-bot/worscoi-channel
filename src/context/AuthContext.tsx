@@ -117,6 +117,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (
       lower.includes('admin') ||
       lower.includes('gestor') ||
+      lower === 'beliziodos5@gmail.com' ||
       lower === 'confirmacaomatriculaquessua@gmail.com' ||
       lower === 'associacaoepfmalanje@gmail.com'
     ) {
@@ -198,18 +199,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             photoURL: parsed.photoURL || null,
           });
           setLoading(false);
+          return;
         }
       }
     } catch {
       // Ignora
     }
 
-    // Safety timeout: nunca deixa o usuário bloqueado indefinidamente
-    const timer = setTimeout(() => {
-      setLoading(false);
-    }, 1000);
-
-    return () => clearTimeout(timer);
+    // Se nenhuma sessão existir, inicializa sessão de espectador gratuita para exibir a aplicação imediatamente
+    const guestProfile: UserProfile = {
+      id: 'guest_' + Math.random().toString(36).substring(2, 9),
+      email: 'espectador@playsports.tv',
+      displayName: 'Espectador',
+      photoURL: '',
+      role: 'user',
+      createdAt: new Date().toISOString(),
+      plan: 'free',
+      planName: 'Plano Gratuito (Teste 24h)',
+      planExpiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+    };
+    saveSession(guestProfile);
+    setLoading(false);
   }, []);
 
   // Firebase auth state change listener com recuperação resiliente da sessão local
@@ -285,16 +295,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 photoURL: parsed.photoURL || null,
               });
             } else {
-              setUser(null);
-              setUserProfile(null);
+              const guestProfile: UserProfile = {
+                id: 'guest_' + Math.random().toString(36).substring(2, 9),
+                email: 'espectador@playsports.tv',
+                displayName: 'Espectador',
+                photoURL: '',
+                role: 'user',
+                createdAt: new Date().toISOString(),
+                plan: 'free',
+                planName: 'Plano Gratuito (Teste 24h)',
+                planExpiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+              };
+              saveSession(guestProfile);
             }
           } else {
-            setUser(null);
-            setUserProfile(null);
+            const guestProfile: UserProfile = {
+              id: 'guest_' + Math.random().toString(36).substring(2, 9),
+              email: 'espectador@playsports.tv',
+              displayName: 'Espectador',
+              photoURL: '',
+              role: 'user',
+              createdAt: new Date().toISOString(),
+              plan: 'free',
+              planName: 'Plano Gratuito (Teste 24h)',
+              planExpiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+            };
+            saveSession(guestProfile);
           }
         } catch {
-          setUser(null);
-          setUserProfile(null);
+          // Mantém sessão resiliente
         }
       }
       setLoading(false);

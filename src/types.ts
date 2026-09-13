@@ -1,6 +1,6 @@
 export type CurrencyCode = 'BRL' | 'USD' | 'EUR';
 
-export type LatencyMode = 'stable' | 'low-latency';
+export type LatencyMode = 'economy' | 'stable' | 'low-latency';
 
 export type SubscriptionPlanId = 'free' | 'diario' | 'basico' | 'vip' | 'premium' | 'anual';
 
@@ -51,6 +51,12 @@ export interface SubscriberUser {
 export type FiltroAtivo =
   | 'Todos'
   | 'Favoritos'
+  | 'Bonecos'
+  | 'Esportes'
+  | 'Novelas'
+  | 'Notícias'
+  | 'Músicas'
+  | 'Filmes'
   | 'Libertadores'
   | 'Champions League'
   | 'TNT Sports'
@@ -62,11 +68,19 @@ export type FiltroAtivo =
   | 'SuperSport'
   | 'Vivo TV'
   | 'Brasil'
+  | 'Portugal'
   | 'Futebol'
-  | 'Esportes'
-  | 'Notícias'
   | 'Lazer'
   | 'Meus Canais';
+
+export type CategoriaCanalGeral =
+  | 'Bonecos'
+  | 'Esportes'
+  | 'Novelas'
+  | 'Notícias'
+  | 'Músicas'
+  | 'Filmes'
+  | 'Lazer';
 
 export interface Canal {
   id?: string;
@@ -74,8 +88,8 @@ export interface Canal {
   logo: string;
   url: string;
   backupUrls?: string[];
-  categoria?: 'Esportes' | 'Notícias' | 'Lazer';
-  pais?: 'BR' | 'AO' | 'Global';
+  categoria?: CategoriaCanalGeral;
+  pais?: 'BR' | 'AO' | 'PT' | 'ES' | 'US' | 'FR' | 'DE' | 'JP' | 'NL' | 'UK' | 'Global' | string;
   rede?:
     | 'TNT Sports'
     | 'beIN Sports'
@@ -83,10 +97,24 @@ export interface Canal {
     | 'SuperSport'
     | 'Vivo'
     | 'ESPN'
+    | 'DAZN'
+    | 'Sport TV'
+    | 'Sky Sports'
+    | 'Movistar'
+    | 'Ziggo'
     | 'NBA TV'
     | 'Fox Sports'
+    | 'Disney'
+    | 'Cartoon'
+    | 'Anime'
+    | 'Telecine'
+    | 'HBO'
+    | 'MTV'
+    | 'Stingray'
+    | 'Trace'
     | 'Personalizado'
-    | 'Geral';
+    | 'Geral'
+    | string;
   grupo?: string;
   competicoes?: string[];
   isCustom?: boolean;

@@ -22,6 +22,7 @@ import {
   KeyRound,
   Smartphone,
   Sliders,
+  Leaf,
 } from 'lucide-react';
 import { Canal, LatencyMode } from '@/types';
 import { getChannelQuality, getNetworkBadge, getSportTag } from '@/utils/channelUtils';
@@ -452,13 +453,15 @@ export function PlayerHero({
               <Sliders className="w-3.5 h-3.5 text-[#00E676]" />
               <span className="hidden sm:inline">Configurações</span>
               <span
-                className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
-                  latencyMode === 'stable'
-                    ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full flex items-center gap-1 ${
+                  latencyMode === 'economy'
+                    ? 'bg-emerald-500/20 text-[#00E676] border border-[#00E676]/40'
+                    : latencyMode === 'stable'
+                    ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30'
                     : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
                 }`}
               >
-                {latencyMode === 'stable' ? 'Estável' : 'Tempo Real'}
+                {latencyMode === 'economy' ? 'Poupança -70%' : latencyMode === 'stable' ? 'HD Estável' : 'Tempo Real'}
               </span>
             </button>
 
@@ -666,26 +669,35 @@ export function PlayerHero({
           </div>
 
           <div className="flex items-center gap-2 self-start md:self-auto flex-wrap">
-            {/* Toggle de Modo de Transmissão (Modo Estável vs Baixa Latência) */}
+            {/* Toggle de Modo de Transmissão (Economia vs Estável vs Baixa Latência) */}
             <button
               type="button"
               id="hero-latency-mode-toggle"
               onClick={() => onToggleLatencyMode()}
               className={`px-2.5 py-1 rounded-lg border text-[11px] font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
-                latencyMode === 'stable'
-                  ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/40 hover:bg-emerald-500/25 shadow-sm'
+                latencyMode === 'economy'
+                  ? 'bg-emerald-500/15 text-emerald-300 border-[#00E676]/60 hover:bg-emerald-500/25 shadow-sm ring-1 ring-[#00E676]/30'
+                  : latencyMode === 'stable'
+                  ? 'bg-cyan-500/15 text-cyan-300 border-cyan-500/40 hover:bg-cyan-500/25 shadow-sm'
                   : 'bg-amber-500/15 text-amber-300 border-amber-500/40 hover:bg-amber-500/25 shadow-sm'
               }`}
               title={
-                latencyMode === 'stable'
-                  ? 'Modo Estável Ativo (Buffer 30s para redes lentas). Clique para alternar para Baixa Latência.'
-                  : 'Modo Baixa Latência Ativo (Tempo Real). Clique para alternar para Modo Estável.'
+                latencyMode === 'economy'
+                  ? 'Modo Economia de Dados Ativo (-70% internet móvel). Clique para alternar.'
+                  : latencyMode === 'stable'
+                  ? 'Modo Equilibrado HD Ativo (Buffer 14s). Clique para alternar.'
+                  : 'Modo Baixa Latência Ativo (Tempo Real). Clique para alternar.'
               }
             >
-              {latencyMode === 'stable' ? (
+              {latencyMode === 'economy' ? (
                 <>
-                  <ShieldCheck className="w-3.5 h-3.5 text-[#00E676]" />
-                  <span>Modo Estável (Buffer+)</span>
+                  <Leaf className="w-3.5 h-3.5 text-[#00E676]" />
+                  <span>Poupar Internet (-70%)</span>
+                </>
+              ) : latencyMode === 'stable' ? (
+                <>
+                  <ShieldCheck className="w-3.5 h-3.5 text-cyan-400" />
+                  <span>Equilibrado (HD)</span>
                 </>
               ) : (
                 <>

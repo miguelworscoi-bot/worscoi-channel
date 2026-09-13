@@ -31,22 +31,23 @@ interface ChannelSidebarProps {
 
 const FILTROS_CONFIG: Array<{ id: FiltroAtivo; label: string; icon: string }> = [
   { id: 'Todos', label: 'Todos', icon: '⚡' },
-  { id: 'Esportes', label: 'Esportes', icon: '🥊' },
+  { id: 'Esportes', label: 'Esportes', icon: '⚽' },
+  { id: 'Bonecos', label: 'Bonecos & Animes', icon: '🧸' },
+  { id: 'Filmes', label: 'Filmes & Séries', icon: '🍿' },
+  { id: 'Novelas', label: 'Novelas', icon: '🎭' },
   { id: 'Notícias', label: 'Notícias', icon: '📰' },
-  { id: 'Lazer', label: 'Filmes & Séries', icon: '🍿' },
+  { id: 'Músicas', label: 'Músicas & Shows', icon: '🎵' },
   { id: 'Libertadores', label: 'Libertadores', icon: '🏆' },
   { id: 'Champions League', label: 'Champions League', icon: '⭐' },
   { id: 'TNT Sports', label: 'TNT Sports', icon: '⚡' },
   { id: 'LaLiga', label: 'LaLiga', icon: '🇪🇸' },
+  { id: 'Favoritos', label: 'Favoritos', icon: '⭐' },
+  { id: 'Portugal', label: 'Portugal', icon: '🇵🇹' },
+  { id: 'ZAP Angola', label: 'ZAP Angola', icon: '🇦🇴' },
+  { id: 'Brasil', label: 'Brasil', icon: '🇧🇷' },
   { id: 'NBA', label: 'NBA', icon: '🏀' },
   { id: 'MLS', label: 'MLS', icon: '🇺🇸' },
-  { id: 'Futebol', label: 'Futebol', icon: '⚽' },
-  { id: 'Favoritos', label: 'Favoritos', icon: '⭐' },
-  { id: 'beIN Sports', label: 'beIN Sports', icon: '🟣' },
-  { id: 'ZAP Angola', label: 'ZAP Angola', icon: '🇦🇴' },
   { id: 'SuperSport', label: 'SuperSport', icon: '🏆' },
-  { id: 'Vivo TV', label: 'Vivo TV', icon: '📱' },
-  { id: 'Brasil', label: 'Brasil', icon: '🇧🇷' },
   { id: 'Meus Canais', label: 'Meus Canais', icon: '📡' },
 ];
 
@@ -94,11 +95,25 @@ export function ChannelSidebar({
     } else if (filtroAtivo === 'Meus Canais') {
       matchFiltro = canal.isCustom === true;
     } else if (filtroAtivo === 'Esportes') {
-      matchFiltro = catInfo.categoria === 'Esportes';
+      matchFiltro = catInfo.categoria === 'Esportes' || canal.categoria === 'Esportes';
+    } else if (filtroAtivo === 'Bonecos') {
+      matchFiltro = catInfo.categoria === 'Bonecos' || canal.categoria === 'Bonecos';
+    } else if (filtroAtivo === 'Filmes' || filtroAtivo === 'Lazer') {
+      matchFiltro = catInfo.categoria === 'Filmes' || canal.categoria === 'Filmes' || canal.categoria === 'Lazer';
+    } else if (filtroAtivo === 'Novelas') {
+      matchFiltro = catInfo.categoria === 'Novelas' || canal.categoria === 'Novelas';
     } else if (filtroAtivo === 'Notícias') {
-      matchFiltro = catInfo.categoria === 'Notícias';
-    } else if (filtroAtivo === 'Lazer') {
-      matchFiltro = catInfo.categoria === 'Filmes';
+      matchFiltro = catInfo.categoria === 'Notícias' || canal.categoria === 'Notícias';
+    } else if (filtroAtivo === 'Músicas') {
+      matchFiltro = catInfo.categoria === 'Músicas' || canal.categoria === 'Músicas';
+    } else if (filtroAtivo === 'Portugal') {
+      matchFiltro =
+        canal.pais === 'PT' ||
+        cName.includes('portugal') ||
+        cName.includes('rtp') ||
+        cName.includes('sic') ||
+        cName.includes('tvi') ||
+        (canal.grupo && canal.grupo.toLowerCase().includes('portugal'));
     } else if (filtroAtivo === 'Libertadores') {
       matchFiltro =
         comps.includes('libertadores') ||
@@ -331,15 +346,29 @@ export function ChannelSidebar({
           } else if (filtro.id === 'Futebol') {
             count = todosCanais.filter((c) => getSportTag(c) === 'Futebol').length;
           } else if (filtro.id === 'Esportes') {
-            count = todosCanais.filter((c) => getChannelCategoryInfo(c).categoria === 'Esportes').length;
+            count = todosCanais.filter((c) => getChannelCategoryInfo(c).categoria === 'Esportes' || c.categoria === 'Esportes').length;
+          } else if (filtro.id === 'Bonecos') {
+            count = todosCanais.filter((c) => getChannelCategoryInfo(c).categoria === 'Bonecos' || c.categoria === 'Bonecos').length;
+          } else if (filtro.id === 'Filmes' || filtro.id === 'Lazer') {
+            count = todosCanais.filter((c) => getChannelCategoryInfo(c).categoria === 'Filmes' || c.categoria === 'Filmes' || c.categoria === 'Lazer').length;
+          } else if (filtro.id === 'Novelas') {
+            count = todosCanais.filter((c) => getChannelCategoryInfo(c).categoria === 'Novelas' || c.categoria === 'Novelas').length;
           } else if (filtro.id === 'Notícias') {
-            count = todosCanais.filter(
-              (c) => getChannelCategoryInfo(c).categoria === 'Notícias'
-            ).length;
-          } else if (filtro.id === 'Lazer') {
-            count = todosCanais.filter(
-              (c) => getChannelCategoryInfo(c).categoria === 'Filmes'
-            ).length;
+            count = todosCanais.filter((c) => getChannelCategoryInfo(c).categoria === 'Notícias' || c.categoria === 'Notícias').length;
+          } else if (filtro.id === 'Músicas') {
+            count = todosCanais.filter((c) => getChannelCategoryInfo(c).categoria === 'Músicas' || c.categoria === 'Músicas').length;
+          } else if (filtro.id === 'Portugal') {
+            count = todosCanais.filter((c) => {
+              const cName = c.nome.toLowerCase();
+              return (
+                c.pais === 'PT' ||
+                cName.includes('portugal') ||
+                cName.includes('rtp') ||
+                cName.includes('sic') ||
+                cName.includes('tvi') ||
+                (c.grupo && c.grupo.toLowerCase().includes('portugal'))
+              );
+            }).length;
           }
 
           const isSelected = filtroAtivo === filtro.id;
@@ -388,7 +417,7 @@ export function ChannelSidebar({
 
             return (
               <div
-                key={canal.id || canal.url || index}
+                key={`channel-sidebar-${canal.id || canal.url || 'ch'}-${index}`}
                 id={`channel-card-${index}`}
                 onClick={() => onSelectCanal(canal)}
                 className={`group relative flex items-center justify-between gap-3 p-3 rounded-xl border text-left transition-all duration-200 cursor-pointer select-none ${

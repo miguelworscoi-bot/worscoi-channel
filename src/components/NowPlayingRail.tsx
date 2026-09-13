@@ -183,14 +183,14 @@ export function NowPlayingRail({
             ref={favoritesRailRef}
             className="flex items-center gap-3 overflow-x-auto custom-scrollbar pb-2 pt-1"
           >
-            {favoritedChannels.map((c) => {
+            {favoritedChannels.map((c, idx) => {
               const isCurrent =
                 c.url === canalAtivo?.url && (c.id ? c.id === canalAtivo?.id : true);
               const quality = getChannelQuality(c);
 
               return (
                 <div
-                  key={`fav-rail-${c.id || c.url}`}
+                  key={`fav-rail-${c.id || c.url || 'fav'}-${idx}`}
                   onClick={() => onSelectCanal(c)}
                   className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl border shrink-0 transition-all cursor-pointer select-none group min-w-[210px] ${
                     isCurrent
@@ -258,14 +258,14 @@ export function NowPlayingRail({
             ref={relatedRailRef}
             className="flex items-center gap-3.5 overflow-x-auto custom-scrollbar pb-2 pt-1"
           >
-            {relatedChannels.map((c) => {
+            {relatedChannels.map((c, idx) => {
               const quality = getChannelQuality(c);
               const network = getNetworkBadge(c);
               const sport = getSportTag(c);
 
               return (
                 <div
-                  key={`related-rail-${c.id || c.url}`}
+                  key={`related-rail-${c.id || c.url || 'rel'}-${idx}`}
                   onClick={() => onSelectCanal(c)}
                   className="flex items-center gap-3 p-3 rounded-xl border border-zinc-800/80 bg-[#121214] hover:bg-zinc-900 hover:border-[#00E676]/40 hover:scale-[1.02] shrink-0 transition-all cursor-pointer select-none group min-w-[240px] max-w-[280px]"
                 >

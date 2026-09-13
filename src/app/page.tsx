@@ -1,6 +1,7 @@
 'use client';
-import React, { useEffect, useState, useCallback } from 'react';
-import { Canal, FiltroAtivo } from '@/types';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import { Canal, FiltroAtivo, LatencyMode } from '@/types';
+import { LOCAL_STORAGE_LATENCY_KEY } from '@/utils/streamUtils';
 import { CANAIS_PADRAO } from '@/app/api/canais/route';
 import { Header } from '@/components/Header';
 import { PlayerHero } from '@/components/PlayerHero';
@@ -20,7 +21,7 @@ const LOCAL_STORAGE_FAVORITES_KEY = 'playsports_favorites';
 const LOCAL_STORAGE_CUSTOM_KEY = 'playsports_custom_channels';
 
 export default function Home() {
-  const { user, loading: authLoading, isAdmin } = useAuth();
+  const { loading: authLoading, isAdmin } = useAuth();
   const [canais, setCanais] = useState<Canal[]>(CANAIS_PADRAO);
   const [customChannels, setCustomChannels] = useState<Canal[]>([]);
   const [canalAtivo, setCanalAtivo] = useState<Canal | null>(CANAIS_PADRAO[0] || null);
@@ -30,6 +31,8 @@ export default function Home() {
   const [isMuted, setIsMuted] = useState(true);
   const [failoverNotice, setFailoverNotice] = useState<string | null>(null);
   const [useProxy, setUseProxy] = useState(false);
+  // Modo Economia como padrão para poupar imediatamente a franquia de internet móvel do espectador
+  const [latencyMode, setLatencyMode] = useState<LatencyMode>('economy');
   const [isCinemaMode, setIsCinemaMode] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAdminPanelOpen, setIsAdminPanelOpen] = useState(false);
@@ -37,6 +40,7 @@ export default function Home() {
   const [isRedeemModalOpen, setIsRedeemModalOpen] = useState(false);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [isUserProfileModalOpen, setIsUserProfileModalOpen] = useState(false);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
   // Carrega favoritos e canais personalizados do localStorage ao inicializar
   useEffect(() => {
@@ -56,6 +60,11 @@ export default function Home() {
           setCustomChannels(parsedCustom);
         }
       }
+
+      const storedLatency = localStorage.getItem(LOCAL_STORAGE_LATENCY_KEY) || localStorage.getItem('futebol_ao_vivo_latency_mode');
+      if (storedLatency === 'economy' || storedLatency === 'stable' || storedLatency === 'low-latency') {
+        setLatencyMode(storedLatency);
+      }
     } catch {
       // Ignora erro de acesso ao localStorage
     }
@@ -67,8 +76,17 @@ export default function Home() {
       .then((res) => res.json())
       .then((data) => {
         if (Array.isArray(data) && data.length > 0) {
-          setCanais(data);
-          setCanalAtivo((prev) => prev || data[0]);
+          const seen = new Set<string>();
+          const clean: Canal[] = [];
+          for (const item of data) {
+            const key = (item.id || item.url || '').trim();
+            if (key && !seen.has(key)) {
+              seen.add(key);
+              clean.push(item);
+            }
+          }
+          setCanais(clean);
+          setCanalAtivo((prev) => prev || clean[0]);
         }
       })
       .catch(() => {
@@ -76,8 +94,18 @@ export default function Home() {
       });
   }, []);
 
-  // Combina canais personalizados com os canais da API
-  const todosCanais = [...customChannels, ...canais];
+  // Combina canais personalizados com os canais da API garantindo que não haja IDs duplicados
+  const todosCanais = useMemo(() => {
+    const seenIds = new Set<string>();
+    const result: Canal[] = [];
+    for (const c of [...customChannels, ...canais]) {
+      const idKey = (c.id || c.url || '').trim();
+      if (idKey && seenIds.has(idKey)) continue;
+      if (idKey) seenIds.add(idKey);
+      result.push(c);
+    }
+    return result;
+  }, [customChannels, canais]);
 
   // Garante que haja um canal ativo
   useEffect(() => {
@@ -234,6 +262,27 @@ export default function Home() {
     }
   };
 
+  const handleToggleLatencyMode = (mode?: LatencyMode) => {
+    setLatencyMode((prev) => {
+      let next: LatencyMode;
+      if (mode) {
+        next = mode;
+      } else if (prev === 'economy') {
+        next = 'stable';
+      } else if (prev === 'stable') {
+        next = 'low-latency';
+      } else {
+        next = 'economy';
+      }
+      try {
+        localStorage.setItem(LOCAL_STORAGE_LATENCY_KEY, next);
+      } catch {
+        // Ignora erro de localStorage
+      }
+      return next;
+    });
+  };
+
   const isCurrentCanalFavorited = isCanalFavorited(canalAtivo);
   const totalFavoritos = todosCanais.filter((c) => isCanalFavorited(c)).length;
 
@@ -249,10 +298,6 @@ export default function Home() {
     );
   }
 
-  if (!user) {
-    return <AuthModal />;
-  }
-
   return (
     <main className="min-h-screen bg-[#0A0A0B] text-zinc-100 font-sans antialiased selection:bg-[#00E676] selection:text-black">
       {/* 🚀 HEADER FIXO COM BUSCA, FAVORITOS E NOVO CANAL */}
@@ -266,14 +311,17 @@ export default function Home() {
         onOpenRedeemToken={() => setIsRedeemModalOpen(true)}
         onOpenPaymentPlans={() => setIsPaymentModalOpen(true)}
         onOpenUserProfile={() => setIsUserProfileModalOpen(true)}
+        onOpenAuth={() => setIsAuthModalOpen(true)}
         todosCanais={todosCanais}
         onSelectCanal={handleSelectCanal}
+        latencyMode={latencyMode}
+        onToggleLatencyMode={handleToggleLatencyMode}
       />
 
       {/* 📺 PÁGINA PRINCIPAL DO PLAYER AO VIVO: HIERARQUIA HERÓI (~67%) + SIDEBAR (~33%) + CONTEXT RAIL */}
       <div className="max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-        {/* Status de reprodução */}
-        <div className="flex items-center justify-between">
+        {/* Status de reprodução & Economia de Internet */}
+        <div className="flex items-center justify-between flex-wrap gap-2">
           <div className="flex items-center gap-2">
             <span className="relative flex h-2.5 w-2.5">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00E676] opacity-75"></span>
@@ -284,9 +332,141 @@ export default function Home() {
             </h1>
           </div>
 
-          <span className="text-xs text-zinc-500 hidden sm:inline">
-            Canal em reprodução: <strong className="text-zinc-300">{canalAtivo?.nome}</strong>
-          </span>
+          <div className="flex items-center gap-2.5">
+            {/* Tag / Botão rápido de Economia de Internet */}
+            <button
+              type="button"
+              id="live-status-data-saver-btn"
+              onClick={() => handleToggleLatencyMode()}
+              className={`text-xs px-2.5 py-1 rounded-full border flex items-center gap-1.5 transition-all cursor-pointer ${
+                latencyMode === 'economy'
+                  ? 'bg-emerald-500/15 border-[#00E676]/40 text-[#00E676] font-bold ring-1 ring-[#00E676]/20'
+                  : latencyMode === 'stable'
+                  ? 'bg-cyan-500/10 border-cyan-500/30 text-cyan-300 font-semibold'
+                  : 'bg-amber-500/10 border-amber-500/30 text-amber-300 font-semibold'
+              }`}
+              title="Clique para alternar o modo de conexão e consumo de internet"
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-current" />
+              <span>
+                {latencyMode === 'economy'
+                  ? '🍃 Economia Ativa (-75% Dados)'
+                  : latencyMode === 'stable'
+                  ? '🛡️ Modo HD Equilibrado'
+                  : '⚡ Baixa Latência (Live)'}
+              </span>
+            </button>
+
+            <span className="text-xs text-zinc-500 hidden md:inline">
+              Canal em reprodução: <strong className="text-zinc-300">{canalAtivo?.nome}</strong>
+            </span>
+          </div>
+        </div>
+
+        {/* 🌟 BARRA DE NAVEGAÇÃO DE CATEGORIAS RÁPIDAS */}
+        <div
+          id="quick-categories-bar"
+          className="flex items-center gap-2 overflow-x-auto custom-scrollbar pb-1 pt-0.5 select-none"
+        >
+          {[
+            { id: 'Todos' as FiltroAtivo, label: 'Todos os Canais', icon: '⚡', count: todosCanais.length },
+            {
+              id: 'Esportes' as FiltroAtivo,
+              label: 'Esportes Ao Vivo',
+              icon: '⚽',
+              badge: 'Libertadores & Champions',
+              count: todosCanais.filter((c) => c.categoria === 'Esportes').length,
+            },
+            {
+              id: 'Bonecos' as FiltroAtivo,
+              label: 'Bonecos & Animes',
+              icon: '🧸',
+              badge: 'Nick, Cartoon & Disney',
+              count: todosCanais.filter((c) => c.categoria === 'Bonecos').length,
+            },
+            {
+              id: 'Filmes' as FiltroAtivo,
+              label: 'Filmes & Séries',
+              icon: '🍿',
+              badge: 'HBO, Telecine & Ação',
+              count: todosCanais.filter((c) => c.categoria === 'Filmes' || c.categoria === 'Lazer').length,
+            },
+            {
+              id: 'Novelas' as FiltroAtivo,
+              label: 'Novelas & Dramas',
+              icon: '🎭',
+              badge: 'ZAP Novelas & Televisa',
+              count: todosCanais.filter((c) => c.categoria === 'Novelas').length,
+            },
+            {
+              id: 'Portugal' as FiltroAtivo,
+              label: 'Portugal',
+              icon: '🇵🇹',
+              badge: 'RTP, SIC, TVI & Sport TV',
+              count: todosCanais.filter((c) => {
+                const cName = c.nome.toLowerCase();
+                return (
+                  c.pais === 'PT' ||
+                  cName.includes('portugal') ||
+                  cName.includes('rtp') ||
+                  cName.includes('sic') ||
+                  cName.includes('tvi') ||
+                  (c.grupo && c.grupo.toLowerCase().includes('portugal'))
+                );
+              }).length,
+            },
+            {
+              id: 'Notícias' as FiltroAtivo,
+              label: 'Notícias 24h',
+              icon: '📰',
+              badge: 'SIC & RTP 3',
+              count: todosCanais.filter((c) => c.categoria === 'Notícias').length,
+            },
+            {
+              id: 'Músicas' as FiltroAtivo,
+              label: 'Músicas & Shows',
+              icon: '🎵',
+              badge: 'Afro Music & MTV',
+              count: todosCanais.filter((c) => c.categoria === 'Músicas').length,
+            },
+            { id: 'Favoritos' as FiltroAtivo, label: 'Favoritos', icon: '⭐', count: totalFavoritos },
+          ].map((cat) => {
+            const isActive = filtroAtivo === cat.id;
+            return (
+              <button
+                key={`quick-cat-${cat.id}`}
+                type="button"
+                id={`btn-category-${cat.id.toLowerCase().replace(/[^a-z0-9]/g, '-')}`}
+                onClick={() => setFiltroAtivo(cat.id)}
+                className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold shrink-0 transition-all cursor-pointer border ${
+                  isActive
+                    ? 'bg-[#00E676] text-black border-[#00E676] shadow-lg shadow-[#00E676]/25 font-extrabold scale-[1.02]'
+                    : 'bg-[#121214] text-zinc-300 border-zinc-800/80 hover:border-zinc-700 hover:text-white hover:bg-zinc-900'
+                }`}
+              >
+                <span className="text-sm">{cat.icon}</span>
+                <span>{cat.label}</span>
+                {cat.count !== undefined && (
+                  <span
+                    className={`text-[10px] px-1.5 py-0.5 rounded-full font-mono font-bold ${
+                      isActive ? 'bg-black/20 text-black' : 'bg-zinc-800 text-zinc-400'
+                    }`}
+                  >
+                    {cat.count}
+                  </span>
+                )}
+                {cat.badge && (
+                  <span
+                    className={`text-[9px] px-1.5 py-0.5 rounded uppercase tracking-wider hidden md:inline-block ${
+                      isActive ? 'bg-black/15 text-black' : 'bg-zinc-900 text-zinc-500 border border-zinc-800'
+                    }`}
+                  >
+                    {cat.badge}
+                  </span>
+                )}
+              </button>
+            );
+          })}
         </div>
 
         {/* GRID HEROICO: PLAYER (~67% LARGURA) + SIDEBAR (~33% LARGURA) */}
@@ -301,6 +481,8 @@ export default function Home() {
               onToggleMute={() => setIsMuted((prev) => !prev)}
               useProxy={useProxy}
               onToggleProxy={() => setUseProxy((prev) => !prev)}
+              latencyMode={latencyMode}
+              onToggleLatencyMode={handleToggleLatencyMode}
               onEnterCinemaMode={() => setIsCinemaMode(true)}
               isFavorited={isCurrentCanalFavorited}
               onToggleFavorite={() => canalAtivo && toggleFavorite(canalAtivo)}
@@ -351,6 +533,9 @@ export default function Home() {
           isMuted={isMuted}
           onToggleMute={() => setIsMuted((prev) => !prev)}
           useProxy={useProxy}
+          onToggleProxy={() => setUseProxy((prev) => !prev)}
+          latencyMode={latencyMode}
+          onToggleLatencyMode={handleToggleLatencyMode}
           onClose={() => setIsCinemaMode(false)}
           failoverNotice={failoverNotice}
           onClearFailoverNotice={() => setFailoverNotice(null)}
@@ -414,6 +599,11 @@ export default function Home() {
           setIsRedeemModalOpen(true);
         }}
       />
+
+      {/* 🔐 MODAL DE AUTENTICAÇÃO / INSCRIÇÃO / MODO CONVIDADO */}
+      {isAuthModalOpen && (
+        <AuthModal onClose={() => setIsAuthModalOpen(false)} />
+      )}
     </main>
   );
 }
