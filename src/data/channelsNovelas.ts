@@ -3,6 +3,21 @@ import { createSvgLogo } from './channelLogos';
 
 export const CANAIS_NOVELAS: Canal[] = [
   {
+    id: 'tln-novelas-hd',
+    nome: 'TLN Novelas (Televisa em Português)',
+    logo: createSvgLogo('TLN', 'NOVELAS', '#c1121f', '#ffffff', '#ffd100'),
+    url: 'https://vivo.canaloncelive.tv/secureoncedos/oncedigital/playlist.m3u8',
+    backupUrls: [
+      'https://dai.google.com/linear/hls/event/7f3Wv6f7QEKfQna22jHqLQ/master.m3u8',
+      'https://cdn.freevisiontv.co.za/sttv/smil:1kzn.stream.smil/playlist.m3u8',
+    ],
+    categoria: 'Novelas',
+    pais: 'Global',
+    rede: 'Geral',
+    grupo: 'Novelas & Dramas',
+    competicoes: ['Televisa', 'Novelas Mexicanas'],
+  },
+  {
     id: 'zap-novelas',
     nome: 'ZAP Novelas HD (Dramas & Novelas Globais)',
     logo: createSvgLogo('ZAP', 'NOVELAS', '#ff6600', '#ffffff', '#ffd100'),

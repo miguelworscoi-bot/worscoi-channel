@@ -8,6 +8,7 @@ import { PlayerHero } from '@/components/PlayerHero';
 import { ChannelSidebar } from '@/components/ChannelSidebar';
 import { NowPlayingRail } from '@/components/NowPlayingRail';
 import { CinemaPlayer } from '@/components/CinemaPlayer';
+import { SportsSchedule, Jogo } from '@/components/SportsSchedule';
 import { AddChannelModal } from '@/components/AddChannelModal';
 import { AdminPanelModal } from '@/components/AdminPanelModal';
 import { AuthModal } from '@/components/AuthModal';
@@ -41,6 +42,43 @@ export default function Home() {
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [isUserProfileModalOpen, setIsUserProfileModalOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+
+  // Agenda Dinâmica de Jogos do Dia com confrontos dos campeonatos e canais correspondentes
+  const [jogos, setJogos] = useState<Jogo[]>([
+    {
+      id: 1,
+      campeonato: 'Premier League',
+      hora: '16:00',
+      timeCasa: 'Arsenal',
+      timeFora: 'Chelsea',
+      logoCasa: 'https://images.fotmob.com/image_resources/logo/teamlogo/9825.png',
+      logoFora: 'https://images.fotmob.com/image_resources/logo/teamlogo/8455.png',
+      canalSugerido: 'ESPN',
+      status: 'HOJE',
+    },
+    {
+      id: 2,
+      campeonato: 'LaLiga',
+      hora: '18:30',
+      timeCasa: 'Real Madrid',
+      timeFora: 'Barcelona',
+      logoCasa: 'https://images.fotmob.com/image_resources/logo/teamlogo/8633.png',
+      logoFora: 'https://images.fotmob.com/image_resources/logo/teamlogo/8634.png',
+      canalSugerido: 'ESPN',
+      status: 'AO VIVO',
+    },
+    {
+      id: 3,
+      campeonato: 'Brasileirão',
+      hora: '21:00',
+      timeCasa: 'Flamengo',
+      timeFora: 'Palmeiras',
+      logoCasa: 'https://images.fotmob.com/image_resources/logo/teamlogo/5981.png',
+      logoFora: 'https://images.fotmob.com/image_resources/logo/teamlogo/10237.png',
+      canalSugerido: 'SporTV',
+      status: 'HOJE',
+    },
+  ]);
 
   // Carrega favoritos e canais personalizados do localStorage ao inicializar
   useEffect(() => {
@@ -91,6 +129,18 @@ export default function Home() {
       })
       .catch(() => {
         // Mantém CANAIS_PADRAO já carregados
+      });
+
+    // Puxa a programação de jogos reais do dia (via Cheerio / Folha / Fallback)
+    fetch('/api/jogos')
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data) && data.length > 0) {
+          setJogos(data);
+        }
+      })
+      .catch(() => {
+        // Mantém os jogos pré-configurados
       });
   }, []);
 
@@ -165,6 +215,29 @@ export default function Home() {
     }
   };
 
+  // Sintoniza canal sugerido pela agenda de jogos
+  const handleSintonizarJogo = (nomeCanal: string) => {
+    const termo = nomeCanal.toLowerCase().trim();
+    const canalEncontrado = todosCanais.find((c) => {
+      const cNome = c.nome.toLowerCase();
+      const cRede = (c.rede || '').toLowerCase();
+      const cGrupo = (c.grupo || '').toLowerCase();
+      return (
+        cNome.includes(termo) ||
+        cRede.includes(termo) ||
+        cGrupo.includes(termo) ||
+        (termo.includes('espn') && cRede.includes('espn')) ||
+        (termo.includes('sportv') && (cNome.includes('sportv') || cNome.includes('sport tv') || cRede.includes('sport tv')))
+      );
+    });
+
+    if (canalEncontrado) {
+      handleSelectCanal(canalEncontrado);
+    } else if (todosCanais.length > 0) {
+      handleSelectCanal(todosCanais[0]);
+    }
+  };
+
   // Navegação rápida de canais (Zapping Anterior / Próximo)
   const currentCanalIndex = todosCanais.findIndex(
     (c) => (canalAtivo?.id && c.id === canalAtivo.id) || c.url === canalAtivo?.url
@@ -186,6 +259,29 @@ export default function Home() {
   const handlePlayerError = () => {
     if (!canalAtivo) return;
     const streams = [canalAtivo.url, ...(canalAtivo.backupUrls || [])];
+    const isYouTube =
+      canalAtivo.categoria === 'YouTube' ||
+      canalAtivo.rede === 'YouTube' ||
+      canalAtivo.url.includes('youtube.com') ||
+      canalAtivo.url.includes('youtu.be');
+
+    if (isYouTube) {
+      const nextIndex = streamIndex + 1;
+      if (nextIndex < streams.length) {
+        setFailoverNotice(
+          `Alternando para vídeo alternativo do canal (${nextIndex + 1}/${streams.length})...`
+        );
+        setStreamIndex(nextIndex);
+        setTimeout(() => {
+          setFailoverNotice(null);
+        }, 5000);
+      } else {
+        setFailoverNotice(
+          'Vídeo com restrição de incorporação no YouTube. Utilize o botão para assistir diretamente.'
+        );
+      }
+      return;
+    }
 
     // Se o sinal direto falhou (CORS ou bloqueio de rede), ativa imediatamente o Proxy Seguro
     if (!useProxy) {
@@ -468,6 +564,13 @@ export default function Home() {
             );
           })}
         </div>
+
+        {/* ⚽ AGENDA DINÂMICA DE JOGOS DO DIA */}
+        <SportsSchedule
+          jogos={jogos}
+          onSintonizarJogo={handleSintonizarJogo}
+          canalAtivo={canalAtivo}
+        />
 
         {/* GRID HEROICO: PLAYER (~67% LARGURA) + SIDEBAR (~33% LARGURA) */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">

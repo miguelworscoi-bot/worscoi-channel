@@ -71,6 +71,7 @@ export type FiltroAtivo =
   | 'Portugal'
   | 'Futebol'
   | 'Lazer'
+  | 'YouTube'
   | 'Meus Canais';
 
 export type CategoriaCanalGeral =
@@ -80,7 +81,8 @@ export type CategoriaCanalGeral =
   | 'Notícias'
   | 'Músicas'
   | 'Filmes'
-  | 'Lazer';
+  | 'Lazer'
+  | 'YouTube';
 
 export interface Canal {
   id?: string;
@@ -112,6 +114,7 @@ export interface Canal {
     | 'MTV'
     | 'Stingray'
     | 'Trace'
+    | 'YouTube'
     | 'Personalizado'
     | 'Geral'
     | string;

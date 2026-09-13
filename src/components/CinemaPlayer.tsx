@@ -385,8 +385,17 @@ export function CinemaPlayer({
             playsinline: true,
             config: {
               file: {
-                forceHLS: true,
+                forceHLS:
+                  !finalStreamUrl.includes('youtube.com') &&
+                  !finalStreamUrl.includes('youtu.be'),
                 hlsOptions: getHlsOptionsForLatencyMode(latencyMode),
+              },
+              youtube: {
+                playerVars: {
+                  autoplay: 1,
+                  modestbranding: 1,
+                  rel: 0,
+                },
               },
             },
             onReady: () => setIsReady(true),

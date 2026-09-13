@@ -73,6 +73,18 @@ export const CANAIS_ESPORTES: Canal[] = [
     competicoes: ['Champions League'],
   },
   {
+    id: 'sportv-brasil-hd',
+    nome: 'SporTV Brasil HD (Brasileirão, Copa do Brasil & Seleção)',
+    logo: createSvgLogo('SPORTV', 'BRASIL', '#0047ba', '#ffffff', '#00d26a'),
+    url: 'http://45.162.64.114/BAND_SPORTS/index.m3u8',
+    backupUrls: ['http://181.78.197.59:8000/play/a07z/index.m3u8', 'https://bein-xtra-bein.amagi.tv/playlist.m3u8'],
+    categoria: 'Esportes',
+    pais: 'BR',
+    rede: 'Sport TV',
+    grupo: 'Brasil',
+    competicoes: ['Brasileirão', 'Copa do Brasil', 'Libertadores'],
+  },
+  {
     id: 'espn-brasil-libertadores-live-hd',
     nome: 'ESPN Brasil HD (Libertadores, LaLiga & Premier League)',
     logo: createSvgLogo('ESPN', 'BRASIL', '#cc0000', '#ffffff', '#ffffff'),

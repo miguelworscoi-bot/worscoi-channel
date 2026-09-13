@@ -23,6 +23,7 @@ import {
   Smartphone,
   Sliders,
   Leaf,
+  ExternalLink,
 } from 'lucide-react';
 import { Canal, LatencyMode } from '@/types';
 import { getChannelQuality, getNetworkBadge, getSportTag } from '@/utils/channelUtils';
@@ -80,6 +81,7 @@ export function PlayerHero({
   const [_isReady, setIsReady] = useState(false);
   const [isBuffering, setIsBuffering] = useState(true);
   const [hasFirstFrame, setHasFirstFrame] = useState(false);
+  const [hasYouTubeEmbedError, setHasYouTubeEmbedError] = useState(false);
   const [loadSeconds, setLoadSeconds] = useState(0);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
@@ -103,6 +105,7 @@ export function PlayerHero({
     setIsReady(false);
     setIsBuffering(true);
     setHasFirstFrame(false);
+    setHasYouTubeEmbedError(false);
     setLoadSeconds(0);
   }, [canalAtivo?.id, canalAtivo?.url, streamIndex, useProxy]);
 
@@ -117,7 +120,11 @@ export function PlayerHero({
         if (nextSec === 9 && !hasFirstFrame) {
           if (streamsDisponiveis.length > 1 && streamIndex < streamsDisponiveis.length - 1) {
             onStreamChange(streamIndex + 1);
-          } else if (!useProxy) {
+          } else if (
+            !useProxy &&
+            !activeRawStreamUrl.includes('youtube.com') &&
+            !activeRawStreamUrl.includes('youtu.be')
+          ) {
             onToggleProxy();
           }
         }
@@ -195,13 +202,22 @@ export function PlayerHero({
               playsinline: true,
               config: {
                 file: {
-                  forceHLS: true,
+                  forceHLS:
+                    !finalStreamUrl.includes('youtube.com') &&
+                    !finalStreamUrl.includes('youtu.be'),
                   hlsOptions: {
                     ...getHlsOptionsForLatencyMode(latencyMode),
                   },
                   attributes: {
                     autoPlay: true,
                     playsInline: true,
+                  },
+                },
+                youtube: {
+                  playerVars: {
+                    autoplay: 1,
+                    modestbranding: 1,
+                    rel: 0,
                   },
                 },
               },
@@ -223,6 +239,12 @@ export function PlayerHero({
                 setHasFirstFrame(true);
               },
               onError: (err: unknown) => {
+                if (
+                  activeRawStreamUrl.includes('youtube.com') ||
+                  activeRawStreamUrl.includes('youtu.be')
+                ) {
+                  setHasYouTubeEmbedError(true);
+                }
                 onPlayerError(err);
               },
             }
@@ -346,9 +368,11 @@ export function PlayerHero({
 
               {/* STATUS COM TEMPO REAL DA CONEXÃO */}
               <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-900/90 border border-zinc-800/90 text-xs shadow-md mt-1">
-                <span className="w-2 h-2 rounded-full bg-[#00E676] animate-ping"></span>
+                <span className={`w-2 h-2 rounded-full ${hasYouTubeEmbedError ? 'bg-amber-400' : 'bg-[#00E676] animate-ping'}`}></span>
                 <span className="text-zinc-300 font-medium">
-                  {loadSeconds < 4
+                  {hasYouTubeEmbedError
+                    ? 'Vídeo com restrição de incorporação. Use o botão "Assistir no YouTube" abaixo.'
+                    : loadSeconds < 4
                     ? `Sintonizando ${streamIndex === 0 ? 'Servidor Principal' : `Servidor Reserva ${streamIndex}`}...`
                     : loadSeconds < 8
                     ? 'Recebendo transmissão ao vivo (otimizando sinal)...'
@@ -374,20 +398,40 @@ export function PlayerHero({
                   </button>
                 )}
 
-                <button
-                  type="button"
-                  id="hero-quick-proxy-toggle"
-                  onClick={onToggleProxy}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 border transition-all shadow-lg hover:scale-105 active:scale-95 cursor-pointer ${
-                    isCurrentlyProxied
-                      ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40'
-                      : 'bg-zinc-900/90 text-zinc-300 border-zinc-700 hover:text-white hover:border-zinc-500'
-                  }`}
-                  title="Contornar bloqueios de rede com o servidor proxy seguro"
-                >
-                  <ShieldCheck className="w-3.5 h-3.5 text-cyan-400" />
-                  <span>{isCurrentlyProxied ? 'Proxy Seguro Ativo' : 'Tentar via Proxy'}</span>
-                </button>
+                {/* Se for transmissão do YouTube, oferece botão direto para abrir no YouTube */}
+                {(activeRawStreamUrl.includes('youtube.com') ||
+                  activeRawStreamUrl.includes('youtu.be')) && (
+                  <a
+                    href={activeRawStreamUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    id="hero-open-youtube-btn"
+                    className="px-3 py-1.5 rounded-xl bg-red-600/90 hover:bg-red-500 text-white text-xs font-bold flex items-center gap-1.5 border border-red-500 transition-all shadow-lg hover:scale-105 active:scale-95 cursor-pointer"
+                    title="Abrir este vídeo diretamente no YouTube"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5" />
+                    <span>Assistir no YouTube</span>
+                  </a>
+                )}
+
+                {/* Botão de Proxy apenas para fluxos de rede tradicionais (m3u8 / IPTV) */}
+                {!activeRawStreamUrl.includes('youtube.com') &&
+                  !activeRawStreamUrl.includes('youtu.be') && (
+                    <button
+                      type="button"
+                      id="hero-quick-proxy-toggle"
+                      onClick={onToggleProxy}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 border transition-all shadow-lg hover:scale-105 active:scale-95 cursor-pointer ${
+                        isCurrentlyProxied
+                          ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40'
+                          : 'bg-zinc-900/90 text-zinc-300 border-zinc-700 hover:text-white hover:border-zinc-500'
+                      }`}
+                      title="Contornar bloqueios de rede com o servidor proxy seguro"
+                    >
+                      <ShieldCheck className="w-3.5 h-3.5 text-cyan-400" />
+                      <span>{isCurrentlyProxied ? 'Proxy Seguro Ativo' : 'Tentar via Proxy'}</span>
+                    </button>
+                  )}
 
                 {onNextCanal && (
                   <button

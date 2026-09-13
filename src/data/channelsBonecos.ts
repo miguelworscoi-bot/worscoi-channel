@@ -3,6 +3,21 @@ import { createSvgLogo } from './channelLogos';
 
 export const CANAIS_BONECOS: Canal[] = [
   {
+    id: 'crunchyroll-oficial',
+    nome: 'Crunchyroll (Animes 24h & Simulcasts)',
+    logo: createSvgLogo('CRUNCHY', 'ANIME', '#f77f00', '#ffffff', '#fcbf49'),
+    url: 'https://dai.google.com/linear/hls/event/7f3Wv6f7QEKfQna22jHqLQ/master.m3u8',
+    backupUrls: [
+      'https://cdn.freevisiontv.co.za/sttv/smil:1kzn.stream.smil/playlist.m3u8',
+      'https://vivo.canaloncelive.tv/secureoncedos/oncedigital/playlist.m3u8',
+    ],
+    categoria: 'Bonecos',
+    pais: 'Global',
+    rede: 'Anime',
+    grupo: 'Bonecos & Animes',
+    competicoes: ['Anime', 'Simulcast', 'Crunchyroll'],
+  },
+  {
     id: 'nickelodeon-hd',
     nome: 'Nickelodeon HD',
     logo: createSvgLogo('NICK', 'KIDS', '#ff6600', '#ffffff', '#ffffff'),

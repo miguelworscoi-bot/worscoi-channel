@@ -224,112 +224,131 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Firebase auth state change listener com recuperação resiliente da sessão local
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      if (currentUser) {
-        setUser(currentUser);
-        try {
-          const userDocRef = doc(db, 'users', currentUser.uid);
-          const snap = await getDoc(userDocRef);
-          if (snap.exists()) {
-            const data = snap.data();
-            const role = resolveRole(currentUser.email, data.role);
-            const profile: UserProfile = {
-              id: currentUser.uid,
-              email: currentUser.email || '',
-              displayName:
-                data.displayName ||
-                currentUser.displayName ||
-                currentUser.email?.split('@')[0] ||
-                'Usuário',
-              photoURL: currentUser.photoURL || '',
-              role,
-              createdAt: data.createdAt || new Date().toISOString(),
-              plan: data.plan,
-              planName: data.planName,
-              planExpiresAt: data.planExpiresAt,
-              activatedToken: data.activatedToken,
-            };
-            saveSession(profile);
-          } else {
-            const initialRole = resolveRole(currentUser.email);
-            const profileData: UserProfile = {
-              id: currentUser.uid,
-              email: currentUser.email || '',
-              displayName:
-                currentUser.displayName ||
-                currentUser.email?.split('@')[0] ||
-                'Usuário',
-              photoURL: currentUser.photoURL || '',
-              role: initialRole,
-              createdAt: new Date().toISOString(),
-            };
-            await setDoc(userDocRef, profileData, { merge: true });
-            saveSession(profileData);
-          }
-        } catch {
-          const initialRole = resolveRole(currentUser.email);
-          const fallbackProfile: UserProfile = {
-            id: currentUser.uid,
-            email: currentUser.email || '',
-            displayName:
-              currentUser.displayName ||
-              currentUser.email?.split('@')[0] ||
-              'Usuário',
-            role: initialRole,
-            createdAt: new Date().toISOString(),
-          };
-          saveSession(fallbackProfile);
-        }
-      } else {
-        // Se Firebase não tem usuário, restaura sessão local persistente se disponível
-        try {
-          const saved = localStorage.getItem(LOCAL_SESSION_KEY);
-          if (saved) {
-            const parsed = JSON.parse(saved) as UserProfile;
-            if (parsed && parsed.email) {
-              setUserProfile(parsed);
-              setUser({
-                uid: parsed.id || 'local_' + Math.random().toString(36).substring(2, 9),
-                email: parsed.email,
-                displayName: parsed.displayName || parsed.email.split('@')[0],
-                photoURL: parsed.photoURL || null,
-              });
-            } else {
-              const guestProfile: UserProfile = {
-                id: 'guest_' + Math.random().toString(36).substring(2, 9),
-                email: 'espectador@playsports.tv',
-                displayName: 'Espectador',
-                photoURL: '',
-                role: 'user',
+    let unsubscribe: () => void = () => {};
+    try {
+      unsubscribe = onAuthStateChanged(
+        auth,
+        async (currentUser) => {
+          if (currentUser) {
+            setUser(currentUser);
+            try {
+              const userDocRef = doc(db, 'users', currentUser.uid);
+              const snap = await getDoc(userDocRef);
+              if (snap.exists()) {
+                const data = snap.data();
+                const role = resolveRole(currentUser.email, data.role);
+                const profile: UserProfile = {
+                  id: currentUser.uid,
+                  email: currentUser.email || '',
+                  displayName:
+                    data.displayName ||
+                    currentUser.displayName ||
+                    currentUser.email?.split('@')[0] ||
+                    'Usuário',
+                  photoURL: currentUser.photoURL || '',
+                  role,
+                  createdAt: data.createdAt || new Date().toISOString(),
+                  plan: data.plan,
+                  planName: data.planName,
+                  planExpiresAt: data.planExpiresAt,
+                  activatedToken: data.activatedToken,
+                };
+                saveSession(profile);
+              } else {
+                const initialRole = resolveRole(currentUser.email);
+                const profileData: UserProfile = {
+                  id: currentUser.uid,
+                  email: currentUser.email || '',
+                  displayName:
+                    currentUser.displayName ||
+                    currentUser.email?.split('@')[0] ||
+                    'Usuário',
+                  photoURL: currentUser.photoURL || '',
+                  role: initialRole,
+                  createdAt: new Date().toISOString(),
+                };
+                await setDoc(userDocRef, profileData, { merge: true });
+                saveSession(profileData);
+              }
+            } catch {
+              const initialRole = resolveRole(currentUser.email);
+              const fallbackProfile: UserProfile = {
+                id: currentUser.uid,
+                email: currentUser.email || '',
+                displayName:
+                  currentUser.displayName ||
+                  currentUser.email?.split('@')[0] ||
+                  'Usuário',
+                role: initialRole,
                 createdAt: new Date().toISOString(),
-                plan: 'free',
-                planName: 'Plano Gratuito (Teste 24h)',
-                planExpiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
               };
-              saveSession(guestProfile);
+              saveSession(fallbackProfile);
             }
           } else {
-            const guestProfile: UserProfile = {
-              id: 'guest_' + Math.random().toString(36).substring(2, 9),
-              email: 'espectador@playsports.tv',
-              displayName: 'Espectador',
-              photoURL: '',
-              role: 'user',
-              createdAt: new Date().toISOString(),
-              plan: 'free',
-              planName: 'Plano Gratuito (Teste 24h)',
-              planExpiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-            };
-            saveSession(guestProfile);
+            // Se Firebase não tem usuário, restaura sessão local persistente se disponível
+            try {
+              const saved = localStorage.getItem(LOCAL_SESSION_KEY);
+              if (saved) {
+                const parsed = JSON.parse(saved) as UserProfile;
+                if (parsed && parsed.email) {
+                  setUserProfile(parsed);
+                  setUser({
+                    uid: parsed.id || 'local_' + Math.random().toString(36).substring(2, 9),
+                    email: parsed.email,
+                    displayName: parsed.displayName || parsed.email.split('@')[0],
+                    photoURL: parsed.photoURL || null,
+                  });
+                } else {
+                  const guestProfile: UserProfile = {
+                    id: 'guest_' + Math.random().toString(36).substring(2, 9),
+                    email: 'espectador@playsports.tv',
+                    displayName: 'Espectador',
+                    photoURL: '',
+                    role: 'user',
+                    createdAt: new Date().toISOString(),
+                    plan: 'free',
+                    planName: 'Plano Gratuito (Teste 24h)',
+                    planExpiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+                  };
+                  saveSession(guestProfile);
+                }
+              } else {
+                const guestProfile: UserProfile = {
+                  id: 'guest_' + Math.random().toString(36).substring(2, 9),
+                  email: 'espectador@playsports.tv',
+                  displayName: 'Espectador',
+                  photoURL: '',
+                  role: 'user',
+                  createdAt: new Date().toISOString(),
+                  plan: 'free',
+                  planName: 'Plano Gratuito (Teste 24h)',
+                  planExpiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+                };
+                saveSession(guestProfile);
+              }
+            } catch {
+              // Mantém sessão resiliente
+            }
           }
-        } catch {
-          // Mantém sessão resiliente
+          setLoading(false);
+        },
+        (error) => {
+          console.warn('Firebase onAuthStateChanged subscription error:', error);
+          setLoading(false);
         }
-      }
+      );
+    } catch (err) {
+      console.warn('Could not initialize onAuthStateChanged listener:', err);
       setLoading(false);
-    });
+    }
 
-    return () => unsubscribe();
+    return () => {
+      try {
+        unsubscribe();
+      } catch {
+        // Ignora erro ao desinscrever
+      }
+    };
   }, []);
 
   const signInWithEmail = async (identifier: string, pass: string) => {

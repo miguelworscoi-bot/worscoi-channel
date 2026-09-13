@@ -12,6 +12,11 @@ export function getSafeStreamUrl(rawUrl: string, forceProxy = false): string {
   const trimmed = rawUrl.trim();
   if (trimmed.startsWith('/api/proxy')) return trimmed;
 
+  // URLs do YouTube são gerenciadas nativamente pelo player e não devem passar pelo proxy m3u8
+  if (trimmed.includes('youtube.com') || trimmed.includes('youtu.be')) {
+    return trimmed;
+  }
+
   const isHttpsPage =
     typeof window !== 'undefined' && window.location.protocol === 'https:';
   const isInsecureHttp = trimmed.startsWith('http://');
@@ -27,6 +32,9 @@ export function getSafeStreamUrl(rawUrl: string, forceProxy = false): string {
 export function isStreamAutoProxied(rawUrl: string, forceProxy = false): boolean {
   if (!rawUrl) return false;
   const trimmed = rawUrl.trim();
+  if (trimmed.includes('youtube.com') || trimmed.includes('youtu.be')) {
+    return false;
+  }
   const isHttpsPage =
     typeof window !== 'undefined' && window.location.protocol === 'https:';
   return forceProxy || (isHttpsPage && trimmed.startsWith('http://'));

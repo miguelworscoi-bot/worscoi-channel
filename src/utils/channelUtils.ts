@@ -24,6 +24,25 @@ export function getChannelCategoryInfo(canal: Canal): ChannelCategoryBadge {
   const name = canal.nome.toLowerCase();
   const comps = (canal.competicoes || []).map((c) => c.toLowerCase());
 
+  // 0. YouTube & Criadores
+  if (
+    cat.includes('youtube') ||
+    canal.categoria === 'YouTube' ||
+    canal.rede === 'YouTube' ||
+    (canal.grupo && canal.grupo.toLowerCase().includes('youtube'))
+  ) {
+    return {
+      categoria: 'YouTube',
+      filtro: 'YouTube',
+      label: 'YouTube & Criadores',
+      icon: '▶️',
+      badgeBg: 'bg-red-500/15 hover:bg-red-500/25',
+      textColor: 'text-red-400',
+      borderColor: 'border-red-500/30',
+      dotColor: 'bg-red-500',
+    };
+  }
+
   // 1. Bonecos & Animes (Kids & Anime)
   if (
     cat.includes('boneco') ||
