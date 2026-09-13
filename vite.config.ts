@@ -74,6 +74,44 @@ function apiRoutesPlugin(): Plugin {
           res.end(JSON.stringify({ error: message }));
         }
       });
+
+      server.middlewares.use('/api/epg', async (req, res) => {
+        try {
+          const { GET } = await server.ssrLoadModule('/src/app/api/epg/route.ts');
+          const pathAndQuery = req.originalUrl || `/api/epg${req.url?.startsWith('?') ? req.url : `/${req.url || ''}`}`;
+          const fullUrl = `http://localhost:3000${pathAndQuery.startsWith('/') ? pathAndQuery : `/${pathAndQuery}`}`;
+          const webRequest = new Request(fullUrl);
+          const response = await GET(webRequest);
+          const json = await response.json();
+          res.statusCode = response.status || 200;
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify(json));
+        } catch (err: unknown) {
+          const message = err instanceof Error ? err.message : 'Erro ao buscar guia EPG';
+          res.statusCode = 500;
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify({ error: message }));
+        }
+      });
+
+      server.middlewares.use('/api/guia', async (req, res) => {
+        try {
+          const { GET } = await server.ssrLoadModule('/src/app/api/guia/route.ts');
+          const pathAndQuery = req.originalUrl || `/api/guia${req.url?.startsWith('?') ? req.url : `/${req.url || ''}`}`;
+          const fullUrl = `http://localhost:3000${pathAndQuery.startsWith('/') ? pathAndQuery : `/${pathAndQuery}`}`;
+          const webRequest = new Request(fullUrl);
+          const response = await GET(webRequest);
+          const json = await response.json();
+          res.statusCode = response.status || 200;
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify(json));
+        } catch (err: unknown) {
+          const message = err instanceof Error ? err.message : 'Erro ao buscar guia';
+          res.statusCode = 500;
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify({ error: message }));
+        }
+      });
     },
   };
 }

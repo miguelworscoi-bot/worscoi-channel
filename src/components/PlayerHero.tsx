@@ -26,12 +26,14 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import { Canal, LatencyMode } from '@/types';
+import { motion, AnimatePresence } from 'motion/react';
 import { getChannelQuality, getNetworkBadge, getSportTag } from '@/utils/channelUtils';
 import { getChannelSchedule } from '@/utils/channelProgramExtractor';
 import { getSafeStreamUrl, isStreamAutoProxied, getHlsOptionsForLatencyMode } from '@/utils/streamUtils';
 import { useAuth } from '@/context/AuthContext';
 import { isUserPlanExpired, PAYMENT_CONFIG } from '@/services/subscriptionService';
 import { PlayerSettingsModal } from './PlayerSettingsModal';
+import { PlayerTransitionSkeleton } from './PlayerTransitionSkeleton';
 
 interface PlayerHeroProps {
   canalAtivo: Canal | null;
@@ -43,6 +45,7 @@ interface PlayerHeroProps {
   onToggleProxy: () => void;
   latencyMode: LatencyMode;
   onToggleLatencyMode: (mode?: LatencyMode) => void;
+  isCinemaMode?: boolean;
   onEnterCinemaMode: () => void;
   isFavorited: boolean;
   onToggleFavorite: () => void;
@@ -53,6 +56,10 @@ interface PlayerHeroProps {
   onPrevCanal?: () => void;
   onOpenPaymentPlans?: () => void;
   onOpenRedeemToken?: () => void;
+  isTransitioning?: boolean;
+  transitionDirection?: 'to-cinema' | 'to-hero' | null;
+  isAudioTransitionMuted?: boolean;
+  onVideoEnded?: () => void;
 }
 
 export function PlayerHero({
@@ -65,6 +72,7 @@ export function PlayerHero({
   onToggleProxy,
   latencyMode,
   onToggleLatencyMode,
+  isCinemaMode = false,
   onEnterCinemaMode,
   isFavorited,
   onToggleFavorite,
@@ -75,6 +83,10 @@ export function PlayerHero({
   onPrevCanal,
   onOpenPaymentPlans,
   onOpenRedeemToken,
+  isTransitioning = false,
+  transitionDirection = null,
+  isAudioTransitionMuted = false,
+  onVideoEnded,
 }: PlayerHeroProps) {
   const { userProfile, isAdmin } = useAuth();
   const isPlanExpired = !isAdmin && isUserPlanExpired(userProfile);
@@ -85,6 +97,9 @@ export function PlayerHero({
   const [loadSeconds, setLoadSeconds] = useState(0);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
+  // Áudio suavizado durante transição entre componentes para evitar picos
+  const effectiveMuted = isMuted || isAudioTransitionMuted;
+
   const streamsDisponiveis = canalAtivo
     ? [canalAtivo.url, ...(canalAtivo.backupUrls || [])]
     : [];
@@ -94,6 +109,11 @@ export function PlayerHero({
       : canalAtivo?.url || '';
   const finalStreamUrl = getSafeStreamUrl(activeRawStreamUrl, useProxy);
   const isCurrentlyProxied = isStreamAutoProxied(activeRawStreamUrl, useProxy);
+  const isYouTubeChannel =
+    canalAtivo?.categoria === 'YouTube' ||
+    canalAtivo?.rede === 'YouTube' ||
+    activeRawStreamUrl.includes('youtube.com') ||
+    activeRawStreamUrl.includes('youtu.be');
 
   const quality = canalAtivo ? getChannelQuality(canalAtivo) : 'HD';
   const networkBadge = canalAtivo ? getNetworkBadge(canalAtivo) : { label: '', badgeBg: '', textColor: '', borderColor: '' };
@@ -109,15 +129,15 @@ export function PlayerHero({
     setLoadSeconds(0);
   }, [canalAtivo?.id, canalAtivo?.url, streamIndex, useProxy]);
 
-  // Watchdog de conexão: concede 9s para buffers de alta resolução negociarem o sinal
+  // Watchdog de conexão ultrarrápida: concede 4s antes de acionar failover para não deixar o usuário esperando
   useEffect(() => {
-    if (hasFirstFrame || !canalAtivo) return;
+    if (hasFirstFrame || !canalAtivo || isCinemaMode) return;
 
     const interval = setInterval(() => {
       setLoadSeconds((prev) => {
         const nextSec = prev + 1;
-        // Aos 9 segundos se ainda não houver primeiro frame, tenta servidor reserva ou ativa proxy seguro
-        if (nextSec === 9 && !hasFirstFrame) {
+        // Aos 4 segundos se ainda não houver primeiro frame, tenta servidor reserva ou ativa proxy seguro
+        if (nextSec === 4 && !hasFirstFrame) {
           if (streamsDisponiveis.length > 1 && streamIndex < streamsDisponiveis.length - 1) {
             onStreamChange(streamIndex + 1);
           } else if (
@@ -128,15 +148,21 @@ export function PlayerHero({
             onToggleProxy();
           }
         }
+        // Aos 7 segundos sem primeiro frame, sinaliza erro para o orquestrador failover/zapping
+        if (nextSec === 7 && !hasFirstFrame) {
+          onPlayerError(new Error('Tempo limite de conexão excedido'));
+        }
         return nextSec;
       });
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [hasFirstFrame, canalAtivo, streamsDisponiveis.length, streamIndex, useProxy, onStreamChange, onToggleProxy]);
+  }, [hasFirstFrame, canalAtivo, streamsDisponiveis.length, streamIndex, useProxy, onStreamChange, onToggleProxy, onPlayerError, activeRawStreamUrl, isCinemaMode]);
 
   // Atalhos de teclado úteis para zapping de canal e controles
   useEffect(() => {
+    if (isCinemaMode || isTransitioning) return;
+
     const handleKeyDown = (e: KeyboardEvent) => {
       if (['INPUT', 'TEXTAREA'].includes((e.target as HTMLElement)?.tagName)) {
         return;
@@ -155,7 +181,7 @@ export function PlayerHero({
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onNextCanal, onPrevCanal, onToggleMute, onEnterCinemaMode, onToggleLatencyMode]);
+  }, [onNextCanal, onPrevCanal, onToggleMute, onEnterCinemaMode, onToggleLatencyMode, isCinemaMode, isTransitioning]);
 
   const handleReload = () => {
     setIsReady(false);
@@ -188,68 +214,102 @@ export function PlayerHero({
       <div className="group relative aspect-video w-full bg-black rounded-2xl sm:rounded-3xl overflow-hidden border border-zinc-800/80 shadow-2xl shadow-black/90 ring-1 ring-zinc-700/30 transition-all duration-300 hover:ring-[#00E676]/30">
         {/* PLAYER VIDEO */}
         <div className="w-full h-full">
-          {React.createElement(
-            ReactPlayer as unknown as React.ComponentType<Record<string, unknown>>,
-            {
-              key: `${canalAtivo.id || canalAtivo.url}-${streamIndex}-${isCurrentlyProxied ? 'proxy' : 'direct'}-${latencyMode}`,
-              url: finalStreamUrl,
-              src: finalStreamUrl,
-              playing: !isPlanExpired,
-              muted: isMuted,
-              controls: !isPlanExpired,
-              width: '100%',
-              height: '100%',
-              playsinline: true,
-              config: {
-                file: {
-                  forceHLS:
-                    !finalStreamUrl.includes('youtube.com') &&
-                    !finalStreamUrl.includes('youtu.be'),
-                  hlsOptions: {
-                    ...getHlsOptionsForLatencyMode(latencyMode),
+          {!isCinemaMode ? (
+            React.createElement(
+              ReactPlayer as unknown as React.ComponentType<Record<string, unknown>>,
+              {
+                key: `${canalAtivo.id || canalAtivo.url}-${streamIndex}-${isCurrentlyProxied ? 'proxy' : 'direct'}-${latencyMode}`,
+                url: finalStreamUrl,
+                src: finalStreamUrl,
+                playing: !isPlanExpired,
+                muted: effectiveMuted,
+                controls: !isPlanExpired,
+                width: '100%',
+                height: '100%',
+                playsinline: true,
+                config: {
+                  file: {
+                    forceHLS:
+                      !finalStreamUrl.includes('youtube.com') &&
+                      !finalStreamUrl.includes('youtu.be'),
+                    hlsOptions: {
+                      ...getHlsOptionsForLatencyMode(latencyMode),
+                    },
+                    attributes: {
+                      autoPlay: true,
+                      playsInline: true,
+                    },
                   },
-                  attributes: {
-                    autoPlay: true,
-                    playsInline: true,
+                  youtube: {
+                    playerVars: {
+                      autoplay: 1,
+                      modestbranding: 1,
+                      rel: 0,
+                    },
                   },
                 },
-                youtube: {
-                  playerVars: {
-                    autoplay: 1,
-                    modestbranding: 1,
-                    rel: 0,
-                  },
+                onReady: () => {
+                  setIsReady(true);
                 },
-              },
-              onReady: () => {
-                setIsReady(true);
-              },
-              onStart: () => {
-                setIsReady(true);
-                setIsBuffering(false);
-                setHasFirstFrame(true);
-              },
-              onPlay: () => {
-                setIsBuffering(false);
-                setHasFirstFrame(true);
-              },
-              onBuffer: () => setIsBuffering(true),
-              onBufferEnd: () => {
-                setIsBuffering(false);
-                setHasFirstFrame(true);
-              },
-              onError: (err: unknown) => {
-                if (
-                  activeRawStreamUrl.includes('youtube.com') ||
-                  activeRawStreamUrl.includes('youtu.be')
-                ) {
-                  setHasYouTubeEmbedError(true);
-                }
-                onPlayerError(err);
-              },
-            }
+                onStart: () => {
+                  setIsReady(true);
+                  setIsBuffering(false);
+                  setHasFirstFrame(true);
+                },
+                onPlay: () => {
+                  setIsBuffering(false);
+                  setHasFirstFrame(true);
+                },
+                onBuffer: () => setIsBuffering(true),
+                onBufferEnd: () => {
+                  setIsBuffering(false);
+                  setHasFirstFrame(true);
+                },
+                onEnded: () => {
+                  // Reprodução automática: acionado quando o vídeo chega ao fim
+                  onVideoEnded?.();
+                },
+                onError: (err: unknown) => {
+                  if (
+                    activeRawStreamUrl.includes('youtube.com') ||
+                    activeRawStreamUrl.includes('youtu.be')
+                  ) {
+                    setHasYouTubeEmbedError(true);
+                  }
+                  onPlayerError(err);
+                },
+              }
+            )
+          ) : (
+            <div className="w-full h-full bg-black flex flex-col items-center justify-center p-6 text-center">
+              <div className="w-12 h-12 rounded-2xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-[#00E676] mb-2 shadow-lg">
+                <Maximize2 className="w-6 h-6 animate-pulse" />
+              </div>
+              <p className="text-xs font-bold text-zinc-300">Modo Cinema Ativado</p>
+              <p className="text-[11px] text-zinc-500 mt-0.5">A reprodução está ativa em tela cheia</p>
+            </div>
           )}
         </div>
+
+        {/* 🎬 SKELETON / FADE DE TRANSIÇÃO SUAVE (HERO <-> CINEMA) */}
+        <AnimatePresence>
+          {isTransitioning && (
+            <motion.div
+              key="hero-transition-skeleton"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.22, ease: 'easeInOut' }}
+              className="absolute inset-0 z-30 pointer-events-none"
+            >
+              <PlayerTransitionSkeleton
+                canal={canalAtivo}
+                direction={transitionDirection || 'to-cinema'}
+                variant="hero"
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* 🔒 BLOQUEIO POR EXPIRAÇÃO DO PLANO GRATUITO DE 1 DIA */}
         {isPlanExpired && (
@@ -372,10 +432,10 @@ export function PlayerHero({
                 <span className="text-zinc-300 font-medium">
                   {hasYouTubeEmbedError
                     ? 'Vídeo com restrição de incorporação. Use o botão "Assistir no YouTube" abaixo.'
-                    : loadSeconds < 4
-                    ? `Sintonizando ${streamIndex === 0 ? 'Servidor Principal' : `Servidor Reserva ${streamIndex}`}...`
-                    : loadSeconds < 8
-                    ? 'Recebendo transmissão ao vivo (otimizando sinal)...'
+                    : loadSeconds < 3
+                    ? `Sintonizando ${streamIndex === 0 ? 'sinal de alta velocidade' : `servidor reserva ${streamIndex}`}...`
+                    : loadSeconds < 5
+                    ? 'Otimizando taxa de bits e buffer de vídeo...'
                     : 'Sinal demorando a responder. Alternando rota...'}
                 </span>
               </div>
@@ -395,6 +455,20 @@ export function PlayerHero({
                   >
                     <Zap className="w-3.5 h-3.5 text-amber-400" />
                     <span>Mudar Servidor ({streamIndex + 1}/{streamsDisponiveis.length})</span>
+                  </button>
+                )}
+
+                {/* Botão de Pular Canal caso o usuário não queira esperar */}
+                {onNextCanal && loadSeconds >= 2 && (
+                  <button
+                    type="button"
+                    id="hero-quick-skip-channel"
+                    onClick={onNextCanal}
+                    className="px-3 py-1.5 rounded-xl bg-zinc-800/90 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 text-xs font-bold flex items-center gap-1.5 transition-all shadow-lg hover:scale-105 active:scale-95 cursor-pointer"
+                    title="Pular para o próximo canal sem esperar"
+                  >
+                    <SkipForward className="w-3.5 h-3.5 text-[#00E676]" />
+                    <span>Pular Canal</span>
                   </button>
                 )}
 
@@ -514,7 +588,10 @@ export function PlayerHero({
               type="button"
               id="player-cinema-btn"
               onClick={onEnterCinemaMode}
-              className="bg-black/80 hover:bg-black text-zinc-200 hover:text-white text-xs px-3 py-1.5 rounded-full border border-zinc-700/80 backdrop-blur-md transition-all flex items-center gap-1.5 cursor-pointer shadow-lg hover:border-[#00E676]/50 hover:scale-[1.02] active:scale-95"
+              disabled={isTransitioning}
+              className={`bg-black/80 hover:bg-black text-zinc-200 hover:text-white text-xs px-3 py-1.5 rounded-full border border-zinc-700/80 backdrop-blur-md transition-all flex items-center gap-1.5 cursor-pointer shadow-lg hover:border-[#00E676]/50 hover:scale-[1.02] active:scale-95 ${
+                isTransitioning ? 'opacity-50 pointer-events-none' : ''
+              }`}
               title="Expandir Modo Cinema (Tela Cheia Imersiva - Pressione F)"
             >
               <Maximize2 className="w-3.5 h-3.5 text-[#00E676]" />
@@ -685,13 +762,22 @@ export function PlayerHero({
         <div className="pt-3 border-t border-zinc-800/80 flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs">
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-zinc-400 font-semibold flex items-center gap-1 text-[11px]">
-              <Server className="w-3.5 h-3.5 text-zinc-500" />
-              <span>Rota de Transmissão:</span>
+              {isYouTubeChannel ? (
+                <>
+                  <Zap className="w-3.5 h-3.5 text-red-500" />
+                  <span>Playlist de Vídeos:</span>
+                </>
+              ) : (
+                <>
+                  <Server className="w-3.5 h-3.5 text-zinc-500" />
+                  <span>Rota de Transmissão:</span>
+                </>
+              )}
             </span>
 
             {streamsDisponiveis.map((_, idx) => {
               const isSelected = streamIndex === idx;
-              const label = idx === 0 ? 'Principal' : `Reserva ${idx}`;
+              const label = isYouTubeChannel ? `Vídeo ${idx + 1}` : idx === 0 ? 'Principal' : `Reserva ${idx}`;
 
               return (
                 <button
@@ -701,15 +787,37 @@ export function PlayerHero({
                   onClick={() => onStreamChange(idx)}
                   className={`px-2.5 py-1 rounded-lg border font-bold text-[11px] transition-all cursor-pointer flex items-center gap-1 ${
                     isSelected
-                      ? 'bg-[#00E676] text-black border-[#00E676] shadow-sm shadow-[#00E676]/30'
+                      ? isYouTubeChannel
+                        ? 'bg-red-600 text-white border-red-500 shadow-sm shadow-red-600/30'
+                        : 'bg-[#00E676] text-black border-[#00E676] shadow-sm shadow-[#00E676]/30'
                       : 'bg-zinc-900 text-zinc-400 border-zinc-800 hover:border-zinc-700 hover:text-zinc-200'
                   }`}
                 >
-                  {isSelected && <CheckCircle2 className="w-3 h-3 text-black" />}
+                  {isSelected && <CheckCircle2 className={`w-3 h-3 ${isYouTubeChannel ? 'text-white' : 'text-black'}`} />}
                   <span>{label}</span>
                 </button>
               );
             })}
+
+            {isYouTubeChannel && (
+              <div className="flex items-center gap-2 flex-wrap">
+                {streamIndex < streamsDisponiveis.length - 1 && (
+                  <button
+                    type="button"
+                    onClick={() => onStreamChange(streamIndex + 1)}
+                    className="px-2 py-1 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-[11px] font-bold border border-zinc-700 flex items-center gap-1 cursor-pointer transition-all hover:scale-105"
+                    title="Reproduzir o próximo vídeo da lista"
+                  >
+                    <SkipForward className="w-3 h-3 text-red-400" />
+                    <span>Próximo Vídeo</span>
+                  </button>
+                )}
+                <span className="flex items-center gap-1 text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#00E676] animate-pulse"></span>
+                  <span>Autoplay Contínuo Ativo</span>
+                </span>
+              </div>
+            )}
           </div>
 
           <div className="flex items-center gap-2 self-start md:self-auto flex-wrap">

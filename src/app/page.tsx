@@ -1,5 +1,6 @@
 'use client';
-import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react';
+import { AnimatePresence } from 'motion/react';
 import { Canal, FiltroAtivo, LatencyMode } from '@/types';
 import { LOCAL_STORAGE_LATENCY_KEY } from '@/utils/streamUtils';
 import { CANAIS_PADRAO } from '@/app/api/canais/route';
@@ -8,7 +9,6 @@ import { PlayerHero } from '@/components/PlayerHero';
 import { ChannelSidebar } from '@/components/ChannelSidebar';
 import { NowPlayingRail } from '@/components/NowPlayingRail';
 import { CinemaPlayer } from '@/components/CinemaPlayer';
-import { SportsSchedule, Jogo } from '@/components/SportsSchedule';
 import { AddChannelModal } from '@/components/AddChannelModal';
 import { AdminPanelModal } from '@/components/AdminPanelModal';
 import { AuthModal } from '@/components/AuthModal';
@@ -35,6 +35,14 @@ export default function Home() {
   // Modo Economia como padrão para poupar imediatamente a franquia de internet móvel do espectador
   const [latencyMode, setLatencyMode] = useState<LatencyMode>('economy');
   const [isCinemaMode, setIsCinemaMode] = useState(false);
+
+  // Estados para transição suave (skeleton / fade-out) e silenciamento preventivo entre players
+  const [isTransitioningPlayer, setIsTransitioningPlayer] = useState(false);
+  const [transitionDirection, setTransitionDirection] = useState<'to-cinema' | 'to-hero' | null>(null);
+  const [isAudioTransitionMuted, setIsAudioTransitionMuted] = useState(false);
+  const transitionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const audioRestoreTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAdminPanelOpen, setIsAdminPanelOpen] = useState(false);
   const [isSubscribersModalOpen, setIsSubscribersModalOpen] = useState(false);
@@ -42,43 +50,15 @@ export default function Home() {
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [isUserProfileModalOpen, setIsUserProfileModalOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [busca, setBusca] = useState('');
 
-  // Agenda Dinâmica de Jogos do Dia com confrontos dos campeonatos e canais correspondentes
-  const [jogos, setJogos] = useState<Jogo[]>([
-    {
-      id: 1,
-      campeonato: 'Premier League',
-      hora: '16:00',
-      timeCasa: 'Arsenal',
-      timeFora: 'Chelsea',
-      logoCasa: 'https://images.fotmob.com/image_resources/logo/teamlogo/9825.png',
-      logoFora: 'https://images.fotmob.com/image_resources/logo/teamlogo/8455.png',
-      canalSugerido: 'ESPN',
-      status: 'HOJE',
-    },
-    {
-      id: 2,
-      campeonato: 'LaLiga',
-      hora: '18:30',
-      timeCasa: 'Real Madrid',
-      timeFora: 'Barcelona',
-      logoCasa: 'https://images.fotmob.com/image_resources/logo/teamlogo/8633.png',
-      logoFora: 'https://images.fotmob.com/image_resources/logo/teamlogo/8634.png',
-      canalSugerido: 'ESPN',
-      status: 'AO VIVO',
-    },
-    {
-      id: 3,
-      campeonato: 'Brasileirão',
-      hora: '21:00',
-      timeCasa: 'Flamengo',
-      timeFora: 'Palmeiras',
-      logoCasa: 'https://images.fotmob.com/image_resources/logo/teamlogo/5981.png',
-      logoFora: 'https://images.fotmob.com/image_resources/logo/teamlogo/10237.png',
-      canalSugerido: 'SporTV',
-      status: 'HOJE',
-    },
-  ]);
+  // Limpa timeouts ao desmontar
+  useEffect(() => {
+    return () => {
+      if (transitionTimeoutRef.current) clearTimeout(transitionTimeoutRef.current);
+      if (audioRestoreTimeoutRef.current) clearTimeout(audioRestoreTimeoutRef.current);
+    };
+  }, []);
 
   // Carrega favoritos e canais personalizados do localStorage ao inicializar
   useEffect(() => {
@@ -129,18 +109,6 @@ export default function Home() {
       })
       .catch(() => {
         // Mantém CANAIS_PADRAO já carregados
-      });
-
-    // Puxa a programação de jogos reais do dia (via Cheerio / Folha / Fallback)
-    fetch('/api/jogos')
-      .then((res) => res.json())
-      .then((data) => {
-        if (Array.isArray(data) && data.length > 0) {
-          setJogos(data);
-        }
-      })
-      .catch(() => {
-        // Mantém os jogos pré-configurados
       });
   }, []);
 
@@ -215,29 +183,6 @@ export default function Home() {
     }
   };
 
-  // Sintoniza canal sugerido pela agenda de jogos
-  const handleSintonizarJogo = (nomeCanal: string) => {
-    const termo = nomeCanal.toLowerCase().trim();
-    const canalEncontrado = todosCanais.find((c) => {
-      const cNome = c.nome.toLowerCase();
-      const cRede = (c.rede || '').toLowerCase();
-      const cGrupo = (c.grupo || '').toLowerCase();
-      return (
-        cNome.includes(termo) ||
-        cRede.includes(termo) ||
-        cGrupo.includes(termo) ||
-        (termo.includes('espn') && cRede.includes('espn')) ||
-        (termo.includes('sportv') && (cNome.includes('sportv') || cNome.includes('sport tv') || cRede.includes('sport tv')))
-      );
-    });
-
-    if (canalEncontrado) {
-      handleSelectCanal(canalEncontrado);
-    } else if (todosCanais.length > 0) {
-      handleSelectCanal(todosCanais[0]);
-    }
-  };
-
   // Navegação rápida de canais (Zapping Anterior / Próximo)
   const currentCanalIndex = todosCanais.findIndex(
     (c) => (canalAtivo?.id && c.id === canalAtivo.id) || c.url === canalAtivo?.url
@@ -304,11 +249,15 @@ export default function Home() {
       setStreamIndex(nextIndex);
       setTimeout(() => {
         setFailoverNotice(null);
-      }, 5000);
+      }, 4000);
     } else {
       setFailoverNotice(
-        'Sinal temporariamente instável neste canal. Tente recarregar ou escolha outro canal.'
+        'Sinal deste canal demorando a responder. Conectando automaticamente ao próximo canal...'
       );
+      setTimeout(() => {
+        setFailoverNotice(null);
+        handleNextCanal();
+      }, 1800);
     }
   };
 
@@ -316,6 +265,70 @@ export default function Home() {
     setStreamIndex(newIndex);
     setFailoverNotice(null);
   };
+
+  // Reprodução contínua automática para canais do YouTube e playlists de vídeos
+  const handleVideoEnded = useCallback(() => {
+    if (!canalAtivo) return;
+
+    const isYouTube =
+      canalAtivo.categoria === 'YouTube' ||
+      canalAtivo.rede === 'YouTube' ||
+      canalAtivo.url.includes('youtube.com') ||
+      canalAtivo.url.includes('youtu.be');
+
+    const streams = [canalAtivo.url, ...(canalAtivo.backupUrls || [])];
+
+    if (isYouTube) {
+      // 1. Se ainda há vídeos na lista deste canal, avança para o próximo vídeo
+      if (streamIndex < streams.length - 1) {
+        const nextIndex = streamIndex + 1;
+        setFailoverNotice(
+          `Vídeo finalizado. Reproduzindo próximo vídeo (${nextIndex + 1}/${streams.length})...`
+        );
+        setStreamIndex(nextIndex);
+        setTimeout(() => {
+          setFailoverNotice(null);
+        }, 4000);
+      } else {
+        // 2. Concluiu todos os vídeos deste canal: avança automaticamente para o próximo canal do YouTube
+        const canaisYoutube = todosCanais.filter(
+          (c) =>
+            c.categoria === 'YouTube' ||
+            c.rede === 'YouTube' ||
+            c.url.includes('youtube.com') ||
+            c.url.includes('youtu.be')
+        );
+        const currentIdx = canaisYoutube.findIndex((c) => c.id === canalAtivo.id);
+        const nextCanal =
+          currentIdx !== -1 && currentIdx < canaisYoutube.length - 1
+            ? canaisYoutube[currentIdx + 1]
+            : canaisYoutube[0];
+
+        if (nextCanal && nextCanal.id !== canalAtivo.id) {
+          setFailoverNotice(
+            `Fim dos vídeos deste canal. Sintonizando automaticamente: ${nextCanal.nome}...`
+          );
+          setTimeout(() => {
+            setFailoverNotice(null);
+            handleSelectCanal(nextCanal);
+          }, 1800);
+        } else {
+          // Loop contínuo: reinicia do primeiro vídeo
+          setFailoverNotice('Reiniciando reprodução contínua do canal...');
+          setStreamIndex(0);
+          setTimeout(() => {
+            setFailoverNotice(null);
+          }, 3000);
+        }
+      }
+    } else {
+      // Para canais com múltiplos episódios ou gravações
+      if (streams.length > 1) {
+        const nextIndex = (streamIndex + 1) % streams.length;
+        setStreamIndex(nextIndex);
+      }
+    }
+  }, [canalAtivo, streamIndex, todosCanais, handleSelectCanal]);
 
   // Salvar novo canal personalizado (Permissão exclusiva de Administrador)
   const handleAddCustomChannel = (novoCanal: Canal) => {
@@ -378,6 +391,61 @@ export default function Home() {
       return next;
     });
   };
+
+  // Transição suave (skeleton + fade-out) e silenciamento preventivo para evitar picos de áudio
+  const handleEnterCinemaMode = useCallback(() => {
+    if (isCinemaMode || isTransitioningPlayer) return;
+
+    // 1. Silencia imediatamente qualquer áudio ativo para eliminar estalos / picos de áudio
+    setIsAudioTransitionMuted(true);
+    setIsTransitioningPlayer(true);
+    setTransitionDirection('to-cinema');
+
+    if (transitionTimeoutRef.current) clearTimeout(transitionTimeoutRef.current);
+    if (audioRestoreTimeoutRef.current) clearTimeout(audioRestoreTimeoutRef.current);
+
+    // 2. Aguarda o fade-out/skeleton do PlayerHero (220ms) antes de alternar componentes
+    transitionTimeoutRef.current = setTimeout(() => {
+      setIsCinemaMode(true);
+
+      // 3. Mantém o skeleton no CinemaPlayer até a inicialização estável (320ms)
+      transitionTimeoutRef.current = setTimeout(() => {
+        setIsTransitioningPlayer(false);
+        setTransitionDirection(null);
+
+        // 4. Restaura o estado de áudio do usuário suavemente
+        audioRestoreTimeoutRef.current = setTimeout(() => {
+          setIsAudioTransitionMuted(false);
+        }, 100);
+      }, 320);
+    }, 220);
+  }, [isCinemaMode, isTransitioningPlayer]);
+
+  const handleCloseCinemaMode = useCallback(() => {
+    if (!isCinemaMode || isTransitioningPlayer) return;
+
+    // 1. Silencia imediatamente no CinemaPlayer para evitar corte abrupto ou estalo
+    setIsAudioTransitionMuted(true);
+    setIsTransitioningPlayer(true);
+    setTransitionDirection('to-hero');
+
+    if (transitionTimeoutRef.current) clearTimeout(transitionTimeoutRef.current);
+    if (audioRestoreTimeoutRef.current) clearTimeout(audioRestoreTimeoutRef.current);
+
+    // 2. Desativa isCinemaMode permitindo que CinemaPlayer execute sua animação de saída (fade-out)
+    setIsCinemaMode(false);
+
+    // 3. Mantém o skeleton no PlayerHero enquanto o novo player se conecta
+    transitionTimeoutRef.current = setTimeout(() => {
+      setIsTransitioningPlayer(false);
+      setTransitionDirection(null);
+
+      // 4. Restaura o áudio do usuário de forma limpa
+      audioRestoreTimeoutRef.current = setTimeout(() => {
+        setIsAudioTransitionMuted(false);
+      }, 100);
+    }, 450);
+  }, [isCinemaMode, isTransitioningPlayer]);
 
   const isCurrentCanalFavorited = isCanalFavorited(canalAtivo);
   const totalFavoritos = todosCanais.filter((c) => isCanalFavorited(c)).length;
@@ -565,13 +633,6 @@ export default function Home() {
           })}
         </div>
 
-        {/* ⚽ AGENDA DINÂMICA DE JOGOS DO DIA */}
-        <SportsSchedule
-          jogos={jogos}
-          onSintonizarJogo={handleSintonizarJogo}
-          canalAtivo={canalAtivo}
-        />
-
         {/* GRID HEROICO: PLAYER (~67% LARGURA) + SIDEBAR (~33% LARGURA) */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           {/* COLUNA DO PLAYER HERO (COL-SPAN 8) */}
@@ -586,7 +647,8 @@ export default function Home() {
               onToggleProxy={() => setUseProxy((prev) => !prev)}
               latencyMode={latencyMode}
               onToggleLatencyMode={handleToggleLatencyMode}
-              onEnterCinemaMode={() => setIsCinemaMode(true)}
+              isCinemaMode={isCinemaMode}
+              onEnterCinemaMode={handleEnterCinemaMode}
               isFavorited={isCurrentCanalFavorited}
               onToggleFavorite={() => canalAtivo && toggleFavorite(canalAtivo)}
               failoverNotice={failoverNotice}
@@ -596,6 +658,10 @@ export default function Home() {
               onPrevCanal={handlePrevCanal}
               onOpenPaymentPlans={() => setIsPaymentModalOpen(true)}
               onOpenRedeemToken={() => setIsRedeemModalOpen(true)}
+              isTransitioning={isTransitioningPlayer}
+              transitionDirection={transitionDirection}
+              isAudioTransitionMuted={isAudioTransitionMuted}
+              onVideoEnded={handleVideoEnded}
             />
           </div>
 
@@ -613,6 +679,8 @@ export default function Home() {
               onDeleteCustomChannel={handleDeleteCustomChannel}
               totalFavoritos={totalFavoritos}
               isAdmin={isAdmin}
+              busca={busca}
+              onBuscaChange={setBusca}
             />
           </div>
         </div>
@@ -627,26 +695,33 @@ export default function Home() {
         />
       </div>
 
-      {/* 🎭 MODO CINEMA (TELA CHEIA IMERSIVA) */}
-      {isCinemaMode && canalAtivo && (
-        <CinemaPlayer
-          canalAtivo={canalAtivo}
-          streamIndex={streamIndex}
-          onStreamChange={handleManualStreamChange}
-          isMuted={isMuted}
-          onToggleMute={() => setIsMuted((prev) => !prev)}
-          useProxy={useProxy}
-          onToggleProxy={() => setUseProxy((prev) => !prev)}
-          latencyMode={latencyMode}
-          onToggleLatencyMode={handleToggleLatencyMode}
-          onClose={() => setIsCinemaMode(false)}
-          failoverNotice={failoverNotice}
-          onClearFailoverNotice={() => setFailoverNotice(null)}
-          onPlayerError={handlePlayerError}
-          onNextCanal={handleNextCanal}
-          onPrevCanal={handlePrevCanal}
-        />
-      )}
+      {/* 🎭 MODO CINEMA (TELA CHEIA IMERSIVA COM TRANSIÇÃO SUAVE E ANIMAÇÃO EXIT) */}
+      <AnimatePresence>
+        {isCinemaMode && canalAtivo && (
+          <CinemaPlayer
+            key="active-cinema-player-modal"
+            canalAtivo={canalAtivo}
+            streamIndex={streamIndex}
+            onStreamChange={handleManualStreamChange}
+            isMuted={isMuted}
+            onToggleMute={() => setIsMuted((prev) => !prev)}
+            useProxy={useProxy}
+            onToggleProxy={() => setUseProxy((prev) => !prev)}
+            latencyMode={latencyMode}
+            onToggleLatencyMode={handleToggleLatencyMode}
+            onClose={handleCloseCinemaMode}
+            failoverNotice={failoverNotice}
+            onClearFailoverNotice={() => setFailoverNotice(null)}
+            onPlayerError={handlePlayerError}
+            onNextCanal={handleNextCanal}
+            onPrevCanal={handlePrevCanal}
+            isTransitioning={isTransitioningPlayer}
+            transitionDirection={transitionDirection}
+            isAudioTransitionMuted={isAudioTransitionMuted}
+            onVideoEnded={handleVideoEnded}
+          />
+        )}
+      </AnimatePresence>
 
       {/* 📝 MODAL DE ADICIONAR CANAL PRÓPRIO */}
       <AddChannelModal

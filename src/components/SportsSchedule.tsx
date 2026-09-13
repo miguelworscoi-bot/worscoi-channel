@@ -33,7 +33,7 @@ export function SportsSchedule({ jogos, onSintonizarJogo, canalAtivo }: SportsSc
               <span>Agenda de Jogos de Hoje</span>
             </h3>
             <p className="text-[11px] text-zinc-400">
-              Clique em uma partida para sintonizar a transmissão correspondente
+              Clique em uma partida para ver onde assistir e filtrar os canais correspondentes
             </p>
           </div>
         </div>
@@ -128,7 +128,7 @@ export function SportsSchedule({ jogos, onSintonizarJogo, canalAtivo }: SportsSc
                       : 'bg-zinc-900 text-zinc-300 group-hover:bg-[#00E676] group-hover:text-black border border-zinc-800 group-hover:border-[#00E676]'
                   }`}
                 >
-                  <span>{isSelected ? 'Assistindo Agora' : 'Sintonizar'}</span>
+                  <span>Onde Assistir</span>
                   <ChevronRight className="w-3 h-3" />
                 </div>
               </div>

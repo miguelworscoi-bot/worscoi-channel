@@ -17,10 +17,12 @@ import {
   Leaf,
 } from 'lucide-react';
 import { Canal, LatencyMode } from '@/types';
+import { motion, AnimatePresence } from 'motion/react';
 import { getNetworkBadge, getSportTag, getChannelQuality } from '@/utils/channelUtils';
 import { getChannelSchedule } from '@/utils/channelProgramExtractor';
 import { getSafeStreamUrl, isStreamAutoProxied, getHlsOptionsForLatencyMode } from '@/utils/streamUtils';
 import { PlayerSettingsModal } from './PlayerSettingsModal';
+import { PlayerTransitionSkeleton } from './PlayerTransitionSkeleton';
 
 interface CinemaPlayerProps {
   canalAtivo: Canal;
@@ -38,6 +40,10 @@ interface CinemaPlayerProps {
   onPlayerError: (error: unknown) => void;
   onNextCanal?: () => void;
   onPrevCanal?: () => void;
+  isTransitioning?: boolean;
+  transitionDirection?: 'to-cinema' | 'to-hero' | null;
+  isAudioTransitionMuted?: boolean;
+  onVideoEnded?: () => void;
 }
 
 export function CinemaPlayer({
@@ -56,6 +62,10 @@ export function CinemaPlayer({
   onPlayerError,
   onNextCanal,
   onPrevCanal,
+  isTransitioning = false,
+  transitionDirection = null,
+  isAudioTransitionMuted = false,
+  onVideoEnded,
 }: CinemaPlayerProps) {
   const [_isReady, setIsReady] = useState(false);
   const [isBuffering, setIsBuffering] = useState(true);
@@ -63,10 +73,18 @@ export function CinemaPlayer({
   const [loadSeconds, setLoadSeconds] = useState(0);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
+  // Áudio suavizado durante transição entre componentes para evitar picos e ruídos
+  const effectiveMuted = isMuted || isAudioTransitionMuted;
+
   const streamsDisponiveis = [canalAtivo.url, ...(canalAtivo.backupUrls || [])];
   const activeRawStreamUrl = streamsDisponiveis[streamIndex] || canalAtivo.url;
   const finalStreamUrl = getSafeStreamUrl(activeRawStreamUrl, useProxy);
   const isCurrentlyProxied = isStreamAutoProxied(activeRawStreamUrl, useProxy);
+  const isYouTubeChannel =
+    canalAtivo.categoria === 'YouTube' ||
+    canalAtivo.rede === 'YouTube' ||
+    activeRawStreamUrl.includes('youtube.com') ||
+    activeRawStreamUrl.includes('youtu.be');
 
   const networkBadge = getNetworkBadge(canalAtivo);
   const sportTag = getSportTag(canalAtivo);
@@ -81,14 +99,14 @@ export function CinemaPlayer({
     setLoadSeconds(0);
   }, [canalAtivo.id, canalAtivo.url, streamIndex, useProxy]);
 
-  // Watchdog de failover automático no modo cinema (9s para permitir negociação de buffer)
+  // Watchdog de failover ultrarrápido no modo cinema: 4s para conexões imediatas
   useEffect(() => {
     if (hasFirstFrame) return;
 
     const interval = setInterval(() => {
       setLoadSeconds((prev) => {
         const next = prev + 1;
-        if (next === 9 && !hasFirstFrame) {
+        if (next === 4 && !hasFirstFrame) {
           if (streamsDisponiveis.length > 1 && streamIndex < streamsDisponiveis.length - 1) {
             onStreamChange(streamIndex + 1);
           }
@@ -102,6 +120,8 @@ export function CinemaPlayer({
 
   // Teclado: ESC fecha cinema, Setas zapam canais, M muta, S alterna modo
   useEffect(() => {
+    if (isTransitioning) return;
+
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         onClose();
@@ -121,13 +141,37 @@ export function CinemaPlayer({
       document.body.style.overflow = '';
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [onClose, onNextCanal, onPrevCanal, onToggleMute, onToggleLatencyMode]);
+  }, [onClose, onNextCanal, onPrevCanal, onToggleMute, onToggleLatencyMode, isTransitioning]);
 
   return (
-    <div
+    <motion.div
       id="cinema-mode-overlay"
-      className="fixed inset-0 z-50 bg-black flex flex-col items-center justify-center overflow-hidden animate-in fade-in duration-200"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.25, ease: 'easeInOut' }}
+      className="fixed inset-0 z-50 bg-black flex flex-col items-center justify-center overflow-hidden"
     >
+      {/* 🎬 SKELETON / FADE DE TRANSIÇÃO SUAVE ENTRE PLAYERS */}
+      <AnimatePresence>
+        {isTransitioning && (
+          <motion.div
+            key="cinema-transition-skeleton"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.22, ease: 'easeInOut' }}
+            className="absolute inset-0 z-40 pointer-events-none"
+          >
+            <PlayerTransitionSkeleton
+              canal={canalAtivo}
+              direction={transitionDirection || 'to-cinema'}
+              variant="cinema"
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* TOP FLOATING CONTROLS BAR */}
       <div
         id="cinema-top-bar"
@@ -190,8 +234,17 @@ export function CinemaPlayer({
           {streamsDisponiveis.length > 1 && (
             <div className="hidden md:flex items-center gap-1 bg-zinc-900/90 backdrop-blur-md border border-zinc-800 rounded-full px-2.5 py-1 text-xs">
               <span className="text-zinc-400 text-[11px] mr-1 flex items-center gap-1">
-                <Server className="w-3 h-3 text-zinc-500" />
-                <span>Rota:</span>
+                {isYouTubeChannel ? (
+                  <>
+                    <Zap className="w-3 h-3 text-red-500" />
+                    <span>Playlist:</span>
+                  </>
+                ) : (
+                  <>
+                    <Server className="w-3 h-3 text-zinc-500" />
+                    <span>Rota:</span>
+                  </>
+                )}
               </span>
               {streamsDisponiveis.map((_, idx) => (
                 <button
@@ -200,14 +253,30 @@ export function CinemaPlayer({
                   onClick={() => onStreamChange(idx)}
                   className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold transition-all cursor-pointer flex items-center gap-1 ${
                     streamIndex === idx
-                      ? 'bg-[#00E676] text-black shadow-sm'
+                      ? isYouTubeChannel
+                        ? 'bg-red-600 text-white shadow-sm'
+                        : 'bg-[#00E676] text-black shadow-sm'
                       : 'text-zinc-400 hover:text-white'
                   }`}
                 >
-                  {streamIndex === idx && <CheckCircle2 className="w-3 h-3 text-black" />}
-                  <span>{idx === 0 ? 'Principal' : `Reserva ${idx}`}</span>
+                  {streamIndex === idx && (
+                    <CheckCircle2 className={`w-3 h-3 ${isYouTubeChannel ? 'text-white' : 'text-black'}`} />
+                  )}
+                  <span>{isYouTubeChannel ? `Vídeo ${idx + 1}` : idx === 0 ? 'Principal' : `Reserva ${idx}`}</span>
                 </button>
               ))}
+
+              {isYouTubeChannel && streamIndex < streamsDisponiveis.length - 1 && (
+                <button
+                  type="button"
+                  onClick={() => onStreamChange(streamIndex + 1)}
+                  className="ml-1 px-2 py-0.5 rounded-full bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-[10px] font-bold border border-zinc-700 flex items-center gap-1 cursor-pointer transition-all hover:scale-105"
+                  title="Avançar para o próximo vídeo"
+                >
+                  <SkipForward className="w-3 h-3 text-red-400" />
+                  <span>Próximo</span>
+                </button>
+              )}
             </div>
           )}
 
@@ -283,7 +352,10 @@ export function CinemaPlayer({
             type="button"
             id="close-cinema-mode-btn"
             onClick={onClose}
-            className="flex items-center gap-2 px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-full bg-zinc-800/90 hover:bg-red-500 text-white text-xs sm:text-sm font-bold backdrop-blur-md border border-zinc-600/80 hover:border-red-500 transition-all cursor-pointer shadow-xl hover:scale-105 active:scale-95"
+            disabled={isTransitioning}
+            className={`flex items-center gap-2 px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-full bg-zinc-800/90 hover:bg-red-500 text-white text-xs sm:text-sm font-bold backdrop-blur-md border border-zinc-600/80 hover:border-red-500 transition-all cursor-pointer shadow-xl hover:scale-105 active:scale-95 ${
+              isTransitioning ? 'opacity-50 pointer-events-none' : ''
+            }`}
             title="Fechar Modo Cinema (ESC)"
           >
             <Minimize2 className="w-4 h-4" />
@@ -340,25 +412,41 @@ export function CinemaPlayer({
               <div className="flex items-center gap-2 mt-2 px-3 py-1 rounded-full bg-zinc-900/90 border border-zinc-800 text-xs text-zinc-300">
                 <span className="w-2 h-2 rounded-full bg-[#00E676] animate-pulse"></span>
                 <span>
-                  {loadSeconds < 4
-                    ? 'Sintonizando sinal...'
-                    : 'Aguardando primeiros quadros...'}
+                  {loadSeconds < 3
+                    ? 'Sincronizando sinal de alta velocidade...'
+                    : loadSeconds < 5
+                    ? 'Otimizando taxa de bits e buffer...'
+                    : 'Sinal demorando a responder. Alternando rota...'}
                 </span>
               </div>
 
-              {streamsDisponiveis.length > 1 && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    const next = (streamIndex + 1) % streamsDisponiveis.length;
-                    onStreamChange(next);
-                  }}
-                  className="mt-4 px-3.5 py-1.5 rounded-xl bg-amber-500/20 text-amber-300 border border-amber-500/40 text-xs font-bold flex items-center gap-1.5 transition-all shadow-lg hover:scale-105 active:scale-95"
-                >
-                  <Zap className="w-3.5 h-3.5 text-amber-400" />
-                  <span>Mudar Servidor ({streamIndex + 1}/{streamsDisponiveis.length})</span>
-                </button>
-              )}
+              <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+                {streamsDisponiveis.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const next = (streamIndex + 1) % streamsDisponiveis.length;
+                      onStreamChange(next);
+                    }}
+                    className="px-3.5 py-1.5 rounded-xl bg-amber-500/20 text-amber-300 border border-amber-500/40 text-xs font-bold flex items-center gap-1.5 transition-all shadow-lg hover:scale-105 active:scale-95 cursor-pointer"
+                  >
+                    <Zap className="w-3.5 h-3.5 text-amber-400" />
+                    <span>Mudar Servidor ({streamIndex + 1}/{streamsDisponiveis.length})</span>
+                  </button>
+                )}
+
+                {onNextCanal && loadSeconds >= 2 && (
+                  <button
+                    type="button"
+                    onClick={onNextCanal}
+                    className="px-3.5 py-1.5 rounded-xl bg-zinc-800/90 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 text-xs font-bold flex items-center gap-1.5 transition-all shadow-lg hover:scale-105 active:scale-95 cursor-pointer"
+                    title="Pular para o próximo canal sem esperar"
+                  >
+                    <SkipForward className="w-3.5 h-3.5 text-[#00E676]" />
+                    <span>Pular Canal</span>
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         )}
@@ -378,7 +466,7 @@ export function CinemaPlayer({
             url: finalStreamUrl,
             src: finalStreamUrl,
             playing: true,
-            muted: isMuted,
+            muted: effectiveMuted,
             controls: true,
             width: '100%',
             height: '100%',
@@ -413,6 +501,10 @@ export function CinemaPlayer({
               setIsBuffering(false);
               setHasFirstFrame(true);
             },
+            onEnded: () => {
+              // Transição automática para o próximo vídeo quando terminar
+              onVideoEnded?.();
+            },
             onError: onPlayerError,
           }
         )}
@@ -433,7 +525,7 @@ export function CinemaPlayer({
           />
         )}
       </div>
-    </div>
+    </motion.div>
   );
 }
 

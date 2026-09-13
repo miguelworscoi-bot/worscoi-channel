@@ -31,6 +31,8 @@ interface ChannelSidebarProps {
   onDeleteCustomChannel: (id: string, e: React.MouseEvent) => void;
   totalFavoritos: number;
   isAdmin?: boolean;
+  busca?: string;
+  onBuscaChange?: (busca: string) => void;
 }
 
 const FILTROS_CONFIG: Array<{ id: FiltroAtivo; label: string; icon: string }> = [
@@ -194,9 +196,20 @@ export function ChannelSidebar({
   onDeleteCustomChannel,
   totalFavoritos,
   isAdmin = false,
+  busca = '',
+  onBuscaChange,
 }: ChannelSidebarProps) {
-  const [buscaLocal, setBuscaLocal] = useState('');
+  const [buscaLocal, setBuscaLocal] = useState(busca);
   const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({});
+
+  useEffect(() => {
+    setBuscaLocal(busca);
+  }, [busca]);
+
+  const handleBuscaInputChange = (val: string) => {
+    setBuscaLocal(val);
+    onBuscaChange?.(val);
+  };
 
   const isCanalFavorited = (canal?: Canal | null): boolean => {
     if (!canal) return false;
@@ -433,14 +446,14 @@ export function ChannelSidebar({
           type="text"
           placeholder="Buscar canal, time, liga ou categoria..."
           value={buscaLocal}
-          onChange={(e) => setBuscaLocal(e.target.value)}
+          onChange={(e) => handleBuscaInputChange(e.target.value)}
           className="w-full bg-zinc-950 border border-zinc-800/90 rounded-xl pl-9 pr-8 py-2 text-xs text-zinc-200 placeholder-zinc-500 focus:outline-none focus:border-[#00E676] focus:ring-1 focus:ring-[#00E676]/30 transition-all shadow-inner"
         />
         {buscaLocal && (
           <button
             type="button"
             id="clear-search-btn"
-            onClick={() => setBuscaLocal('')}
+            onClick={() => handleBuscaInputChange('')}
             className="absolute right-2.5 top-2.5 text-zinc-500 hover:text-white cursor-pointer"
             title="Limpar busca"
           >
