@@ -10,6 +10,10 @@ import { CinemaPlayer } from '@/components/CinemaPlayer';
 import { AddChannelModal } from '@/components/AddChannelModal';
 import { AdminPanelModal } from '@/components/AdminPanelModal';
 import { AuthModal } from '@/components/AuthModal';
+import { SubscribersModal } from '@/components/SubscribersModal';
+import { RedeemTokenModal } from '@/components/RedeemTokenModal';
+import { PaymentPlansModal } from '@/components/PaymentPlansModal';
+import { UserProfileModal } from '@/components/UserProfileModal';
 import { useAuth } from '@/context/AuthContext';
 
 const LOCAL_STORAGE_FAVORITES_KEY = 'playsports_favorites';
@@ -29,6 +33,10 @@ export default function Home() {
   const [isCinemaMode, setIsCinemaMode] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAdminPanelOpen, setIsAdminPanelOpen] = useState(false);
+  const [isSubscribersModalOpen, setIsSubscribersModalOpen] = useState(false);
+  const [isRedeemModalOpen, setIsRedeemModalOpen] = useState(false);
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [isUserProfileModalOpen, setIsUserProfileModalOpen] = useState(false);
 
   // Carrega favoritos e canais personalizados do localStorage ao inicializar
   useEffect(() => {
@@ -150,28 +158,32 @@ export default function Home() {
   const handlePlayerError = () => {
     if (!canalAtivo) return;
     const streams = [canalAtivo.url, ...(canalAtivo.backupUrls || [])];
-    const nextIndex = streamIndex + 1;
 
+    // Se o sinal direto falhou (CORS ou bloqueio de rede), ativa imediatamente o Proxy Seguro
+    if (!useProxy) {
+      setFailoverNotice(
+        'Sinal direto instável. Ativando conexão protegida por Proxy Seguro...'
+      );
+      setUseProxy(true);
+      setTimeout(() => {
+        setFailoverNotice(null);
+      }, 5000);
+      return;
+    }
+
+    // Se já estava no proxy e falhou, avança para o próximo servidor reserva
+    const nextIndex = streamIndex + 1;
     if (nextIndex < streams.length) {
       setFailoverNotice(
-        `Sinal ${streamIndex + 1} instável. Alternando automaticamente para o servidor reserva (${nextIndex + 1}/${streams.length})...`
+        `Alternando automaticamente para o servidor reserva (${nextIndex + 1}/${streams.length})...`
       );
       setStreamIndex(nextIndex);
       setTimeout(() => {
         setFailoverNotice(null);
       }, 5000);
-    } else if (!useProxy) {
-      setFailoverNotice(
-        'Sinais diretos instáveis. Ativando conexão protegida por Proxy Seguro...'
-      );
-      setUseProxy(true);
-      setStreamIndex(0);
-      setTimeout(() => {
-        setFailoverNotice(null);
-      }, 5000);
     } else {
       setFailoverNotice(
-        'Todos os servidores falharam temporariamente. Tente recarregar ou escolha outro canal.'
+        'Sinal temporariamente instável neste canal. Tente recarregar ou escolha outro canal.'
       );
     }
   };
@@ -250,6 +262,10 @@ export default function Home() {
         totalFavoritos={totalFavoritos}
         onOpenAddChannel={() => setIsModalOpen(true)}
         onOpenAdminPanel={() => setIsAdminPanelOpen(true)}
+        onOpenSubscribers={() => setIsSubscribersModalOpen(true)}
+        onOpenRedeemToken={() => setIsRedeemModalOpen(true)}
+        onOpenPaymentPlans={() => setIsPaymentModalOpen(true)}
+        onOpenUserProfile={() => setIsUserProfileModalOpen(true)}
         todosCanais={todosCanais}
         onSelectCanal={handleSelectCanal}
       />
@@ -293,6 +309,8 @@ export default function Home() {
               onPlayerError={handlePlayerError}
               onNextCanal={handleNextCanal}
               onPrevCanal={handlePrevCanal}
+              onOpenPaymentPlans={() => setIsPaymentModalOpen(true)}
+              onOpenRedeemToken={() => setIsRedeemModalOpen(true)}
             />
           </div>
 
@@ -357,6 +375,44 @@ export default function Home() {
         customChannels={customChannels}
         onOpenAddChannel={() => setIsModalOpen(true)}
         onRemoveCustomChannel={(id) => handleDeleteCustomChannel(id)}
+        onOpenSubscribers={() => setIsSubscribersModalOpen(true)}
+        onOpenPaymentPlans={() => setIsPaymentModalOpen(true)}
+      />
+
+      {/* 👥 MODAL MEUS ASSINANTES & GERADOR DE TOKENS (5 CARACTERES) */}
+      <SubscribersModal
+        isOpen={isSubscribersModalOpen}
+        onClose={() => setIsSubscribersModalOpen(false)}
+      />
+
+      {/* 🔑 MODAL DE RESGATE DE TOKEN DE ACESSO */}
+      <RedeemTokenModal
+        isOpen={isRedeemModalOpen}
+        onClose={() => setIsRedeemModalOpen(false)}
+      />
+
+      {/* 💳 MODAL DE PLANOS & PAGAMENTOS (MULTICAIXA EXPRESS E PAYPAY: 942472983) */}
+      <PaymentPlansModal
+        isOpen={isPaymentModalOpen}
+        onClose={() => setIsPaymentModalOpen(false)}
+        onOpenRedeemToken={() => {
+          setIsPaymentModalOpen(false);
+          setIsRedeemModalOpen(true);
+        }}
+      />
+
+      {/* 👤 MODAL DE PERFIL E PLANO DO ESPECTADOR (NÃO-ADMIN) */}
+      <UserProfileModal
+        isOpen={isUserProfileModalOpen}
+        onClose={() => setIsUserProfileModalOpen(false)}
+        onOpenPaymentPlans={() => {
+          setIsUserProfileModalOpen(false);
+          setIsPaymentModalOpen(true);
+        }}
+        onOpenRedeemToken={() => {
+          setIsUserProfileModalOpen(false);
+          setIsRedeemModalOpen(true);
+        }}
       />
     </main>
   );

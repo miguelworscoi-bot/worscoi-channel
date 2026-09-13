@@ -1,9 +1,23 @@
 'use client';
 import React, { useState, useRef, useEffect } from 'react';
-import { Search, Star, Plus, Radio, X, ArrowRight, LogOut, User as UserIcon, Crown, Shield } from 'lucide-react';
+import {
+  Search,
+  Star,
+  Plus,
+  Radio,
+  X,
+  ArrowRight,
+  LogOut,
+  User as UserIcon,
+  Crown,
+  KeyRound,
+  Users,
+  CreditCard,
+} from 'lucide-react';
 import { Canal, FiltroAtivo } from '@/types';
 import { getChannelQuality, getNetworkBadge, getSportTag } from '@/utils/channelUtils';
 import { useAuth } from '@/context/AuthContext';
+import { PLANS, isUserPlanExpired, getRemainingPlanTime } from '@/services/subscriptionService';
 
 interface HeaderProps {
   filtroAtivo: FiltroAtivo;
@@ -11,6 +25,10 @@ interface HeaderProps {
   totalFavoritos: number;
   onOpenAddChannel: () => void;
   onOpenAdminPanel: () => void;
+  onOpenSubscribers?: () => void;
+  onOpenRedeemToken: () => void;
+  onOpenPaymentPlans?: () => void;
+  onOpenUserProfile?: () => void;
   todosCanais: Canal[];
   onSelectCanal: (canal: Canal) => void;
 }
@@ -21,10 +39,16 @@ export function Header({
   totalFavoritos,
   onOpenAddChannel,
   onOpenAdminPanel,
+  onOpenSubscribers,
+  onOpenRedeemToken,
+  onOpenPaymentPlans,
+  onOpenUserProfile,
   todosCanais,
   onSelectCanal,
 }: HeaderProps) {
   const { user, userProfile, isAdmin, signOut } = useAuth();
+  const isPlanExpired = !isAdmin && isUserPlanExpired(userProfile);
+  const remainingTime = getRemainingPlanTime(userProfile);
   const [searchQuery, setSearchQuery] = useState('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const searchContainerRef = useRef<HTMLDivElement>(null);
@@ -218,28 +242,69 @@ export function Header({
           )}
         </div>
 
-        {/* RIGHT CONTROLS: ADMIN PANEL + NOVO CANAL + FAVORITOS + SESSÃO + LOGOUT */}
+        {/* RIGHT CONTROLS: ASSINANTES + ADMIN PANEL + NOVO CANAL + ATIVAR TOKEN + FAVORITOS + SESSÃO + LOGOUT */}
         <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
-          {/* Botão Painel Admin (Destaque para Administrador) */}
+          {/* Botão Meus Assinantes (Exclusivo Admin) */}
+          {isAdmin && onOpenSubscribers ? (
+            <button
+              type="button"
+              id="header-my-subscribers-btn"
+              onClick={onOpenSubscribers}
+              className="text-xs px-3 py-2 rounded-xl border border-amber-500/40 bg-amber-400/15 hover:bg-amber-400/25 text-amber-300 font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-sm hover:scale-[1.02] active:scale-95"
+              title="Ver Meus Assinantes, Planos Ativos e Gerador de Tokens"
+            >
+              <Users className="w-3.5 h-3.5 text-amber-400" />
+              <span className="hidden lg:inline">Meus Assinantes</span>
+            </button>
+          ) : null}
+
+          {/* Botão Painel Admin (Apenas e estritamente para Administrador) */}
+          {isAdmin && (
+            <button
+              type="button"
+              id="header-admin-panel-btn"
+              onClick={onOpenAdminPanel}
+              className="text-xs px-3 py-2 rounded-xl border border-amber-500/30 bg-amber-400/10 hover:bg-amber-400/20 text-amber-300 font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-sm hover:scale-[1.02] active:scale-95"
+              title="Abrir Painel Administrativo de Gestão e Métricas"
+            >
+              <Crown className="w-3.5 h-3.5 text-amber-400" />
+              <span className="hidden md:inline">Painel Admin</span>
+            </button>
+          )}
+
+          {/* Botão Planos & Formas de Pagamento (Multicaixa Express & PayPay: 942472983) */}
+          {onOpenPaymentPlans && (
+            <button
+              type="button"
+              id="header-payment-plans-btn"
+              onClick={onOpenPaymentPlans}
+              className={`text-xs px-3 py-2 rounded-xl border font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-sm hover:scale-[1.02] active:scale-95 ${
+                isPlanExpired
+                  ? 'bg-red-500/20 border-red-500/50 text-red-300 animate-pulse'
+                  : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/20'
+              }`}
+              title="Ver Planos Esportivos e Pagamento via Multicaixa Express ou PayPay (Nº 942 472 983)"
+            >
+              <CreditCard className="w-3.5 h-3.5 text-emerald-400" />
+              <span className="hidden sm:inline">
+                {isPlanExpired ? 'Renovar Plano' : 'Planos & Pagamentos'}
+              </span>
+              <span className="sm:hidden">
+                {isPlanExpired ? 'Expirou' : 'Planos'}
+              </span>
+            </button>
+          )}
+
+          {/* Botão Ativar Código de Acesso / Token */}
           <button
             type="button"
-            id="header-admin-panel-btn"
-            onClick={onOpenAdminPanel}
-            className={`text-xs px-3 py-2 rounded-xl border font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-sm hover:scale-[1.02] active:scale-95 ${
-              isAdmin
-                ? 'bg-amber-400/15 border-amber-500/40 text-amber-300 hover:bg-amber-400/25'
-                : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-zinc-200'
-            }`}
-            title="Abrir Painel de Gestão e Controle de Sessão"
+            id="header-redeem-token-btn"
+            onClick={onOpenRedeemToken}
+            className="text-xs px-3 py-2 rounded-xl border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-[#00E676] font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-sm hover:scale-[1.02] active:scale-95"
+            title="Ativar código de 5 caracteres para desbloquear planos esportivos"
           >
-            {isAdmin ? (
-              <Crown className="w-3.5 h-3.5 text-amber-400" />
-            ) : (
-              <Shield className="w-3.5 h-3.5 text-emerald-400" />
-            )}
-            <span className="hidden md:inline">
-              {isAdmin ? 'Painel Admin' : 'Sessão'}
-            </span>
+            <KeyRound className="w-3.5 h-3.5 text-[#00E676]" />
+            <span className="hidden sm:inline">Ativar Token</span>
           </button>
 
           {/* Botão Adicionar Canal (Exclusivo ou indicado para Admin) */}
@@ -248,7 +313,7 @@ export function Header({
               type="button"
               id="header-add-channel-btn"
               onClick={onOpenAddChannel}
-              className="text-xs px-3.5 py-2 rounded-xl border border-[#00E676]/40 bg-[#00E676]/10 hover:bg-[#00E676]/20 text-[#00E676] font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-sm hover:scale-[1.02] active:scale-95"
+              className="text-xs px-3 py-2 rounded-xl border border-[#00E676]/40 bg-[#00E676]/10 hover:bg-[#00E676]/20 text-[#00E676] font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-sm hover:scale-[1.02] active:scale-95"
               title="Cadastrar canal personalizado HLS"
             >
               <Plus className="w-3.5 h-3.5" />
@@ -301,15 +366,15 @@ export function Header({
             </span>
           </div>
 
-          {/* User Account / Badge de Role / Sair */}
+          {/* User Account / Badge de Role & Plano / Sair */}
           {user && (
             <div className="flex items-center gap-1.5 sm:gap-2 pl-1 sm:pl-2 border-l border-zinc-800">
               <button
                 type="button"
                 id="header-user-profile-badge"
-                onClick={onOpenAdminPanel}
+                onClick={isAdmin ? onOpenAdminPanel : onOpenUserProfile}
                 className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl bg-zinc-900 hover:bg-zinc-850 border border-zinc-800 text-xs text-zinc-300 transition-colors cursor-pointer"
-                title={`Sessão: ${isAdmin ? 'Administrador' : 'Usuário Normal'} (${userProfile?.displayName || user.email}). Clique para abrir detalhes.`}
+                title={`Sessão: ${isAdmin ? 'Administrador' : 'Assinante / Espectador'} (${userProfile?.displayName || user.email}) • Plano: ${PLANS[userProfile?.plan || 'free']?.name}. Clique para abrir seu perfil.`}
               >
                 <div
                   className={`w-5 h-5 rounded-full flex items-center justify-center font-bold text-[10px] ${
@@ -322,7 +387,7 @@ export function Header({
                     user.email?.[0]?.toUpperCase() || <UserIcon className="w-3 h-3" />}
                 </div>
                 <div className="hidden lg:flex items-center gap-1.5">
-                  <span className="max-w-[85px] truncate font-medium">
+                  <span className="max-w-[80px] truncate font-medium">
                     {userProfile?.displayName || user.email?.split('@')[0]}
                   </span>
                   <span
@@ -334,6 +399,23 @@ export function Header({
                   >
                     {isAdmin ? 'ADMIN' : 'USUÁRIO'}
                   </span>
+                  {isPlanExpired ? (
+                    <span className="text-[9px] px-1.5 py-0.5 rounded font-black bg-red-500/20 text-red-300 border border-red-500/40 animate-pulse">
+                      EXPIRADO
+                    </span>
+                  ) : userProfile?.plan && userProfile.plan !== 'free' ? (
+                    <span
+                      className={`text-[9px] px-1.5 py-0.5 rounded font-black border ${
+                        PLANS[userProfile.plan]?.badgeBg
+                      } ${PLANS[userProfile.plan]?.badgeText} ${PLANS[userProfile.plan]?.badgeBorder}`}
+                    >
+                      {PLANS[userProfile.plan]?.badge}
+                    </span>
+                  ) : (
+                    <span className="text-[9px] px-1.5 py-0.5 rounded font-bold bg-zinc-800 text-zinc-300 border border-zinc-700">
+                      {remainingTime.text}
+                    </span>
+                  )}
                 </div>
               </button>
 

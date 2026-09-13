@@ -16,10 +16,20 @@ import {
   SkipBack,
   SkipForward,
   Zap,
+  Lock,
+  Clock,
+  CreditCard,
+  KeyRound,
+  Smartphone,
+  Sliders,
 } from 'lucide-react';
-import { Canal } from '@/types';
+import { Canal, LatencyMode } from '@/types';
 import { getChannelQuality, getNetworkBadge, getSportTag } from '@/utils/channelUtils';
 import { getChannelSchedule } from '@/utils/channelProgramExtractor';
+import { getSafeStreamUrl, isStreamAutoProxied, getHlsOptionsForLatencyMode } from '@/utils/streamUtils';
+import { useAuth } from '@/context/AuthContext';
+import { isUserPlanExpired, PAYMENT_CONFIG } from '@/services/subscriptionService';
+import { PlayerSettingsModal } from './PlayerSettingsModal';
 
 interface PlayerHeroProps {
   canalAtivo: Canal | null;
@@ -29,6 +39,8 @@ interface PlayerHeroProps {
   onToggleMute: () => void;
   useProxy: boolean;
   onToggleProxy: () => void;
+  latencyMode: LatencyMode;
+  onToggleLatencyMode: (mode?: LatencyMode) => void;
   onEnterCinemaMode: () => void;
   isFavorited: boolean;
   onToggleFavorite: () => void;
@@ -37,6 +49,8 @@ interface PlayerHeroProps {
   onPlayerError: (error: unknown) => void;
   onNextCanal?: () => void;
   onPrevCanal?: () => void;
+  onOpenPaymentPlans?: () => void;
+  onOpenRedeemToken?: () => void;
 }
 
 export function PlayerHero({
@@ -47,6 +61,8 @@ export function PlayerHero({
   onToggleMute,
   useProxy,
   onToggleProxy,
+  latencyMode,
+  onToggleLatencyMode,
   onEnterCinemaMode,
   isFavorited,
   onToggleFavorite,
@@ -55,11 +71,16 @@ export function PlayerHero({
   onPlayerError,
   onNextCanal,
   onPrevCanal,
+  onOpenPaymentPlans,
+  onOpenRedeemToken,
 }: PlayerHeroProps) {
+  const { userProfile, isAdmin } = useAuth();
+  const isPlanExpired = !isAdmin && isUserPlanExpired(userProfile);
   const [_isReady, setIsReady] = useState(false);
   const [isBuffering, setIsBuffering] = useState(true);
   const [hasFirstFrame, setHasFirstFrame] = useState(false);
   const [loadSeconds, setLoadSeconds] = useState(0);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   const streamsDisponiveis = canalAtivo
     ? [canalAtivo.url, ...(canalAtivo.backupUrls || [])]
@@ -68,9 +89,8 @@ export function PlayerHero({
     canalAtivo && streamsDisponiveis[streamIndex]
       ? streamsDisponiveis[streamIndex]
       : canalAtivo?.url || '';
-  const finalStreamUrl = useProxy
-    ? `/api/proxy?url=${encodeURIComponent(activeRawStreamUrl)}`
-    : activeRawStreamUrl;
+  const finalStreamUrl = getSafeStreamUrl(activeRawStreamUrl, useProxy);
+  const isCurrentlyProxied = isStreamAutoProxied(activeRawStreamUrl, useProxy);
 
   const quality = canalAtivo ? getChannelQuality(canalAtivo) : 'HD';
   const networkBadge = canalAtivo ? getNetworkBadge(canalAtivo) : { label: '', badgeBg: '', textColor: '', borderColor: '' };
@@ -85,15 +105,15 @@ export function PlayerHero({
     setLoadSeconds(0);
   }, [canalAtivo?.id, canalAtivo?.url, streamIndex, useProxy]);
 
-  // Watchdog de conexão rápida: se passar 6s sem sinal de vídeo, avança automaticamente
+  // Watchdog de conexão: concede 9s para buffers de alta resolução negociarem o sinal
   useEffect(() => {
     if (hasFirstFrame || !canalAtivo) return;
 
     const interval = setInterval(() => {
       setLoadSeconds((prev) => {
         const nextSec = prev + 1;
-        // Aos 6 segundos na tela escura/carregando, auto-avança para rota reserva ou proxy
-        if (nextSec === 6 && !hasFirstFrame) {
+        // Aos 9 segundos se ainda não houver primeiro frame, tenta servidor reserva ou ativa proxy seguro
+        if (nextSec === 9 && !hasFirstFrame) {
           if (streamsDisponiveis.length > 1 && streamIndex < streamsDisponiveis.length - 1) {
             onStreamChange(streamIndex + 1);
           } else if (!useProxy) {
@@ -121,11 +141,13 @@ export function PlayerHero({
         onToggleMute();
       } else if (e.key.toLowerCase() === 'f') {
         onEnterCinemaMode();
+      } else if (e.key.toLowerCase() === 's') {
+        onToggleLatencyMode();
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onNextCanal, onPrevCanal, onToggleMute, onEnterCinemaMode]);
+  }, [onNextCanal, onPrevCanal, onToggleMute, onEnterCinemaMode, onToggleLatencyMode]);
 
   const handleReload = () => {
     setIsReady(false);
@@ -161,12 +183,12 @@ export function PlayerHero({
           {React.createElement(
             ReactPlayer as unknown as React.ComponentType<Record<string, unknown>>,
             {
-              key: `${canalAtivo.id || canalAtivo.url}-${streamIndex}-${useProxy ? 'proxy' : 'direct'}`,
+              key: `${canalAtivo.id || canalAtivo.url}-${streamIndex}-${isCurrentlyProxied ? 'proxy' : 'direct'}-${latencyMode}`,
               url: finalStreamUrl,
               src: finalStreamUrl,
-              playing: true,
+              playing: !isPlanExpired,
               muted: isMuted,
-              controls: true,
+              controls: !isPlanExpired,
               width: '100%',
               height: '100%',
               playsinline: true,
@@ -174,18 +196,7 @@ export function PlayerHero({
                 file: {
                   forceHLS: true,
                   hlsOptions: {
-                    enableWorker: true,
-                    lowLatencyMode: true,
-                    backBufferLength: 30,
-                    maxBufferLength: 8,
-                    maxMaxBufferLength: 15,
-                    manifestLoadingTimeOut: 5000,
-                    manifestLoadingMaxRetry: 2,
-                    levelLoadingTimeOut: 5000,
-                    levelLoadingMaxRetry: 2,
-                    fragLoadingTimeOut: 6000,
-                    fragLoadingMaxRetry: 2,
-                    startLevel: -1,
+                    ...getHlsOptionsForLatencyMode(latencyMode),
                   },
                   attributes: {
                     autoPlay: true,
@@ -216,6 +227,65 @@ export function PlayerHero({
             }
           )}
         </div>
+
+        {/* 🔒 BLOQUEIO POR EXPIRAÇÃO DO PLANO GRATUITO DE 1 DIA */}
+        {isPlanExpired && (
+          <div
+            id="player-plan-expired-overlay"
+            className="absolute inset-0 z-40 bg-zinc-950/95 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center animate-in fade-in duration-300"
+          >
+            <div className="relative mb-4">
+              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-red-500/15 border border-red-500/30 flex items-center justify-center text-red-400 shadow-xl shadow-red-950/50">
+                <Lock className="w-8 h-8 sm:w-10 sm:h-10 text-red-400" />
+              </div>
+              <div className="absolute -bottom-1 -right-1 p-1 bg-zinc-900 rounded-full border border-red-500/50">
+                <Clock className="w-4 h-4 text-amber-400" />
+              </div>
+            </div>
+
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-500/20 border border-red-500/40 text-red-300 text-xs font-bold mb-2">
+              <span>Sessão Gratuita de 1 Dia Expirada</span>
+            </div>
+
+            <h3 className="text-lg sm:text-2xl font-black text-white max-w-md">
+              O Seu Período de Teste de 24h Terminou
+            </h3>
+            <p className="text-xs sm:text-sm text-zinc-400 max-w-md mt-2 leading-relaxed">
+              Para continuar assistindo à grade esportiva em Full HD sem interrupções, adquira seu plano via <strong className="text-zinc-200">Multicaixa Express</strong> ou <strong className="text-zinc-200">PayPay</strong> ou ative seu token de acesso.
+            </p>
+
+            <div className="mt-4 p-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-zinc-300 flex items-center gap-2">
+              <Smartphone className="w-4 h-4 text-emerald-400 shrink-0" />
+              <span>Multicaixa Express / PayPay: <strong className="text-emerald-400 font-mono text-sm">{PAYMENT_CONFIG.phoneFormatted}</strong></span>
+            </div>
+
+            <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
+              {onOpenPaymentPlans && (
+                <button
+                  type="button"
+                  id="expired-open-payment-btn"
+                  onClick={onOpenPaymentPlans}
+                  className="py-2.5 px-5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs sm:text-sm flex items-center gap-2 shadow-lg shadow-emerald-950/50 transition-all hover:scale-105 active:scale-95 cursor-pointer"
+                >
+                  <CreditCard className="w-4 h-4" />
+                  <span>Ver Planos & Pagar (Multicaixa / PayPay)</span>
+                </button>
+              )}
+
+              {onOpenRedeemToken && (
+                <button
+                  type="button"
+                  id="expired-open-redeem-btn"
+                  onClick={onOpenRedeemToken}
+                  className="py-2.5 px-4 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-200 hover:text-white font-bold text-xs sm:text-sm flex items-center gap-2 border border-zinc-700 transition-all hover:scale-105 active:scale-95 cursor-pointer"
+                >
+                  <KeyRound className="w-4 h-4 text-[#00E676]" />
+                  <span>Ativar Código de 5 Dígitos</span>
+                </button>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* 🌟 POSTER ATMOSFÉRICO DE PRÉ-CARREGAMENTO (ADEUS TELA ESCURA VAZIA!) */}
         {!hasFirstFrame && (
@@ -277,10 +347,10 @@ export function PlayerHero({
               <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-900/90 border border-zinc-800/90 text-xs shadow-md mt-1">
                 <span className="w-2 h-2 rounded-full bg-[#00E676] animate-ping"></span>
                 <span className="text-zinc-300 font-medium">
-                  {loadSeconds < 3
+                  {loadSeconds < 4
                     ? `Sintonizando ${streamIndex === 0 ? 'Servidor Principal' : `Servidor Reserva ${streamIndex}`}...`
-                    : loadSeconds < 6
-                    ? 'Recebendo transmissão ao vivo...'
+                    : loadSeconds < 8
+                    ? 'Recebendo transmissão ao vivo (otimizando sinal)...'
                     : 'Sinal demorando a responder. Alternando rota...'}
                 </span>
               </div>
@@ -308,14 +378,14 @@ export function PlayerHero({
                   id="hero-quick-proxy-toggle"
                   onClick={onToggleProxy}
                   className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 border transition-all shadow-lg hover:scale-105 active:scale-95 cursor-pointer ${
-                    useProxy
+                    isCurrentlyProxied
                       ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40'
                       : 'bg-zinc-900/90 text-zinc-300 border-zinc-700 hover:text-white hover:border-zinc-500'
                   }`}
-                  title="Contornar bloqueios de rede com o servidor proxy"
+                  title="Contornar bloqueios de rede com o servidor proxy seguro"
                 >
                   <ShieldCheck className="w-3.5 h-3.5 text-cyan-400" />
-                  <span>{useProxy ? 'Proxy Ativo' : 'Tentar via Proxy'}</span>
+                  <span>{isCurrentlyProxied ? 'Proxy Seguro Ativo' : 'Tentar via Proxy'}</span>
                 </button>
 
                 {onNextCanal && (
@@ -371,6 +441,27 @@ export function PlayerHero({
           </div>
 
           <div className="flex items-center gap-2 pointer-events-auto">
+            {/* BOTÃO DE CONFIGURAÇÕES DO PLAYER (MODO ESTÁVEL / BAIXA LATÊNCIA) */}
+            <button
+              type="button"
+              id="player-settings-top-btn"
+              onClick={() => setIsSettingsOpen(true)}
+              className="bg-black/80 hover:bg-black text-zinc-200 hover:text-white text-xs px-3 py-1.5 rounded-full border border-zinc-700/80 backdrop-blur-md transition-all flex items-center gap-1.5 cursor-pointer shadow-lg hover:border-[#00E676]/50 hover:scale-[1.02] active:scale-95"
+              title="Configurações do Player: Modo Estável vs Baixa Latência (Pressione S)"
+            >
+              <Sliders className="w-3.5 h-3.5 text-[#00E676]" />
+              <span className="hidden sm:inline">Configurações</span>
+              <span
+                className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
+                  latencyMode === 'stable'
+                    ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                    : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
+                }`}
+              >
+                {latencyMode === 'stable' ? 'Estável' : 'Tempo Real'}
+              </span>
+            </button>
+
             {/* MODO CINEMA BOTÃO FLUTUANTE */}
             <button
               type="button"
@@ -574,7 +665,36 @@ export function PlayerHero({
             })}
           </div>
 
-          <div className="flex items-center gap-2 self-start md:self-auto">
+          <div className="flex items-center gap-2 self-start md:self-auto flex-wrap">
+            {/* Toggle de Modo de Transmissão (Modo Estável vs Baixa Latência) */}
+            <button
+              type="button"
+              id="hero-latency-mode-toggle"
+              onClick={() => onToggleLatencyMode()}
+              className={`px-2.5 py-1 rounded-lg border text-[11px] font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+                latencyMode === 'stable'
+                  ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/40 hover:bg-emerald-500/25 shadow-sm'
+                  : 'bg-amber-500/15 text-amber-300 border-amber-500/40 hover:bg-amber-500/25 shadow-sm'
+              }`}
+              title={
+                latencyMode === 'stable'
+                  ? 'Modo Estável Ativo (Buffer 30s para redes lentas). Clique para alternar para Baixa Latência.'
+                  : 'Modo Baixa Latência Ativo (Tempo Real). Clique para alternar para Modo Estável.'
+              }
+            >
+              {latencyMode === 'stable' ? (
+                <>
+                  <ShieldCheck className="w-3.5 h-3.5 text-[#00E676]" />
+                  <span>Modo Estável (Buffer+)</span>
+                </>
+              ) : (
+                <>
+                  <Zap className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Baixa Latência</span>
+                </>
+              )}
+            </button>
+
             {/* Toggle de Proxy Seguro */}
             <button
               type="button"
@@ -591,6 +711,18 @@ export function PlayerHero({
               <span>Proxy Seguro: {useProxy ? 'Ativado' : 'Direto'}</span>
             </button>
 
+            {/* Botão de Configurações Detalhadas do Player */}
+            <button
+              type="button"
+              id="hero-open-settings-btn"
+              onClick={() => setIsSettingsOpen(true)}
+              className="p-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-700 transition-all cursor-pointer flex items-center gap-1"
+              title="Configurações avançadas de buffer e transmissão (Pressione S)"
+            >
+              <Sliders className="w-3.5 h-3.5" />
+              <span className="hidden xl:inline text-[11px] font-medium text-zinc-300">Ajustes</span>
+            </button>
+
             {/* Recarregar */}
             <button
               type="button"
@@ -604,6 +736,21 @@ export function PlayerHero({
           </div>
         </div>
       </div>
+
+      {/* ⚙️ MODAL DE CONFIGURAÇÕES DO PLAYER */}
+      <PlayerSettingsModal
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+        latencyMode={latencyMode}
+        onSelectLatencyMode={(mode) => onToggleLatencyMode(mode)}
+        useProxy={useProxy}
+        onToggleProxy={onToggleProxy}
+        streamIndex={streamIndex}
+        streamsDisponiveis={streamsDisponiveis}
+        onSelectStream={onStreamChange}
+        canalNome={canalAtivo.nome}
+        quality={quality}
+      />
     </div>
   );
 }

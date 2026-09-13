@@ -1,5 +1,53 @@
 export type CurrencyCode = 'BRL' | 'USD' | 'EUR';
 
+export type LatencyMode = 'stable' | 'low-latency';
+
+export type SubscriptionPlanId = 'free' | 'diario' | 'basico' | 'vip' | 'premium' | 'anual';
+
+export interface PlanInfo {
+  id: SubscriptionPlanId;
+  name: string;
+  badge: string;
+  badgeBg: string;
+  badgeText: string;
+  badgeBorder: string;
+  durationDays: number;
+  priceFormatted: string;
+  priceAOA?: number;
+  popular?: boolean;
+  description: string;
+  features: string[];
+}
+
+export interface AccessTokenRecord {
+  id: string;
+  code: string; // 5 caracteres alfanuméricos únicos (ex: X7K9P)
+  plan: SubscriptionPlanId;
+  planName: string;
+  durationDays: number;
+  status: 'active' | 'used' | 'revoked';
+  createdAt: string;
+  createdBy?: string;
+  usedAt?: string | null;
+  usedByUserId?: string | null;
+  usedByEmail?: string | null;
+  notes?: string;
+}
+
+export interface SubscriberUser {
+  id: string;
+  email: string;
+  displayName: string;
+  photoURL?: string;
+  role: 'user' | 'admin';
+  plan: SubscriptionPlanId;
+  planName: string;
+  planExpiresAt?: string | null;
+  activatedToken?: string | null;
+  createdAt: string;
+  lastActive?: string;
+}
+
 export type FiltroAtivo =
   | 'Todos'
   | 'Favoritos'

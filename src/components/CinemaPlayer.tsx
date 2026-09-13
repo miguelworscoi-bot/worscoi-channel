@@ -12,10 +12,14 @@ import {
   SkipBack,
   SkipForward,
   Zap,
+  ShieldCheck,
+  Sliders,
 } from 'lucide-react';
-import { Canal } from '@/types';
-import { getNetworkBadge, getSportTag } from '@/utils/channelUtils';
+import { Canal, LatencyMode } from '@/types';
+import { getNetworkBadge, getSportTag, getChannelQuality } from '@/utils/channelUtils';
 import { getChannelSchedule } from '@/utils/channelProgramExtractor';
+import { getSafeStreamUrl, isStreamAutoProxied, getHlsOptionsForLatencyMode } from '@/utils/streamUtils';
+import { PlayerSettingsModal } from './PlayerSettingsModal';
 
 interface CinemaPlayerProps {
   canalAtivo: Canal;
@@ -24,6 +28,9 @@ interface CinemaPlayerProps {
   isMuted: boolean;
   onToggleMute: () => void;
   useProxy: boolean;
+  onToggleProxy?: () => void;
+  latencyMode: LatencyMode;
+  onToggleLatencyMode: (mode?: LatencyMode) => void;
   onClose: () => void;
   failoverNotice: string | null;
   onClearFailoverNotice: () => void;
@@ -39,6 +46,9 @@ export function CinemaPlayer({
   isMuted,
   onToggleMute,
   useProxy,
+  onToggleProxy = () => {},
+  latencyMode,
+  onToggleLatencyMode,
   onClose,
   failoverNotice,
   onClearFailoverNotice,
@@ -50,16 +60,17 @@ export function CinemaPlayer({
   const [isBuffering, setIsBuffering] = useState(true);
   const [hasFirstFrame, setHasFirstFrame] = useState(false);
   const [loadSeconds, setLoadSeconds] = useState(0);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   const streamsDisponiveis = [canalAtivo.url, ...(canalAtivo.backupUrls || [])];
   const activeRawStreamUrl = streamsDisponiveis[streamIndex] || canalAtivo.url;
-  const finalStreamUrl = useProxy
-    ? `/api/proxy?url=${encodeURIComponent(activeRawStreamUrl)}`
-    : activeRawStreamUrl;
+  const finalStreamUrl = getSafeStreamUrl(activeRawStreamUrl, useProxy);
+  const isCurrentlyProxied = isStreamAutoProxied(activeRawStreamUrl, useProxy);
 
   const networkBadge = getNetworkBadge(canalAtivo);
   const sportTag = getSportTag(canalAtivo);
   const programaAtual = getChannelSchedule(canalAtivo)[0];
+  const quality = getChannelQuality(canalAtivo);
 
   // Reset de estados
   useEffect(() => {
@@ -69,14 +80,14 @@ export function CinemaPlayer({
     setLoadSeconds(0);
   }, [canalAtivo.id, canalAtivo.url, streamIndex, useProxy]);
 
-  // Watchdog de failover automático no modo cinema (6s max sem sinal)
+  // Watchdog de failover automático no modo cinema (9s para permitir negociação de buffer)
   useEffect(() => {
     if (hasFirstFrame) return;
 
     const interval = setInterval(() => {
       setLoadSeconds((prev) => {
         const next = prev + 1;
-        if (next === 6 && !hasFirstFrame) {
+        if (next === 9 && !hasFirstFrame) {
           if (streamsDisponiveis.length > 1 && streamIndex < streamsDisponiveis.length - 1) {
             onStreamChange(streamIndex + 1);
           }
@@ -88,7 +99,7 @@ export function CinemaPlayer({
     return () => clearInterval(interval);
   }, [hasFirstFrame, streamsDisponiveis.length, streamIndex, onStreamChange]);
 
-  // Teclado: ESC fecha cinema, Setas zapam canais, M muta
+  // Teclado: ESC fecha cinema, Setas zapam canais, M muta, S alterna modo
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -99,6 +110,8 @@ export function CinemaPlayer({
         onPrevCanal?.();
       } else if (e.key.toLowerCase() === 'm') {
         onToggleMute();
+      } else if (e.key.toLowerCase() === 's') {
+        onToggleLatencyMode();
       }
     };
     document.body.style.overflow = 'hidden';
@@ -107,7 +120,7 @@ export function CinemaPlayer({
       document.body.style.overflow = '';
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [onClose, onNextCanal, onPrevCanal, onToggleMute]);
+  }, [onClose, onNextCanal, onPrevCanal, onToggleMute, onToggleLatencyMode]);
 
   return (
     <div
@@ -196,6 +209,48 @@ export function CinemaPlayer({
               ))}
             </div>
           )}
+
+          {/* Alternador Rápido de Modo de Transmissão (Modo Estável vs Baixa Latência) */}
+          <button
+            type="button"
+            id="cinema-latency-mode-toggle"
+            onClick={() => onToggleLatencyMode()}
+            className={`px-3 py-1.5 rounded-full text-xs font-bold border backdrop-blur-md transition-all flex items-center gap-1.5 cursor-pointer shadow-lg ${
+              latencyMode === 'stable'
+                ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-300 hover:bg-emerald-500/30'
+                : 'bg-amber-500/20 border-amber-500/50 text-amber-300 hover:bg-amber-500/30'
+            }`}
+            title={
+              latencyMode === 'stable'
+                ? 'Modo Estável Ativo (Buffer 30s para redes lentas). Clique para alternar para Baixa Latência (Pressione S).'
+                : 'Modo Baixa Latência Ativo (Tempo Real). Clique para alternar para Modo Estável (Pressione S).'
+            }
+          >
+            {latencyMode === 'stable' ? (
+              <>
+                <ShieldCheck className="w-3.5 h-3.5 text-[#00E676]" />
+                <span className="hidden sm:inline">Modo Estável (Buffer+)</span>
+                <span className="sm:hidden">Estável</span>
+              </>
+            ) : (
+              <>
+                <Zap className="w-3.5 h-3.5 text-amber-400" />
+                <span className="hidden sm:inline">Baixa Latência</span>
+                <span className="sm:hidden">Ao Vivo</span>
+              </>
+            )}
+          </button>
+
+          {/* Configurações do Player */}
+          <button
+            type="button"
+            id="cinema-settings-btn"
+            onClick={() => setIsSettingsOpen(true)}
+            className="p-2 rounded-full bg-zinc-900/90 border border-zinc-700 text-zinc-300 hover:text-white transition-all cursor-pointer shadow-lg hover:scale-105"
+            title="Configurações do Player"
+          >
+            <Sliders className="w-4 h-4" />
+          </button>
 
           {/* Áudio Toggle */}
           <button
@@ -308,7 +363,7 @@ export function CinemaPlayer({
         {React.createElement(
           ReactPlayer as unknown as React.ComponentType<Record<string, unknown>>,
           {
-            key: `cinema-${canalAtivo.id || canalAtivo.url}-${streamIndex}-${useProxy ? 'proxy' : 'direct'}`,
+            key: `cinema-${canalAtivo.id || canalAtivo.url}-${streamIndex}-${isCurrentlyProxied ? 'proxy' : 'direct'}`,
             url: finalStreamUrl,
             src: finalStreamUrl,
             playing: true,
@@ -324,14 +379,14 @@ export function CinemaPlayer({
                   enableWorker: true,
                   lowLatencyMode: true,
                   backBufferLength: 30,
-                  maxBufferLength: 8,
-                  maxMaxBufferLength: 15,
-                  manifestLoadingTimeOut: 5000,
-                  manifestLoadingMaxRetry: 2,
-                  levelLoadingTimeOut: 5000,
-                  levelLoadingMaxRetry: 2,
-                  fragLoadingTimeOut: 6000,
-                  fragLoadingMaxRetry: 2,
+                  maxBufferLength: 10,
+                  maxMaxBufferLength: 20,
+                  manifestLoadingTimeOut: 12000,
+                  manifestLoadingMaxRetry: 3,
+                  levelLoadingTimeOut: 12000,
+                  levelLoadingMaxRetry: 3,
+                  fragLoadingTimeOut: 12000,
+                  fragLoadingMaxRetry: 3,
                   startLevel: -1,
                 },
               },

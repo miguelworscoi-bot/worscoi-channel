@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { Radio, X, AlertCircle, Plus } from 'lucide-react';
 import { Canal } from '@/types';
+import { useAuth } from '@/context/AuthContext';
 
 interface AddChannelModalProps {
   isOpen: boolean;
@@ -14,6 +15,7 @@ export function AddChannelModal({
   onClose,
   onAddChannel,
 }: AddChannelModalProps) {
+  const { isAdmin } = useAuth();
   const [novoNome, setNovoNome] = useState('');
   const [novaUrl, setNovaUrl] = useState('');
   const [novoBackup, setNovoBackup] = useState('');
@@ -22,6 +24,7 @@ export function AddChannelModal({
   const [formError, setFormError] = useState('');
 
   if (!isOpen) return null;
+  if (!isAdmin) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

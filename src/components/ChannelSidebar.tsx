@@ -233,7 +233,7 @@ export function ChannelSidebar({
         id="sidebar-filter-pills"
         className="flex items-center gap-1.5 p-1 bg-zinc-950 rounded-xl border border-zinc-800/80 mb-3 overflow-x-auto custom-scrollbar shrink-0 select-none pb-1"
       >
-        {FILTROS_CONFIG.map((filtro) => {
+        {FILTROS_CONFIG.filter((filtro) => filtro.id !== 'Meus Canais' || isAdmin).map((filtro) => {
           let count = 0;
           if (filtro.id === 'Todos') count = todosCanais.length;
           else if (filtro.id === 'Favoritos') count = totalFavoritos;

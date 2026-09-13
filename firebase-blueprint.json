@@ -15,12 +15,40 @@
           "enum": ["user", "admin"],
           "description": "Session type: normal user or administrator"
         },
+        "plan": {
+          "type": "string",
+          "enum": ["free", "basico", "vip", "premium", "anual"],
+          "description": "Active subscription plan"
+        },
+        "planName": { "type": "string" },
+        "planExpiresAt": { "type": "string" },
+        "activatedToken": { "type": "string" },
         "favorites": {
           "type": "array",
           "items": { "type": "string" }
         }
       },
       "required": ["id", "email", "createdAt"]
+    },
+    "access_tokens": {
+      "title": "Access Tokens",
+      "description": "5-character generated access tokens for subscription plans",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "code": { "type": "string", "description": "5-character alphanumeric token" },
+        "plan": { "type": "string", "enum": ["basico", "vip", "premium", "anual"] },
+        "planName": { "type": "string" },
+        "durationDays": { "type": "number" },
+        "status": { "type": "string", "enum": ["active", "used", "revoked"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "createdBy": { "type": "string" },
+        "usedAt": { "type": "string" },
+        "usedByUserId": { "type": "string" },
+        "usedByEmail": { "type": "string" },
+        "notes": { "type": "string" }
+      },
+      "required": ["code", "plan", "status", "createdAt"]
     }
   },
   "rules": {
