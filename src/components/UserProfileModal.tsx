@@ -8,19 +8,17 @@ import {
   KeyRound,
   CheckCircle2,
   LogOut,
+  ShieldCheck,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
-import {
-  PLANS,
-  isUserPlanExpired,
-  getRemainingPlanTime,
-} from '@/services/subscriptionService';
+import { PLANS } from '@/services/subscriptionService';
 
 interface UserProfileModalProps {
   isOpen: boolean;
   onClose: () => void;
   onOpenPaymentPlans?: () => void;
   onOpenRedeemToken?: () => void;
+  onOpenAuth?: () => void;
 }
 
 export function UserProfileModal({
@@ -28,15 +26,15 @@ export function UserProfileModal({
   onClose,
   onOpenPaymentPlans,
   onOpenRedeemToken,
+  onOpenAuth,
 }: UserProfileModalProps) {
-  const { user, userProfile, signOut } = useAuth();
+  const { user, userProfile, signOut, countdown, isAdmin, deviceTrial } = useAuth();
 
   if (!isOpen) return null;
 
   const currentPlanId = userProfile?.plan || 'free';
   const planInfo = PLANS[currentPlanId] || PLANS.free;
-  const isExpired = isUserPlanExpired(userProfile);
-  const remainingTime = getRemainingPlanTime(userProfile);
+  const isExpired = countdown.expired && !isAdmin;
 
   return (
     <div
@@ -157,16 +155,83 @@ export function UserProfileModal({
               )}
             </div>
 
-            {/* TEMPO RESTANTE & VALIDADE */}
-            <div className="mt-3 pt-3 border-t border-zinc-800/80 flex items-center justify-between text-xs">
-              <div className="flex items-center gap-1.5 text-zinc-300">
-                <Clock className="w-3.5 h-3.5 text-zinc-400" />
-                <span>
-                  {isExpired
-                    ? 'Período encerrado. Renove para continuar assistindo.'
-                    : `Tempo restante: ${remainingTime.text}`}
+            {/* TEMPO RESTANTE & CRONÔMETRO EM TEMPO REAL */}
+            <div className="mt-3 pt-3 border-t border-zinc-800/80">
+              <div className="flex items-center justify-between text-xs mb-2">
+                <span className="flex items-center gap-1.5 text-zinc-300 font-medium">
+                  <Clock className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
+                  <span>Tempo Restante (Em Tempo Real):</span>
+                </span>
+                <span
+                  className={`font-mono font-bold px-2 py-0.5 rounded text-[11px] ${
+                    isExpired
+                      ? 'bg-red-500/20 text-red-400'
+                      : countdown.urgency === 'critical'
+                      ? 'bg-rose-500/20 text-rose-300 animate-pulse'
+                      : countdown.urgency === 'warning'
+                      ? 'bg-amber-500/20 text-amber-300'
+                      : 'bg-emerald-500/20 text-emerald-300'
+                  }`}
+                >
+                  {isExpired ? '00:00:00 (Expirado)' : countdown.formattedClock}
                 </span>
               </div>
+
+              {/* MOSTRADOR DIGITAL SEGUNDO A SEGUNDO */}
+              {!isAdmin && !isExpired && (
+                <div className="grid grid-cols-4 gap-2 bg-black/40 border border-zinc-800 rounded-xl p-2.5 text-center my-2">
+                  <div className="bg-zinc-900/80 rounded-lg py-1 px-1 border border-zinc-800/80">
+                    <div className="font-mono text-base font-black text-white">{countdown.days}</div>
+                    <div className="text-[9px] uppercase tracking-wider text-zinc-500 font-semibold">Dias</div>
+                  </div>
+                  <div className="bg-zinc-900/80 rounded-lg py-1 px-1 border border-zinc-800/80">
+                    <div className="font-mono text-base font-black text-white">
+                      {String(countdown.hours).padStart(2, '0')}
+                    </div>
+                    <div className="text-[9px] uppercase tracking-wider text-zinc-500 font-semibold">Horas</div>
+                  </div>
+                  <div className="bg-zinc-900/80 rounded-lg py-1 px-1 border border-zinc-800/80">
+                    <div className="font-mono text-base font-black text-white">
+                      {String(countdown.minutes).padStart(2, '0')}
+                    </div>
+                    <div className="text-[9px] uppercase tracking-wider text-zinc-500 font-semibold">Minutos</div>
+                  </div>
+                  <div className="bg-zinc-900/80 rounded-lg py-1 px-1 border border-zinc-800/80">
+                    <div className="font-mono text-base font-black text-emerald-400">
+                      {String(countdown.seconds).padStart(2, '0')}
+                    </div>
+                    <div className="text-[9px] uppercase tracking-wider text-zinc-500 font-semibold">Segundos</div>
+                  </div>
+                </div>
+              )}
+
+              {/* REGRA: MESMO COM LOGOUT O RELÓGIO CONTINUA A CONTAR */}
+              <div className="text-[11px] text-zinc-400 leading-snug flex items-center gap-1.5 mt-2 bg-zinc-900/40 p-2 rounded-lg border border-zinc-850">
+                <span className="text-amber-400 shrink-0">⏱️</span>
+                <span>
+                  O cronômetro sincroniza em tempo real contínuo: mesmo se você fechar a aba ou fizer logout, a contagem de tempo segue correndo ininterruptamente.
+                </span>
+              </div>
+
+              {/* STATUS DO DISPOSITIVO (1 ACESSO POR APARELHO) */}
+              {deviceTrial && (
+                <div className="mt-2 text-[10px] text-zinc-400 bg-zinc-900/60 p-2 rounded-lg border border-zinc-800 flex items-center justify-between">
+                  <div className="flex items-center gap-1.5">
+                    <ShieldCheck className="w-3.5 h-3.5 text-cyan-400" />
+                    <span>
+                      Dispositivo:{' '}
+                      <span className="font-mono text-zinc-300">
+                        {deviceTrial.trialRecord?.deviceId
+                          ? `${deviceTrial.trialRecord.deviceId.slice(0, 14)}...`
+                          : 'Aparelho Registrado'}
+                      </span>
+                    </span>
+                  </div>
+                  <span className={deviceTrial.isExpired ? 'text-rose-400 font-semibold' : 'text-emerald-400 font-semibold'}>
+                    {deviceTrial.isExpired ? 'Teste Concluído' : 'Dispositivo Ativo'}
+                  </span>
+                </div>
+              )}
             </div>
 
             {userProfile?.activatedToken && (
@@ -215,19 +280,38 @@ export function UserProfileModal({
         </div>
 
         {/* RODAPÉ COM SAIR DA CONTA */}
-        <div className="mt-6 pt-4 border-t border-zinc-850 flex items-center justify-between">
-          <button
-            type="button"
-            id="profile-btn-signout"
-            onClick={async () => {
-              onClose();
-              await signOut();
-            }}
-            className="px-3.5 py-2 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer"
-          >
-            <LogOut className="w-3.5 h-3.5" />
-            <span>Encerrar Sessão</span>
-          </button>
+        <div className="mt-6 pt-4 border-t border-zinc-850 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              id="profile-btn-signout"
+              onClick={async () => {
+                onClose();
+                await signOut();
+                if (onOpenAuth) {
+                  onOpenAuth();
+                }
+              }}
+              className="px-3.5 py-2 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+              <span>Encerrar Sessão</span>
+            </button>
+
+            {onOpenAuth && (
+              <button
+                type="button"
+                id="profile-btn-switch"
+                onClick={() => {
+                  onClose();
+                  onOpenAuth();
+                }}
+                className="px-3 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white border border-zinc-800 text-xs font-semibold transition cursor-pointer"
+              >
+                Trocar de Conta
+              </button>
+            )}
+          </div>
 
           <button
             type="button"

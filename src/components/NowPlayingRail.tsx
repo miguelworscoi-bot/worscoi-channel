@@ -44,7 +44,11 @@ export function NowPlayingRail({
   // Related channels (from same network or sport or competition)
   const relatedChannels = canalAtivo
     ? todosCanais.filter((c) => {
-        if (c.url === canalAtivo.url && c.id === canalAtivo.id) return false;
+        const isSame =
+          canalAtivo.id && c.id
+            ? c.id === canalAtivo.id
+            : c.url === canalAtivo.url;
+        if (isSame) return false;
         if (canalAtivo.rede && c.rede === canalAtivo.rede) return true;
         if (
           canalAtivo.competicoes &&
@@ -184,8 +188,12 @@ export function NowPlayingRail({
             className="flex items-center gap-3 overflow-x-auto custom-scrollbar pb-2 pt-1"
           >
             {favoritedChannels.map((c, idx) => {
-              const isCurrent =
-                c.url === canalAtivo?.url && (c.id ? c.id === canalAtivo?.id : true);
+              const isCurrent = Boolean(
+                canalAtivo &&
+                  (canalAtivo.id && c.id
+                    ? c.id === canalAtivo.id
+                    : c.url === canalAtivo.url)
+              );
               const quality = getChannelQuality(c);
 
               return (

@@ -121,7 +121,15 @@ export interface Canal {
   grupo?: string;
   competicoes?: string[];
   isCustom?: boolean;
+  handle?: string;
+  verified?: boolean;
+  likesCount?: string;
+  commentsCount?: string;
+  hashtags?: string[];
+  soundtrack?: string;
 }
+
+export type WorscoiView = 'explorar' | 'painel' | 'assinantes';
 
 export interface GameDeal {
   id: string;

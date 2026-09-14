@@ -1,13 +1,5 @@
 import { NextResponse } from 'next/server';
-import {
-  CANAIS_BONECOS,
-  CANAIS_ESPORTES,
-  CANAIS_NOVELAS,
-  CANAIS_NOTICIAS,
-  CANAIS_MUSICAS,
-  CANAIS_FILMES,
-  TODOS_OS_CANAIS_CATALOGO,
-} from '@/data/channelsCatalog';
+import { TODOS_OS_CANAIS_CATALOGO } from '@/data/channelsCatalog';
 
 export type CategoriaCanal =
   | 'Esportes'
@@ -470,7 +462,7 @@ export const CANAIS_MLS: CanalItem[] = [
 ];
 
 // CANAIS beIN SPORTS (Esportes Internacionais)
-const CANAIS_BEIN_SPORTS: CanalItem[] = [
+export const CANAIS_BEIN_SPORTS: CanalItem[] = [
   {
     id: 'bein-sports-xtra-hd',
     nome: 'beIN SPORTS XTRA HD',
@@ -546,7 +538,7 @@ const CANAIS_BEIN_SPORTS: CanalItem[] = [
 ];
 
 // CANAIS ZAP ANGOLA & ANGOLA AO VIVO
-const CANAIS_ZAP_ANGOLA: CanalItem[] = [
+export const CANAIS_ZAP_ANGOLA: CanalItem[] = [
   {
     id: 'zap-tv-zimbo-hd',
     nome: 'TV Zimbo HD (Angola)',
@@ -644,7 +636,7 @@ const CANAIS_ZAP_ANGOLA: CanalItem[] = [
 ];
 
 // CANAIS SUPERSPORT & ESPORTES GLOBAIS
-const CANAIS_SUPERSPORT: CanalItem[] = [
+export const CANAIS_SUPERSPORT: CanalItem[] = [
   {
     id: 'redbull-tv-sports-hd',
     nome: 'Red Bull TV Sports & Ação HD',
@@ -785,11 +777,15 @@ export const CANAIS_VIVO_TV: CanalItem[] = [
 
 export function deduplicateCanais<T extends { id?: string; url?: string }>(items: T[]): T[] {
   const seenIds = new Set<string>();
+  const seenUrls = new Set<string>();
   const result: T[] = [];
   for (const item of items) {
-    const id = item.id ? item.id.trim() : (item.url ? item.url.trim().toLowerCase() : '');
+    const id = item.id ? item.id.trim() : '';
+    const url = item.url ? item.url.trim().toLowerCase() : '';
     if (id && seenIds.has(id)) continue;
+    if (url && seenUrls.has(url)) continue;
     if (id) seenIds.add(id);
+    if (url) seenUrls.add(url);
     result.push(item);
   }
   return result;
@@ -797,22 +793,6 @@ export function deduplicateCanais<T extends { id?: string; url?: string }>(items
 
 export const CANAIS_PADRAO: CanalItem[] = deduplicateCanais([
   ...(TODOS_OS_CANAIS_CATALOGO as CanalItem[]),
-  ...(CANAIS_ESPORTES as CanalItem[]),
-  ...CANAIS_TNT_SPORTS,
-  ...CANAIS_CHAMPIONS_LEAGUE,
-  ...CANAIS_LIBERTADORES,
-  ...CANAIS_LALIGA,
-  ...CANAIS_NBA,
-  ...CANAIS_MLS,
-  ...CANAIS_BEIN_SPORTS,
-  ...CANAIS_ZAP_ANGOLA,
-  ...CANAIS_SUPERSPORT,
-  ...CANAIS_VIVO_TV,
-  ...(CANAIS_BONECOS as CanalItem[]),
-  ...(CANAIS_FILMES as CanalItem[]),
-  ...(CANAIS_NOVELAS as CanalItem[]),
-  ...(CANAIS_NOTICIAS as CanalItem[]),
-  ...(CANAIS_MUSICAS as CanalItem[]),
 ]);
 
 function parseM3U(
@@ -1037,17 +1017,21 @@ export async function GET(request?: Request) {
 
     let canais: CanalItem[] = [...CANAIS_PADRAO];
 
-    // Conjunto para rastrear IDs já adicionados e evitar canais duplicados
+    // Conjuntos para rastrear IDs e URLs já adicionados e garantir sinal exclusivo por canal
     const addedIds = new Set<string>();
+    const addedUrls = new Set<string>();
     canais.forEach((c) => {
       if (c.id) addedIds.add(c.id);
+      if (c.url) addedUrls.add(c.url.trim().toLowerCase());
     });
 
     for (const r of results) {
       if (r.status === 'fulfilled') {
         for (const item of r.value) {
-          if (item.id && !addedIds.has(item.id)) {
+          const itemUrl = item.url ? item.url.trim().toLowerCase() : '';
+          if (item.id && !addedIds.has(item.id) && itemUrl && !addedUrls.has(itemUrl)) {
             addedIds.add(item.id);
+            addedUrls.add(itemUrl);
             canais.push(item);
           }
         }

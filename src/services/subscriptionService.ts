@@ -1,6 +1,7 @@
 import {
   collection,
   doc,
+  getDoc,
   getDocs,
   setDoc,
   updateDoc,
@@ -12,6 +13,8 @@ import { AccessTokenRecord, PlanInfo, SubscriberUser, SubscriptionPlanId } from 
 
 export const LOCAL_TOKENS_KEY = 'playsports_access_tokens';
 export const LOCAL_REGISTRY_KEY = 'playsports_user_registry';
+export const LOCAL_DEVICE_ID_KEY = 'worscoi_device_fingerprint';
+export const LOCAL_DEVICE_TRIAL_KEY = 'worscoi_device_trial_record';
 
 // Configurações e detalhes visuais dos planos de assinatura adaptados com Kwanza (Kz/AOA)
 export const PLANS: Record<SubscriptionPlanId, PlanInfo> = {
@@ -276,6 +279,238 @@ export function getRemainingPlanTime(profile?: {
   }
 
   return { expired: false, text: `${minutesLeft} min restantes`, hoursLeft };
+}
+
+export interface FormattedCountdown {
+  expired: boolean;
+  totalSeconds: number;
+  days: number;
+  hours: number;
+  minutes: number;
+  seconds: number;
+  formattedClock: string; // Ex: "23:45:12" ou "29d 14:32:10"
+  urgency: 'normal' | 'warning' | 'critical' | 'expired';
+}
+
+/**
+ * Calcula o cronômetro em tempo real (segundo a segundo)
+ */
+export function calculateRealtimeCountdown(profile?: {
+  role?: string;
+  plan?: SubscriptionPlanId;
+  planExpiresAt?: string | null;
+  createdAt?: string;
+} | null): FormattedCountdown {
+  if (!profile || profile.role === 'admin') {
+    return {
+      expired: false,
+      totalSeconds: 999999,
+      days: 999,
+      hours: 99,
+      minutes: 99,
+      seconds: 99,
+      formattedClock: 'Ilimitado',
+      urgency: 'normal',
+    };
+  }
+
+  let expiryTime: number;
+  if (profile.planExpiresAt) {
+    expiryTime = new Date(profile.planExpiresAt).getTime();
+  } else if (profile.plan === 'free' || !profile.plan) {
+    const createdTime = profile.createdAt ? new Date(profile.createdAt).getTime() : Date.now();
+    expiryTime = createdTime + 24 * 60 * 60 * 1000;
+  } else {
+    return {
+      expired: false,
+      totalSeconds: 99999,
+      days: 99,
+      hours: 99,
+      minutes: 99,
+      seconds: 99,
+      formattedClock: 'Ativo',
+      urgency: 'normal',
+    };
+  }
+
+  const diffMs = expiryTime - Date.now();
+  if (diffMs <= 0) {
+    return {
+      expired: true,
+      totalSeconds: 0,
+      days: 0,
+      hours: 0,
+      minutes: 0,
+      seconds: 0,
+      formattedClock: '00:00:00',
+      urgency: 'expired',
+    };
+  }
+
+  const totalSeconds = Math.floor(diffMs / 1000);
+  const days = Math.floor(totalSeconds / (24 * 3600));
+  const hours = Math.floor((totalSeconds % (24 * 3600)) / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+
+  const pad = (n: number) => String(n).padStart(2, '0');
+
+  const formattedClock =
+    days > 0
+      ? `${days}d ${pad(hours)}:${pad(minutes)}:${pad(seconds)}`
+      : `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+
+  let urgency: 'normal' | 'warning' | 'critical' | 'expired' = 'normal';
+  if (totalSeconds < 3600) {
+    urgency = 'critical'; // menos de 1 hora restante
+  } else if (totalSeconds < 24 * 3600) {
+    urgency = 'warning'; // menos de 24 horas restantes
+  }
+
+  return {
+    expired: false,
+    totalSeconds,
+    days,
+    hours,
+    minutes,
+    seconds,
+    formattedClock,
+    urgency,
+  };
+}
+
+/**
+ * Registro de uso do teste gratuito por dispositivo
+ */
+export interface DeviceTrialRecord {
+  deviceId: string;
+  claimedAt: string;
+  expiresAt: string;
+  claimedEmail?: string;
+  claimedUserId?: string;
+}
+
+/**
+ * Obtém ou gera uma impressão digital única e persistente do dispositivo
+ */
+export function getOrCreateDeviceId(): string {
+  if (typeof window === 'undefined') return 'server_device';
+  try {
+    let devId = localStorage.getItem(LOCAL_DEVICE_ID_KEY);
+    if (!devId) {
+      devId = sessionStorage.getItem(LOCAL_DEVICE_ID_KEY);
+    }
+    if (!devId) {
+      const screenSpec = `${window.screen?.width || 0}x${window.screen?.height || 0}x${window.screen?.colorDepth || 0}`;
+      const navSpec = `${navigator.hardwareConcurrency || 2}_${navigator.language || 'pt'}`;
+      const randomPart = Math.random().toString(36).substring(2, 9);
+      let hash = '';
+      try {
+        hash = btoa(screenSpec + navSpec).replace(/[^a-zA-Z0-9]/g, '').substring(0, 8);
+      } catch {
+        hash = 'worscoi';
+      }
+      devId = `dev_${hash}_${randomPart}_${Date.now()}`;
+      localStorage.setItem(LOCAL_DEVICE_ID_KEY, devId);
+      sessionStorage.setItem(LOCAL_DEVICE_ID_KEY, devId);
+    }
+    return devId;
+  } catch {
+    return 'fallback_device_' + Date.now();
+  }
+}
+
+/**
+ * Consulta o status do teste gratuito para o dispositivo atual.
+ * Previne que usuários troquem de e-mail para receber novo teste grátis no mesmo aparelho.
+ */
+export async function checkDeviceTrialStatus(): Promise<{
+  hasClaimed: boolean;
+  isExpired: boolean;
+  trialRecord?: DeviceTrialRecord;
+  timeRemainingMs: number;
+}> {
+  const deviceId = getOrCreateDeviceId();
+  let localRecord: DeviceTrialRecord | null = null;
+
+  try {
+    const raw = localStorage.getItem(LOCAL_DEVICE_TRIAL_KEY);
+    if (raw) {
+      localRecord = JSON.parse(raw);
+    }
+  } catch {
+    // Ignora
+  }
+
+  // Tenta sincronizar com Firestore
+  try {
+    const docRef = doc(db, 'device_trials', deviceId);
+    const snap = await getDoc(docRef);
+    if (snap.exists()) {
+      const data = snap.data() as DeviceTrialRecord;
+      if (!localRecord || new Date(data.expiresAt).getTime() < new Date(localRecord.expiresAt).getTime()) {
+        localRecord = data;
+        try {
+          localStorage.setItem(LOCAL_DEVICE_TRIAL_KEY, JSON.stringify(data));
+        } catch {
+          // Ignora
+        }
+      }
+    }
+  } catch {
+    // Falha silenciosa de rede
+  }
+
+  if (!localRecord) {
+    return { hasClaimed: false, isExpired: false, timeRemainingMs: 0 };
+  }
+
+  const expiryTime = new Date(localRecord.expiresAt).getTime();
+  const now = Date.now();
+  const diffMs = expiryTime - now;
+
+  return {
+    hasClaimed: true,
+    isExpired: diffMs <= 0,
+    trialRecord: localRecord,
+    timeRemainingMs: Math.max(0, diffMs),
+  };
+}
+
+/**
+ * Registra o início do teste grátis vinculado a este dispositivo
+ */
+export async function recordDeviceTrial(
+  email?: string,
+  userId?: string,
+  forceExpiresAt?: string
+): Promise<DeviceTrialRecord> {
+  const deviceId = getOrCreateDeviceId();
+  const now = new Date();
+  const expiresAt = forceExpiresAt || new Date(now.getTime() + 24 * 60 * 60 * 1000).toISOString();
+
+  const record: DeviceTrialRecord = {
+    deviceId,
+    claimedAt: now.toISOString(),
+    expiresAt,
+    claimedEmail: email || 'espectador@playsports.tv',
+    claimedUserId: userId || 'convidado',
+  };
+
+  try {
+    localStorage.setItem(LOCAL_DEVICE_TRIAL_KEY, JSON.stringify(record));
+  } catch {
+    // Ignora
+  }
+
+  try {
+    const docRef = doc(db, 'device_trials', deviceId);
+    await setDoc(docRef, record, { merge: true });
+  } catch {
+    // Ignora
+  }
+
+  return record;
 }
 
 // Caracteres alfanuméricos limpos (sem 0/O ou 1/I para evitar confusão de digitação)

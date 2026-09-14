@@ -2,37 +2,30 @@
 import React, { useState, useEffect } from 'react';
 import ReactPlayer from 'react-player';
 import {
+  Heart,
+  MessageCircle,
+  Bookmark,
+  ChevronLeft,
+  ChevronRight,
   Volume2,
   VolumeX,
-  Maximize2,
-  ShieldCheck,
-  RefreshCw,
-  Server,
-  Star,
-  CheckCircle2,
-  AlertCircle,
-  X,
-  Tv,
-  SkipBack,
-  SkipForward,
-  Zap,
   Lock,
-  Clock,
   CreditCard,
   KeyRound,
-  Smartphone,
-  Sliders,
-  Leaf,
+  RefreshCw,
+  Tv,
+  AlertCircle,
+  X,
   ExternalLink,
+  Send,
+  PictureInPicture2,
+  Maximize2,
 } from 'lucide-react';
 import { Canal, LatencyMode } from '@/types';
 import { motion, AnimatePresence } from 'motion/react';
-import { getChannelQuality, getNetworkBadge, getSportTag } from '@/utils/channelUtils';
-import { getChannelSchedule } from '@/utils/channelProgramExtractor';
 import { getSafeStreamUrl, isStreamAutoProxied, getHlsOptionsForLatencyMode } from '@/utils/streamUtils';
 import { useAuth } from '@/context/AuthContext';
-import { isUserPlanExpired, PAYMENT_CONFIG } from '@/services/subscriptionService';
-import { PlayerSettingsModal } from './PlayerSettingsModal';
+import { isUserPlanExpired } from '@/services/subscriptionService';
 import { PlayerTransitionSkeleton } from './PlayerTransitionSkeleton';
 
 interface PlayerHeroProps {
@@ -60,6 +53,9 @@ interface PlayerHeroProps {
   transitionDirection?: 'to-cinema' | 'to-hero' | null;
   isAudioTransitionMuted?: boolean;
   onVideoEnded?: () => void;
+  isMiniMode?: boolean;
+  onRestoreFromMiniMode?: () => void;
+  onDismissMiniMode?: () => void;
 }
 
 export function PlayerHero({
@@ -87,15 +83,31 @@ export function PlayerHero({
   transitionDirection = null,
   isAudioTransitionMuted = false,
   onVideoEnded,
+  isMiniMode = false,
+  onRestoreFromMiniMode,
+  onDismissMiniMode,
 }: PlayerHeroProps) {
-  const { userProfile, isAdmin } = useAuth();
-  const isPlanExpired = !isAdmin && isUserPlanExpired(userProfile);
+  const { userProfile, isAdmin, countdown, isSubscriptionExpired } = useAuth();
+  const isPlanExpired = !isAdmin && (isSubscriptionExpired || countdown.expired || isUserPlanExpired(userProfile));
+
   const [_isReady, setIsReady] = useState(false);
   const [isBuffering, setIsBuffering] = useState(true);
   const [hasFirstFrame, setHasFirstFrame] = useState(false);
   const [hasYouTubeEmbedError, setHasYouTubeEmbedError] = useState(false);
-  const [loadSeconds, setLoadSeconds] = useState(0);
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [_loadSeconds, setLoadSeconds] = useState(0);
+  const [playedPercent, setPlayedPercent] = useState(45);
+
+  // Estados sociais interativos (Curtir e Comentários estilo Shorts/TikTok)
+  const [isLiked, setIsLiked] = useState(false);
+  const [likesCount, setLikesCount] = useState<string>('1.8M');
+  const [showComments, setShowComments] = useState(false);
+  const [newComment, setNewComment] = useState('');
+  const [commentsList, setCommentsList] = useState<string[]>([
+    'Melhor qualidade de transmissão!',
+    'Som e imagem impecáveis 🔥',
+    'Assistindo direto de Luanda 🇦🇴',
+    'Excelente velocidade, sem travar!',
+  ]);
 
   // Áudio suavizado durante transição entre componentes para evitar picos
   const effectiveMuted = isMuted || isAudioTransitionMuted;
@@ -109,34 +121,27 @@ export function PlayerHero({
       : canalAtivo?.url || '';
   const finalStreamUrl = getSafeStreamUrl(activeRawStreamUrl, useProxy);
   const isCurrentlyProxied = isStreamAutoProxied(activeRawStreamUrl, useProxy);
-  const isYouTubeChannel =
-    canalAtivo?.categoria === 'YouTube' ||
-    canalAtivo?.rede === 'YouTube' ||
-    activeRawStreamUrl.includes('youtube.com') ||
-    activeRawStreamUrl.includes('youtu.be');
 
-  const quality = canalAtivo ? getChannelQuality(canalAtivo) : 'HD';
-  const networkBadge = canalAtivo ? getNetworkBadge(canalAtivo) : { label: '', badgeBg: '', textColor: '', borderColor: '' };
-  const sportTag = canalAtivo ? getSportTag(canalAtivo) : '';
-  const programaAtual = canalAtivo ? getChannelSchedule(canalAtivo)[0] : null;
-
-  // Reset de estados ao trocar de canal ou rota
+  // Sincroniza metadados do canal selecionado
   useEffect(() => {
     setIsReady(false);
     setIsBuffering(true);
     setHasFirstFrame(false);
     setHasYouTubeEmbedError(false);
     setLoadSeconds(0);
+    setPlayedPercent(35);
+    setIsLiked(false);
+    setShowComments(false);
+    setLikesCount(canalAtivo?.likesCount || '1.8M');
   }, [canalAtivo?.id, canalAtivo?.url, streamIndex, useProxy]);
 
-  // Watchdog de conexão ultrarrápida: concede 4s antes de acionar failover para não deixar o usuário esperando
+  // Watchdog de failover inteligente
   useEffect(() => {
     if (hasFirstFrame || !canalAtivo || isCinemaMode) return;
 
     const interval = setInterval(() => {
       setLoadSeconds((prev) => {
         const nextSec = prev + 1;
-        // Aos 4 segundos se ainda não houver primeiro frame, tenta servidor reserva ou ativa proxy seguro
         if (nextSec === 4 && !hasFirstFrame) {
           if (streamsDisponiveis.length > 1 && streamIndex < streamsDisponiveis.length - 1) {
             onStreamChange(streamIndex + 1);
@@ -148,7 +153,6 @@ export function PlayerHero({
             onToggleProxy();
           }
         }
-        // Aos 7 segundos sem primeiro frame, sinaliza erro para o orquestrador failover/zapping
         if (nextSec === 7 && !hasFirstFrame) {
           onPlayerError(new Error('Tempo limite de conexão excedido'));
         }
@@ -159,7 +163,7 @@ export function PlayerHero({
     return () => clearInterval(interval);
   }, [hasFirstFrame, canalAtivo, streamsDisponiveis.length, streamIndex, useProxy, onStreamChange, onToggleProxy, onPlayerError, activeRawStreamUrl, isCinemaMode]);
 
-  // Atalhos de teclado úteis para zapping de canal e controles
+  // Atalhos de teclado úteis
   useEffect(() => {
     if (isCinemaMode || isTransitioning) return;
 
@@ -177,11 +181,60 @@ export function PlayerHero({
         onEnterCinemaMode();
       } else if (e.key.toLowerCase() === 's') {
         onToggleLatencyMode();
+      } else if (e.key.toLowerCase() === 'p') {
+        handleTogglePip();
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [onNextCanal, onPrevCanal, onToggleMute, onEnterCinemaMode, onToggleLatencyMode, isCinemaMode, isTransitioning]);
+
+  const videoContainerRef = React.useRef<HTMLDivElement>(null);
+  const [isPipActive, setIsPipActive] = useState(false);
+
+  // Alternar Picture-in-Picture nativo do navegador
+  const handleTogglePip = async () => {
+    try {
+      const videoEl = videoContainerRef.current?.querySelector('video');
+      if (document.pictureInPictureElement) {
+        await document.exitPictureInPicture();
+        setIsPipActive(false);
+      } else if (videoEl && document.pictureInPictureEnabled) {
+        await videoEl.requestPictureInPicture();
+        setIsPipActive(true);
+      }
+    } catch (err) {
+      console.warn('Erro ao alternar Picture-in-Picture nativo:', err);
+    }
+  };
+
+  // Monitorar eventos nativos de PiP para sincronizar estado visual
+  useEffect(() => {
+    const videoEl = videoContainerRef.current?.querySelector('video');
+    if (!videoEl) return;
+
+    const handleEnter = () => setIsPipActive(true);
+    const handleLeave = () => setIsPipActive(false);
+
+    videoEl.addEventListener('enterpictureinpicture', handleEnter);
+    videoEl.addEventListener('leavepictureinpicture', handleLeave);
+
+    return () => {
+      videoEl.removeEventListener('enterpictureinpicture', handleEnter);
+      videoEl.removeEventListener('leavepictureinpicture', handleLeave);
+    };
+  }, [hasFirstFrame, canalAtivo?.id, streamIndex]);
+
+  const handleToggleLike = () => {
+    setIsLiked((prev) => !prev);
+  };
+
+  const handleAddComment = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newComment.trim()) return;
+    setCommentsList((prev) => [newComment.trim(), ...prev]);
+    setNewComment('');
+  };
 
   const handleReload = () => {
     setIsReady(false);
@@ -195,727 +248,605 @@ export function PlayerHero({
     return (
       <div
         id="player-hero-placeholder"
-        className="w-full aspect-video bg-[#121214] border border-zinc-800/80 rounded-2xl flex flex-col items-center justify-center p-8 text-center"
+        className="w-full aspect-video bg-[#0c0c0e] border border-zinc-900 rounded-2xl sm:rounded-3xl flex flex-col items-center justify-center p-8 text-center"
       >
         <div className="w-16 h-16 rounded-2xl bg-zinc-900 flex items-center justify-center text-zinc-600 mb-4 border border-zinc-800">
           <Tv className="w-8 h-8 text-zinc-500 animate-pulse" />
         </div>
         <h3 className="text-base font-bold text-zinc-200 mb-1">Nenhum canal selecionado</h3>
         <p className="text-xs text-zinc-500 max-w-sm">
-          Selecione um canal na grade ao lado ou use a busca global para sintonizar a transmissão.
+          Selecione um canal na grade lateral para iniciar a reprodução.
         </p>
       </div>
     );
   }
 
   return (
-    <div id="player-hero-section" className="space-y-4">
-      {/* 📺 HERO CONTAINER COM ASPECTO 16:9 & OVERLAYS CINEMATOGRÁFICOS */}
-      <div className="group relative aspect-video w-full bg-black rounded-2xl sm:rounded-3xl overflow-hidden border border-zinc-800/80 shadow-2xl shadow-black/90 ring-1 ring-zinc-700/30 transition-all duration-300 hover:ring-[#00E676]/30">
-        {/* PLAYER VIDEO */}
-        <div className="w-full h-full">
-          {!isCinemaMode ? (
-            React.createElement(
-              ReactPlayer as unknown as React.ComponentType<Record<string, unknown>>,
-              {
-                key: `${canalAtivo.id || canalAtivo.url}-${streamIndex}-${isCurrentlyProxied ? 'proxy' : 'direct'}-${latencyMode}`,
-                url: finalStreamUrl,
-                src: finalStreamUrl,
-                playing: !isPlanExpired,
-                muted: effectiveMuted,
-                controls: !isPlanExpired,
-                width: '100%',
-                height: '100%',
-                playsinline: true,
-                config: {
-                  file: {
-                    forceHLS:
-                      !finalStreamUrl.includes('youtube.com') &&
-                      !finalStreamUrl.includes('youtu.be'),
-                    hlsOptions: {
-                      ...getHlsOptionsForLatencyMode(latencyMode),
-                    },
-                    attributes: {
-                      autoPlay: true,
-                      playsInline: true,
-                    },
-                  },
-                  youtube: {
-                    playerVars: {
-                      autoplay: 1,
-                      modestbranding: 1,
-                      rel: 0,
-                    },
-                  },
-                },
-                onReady: () => {
-                  setIsReady(true);
-                },
-                onStart: () => {
-                  setIsReady(true);
-                  setIsBuffering(false);
-                  setHasFirstFrame(true);
-                },
-                onPlay: () => {
-                  setIsBuffering(false);
-                  setHasFirstFrame(true);
-                },
-                onBuffer: () => setIsBuffering(true),
-                onBufferEnd: () => {
-                  setIsBuffering(false);
-                  setHasFirstFrame(true);
-                },
-                onEnded: () => {
-                  // Reprodução automática: acionado quando o vídeo chega ao fim
-                  onVideoEnded?.();
-                },
-                onError: (err: unknown) => {
-                  if (
-                    activeRawStreamUrl.includes('youtube.com') ||
-                    activeRawStreamUrl.includes('youtu.be')
-                  ) {
-                    setHasYouTubeEmbedError(true);
-                  }
-                  onPlayerError(err);
-                },
-              }
-            )
-          ) : (
-            <div className="w-full h-full bg-black flex flex-col items-center justify-center p-6 text-center">
-              <div className="w-12 h-12 rounded-2xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-[#00E676] mb-2 shadow-lg">
-                <Maximize2 className="w-6 h-6 animate-pulse" />
-              </div>
-              <p className="text-xs font-bold text-zinc-300">Modo Cinema Ativado</p>
-              <p className="text-[11px] text-zinc-500 mt-0.5">A reprodução está ativa em tela cheia</p>
-            </div>
-          )}
-        </div>
-
-        {/* 🎬 SKELETON / FADE DE TRANSIÇÃO SUAVE (HERO <-> CINEMA) */}
-        <AnimatePresence>
-          {isTransitioning && (
-            <motion.div
-              key="hero-transition-skeleton"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.22, ease: 'easeInOut' }}
-              className="absolute inset-0 z-30 pointer-events-none"
-            >
-              <PlayerTransitionSkeleton
-                canal={canalAtivo}
-                direction={transitionDirection || 'to-cinema'}
-                variant="hero"
-              />
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* 🔒 BLOQUEIO POR EXPIRAÇÃO DO PLANO GRATUITO DE 1 DIA */}
-        {isPlanExpired && (
-          <div
-            id="player-plan-expired-overlay"
-            className="absolute inset-0 z-40 bg-zinc-950/95 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center animate-in fade-in duration-300"
-          >
-            <div className="relative mb-4">
-              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-red-500/15 border border-red-500/30 flex items-center justify-center text-red-400 shadow-xl shadow-red-950/50">
-                <Lock className="w-8 h-8 sm:w-10 sm:h-10 text-red-400" />
-              </div>
-              <div className="absolute -bottom-1 -right-1 p-1 bg-zinc-900 rounded-full border border-red-500/50">
-                <Clock className="w-4 h-4 text-amber-400" />
-              </div>
-            </div>
-
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-500/20 border border-red-500/40 text-red-300 text-xs font-bold mb-2">
-              <span>Sessão Gratuita de 1 Dia Expirada</span>
-            </div>
-
-            <h3 className="text-lg sm:text-2xl font-black text-white max-w-md">
-              O Seu Período de Teste de 24h Terminou
-            </h3>
-            <p className="text-xs sm:text-sm text-zinc-400 max-w-md mt-2 leading-relaxed">
-              Para continuar assistindo à grade esportiva em Full HD sem interrupções, adquira seu plano via <strong className="text-zinc-200">Multicaixa Express</strong> ou <strong className="text-zinc-200">PayPay</strong> ou ative seu token de acesso.
-            </p>
-
-            <div className="mt-4 p-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-zinc-300 flex items-center gap-2">
-              <Smartphone className="w-4 h-4 text-emerald-400 shrink-0" />
-              <span>Multicaixa Express / PayPay: <strong className="text-emerald-400 font-mono text-sm">{PAYMENT_CONFIG.phoneFormatted}</strong></span>
-            </div>
-
-            <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
-              {onOpenPaymentPlans && (
-                <button
-                  type="button"
-                  id="expired-open-payment-btn"
-                  onClick={onOpenPaymentPlans}
-                  className="py-2.5 px-5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs sm:text-sm flex items-center gap-2 shadow-lg shadow-emerald-950/50 transition-all hover:scale-105 active:scale-95 cursor-pointer"
-                >
-                  <CreditCard className="w-4 h-4" />
-                  <span>Ver Planos & Pagar (Multicaixa / PayPay)</span>
-                </button>
-              )}
-
-              {onOpenRedeemToken && (
-                <button
-                  type="button"
-                  id="expired-open-redeem-btn"
-                  onClick={onOpenRedeemToken}
-                  className="py-2.5 px-4 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-200 hover:text-white font-bold text-xs sm:text-sm flex items-center gap-2 border border-zinc-700 transition-all hover:scale-105 active:scale-95 cursor-pointer"
-                >
-                  <KeyRound className="w-4 h-4 text-[#00E676]" />
-                  <span>Ativar Código de 5 Dígitos</span>
-                </button>
-              )}
-            </div>
+    <div
+      id={isMiniMode ? 'player-hero-mini-floating' : 'player-hero-container'}
+      className={
+        isMiniMode
+          ? 'fixed bottom-5 right-5 z-50 w-72 sm:w-84 bg-[#0c0c0e]/95 backdrop-blur-md rounded-2xl border border-zinc-800 shadow-2xl shadow-black/90 overflow-hidden flex flex-col ring-1 ring-zinc-700/50 select-none'
+          : 'flex flex-col items-center w-full max-w-5xl mx-auto'
+      }
+    >
+      {/* HEADER EXCLUSIVO DO MODO MINI-PIP FLUTUANTE */}
+      {isMiniMode && (
+        <div className="flex items-center justify-between px-3 py-2 bg-zinc-900/90 border-b border-zinc-800/80 select-none">
+          <div className="flex items-center gap-2 overflow-hidden min-w-0">
+            <span className="flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-[#FF2D55]/10 text-[#FF2D55] text-[9px] font-extrabold border border-[#FF2D55]/30 shrink-0">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#FF2D55] animate-pulse" />
+              AO VIVO
+            </span>
+            <span className="text-xs font-bold text-zinc-200 truncate">
+              {canalAtivo.nome}
+            </span>
           </div>
-        )}
+          <div className="flex items-center gap-1 shrink-0">
+            <button
+              type="button"
+              onClick={handleTogglePip}
+              className={`p-1.5 rounded-lg transition cursor-pointer ${
+                isPipActive
+                  ? 'text-[#FF2D55] bg-[#FF2D55]/20'
+                  : 'text-zinc-400 hover:text-white hover:bg-zinc-800'
+              }`}
+              title={isPipActive ? 'Sair do PiP nativo' : 'Picture-in-Picture nativo (janela do sistema)'}
+            >
+              <PictureInPicture2 className="w-3.5 h-3.5" />
+            </button>
+            {onRestoreFromMiniMode && (
+              <button
+                type="button"
+                onClick={onRestoreFromMiniMode}
+                className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition cursor-pointer"
+                title="Expandir para tela principal"
+              >
+                <Maximize2 className="w-3.5 h-3.5" />
+              </button>
+            )}
+            {onDismissMiniMode && (
+              <button
+                type="button"
+                onClick={onDismissMiniMode}
+                className="p-1.5 rounded-lg text-zinc-400 hover:text-rose-400 hover:bg-rose-500/10 transition cursor-pointer"
+                title="Fechar mini-reprodutor"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+        </div>
+      )}
 
-        {/* 🌟 POSTER ATMOSFÉRICO DE PRÉ-CARREGAMENTO (ADEUS TELA ESCURA VAZIA!) */}
-        {!hasFirstFrame && (
-          <div
-            id="player-signal-backdrop"
-            className="absolute inset-0 z-20 overflow-hidden flex flex-col items-center justify-center transition-all duration-500 bg-zinc-950"
-          >
-            {/* BACKGROUND ARTWORK COM GRADIENTE SUAVE */}
-            <div className="absolute inset-0">
-              <img
-                src={
-                  programaAtual?.imagemCapa ||
-                  'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?q=80&w=1600&auto=format&fit=crop'
+      {/* SEÇÃO PRINCIPAL: VÍDEO CENTRALIZADO + BARRA LATERAL VERTICAL DE AÇÕES */}
+      <div
+        className={
+          isMiniMode
+            ? 'relative w-full'
+            : 'relative flex items-end justify-center gap-3 sm:gap-4 w-full'
+        }
+      >
+        {/* CONTAINER DO VÍDEO COM CANTOS ARREDONDADOS E LINHA DE PROGRESSO VERMELHA */}
+        <div
+          ref={videoContainerRef}
+          className={
+            isMiniMode
+              ? 'group relative aspect-video w-full bg-black overflow-hidden'
+              : 'group relative aspect-video w-full max-w-[860px] bg-black rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl border border-zinc-900/80 ring-1 ring-zinc-800/40'
+          }
+        >
+          {/* REPRODUTOR DE VÍDEO */}
+          <div className="w-full h-full">
+            {!isCinemaMode ? (
+              React.createElement(
+                ReactPlayer as unknown as React.ComponentType<Record<string, unknown>>,
+                {
+                  key: `${canalAtivo.id || canalAtivo.url}-${streamIndex}-${isCurrentlyProxied ? 'proxy' : 'direct'}-${latencyMode}`,
+                  url: finalStreamUrl,
+                  src: finalStreamUrl,
+                  playing: !isPlanExpired,
+                  muted: effectiveMuted,
+                  controls: false,
+                  width: '100%',
+                  height: '100%',
+                  playsinline: true,
+                  config: {
+                    file: {
+                      forceHLS:
+                        !finalStreamUrl.includes('youtube.com') &&
+                        !finalStreamUrl.includes('youtu.be'),
+                      hlsOptions: {
+                        ...getHlsOptionsForLatencyMode(latencyMode),
+                      },
+                      attributes: {
+                        autoPlay: true,
+                        playsInline: true,
+                      },
+                    },
+                    youtube: {
+                      playerVars: {
+                        autoplay: 1,
+                        modestbranding: 1,
+                        rel: 0,
+                        controls: 0,
+                      },
+                    },
+                  },
+                  onReady: () => setIsReady(true),
+                  onStart: () => {
+                    setIsReady(true);
+                    setIsBuffering(false);
+                    setHasFirstFrame(true);
+                  },
+                  onPlay: () => {
+                    setIsBuffering(false);
+                    setHasFirstFrame(true);
+                  },
+                  onProgress: (state: { played: number }) => {
+                    if (state && typeof state.played === 'number' && state.played > 0) {
+                      setPlayedPercent(Math.min(100, Math.max(5, state.played * 100)));
+                    }
+                  },
+                  onBuffer: () => setIsBuffering(true),
+                  onBufferEnd: () => {
+                    setIsBuffering(false);
+                    setHasFirstFrame(true);
+                  },
+                  onEnded: () => onVideoEnded?.(),
+                  onError: (err: unknown) => {
+                    if (
+                      activeRawStreamUrl.includes('youtube.com') ||
+                      activeRawStreamUrl.includes('youtu.be')
+                    ) {
+                      setHasYouTubeEmbedError(true);
+                    }
+                    onPlayerError(err);
+                  },
                 }
-                alt={canalAtivo.nome}
-                className="w-full h-full object-cover opacity-20 filter blur-sm scale-105"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black via-black/85 to-black/60" />
-            </div>
+              )
+            ) : (
+              <div className="w-full h-full bg-black flex flex-col items-center justify-center p-6 text-center">
+                <p className="text-xs font-bold text-zinc-300">Modo Cinema Ativado</p>
+              </div>
+            )}
+          </div>
 
-            {/* CONTEÚDO CENTRAL: LOGO DO CANAL, PROGRAMA E STATUS DO SINAL */}
-            <div className="relative z-10 flex flex-col items-center text-center px-4 max-w-md animate-in fade-in zoom-in-95 duration-200">
-              {/* LOGO COM PULSO RADIAL */}
+          {/* SKELETON DE TRANSIÇÃO */}
+          <AnimatePresence>
+            {isTransitioning && (
+              <motion.div
+                key="hero-transition-skeleton"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.22, ease: 'easeInOut' }}
+                className="absolute inset-0 z-30 pointer-events-none"
+              >
+                <PlayerTransitionSkeleton
+                  canal={canalAtivo}
+                  direction={transitionDirection || 'to-cinema'}
+                  variant="hero"
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* BLOQUEIO POR EXPIRAÇÃO DE PLANO */}
+          {isPlanExpired && (
+            <div
+              id="player-plan-expired-overlay"
+              className="absolute inset-0 z-40 bg-zinc-950/95 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center animate-in fade-in duration-300"
+            >
+              <div className="w-16 h-16 rounded-2xl bg-red-500/15 border border-red-500/30 flex items-center justify-center text-red-400 shadow-xl mb-3">
+                <Lock className="w-8 h-8 text-red-400" />
+              </div>
+              <h3 className="text-lg font-black text-white max-w-md">Tempo de Acesso Expirado</h3>
+              <div className="font-mono text-2xl font-black text-rose-500 tracking-wider my-1 bg-black/60 px-4 py-1 rounded-xl border border-rose-500/30">
+                00:00:00
+              </div>
+              <p className="text-xs text-zinc-400 max-w-md mt-1 leading-relaxed">
+                O cronômetro da assinatura chegou ao fim. Para continuar assistindo à programação esportiva, renove seu plano ou ative seu código.
+              </p>
+              <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+                {onOpenPaymentPlans && (
+                  <button
+                    type="button"
+                    onClick={onOpenPaymentPlans}
+                    className="py-2 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-1.5 cursor-pointer shadow-lg shadow-emerald-950/40"
+                  >
+                    <CreditCard className="w-3.5 h-3.5" />
+                    <span>Ver Planos & Renovar</span>
+                  </button>
+                )}
+                {onOpenRedeemToken && (
+                  <button
+                    type="button"
+                    onClick={onOpenRedeemToken}
+                    className="py-2 px-4 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-200 font-bold text-xs flex items-center gap-1.5 border border-zinc-700 cursor-pointer"
+                  >
+                    <KeyRound className="w-3.5 h-3.5 text-[#00E676]" />
+                    <span>Ativar Código (5 Dígitos)</span>
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* BACKDROP LIMPO DE PRÉ-CARREGAMENTO */}
+          {!hasFirstFrame && (
+            <div
+              id="player-signal-backdrop"
+              className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-black/90"
+            >
               <div className="relative mb-3">
-                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-zinc-900/95 border border-zinc-700/80 p-2 shadow-2xl flex items-center justify-center ring-2 ring-[#00E676]/30">
+                <div className="w-16 h-16 rounded-2xl bg-zinc-900 border border-zinc-800 p-2 shadow-2xl flex items-center justify-center">
                   <img
                     src={canalAtivo.logo}
                     alt={canalAtivo.nome}
                     className="w-full h-full object-contain"
                     onError={(e) => {
                       (e.target as HTMLImageElement).src =
-                        'https://placehold.co/120x120/18181b/00E676?text=TV';
+                        'https://placehold.co/120x120/18181b/ffffff?text=TV';
                     }}
                   />
                 </div>
-                <span className="absolute -bottom-1 -right-1 flex h-4 w-4">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00E676] opacity-80"></span>
-                  <span className="relative inline-flex rounded-full h-4 w-4 bg-[#00E676] border-2 border-black"></span>
+                <span className="absolute -bottom-1 -right-1 flex h-3.5 w-3.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#FF2D55] opacity-80" />
+                  <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-[#FF2D55] border-2 border-black" />
                 </span>
               </div>
-
-              {/* TÍTULO E TAG */}
-              <div className="flex items-center gap-2 mb-1 flex-wrap justify-center">
-                <h3 className="text-base sm:text-xl font-black text-white tracking-tight">
-                  {canalAtivo.nome}
-                </h3>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-300 border border-zinc-700">
-                  {sportTag}
-                </span>
-              </div>
-
-              {programaAtual && (
-                <p className="text-xs text-zinc-400 line-clamp-1 mb-2">
-                  <span className="text-[#00E676] font-semibold">No ar:</span> {programaAtual.titulo}
-                </p>
+              <p className="text-xs font-semibold text-zinc-300">
+                {hasYouTubeEmbedError
+                  ? 'Vídeo com restrição de incorporação'
+                  : 'Sintonizando sinal...'}
+              </p>
+              {hasYouTubeEmbedError && (
+                <a
+                  href={activeRawStreamUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-3 px-3 py-1.5 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" />
+                  <span>Assistir no YouTube</span>
+                </a>
               )}
-
-              {/* STATUS COM TEMPO REAL DA CONEXÃO */}
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-900/90 border border-zinc-800/90 text-xs shadow-md mt-1">
-                <span className={`w-2 h-2 rounded-full ${hasYouTubeEmbedError ? 'bg-amber-400' : 'bg-[#00E676] animate-ping'}`}></span>
-                <span className="text-zinc-300 font-medium">
-                  {hasYouTubeEmbedError
-                    ? 'Vídeo com restrição de incorporação. Use o botão "Assistir no YouTube" abaixo.'
-                    : loadSeconds < 3
-                    ? `Sintonizando ${streamIndex === 0 ? 'sinal de alta velocidade' : `servidor reserva ${streamIndex}`}...`
-                    : loadSeconds < 5
-                    ? 'Otimizando taxa de bits e buffer de vídeo...'
-                    : 'Sinal demorando a responder. Alternando rota...'}
-                </span>
-              </div>
-
-              {/* BOTÕES DE AÇÃO RÁPIDA: SEM FICAR PRESO ESPERANDO */}
-              <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
-                {streamsDisponiveis.length > 1 && (
-                  <button
-                    type="button"
-                    id="hero-quick-switch-stream"
-                    onClick={() => {
-                      const next = (streamIndex + 1) % streamsDisponiveis.length;
-                      onStreamChange(next);
-                    }}
-                    className="px-3 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 text-xs font-bold flex items-center gap-1.5 transition-all shadow-lg hover:scale-105 active:scale-95 cursor-pointer"
-                    title="Alternar para o próximo sinal disponível imediatamente"
-                  >
-                    <Zap className="w-3.5 h-3.5 text-amber-400" />
-                    <span>Mudar Servidor ({streamIndex + 1}/{streamsDisponiveis.length})</span>
-                  </button>
-                )}
-
-                {/* Botão de Pular Canal caso o usuário não queira esperar */}
-                {onNextCanal && loadSeconds >= 2 && (
-                  <button
-                    type="button"
-                    id="hero-quick-skip-channel"
-                    onClick={onNextCanal}
-                    className="px-3 py-1.5 rounded-xl bg-zinc-800/90 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 text-xs font-bold flex items-center gap-1.5 transition-all shadow-lg hover:scale-105 active:scale-95 cursor-pointer"
-                    title="Pular para o próximo canal sem esperar"
-                  >
-                    <SkipForward className="w-3.5 h-3.5 text-[#00E676]" />
-                    <span>Pular Canal</span>
-                  </button>
-                )}
-
-                {/* Se for transmissão do YouTube, oferece botão direto para abrir no YouTube */}
-                {(activeRawStreamUrl.includes('youtube.com') ||
-                  activeRawStreamUrl.includes('youtu.be')) && (
-                  <a
-                    href={activeRawStreamUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    id="hero-open-youtube-btn"
-                    className="px-3 py-1.5 rounded-xl bg-red-600/90 hover:bg-red-500 text-white text-xs font-bold flex items-center gap-1.5 border border-red-500 transition-all shadow-lg hover:scale-105 active:scale-95 cursor-pointer"
-                    title="Abrir este vídeo diretamente no YouTube"
-                  >
-                    <ExternalLink className="w-3.5 h-3.5" />
-                    <span>Assistir no YouTube</span>
-                  </a>
-                )}
-
-                {/* Botão de Proxy apenas para fluxos de rede tradicionais (m3u8 / IPTV) */}
-                {!activeRawStreamUrl.includes('youtube.com') &&
-                  !activeRawStreamUrl.includes('youtu.be') && (
-                    <button
-                      type="button"
-                      id="hero-quick-proxy-toggle"
-                      onClick={onToggleProxy}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 border transition-all shadow-lg hover:scale-105 active:scale-95 cursor-pointer ${
-                        isCurrentlyProxied
-                          ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40'
-                          : 'bg-zinc-900/90 text-zinc-300 border-zinc-700 hover:text-white hover:border-zinc-500'
-                      }`}
-                      title="Contornar bloqueios de rede com o servidor proxy seguro"
-                    >
-                      <ShieldCheck className="w-3.5 h-3.5 text-cyan-400" />
-                      <span>{isCurrentlyProxied ? 'Proxy Seguro Ativo' : 'Tentar via Proxy'}</span>
-                    </button>
-                  )}
-
-                {onNextCanal && (
-                  <button
-                    type="button"
-                    id="hero-quick-next-channel"
-                    onClick={onNextCanal}
-                    className="px-3 py-1.5 rounded-xl bg-zinc-900/90 hover:bg-zinc-800 text-zinc-300 hover:text-white border border-zinc-700 text-xs font-bold flex items-center gap-1.5 transition-all shadow-lg hover:scale-105 active:scale-95 cursor-pointer"
-                    title="Avançar para o próximo canal da lista"
-                  >
-                    <SkipForward className="w-3.5 h-3.5 text-[#00E676]" />
-                    <span>Próximo Canal</span>
-                  </button>
-                )}
-              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* SPINNER DISCRETO DE REBUFFERING SE O VÍDEO JÁ ESTIVER RODANDO */}
-        {hasFirstFrame && isBuffering && (
-          <div className="absolute top-4 right-4 z-30 bg-black/80 backdrop-blur-md border border-[#00E676]/40 px-3 py-1.5 rounded-full flex items-center gap-2 text-xs text-white shadow-xl animate-in fade-in">
-            <div className="w-3 h-3 rounded-full border-2 border-[#00E676] border-t-transparent animate-spin"></div>
-            <span className="text-[11px] font-semibold text-zinc-300">Ajustando sinal...</span>
-          </div>
-        )}
-
-        {/* OVERLAY SUPERIOR: BADGE AO VIVO, REDE E MODO CINEMA */}
-        <div className="absolute top-0 left-0 right-0 z-30 p-3 sm:p-5 bg-gradient-to-b from-black/85 via-black/40 to-transparent flex items-center justify-between pointer-events-none">
-          <div className="flex items-center gap-2 pointer-events-auto">
-            {/* LIVE BADGE COM PULSE */}
-            <div className="flex items-center gap-1.5 bg-black/80 backdrop-blur-md border border-[#00E676]/40 px-2.5 py-1 rounded-full text-[10px] sm:text-xs font-black uppercase tracking-wider text-white shadow-lg">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00E676] opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-[#00E676]"></span>
-              </span>
-              <span>AO VIVO</span>
+          {/* SPINNER DISCRETO DE REBUFFERING */}
+          {hasFirstFrame && isBuffering && (
+            <div className="absolute top-3 right-3 z-30 bg-black/70 backdrop-blur-md px-2.5 py-1 rounded-full flex items-center gap-2 text-xs text-white border border-zinc-800">
+              <div className="w-2.5 h-2.5 rounded-full border-2 border-[#FF2D55] border-t-transparent animate-spin" />
+              <span className="text-[10px] text-zinc-400">Carregando...</span>
             </div>
+          )}
 
-            {/* QUALIDADE */}
-            <span className="text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-full bg-zinc-900/80 backdrop-blur-md text-[#00E676] border border-[#00E676]/30 shadow-md">
-              {quality === '4K' ? '4K UHD' : quality === '1080p' ? '1080p FHD' : 'HD 720p'}
-            </span>
-
-            {/* REDE */}
-            {networkBadge.label && (
-              <span
-                className={`hidden sm:inline-flex text-[10px] font-bold px-2 py-0.5 rounded-full backdrop-blur-md border ${networkBadge.badgeBg} ${networkBadge.textColor} ${networkBadge.borderColor}`}
-              >
-                {networkBadge.label}
-              </span>
-            )}
-          </div>
-
-          <div className="flex items-center gap-2 pointer-events-auto">
-            {/* BOTÃO DE CONFIGURAÇÕES DO PLAYER (MODO ESTÁVEL / BAIXA LATÊNCIA) */}
-            <button
-              type="button"
-              id="player-settings-top-btn"
-              onClick={() => setIsSettingsOpen(true)}
-              className="bg-black/80 hover:bg-black text-zinc-200 hover:text-white text-xs px-3 py-1.5 rounded-full border border-zinc-700/80 backdrop-blur-md transition-all flex items-center gap-1.5 cursor-pointer shadow-lg hover:border-[#00E676]/50 hover:scale-[1.02] active:scale-95"
-              title="Configurações do Player: Modo Estável vs Baixa Latência (Pressione S)"
-            >
-              <Sliders className="w-3.5 h-3.5 text-[#00E676]" />
-              <span className="hidden sm:inline">Configurações</span>
-              <span
-                className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full flex items-center gap-1 ${
-                  latencyMode === 'economy'
-                    ? 'bg-emerald-500/20 text-[#00E676] border border-[#00E676]/40'
-                    : latencyMode === 'stable'
-                    ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30'
-                    : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
+          {/* BOTÃO RÁPIDO PICTURE-IN-PICTURE (HOVER NO VÍDEO) */}
+          {!isMiniMode && (
+            <div className="absolute top-3 right-3 z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+              <button
+                type="button"
+                id="player-quick-pip-btn"
+                onClick={handleTogglePip}
+                className={`p-2 rounded-full backdrop-blur-md border shadow-lg transition cursor-pointer flex items-center justify-center ${
+                  isPipActive
+                    ? 'bg-[#FF2D55] text-white border-[#FF2D55] shadow-[#FF2D55]/30'
+                    : 'bg-black/70 hover:bg-black text-zinc-200 hover:text-white border-zinc-700/60'
                 }`}
+                title={isPipActive ? 'Sair do Picture-in-Picture' : 'Abrir Picture-in-Picture (PiP - Atalho P)'}
               >
-                {latencyMode === 'economy' ? 'Poupança -70%' : latencyMode === 'stable' ? 'HD Estável' : 'Tempo Real'}
-              </span>
-            </button>
+                <PictureInPicture2 className="w-4 h-4" />
+              </button>
+            </div>
+          )}
 
-            {/* MODO CINEMA BOTÃO FLUTUANTE */}
-            <button
-              type="button"
-              id="player-cinema-btn"
-              onClick={onEnterCinemaMode}
-              disabled={isTransitioning}
-              className={`bg-black/80 hover:bg-black text-zinc-200 hover:text-white text-xs px-3 py-1.5 rounded-full border border-zinc-700/80 backdrop-blur-md transition-all flex items-center gap-1.5 cursor-pointer shadow-lg hover:border-[#00E676]/50 hover:scale-[1.02] active:scale-95 ${
-                isTransitioning ? 'opacity-50 pointer-events-none' : ''
-              }`}
-              title="Expandir Modo Cinema (Tela Cheia Imersiva - Pressione F)"
-            >
-              <Maximize2 className="w-3.5 h-3.5 text-[#00E676]" />
-              <span className="hidden sm:inline">Modo Cinema</span>
-            </button>
+          {/* OVERLAY DE NOTIFICAÇÃO DE FAILOVER */}
+          {failoverNotice && (
+            <div className="absolute top-3 left-3 right-3 z-30 bg-black/90 backdrop-blur-md border border-zinc-800 text-zinc-300 text-xs px-3 py-2 rounded-xl flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <AlertCircle className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                <span>{failoverNotice}</span>
+              </div>
+              <button
+                type="button"
+                onClick={onClearFailoverNotice}
+                className="text-zinc-500 hover:text-white p-1"
+              >
+                <X className="w-3 h-3" />
+              </button>
+            </div>
+          )}
+
+          {/* LINHA DE PROGRESSO VERMELHA EXATAMENTE COMO NA REFERÊNCIA */}
+          <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-zinc-900/80 z-20 overflow-hidden pointer-events-none">
+            <div
+              className="h-full bg-red-600 shadow-[0_0_8px_rgba(239,68,68,0.8)] transition-all duration-300"
+              style={{ width: `${Math.max(15, playedPercent)}%` }}
+            />
           </div>
         </div>
 
-        {/* OVERLAY DE NOTIFICAÇÃO DE FAILOVER (SE HOUVER TROCA DE ROTA) */}
-        {failoverNotice && (
-          <div
-            id="player-failover-banner"
-            className="absolute top-16 left-4 right-4 z-30 bg-zinc-950/95 backdrop-blur-md border border-amber-500/50 text-amber-300 text-xs px-4 py-2.5 rounded-xl shadow-xl flex items-center justify-between gap-3 animate-in fade-in"
-          >
-            <div className="flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 text-amber-400 shrink-0" />
-              <span>{failoverNotice}</span>
+        {/* BARRA LATERAL VERTICAL DE AÇÕES (EXATAMENTE COMO NA REFERÊNCIA: AVATAR, CORAÇÃO, COMENTÁRIO, SALVAR) */}
+        {!isMiniMode && (
+          <div className="flex flex-col items-center gap-4 sm:gap-5 pb-2 select-none shrink-0">
+            {/* AVATAR DO CANAL COM ANEL NEON PINK */}
+            <div
+              className="relative p-[2px] rounded-full bg-gradient-to-tr from-[#FF2D55] via-pink-500 to-rose-600 shadow-lg cursor-pointer hover:scale-105 transition-transform"
+              title={canalAtivo.nome}
+            >
+              <img
+                src={canalAtivo.logo}
+                alt={canalAtivo.nome}
+                className="w-10 h-10 sm:w-11 sm:h-11 rounded-full object-cover bg-zinc-950"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = 'https://placehold.co/80x80/222222/ffffff?text=TV';
+                }}
+              />
             </div>
+
+            {/* BOTÃO CURTIR / LIKE */}
             <button
               type="button"
-              onClick={onClearFailoverNotice}
-              className="text-zinc-400 hover:text-white p-1"
+              id="player-action-like-btn"
+              onClick={handleToggleLike}
+              className="flex flex-col items-center gap-1 group cursor-pointer"
+              title="Gostei"
             >
-              <X className="w-3.5 h-3.5" />
+              <div
+                className={`p-1.5 rounded-full transition-transform group-hover:scale-110 active:scale-90 ${
+                  isLiked ? 'text-[#FF2D55]' : 'text-white group-hover:text-rose-400'
+                }`}
+              >
+                <Heart
+                  className={`w-6 h-6 sm:w-7 sm:h-7 ${
+                    isLiked ? 'fill-[#FF2D55] text-[#FF2D55]' : 'text-white'
+                  }`}
+                />
+              </div>
+              <span className="text-[11px] sm:text-xs font-bold text-white tracking-tight">
+                {likesCount}
+              </span>
+            </button>
+
+            {/* BOTÃO COMENTÁRIOS */}
+            <button
+              type="button"
+              id="player-action-comment-btn"
+              onClick={() => setShowComments((prev) => !prev)}
+              className="flex flex-col items-center gap-1 group cursor-pointer"
+              title="Comentários"
+            >
+              <div className="p-1.5 rounded-full text-white group-hover:text-zinc-300 transition-transform group-hover:scale-110 active:scale-90">
+                <MessageCircle className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
+              </div>
+              <span className="text-[11px] sm:text-xs font-bold text-white tracking-tight">
+                {canalAtivo.commentsCount || '6605'}
+              </span>
+            </button>
+
+            {/* BOTÃO SALVAR / FAVORITAR */}
+            <button
+              type="button"
+              id="player-action-bookmark-btn"
+              onClick={onToggleFavorite}
+              className="flex flex-col items-center gap-1 group cursor-pointer"
+              title={isFavorited ? 'Salvo' : 'Salvar'}
+            >
+              <div
+                className={`p-1.5 rounded-full transition-transform group-hover:scale-110 active:scale-90 ${
+                  isFavorited ? 'text-white' : 'text-white group-hover:text-zinc-300'
+                }`}
+              >
+                <Bookmark
+                  className={`w-6 h-6 sm:w-7 sm:h-7 ${
+                    isFavorited ? 'fill-white text-white' : 'text-white'
+                  }`}
+                />
+              </div>
             </button>
           </div>
         )}
       </div>
 
-      {/* 🎛️ CONTROLES MINIMALISTAS & DADOS DO CANAL HERÓI */}
-      <div
-        id="player-details-strip"
-        className="bg-[#121214] border border-zinc-800/80 rounded-2xl p-4 sm:p-5 shadow-xl space-y-4"
-      >
-        {/* LINHA 1: INFORMAÇÕES DO CANAL + ZAPPING + FAVORITAR + ÁUDIO */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-3.5 min-w-0">
-            <div className="relative shrink-0">
-              <img
-                src={canalAtivo.logo}
-                alt={canalAtivo.nome}
-                className="w-12 h-12 rounded-xl object-contain bg-zinc-950 border border-zinc-800 p-1 shadow-md"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).src =
-                    'https://placehold.co/80x80/222222/ffffff?text=TV';
-                }}
-              />
-              <span className="absolute -bottom-1 -right-1 flex h-3 w-3">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00E676] opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-3 w-3 bg-[#00E676] border-2 border-black"></span>
-              </span>
-            </div>
-
-            <div className="truncate">
-              <div className="flex items-center gap-2 mb-0.5 flex-wrap">
-                <h2 className="text-lg sm:text-xl font-extrabold text-white tracking-tight truncate">
-                  {canalAtivo.nome}
-                </h2>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-300 border border-zinc-700">
-                  {sportTag}
-                </span>
-              </div>
-              <p className="text-xs text-zinc-400 flex items-center gap-2">
-                <span>{networkBadge.label}</span>
-                <span>•</span>
-                <span className="text-zinc-500">
-                  {streamsDisponiveis.length} {streamsDisponiveis.length === 1 ? 'fonte' : 'fontes disponíveis'}
-                </span>
-              </p>
-              {programaAtual && (
-                <div className="mt-1 flex items-center gap-2 flex-wrap">
-                  <p className="text-xs text-zinc-300 font-medium truncate flex items-center gap-1.5">
-                    <span className="text-[#00E676] font-bold shrink-0">No Ar:</span>
-                    <span className="truncate text-zinc-200">{programaAtual.titulo}</span>
-                  </p>
-                  {programaAtual.fonteOficialNome && (
-                    <span className="text-[10px] font-semibold text-cyan-400 bg-cyan-950/60 px-2 py-0.5 rounded border border-cyan-500/30">
-                      Guia Oficial: {programaAtual.fonteOficialNome}
-                    </span>
-                  )}
-                  {programaAtual.isJogoGrande && (
-                    <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
-                      BeSoccer • Jogo Grande
-                    </span>
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* AÇÕES: ZAPPING RÁPIDO + ÁUDIO & FAVORITO */}
-          <div className="flex items-center gap-2 self-end sm:self-auto shrink-0 flex-wrap">
-            {/* Zapping Rápido: Anterior e Próximo */}
-            {onPrevCanal && (
-              <button
-                type="button"
-                id="player-prev-canal-btn"
-                onClick={onPrevCanal}
-                className="px-2.5 py-2 rounded-xl text-xs font-bold border bg-zinc-900 border-zinc-800 text-zinc-300 hover:text-white hover:border-zinc-700 transition-all cursor-pointer flex items-center gap-1"
-                title="Canal anterior (Seta esquerda ou [)"
-              >
-                <SkipBack className="w-3.5 h-3.5" />
-                <span className="hidden md:inline">Anterior</span>
-              </button>
-            )}
-
-            {onNextCanal && (
-              <button
-                type="button"
-                id="player-next-canal-btn"
-                onClick={onNextCanal}
-                className="px-2.5 py-2 rounded-xl text-xs font-bold border bg-zinc-900 border-zinc-800 text-zinc-300 hover:text-white hover:border-zinc-700 transition-all cursor-pointer flex items-center gap-1"
-                title="Próximo canal (Seta direita ou ])"
-              >
-                <span className="hidden md:inline">Próximo</span>
-                <SkipForward className="w-3.5 h-3.5" />
-              </button>
-            )}
-
-            {/* Botão de Áudio Rápido */}
+      {/* BARRA INFERIOR DE CONTROLE (EXATAMENTE COMO NA REFERÊNCIA: PÍLULAS À ESQUERDA, SETAS NO CENTRO) */}
+      {!isMiniMode && (
+        <div className="w-full max-w-[860px] flex items-center justify-between mt-4 px-1 select-none flex-wrap gap-y-3">
+          {/* LADO ESQUERDO: PÍLULAS "MODO CINEMA", "POUPAR INTERNET -75%" E "PIP" */}
+          <div className="flex items-center gap-2">
             <button
               type="button"
-              id="player-audio-toggle"
-              onClick={onToggleMute}
-              className={`px-3 py-2 rounded-xl text-xs font-bold border flex items-center gap-1.5 transition-all cursor-pointer ${
-                isMuted
-                  ? 'bg-zinc-900 border-amber-500/40 text-amber-300 hover:bg-amber-500/10'
-                  : 'bg-zinc-900 border-zinc-800 text-zinc-300 hover:text-white hover:border-zinc-700'
-              }`}
-              title={isMuted ? 'Ativar som (Pressione M)' : 'Silenciar áudio (Pressione M)'}
+              id="player-pill-cinema-mode"
+              onClick={onEnterCinemaMode}
+              className="px-4 py-2 rounded-full bg-[#141416] hover:bg-[#202024] text-zinc-200 hover:text-white border border-zinc-800/90 text-xs font-medium transition cursor-pointer shadow-sm"
             >
-              {isMuted ? (
-                <>
-                  <VolumeX className="w-4 h-4 text-amber-400" />
-                  <span>Ativar Som</span>
-                </>
-              ) : (
-                <>
-                  <Volume2 className="w-4 h-4 text-[#00E676]" />
-                  <span>Áudio Ativo</span>
-                </>
-              )}
+              Modo Cinema
             </button>
-
-            {/* Botão Favoritar */}
             <button
               type="button"
-              id="player-favorite-btn"
-              onClick={onToggleFavorite}
-              className={`px-3.5 py-2 rounded-xl text-xs font-bold border flex items-center gap-1.5 transition-all cursor-pointer ${
-                isFavorited
-                  ? 'bg-amber-500/15 border-amber-500/50 text-amber-400 shadow-md shadow-amber-500/10'
-                  : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-700'
-              }`}
-              title={isFavorited ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
-            >
-              <Star
-                className={`w-4 h-4 transition-transform active:scale-125 ${
-                  isFavorited ? 'fill-amber-400 text-amber-400' : 'text-current'
-                }`}
-              />
-              <span>{isFavorited ? 'Favoritado' : 'Favoritar'}</span>
-            </button>
-          </div>
-        </div>
-
-        {/* LINHA 2: SELETOR DE ROTA / BACKUPS + PROXY SEGURO + RECARREGAR */}
-        <div className="pt-3 border-t border-zinc-800/80 flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs">
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-zinc-400 font-semibold flex items-center gap-1 text-[11px]">
-              {isYouTubeChannel ? (
-                <>
-                  <Zap className="w-3.5 h-3.5 text-red-500" />
-                  <span>Playlist de Vídeos:</span>
-                </>
-              ) : (
-                <>
-                  <Server className="w-3.5 h-3.5 text-zinc-500" />
-                  <span>Rota de Transmissão:</span>
-                </>
-              )}
-            </span>
-
-            {streamsDisponiveis.map((_, idx) => {
-              const isSelected = streamIndex === idx;
-              const label = isYouTubeChannel ? `Vídeo ${idx + 1}` : idx === 0 ? 'Principal' : `Reserva ${idx}`;
-
-              return (
-                <button
-                  key={idx}
-                  type="button"
-                  id={`hero-stream-btn-${idx}`}
-                  onClick={() => onStreamChange(idx)}
-                  className={`px-2.5 py-1 rounded-lg border font-bold text-[11px] transition-all cursor-pointer flex items-center gap-1 ${
-                    isSelected
-                      ? isYouTubeChannel
-                        ? 'bg-red-600 text-white border-red-500 shadow-sm shadow-red-600/30'
-                        : 'bg-[#00E676] text-black border-[#00E676] shadow-sm shadow-[#00E676]/30'
-                      : 'bg-zinc-900 text-zinc-400 border-zinc-800 hover:border-zinc-700 hover:text-zinc-200'
-                  }`}
-                >
-                  {isSelected && <CheckCircle2 className={`w-3 h-3 ${isYouTubeChannel ? 'text-white' : 'text-black'}`} />}
-                  <span>{label}</span>
-                </button>
-              );
-            })}
-
-            {isYouTubeChannel && (
-              <div className="flex items-center gap-2 flex-wrap">
-                {streamIndex < streamsDisponiveis.length - 1 && (
-                  <button
-                    type="button"
-                    onClick={() => onStreamChange(streamIndex + 1)}
-                    className="px-2 py-1 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-[11px] font-bold border border-zinc-700 flex items-center gap-1 cursor-pointer transition-all hover:scale-105"
-                    title="Reproduzir o próximo vídeo da lista"
-                  >
-                    <SkipForward className="w-3 h-3 text-red-400" />
-                    <span>Próximo Vídeo</span>
-                  </button>
-                )}
-                <span className="flex items-center gap-1 text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#00E676] animate-pulse"></span>
-                  <span>Autoplay Contínuo Ativo</span>
-                </span>
-              </div>
-            )}
-          </div>
-
-          <div className="flex items-center gap-2 self-start md:self-auto flex-wrap">
-            {/* Toggle de Modo de Transmissão (Economia vs Estável vs Baixa Latência) */}
-            <button
-              type="button"
-              id="hero-latency-mode-toggle"
+              id="player-pill-save-data"
               onClick={() => onToggleLatencyMode()}
-              className={`px-2.5 py-1 rounded-lg border text-[11px] font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+              className={`px-4 py-2 rounded-full border text-xs font-medium transition cursor-pointer shadow-sm ${
                 latencyMode === 'economy'
-                  ? 'bg-emerald-500/15 text-emerald-300 border-[#00E676]/60 hover:bg-emerald-500/25 shadow-sm ring-1 ring-[#00E676]/30'
-                  : latencyMode === 'stable'
-                  ? 'bg-cyan-500/15 text-cyan-300 border-cyan-500/40 hover:bg-cyan-500/25 shadow-sm'
-                  : 'bg-amber-500/15 text-amber-300 border-amber-500/40 hover:bg-amber-500/25 shadow-sm'
+                  ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/40'
+                  : 'bg-[#141416] hover:bg-[#202024] text-zinc-200 hover:text-white border border-zinc-800/90'
+              }`}
+              title="Alternar economia de dados de rede móvel"
+            >
+              Poupar Internet {latencyMode === 'economy' ? '-75% (Ativo)' : '-75%'}
+            </button>
+            <button
+              type="button"
+              id="player-pill-pip"
+              onClick={handleTogglePip}
+              className={`px-3.5 sm:px-4 py-2 rounded-full border text-xs font-medium transition cursor-pointer shadow-sm flex items-center gap-1.5 ${
+                isPipActive
+                  ? 'bg-[#FF2D55]/20 text-[#FF2D55] border-[#FF2D55]/50'
+                  : 'bg-[#141416] hover:bg-[#202024] text-zinc-200 hover:text-white border border-zinc-800/90'
               }`}
               title={
-                latencyMode === 'economy'
-                  ? 'Modo Economia de Dados Ativo (-70% internet móvel). Clique para alternar.'
-                  : latencyMode === 'stable'
-                  ? 'Modo Equilibrado HD Ativo (Buffer 14s). Clique para alternar.'
-                  : 'Modo Baixa Latência Ativo (Tempo Real). Clique para alternar.'
+                isPipActive
+                  ? 'Sair do Picture-in-Picture'
+                  : 'Assistir em Picture-in-Picture nativo (Atalho P)'
               }
             >
-              {latencyMode === 'economy' ? (
-                <>
-                  <Leaf className="w-3.5 h-3.5 text-[#00E676]" />
-                  <span>Poupar Internet (-70%)</span>
-                </>
-              ) : latencyMode === 'stable' ? (
-                <>
-                  <ShieldCheck className="w-3.5 h-3.5 text-cyan-400" />
-                  <span>Equilibrado (HD)</span>
-                </>
+              <PictureInPicture2 className="w-3.5 h-3.5 text-[#FF2D55]" />
+              <span className="hidden sm:inline">Picture-in-Picture</span>
+              <span className="sm:hidden">PiP</span>
+            </button>
+          </div>
+
+          {/* CENTRO: SETAS CIRCULARES DE NAVEGAÇÃO DE CANAL < > */}
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              id="player-btn-prev-canal"
+              onClick={onPrevCanal}
+              className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#141416] hover:bg-[#202024] text-zinc-200 hover:text-white border border-zinc-800/90 flex items-center justify-center transition cursor-pointer shadow-sm active:scale-95"
+              title="Canal anterior"
+            >
+              <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
+            </button>
+            <button
+              type="button"
+              id="player-btn-next-canal"
+              onClick={onNextCanal}
+              className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#141416] hover:bg-[#202024] text-zinc-200 hover:text-white border border-zinc-800/90 flex items-center justify-center transition cursor-pointer shadow-sm active:scale-95"
+              title="Próximo canal"
+            >
+              <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
+            </button>
+          </div>
+
+          {/* LADO DIREITO: CONTROLE DE ÁUDIO DISCRETO */}
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              id="player-btn-audio-mute"
+              onClick={onToggleMute}
+              className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#141416] hover:bg-[#202024] text-zinc-300 hover:text-white border border-zinc-800/90 flex items-center justify-center transition cursor-pointer shadow-sm"
+              title={isMuted ? 'Ativar som (M)' : 'Silenciar áudio (M)'}
+            >
+              {isMuted ? (
+                <VolumeX className="w-4 h-4 text-amber-400" />
               ) : (
-                <>
-                  <Zap className="w-3.5 h-3.5 text-amber-400" />
-                  <span>Baixa Latência</span>
-                </>
+                <Volume2 className="w-4 h-4 text-[#00E676]" />
               )}
             </button>
-
-            {/* Toggle de Proxy Seguro */}
             <button
               type="button"
-              id="hero-proxy-btn"
-              onClick={onToggleProxy}
-              className={`px-2.5 py-1 rounded-lg border text-[11px] font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
-                useProxy
-                  ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/50 shadow-sm shadow-cyan-500/20'
-                  : 'bg-zinc-900 text-zinc-400 border-zinc-800 hover:border-zinc-700 hover:text-zinc-300'
-              }`}
-              title="Contorna bloqueios de CORS e restrições de User-Agent via servidor"
-            >
-              <ShieldCheck className="w-3.5 h-3.5" />
-              <span>Proxy Seguro: {useProxy ? 'Ativado' : 'Direto'}</span>
-            </button>
-
-            {/* Botão de Configurações Detalhadas do Player */}
-            <button
-              type="button"
-              id="hero-open-settings-btn"
-              onClick={() => setIsSettingsOpen(true)}
-              className="p-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-700 transition-all cursor-pointer flex items-center gap-1"
-              title="Configurações avançadas de buffer e transmissão (Pressione S)"
-            >
-              <Sliders className="w-3.5 h-3.5" />
-              <span className="hidden xl:inline text-[11px] font-medium text-zinc-300">Ajustes</span>
-            </button>
-
-            {/* Recarregar */}
-            <button
-              type="button"
-              id="hero-reload-btn"
+              id="player-btn-reload-stream"
               onClick={handleReload}
-              className="p-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-700 transition-all cursor-pointer"
-              title="Recarregar transmissão atual"
+              className="hidden sm:flex w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#141416] hover:bg-[#202024] text-zinc-400 hover:text-white border border-zinc-800/90 items-center justify-center transition cursor-pointer shadow-sm"
+              title="Recarregar sinal"
             >
               <RefreshCw className="w-3.5 h-3.5" />
             </button>
           </div>
         </div>
-      </div>
+      )}
 
-      {/* ⚙️ MODAL DE CONFIGURAÇÕES DO PLAYER */}
-      <PlayerSettingsModal
-        isOpen={isSettingsOpen}
-        onClose={() => setIsSettingsOpen(false)}
-        latencyMode={latencyMode}
-        onSelectLatencyMode={(mode) => onToggleLatencyMode(mode)}
-        useProxy={useProxy}
-        onToggleProxy={onToggleProxy}
-        streamIndex={streamIndex}
-        streamsDisponiveis={streamsDisponiveis}
-        onSelectStream={onStreamChange}
-        canalNome={canalAtivo.nome}
-        quality={quality}
-      />
+      {/* MINI CONTROLES INFERIORES DO MODO PIP FLUTUANTE */}
+      {isMiniMode && (
+        <div className="flex items-center justify-between px-3 py-2 bg-zinc-950 border-t border-zinc-900 select-none">
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={onPrevCanal}
+              className="p-1.5 rounded-full text-zinc-400 hover:text-white hover:bg-zinc-800 transition cursor-pointer"
+              title="Canal anterior"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+            <button
+              type="button"
+              onClick={onNextCanal}
+              className="p-1.5 rounded-full text-zinc-400 hover:text-white hover:bg-zinc-800 transition cursor-pointer"
+              title="Próximo canal"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={onToggleMute}
+              className="p-1.5 rounded-full text-zinc-400 hover:text-white hover:bg-zinc-800 transition cursor-pointer"
+              title={isMuted ? 'Ativar som' : 'Silenciar áudio'}
+            >
+              {isMuted ? (
+                <VolumeX className="w-4 h-4 text-[#FF2D55]" />
+              ) : (
+                <Volume2 className="w-4 h-4 text-zinc-200" />
+              )}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* GAVETA ELEGANTE DE COMENTÁRIOS SE O USUÁRIO CLICAR NO ÍCONE DE COMENTÁRIOS */}
+      <AnimatePresence>
+        {!isMiniMode && showComments && (
+          <motion.div
+            key="player-comments-drawer"
+            initial={{ opacity: 0, y: 10, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 10, scale: 0.98 }}
+            transition={{ duration: 0.18 }}
+            className="w-full max-w-[860px] mt-3 p-4 rounded-2xl bg-[#0e0e11] border border-zinc-800 text-zinc-200 shadow-xl"
+          >
+            <div className="flex items-center justify-between pb-3 border-b border-zinc-800/80 mb-3">
+              <h4 className="text-xs font-bold text-white flex items-center gap-2">
+                <MessageCircle className="w-4 h-4 text-[#FF2D55]" />
+                <span>Comentários ao Vivo ({commentsList.length})</span>
+              </h4>
+              <button
+                type="button"
+                onClick={() => setShowComments(false)}
+                className="text-zinc-500 hover:text-white p-1 cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="max-h-44 overflow-y-auto custom-scrollbar space-y-2 mb-3 pr-1">
+              {commentsList.map((comm, idx) => (
+                <div
+                  key={idx}
+                  className="p-2.5 rounded-xl bg-zinc-900/80 border border-zinc-800/60 text-xs text-zinc-300 flex items-start gap-2.5"
+                >
+                  <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-[#FF2D55] to-purple-600 text-white font-bold text-[10px] flex items-center justify-center shrink-0">
+                    U{idx + 1}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="leading-snug">{comm}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <form onSubmit={handleAddComment} className="flex items-center gap-2">
+              <input
+                type="text"
+                value={newComment}
+                onChange={(e) => setNewComment(e.target.value)}
+                placeholder="Adicionar um comentário..."
+                className="flex-1 bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-[#FF2D55]"
+              />
+              <button
+                type="submit"
+                disabled={!newComment.trim()}
+                className="px-3 py-2 rounded-xl bg-[#FF2D55] hover:bg-[#FF2D55]/90 text-white font-bold text-xs disabled:opacity-50 transition cursor-pointer flex items-center gap-1"
+              >
+                <Send className="w-3 h-3" />
+                <span>Enviar</span>
+              </button>
+            </form>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
-

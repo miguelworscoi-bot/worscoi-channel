@@ -471,3 +471,34 @@ export function getNetworkBadge(canal: Canal): {
     iconText: '📺',
   };
 }
+
+export function getChannelHandle(canal: Canal): string {
+  if (canal.handle) {
+    return canal.handle.startsWith('@') ? canal.handle.slice(1) : canal.handle;
+  }
+  const clean = canal.nome
+    .toLowerCase()
+    .replace(/\([^)]*\)/g, '')
+    .replace(/[^a-z0-9]/g, '')
+    .trim();
+  return clean.slice(0, 15) || 'canal';
+}
+
+export function isChannelVerified(canal: Canal): boolean {
+  if (typeof canal.verified === 'boolean') return canal.verified;
+  const lower = canal.nome.toLowerCase();
+  return (
+    lower.includes('laliga') ||
+    lower.includes('champions') ||
+    lower.includes('libertadores') ||
+    lower.includes('tnt sports') ||
+    lower.includes('kvara') ||
+    lower.includes('planner') ||
+    lower.includes('nba') ||
+    lower.includes('zap') ||
+    lower.includes('globo') ||
+    lower.includes('sic') ||
+    lower.includes('rtp')
+  );
+}
+

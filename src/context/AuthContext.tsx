@@ -1,5 +1,5 @@
 'use client';
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import {
   User,
   onAuthStateChanged,
@@ -13,6 +13,13 @@ import {
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
 import { SubscriptionPlanId } from '@/types';
+import {
+  calculateRealtimeCountdown,
+  FormattedCountdown,
+  checkDeviceTrialStatus,
+  recordDeviceTrial,
+  DeviceTrialRecord,
+} from '@/services/subscriptionService';
 
 export type UserRole = 'user' | 'admin';
 
@@ -49,6 +56,17 @@ interface AuthContextType {
   role: UserRole;
   isAdmin: boolean;
   loading: boolean;
+  countdown: FormattedCountdown;
+  isSubscriptionExpired: boolean;
+  isAccountClosedDueToExpiration: boolean;
+  closeExpiredNotice: () => void;
+  deviceTrial: {
+    hasClaimed: boolean;
+    isExpired: boolean;
+    timeRemainingMs: number;
+    trialRecord?: DeviceTrialRecord;
+  } | null;
+  refreshDeviceTrial: () => Promise<void>;
   signInWithEmail: (email: string, pass: string) => Promise<void>;
   signUpWithEmail: (
     email: string,
@@ -106,6 +124,56 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AnyUser | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [countdown, setCountdown] = useState<FormattedCountdown>(() =>
+    calculateRealtimeCountdown(null)
+  );
+  const [isAccountClosedDueToExpiration, setIsAccountClosedDueToExpiration] = useState(false);
+  const [deviceTrial, setDeviceTrial] = useState<{
+    hasClaimed: boolean;
+    isExpired: boolean;
+    timeRemainingMs: number;
+    trialRecord?: DeviceTrialRecord;
+  } | null>(null);
+
+  const refreshDeviceTrial = useCallback(async () => {
+    try {
+      const status = await checkDeviceTrialStatus();
+      setDeviceTrial(status);
+    } catch {
+      // Ignora
+    }
+  }, []);
+
+  const closeExpiredNotice = useCallback(() => {
+    setIsAccountClosedDueToExpiration(false);
+  }, []);
+
+  // Monitora o status do dispositivo no mount
+  useEffect(() => {
+    refreshDeviceTrial();
+  }, [refreshDeviceTrial]);
+
+  // Cronômetro em tempo real executado a cada 1 segundo
+  useEffect(() => {
+    const updateCountdown = () => {
+      if (!userProfile) {
+        setCountdown(calculateRealtimeCountdown(null));
+        return;
+      }
+
+      const nextCountdown = calculateRealtimeCountdown(userProfile);
+      setCountdown(nextCountdown);
+
+      // Quando o cronômetro chega ao zero (00:00:00) em planos de usuário
+      if (nextCountdown.expired && userProfile.role !== 'admin') {
+        setIsAccountClosedDueToExpiration(true);
+      }
+    };
+
+    updateCountdown();
+    const interval = setInterval(updateCountdown, 1000);
+    return () => clearInterval(interval);
+  }, [userProfile]);
 
   // Helper to determine default role
   const resolveRole = (identifier?: string | null, savedRole?: string): UserRole => {
@@ -298,33 +366,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                     displayName: parsed.displayName || parsed.email.split('@')[0],
                     photoURL: parsed.photoURL || null,
                   });
-                } else {
-                  const guestProfile: UserProfile = {
-                    id: 'guest_' + Math.random().toString(36).substring(2, 9),
-                    email: 'espectador@playsports.tv',
-                    displayName: 'Espectador',
-                    photoURL: '',
-                    role: 'user',
-                    createdAt: new Date().toISOString(),
-                    plan: 'free',
-                    planName: 'Plano Gratuito (Teste 24h)',
-                    planExpiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-                  };
-                  saveSession(guestProfile);
                 }
               } else {
+                // Primeira visita ou sem sessão: sincroniza com o dispositivo para garantir contagem ininterrupta
+                const devStatus = await checkDeviceTrialStatus();
+                let trialExpiry = devStatus.trialRecord?.expiresAt;
+
+                if (!devStatus.hasClaimed) {
+                  const newRec = await recordDeviceTrial('espectador@playsports.tv', 'convidado');
+                  trialExpiry = newRec.expiresAt;
+                }
+
                 const guestProfile: UserProfile = {
                   id: 'guest_' + Math.random().toString(36).substring(2, 9),
                   email: 'espectador@playsports.tv',
-                  displayName: 'Espectador',
+                  displayName: 'Espectador Esportivo',
                   photoURL: '',
                   role: 'user',
-                  createdAt: new Date().toISOString(),
+                  createdAt: devStatus.trialRecord?.claimedAt || new Date().toISOString(),
                   plan: 'free',
                   planName: 'Plano Gratuito (Teste 24h)',
-                  planExpiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+                  planExpiresAt: trialExpiry || null,
                 };
                 saveSession(guestProfile);
+
+                if (devStatus.hasClaimed && devStatus.isExpired) {
+                  setIsAccountClosedDueToExpiration(true);
+                }
               }
             } catch {
               // Mantém sessão resiliente
@@ -499,8 +567,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Determina o plano inicial
     const assignedPlan = selectedRole === 'admin' ? undefined : (plan || 'free');
     let resolvedExpiresAt = planExpiresAt;
-    if (assignedPlan === 'free' && !resolvedExpiresAt) {
-      resolvedExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+
+    if (assignedPlan === 'free') {
+      const devStatus = await checkDeviceTrialStatus();
+      if (devStatus.hasClaimed && devStatus.isExpired) {
+        throw new Error(
+          'Este dispositivo já utilizou o teste gratuito de 1 dia (24 horas). Não é permitido criar novas contas gratuitas no mesmo aparelho. Por favor, escolha um dos nossos planos a partir de 1.500 Kz ou ative um Código de 5 Dígitos.'
+        );
+      }
+
+      if (devStatus.hasClaimed && !devStatus.isExpired && devStatus.trialRecord) {
+        // Dispositivo já iniciou o teste: continua com o mesmo relógio em contagem regressiva contínua
+        resolvedExpiresAt = devStatus.trialRecord.expiresAt;
+      } else {
+        // Primeira vez neste dispositivo
+        if (!resolvedExpiresAt) {
+          resolvedExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+        }
+        await recordDeviceTrial(cleanEmail, userId, resolvedExpiresAt);
+      }
+      refreshDeviceTrial();
     }
 
     const profileData: UserProfile = {
@@ -560,6 +646,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signInAsGuest = async (chosenRole: UserRole = 'user') => {
     const isAdm = chosenRole === 'admin';
+    const assignedPlan: SubscriptionPlanId | undefined = isAdm ? undefined : 'free';
+    let resolvedExpiresAt: string | null = null;
+
+    if (!isAdm) {
+      const devStatus = await checkDeviceTrialStatus();
+      if (devStatus.hasClaimed && devStatus.isExpired) {
+        throw new Error(
+          'Este dispositivo já utilizou o teste gratuito de 1 dia (24 horas). Para continuar assistindo à programação esportiva, assine um plano a partir de 1.500 Kz ou ative um Código de 5 Dígitos.'
+        );
+      }
+
+      if (devStatus.hasClaimed && !devStatus.isExpired && devStatus.trialRecord) {
+        resolvedExpiresAt = devStatus.trialRecord.expiresAt;
+      } else {
+        resolvedExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+        await recordDeviceTrial('espectador@playsports.tv', 'convidado', resolvedExpiresAt);
+      }
+      refreshDeviceTrial();
+    }
+
     const profile: UserProfile = {
       id: (isAdm ? 'admin_' : 'guest_') + Math.random().toString(36).substring(2, 9),
       email: isAdm ? 'admin@playsports.com' : 'espectador@playsports.tv',
@@ -567,6 +673,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       photoURL: '',
       role: chosenRole,
       createdAt: new Date().toISOString(),
+      plan: assignedPlan,
+      planName: assignedPlan === 'free' ? 'Plano Gratuito (Teste 24h)' : undefined,
+      planExpiresAt: resolvedExpiresAt,
     };
     saveInRegistry({ ...profile, password: isAdm ? 'admin123' : '123456' });
     saveSession(profile);
@@ -601,6 +710,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       activatedToken: tokenCode ?? userProfile.activatedToken,
     };
     saveSession(updated);
+    setIsAccountClosedDueToExpiration(false);
   };
 
   const signOut = async () => {
@@ -616,10 +726,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
     setUser(null);
     setUserProfile(null);
+    refreshDeviceTrial();
   };
 
   const currentRole: UserRole = userProfile?.role || 'user';
   const isAdmin = currentRole === 'admin';
+  const isSubscriptionExpired = countdown.expired && !isAdmin;
 
   return (
     <AuthContext.Provider
@@ -629,6 +741,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         role: currentRole,
         isAdmin,
         loading,
+        countdown,
+        isSubscriptionExpired,
+        isAccountClosedDueToExpiration,
+        closeExpiredNotice,
+        deviceTrial,
+        refreshDeviceTrial,
         signInWithEmail,
         signUpWithEmail,
         signInWithGoogle,

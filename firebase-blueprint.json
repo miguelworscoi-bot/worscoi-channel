@@ -49,12 +49,29 @@
         "notes": { "type": "string" }
       },
       "required": ["code", "plan", "status", "createdAt"]
+    },
+    "device_trials": {
+      "title": "Device Trials",
+      "description": "Enforces one-time free trial per hardware/browser device fingerprint",
+      "type": "object",
+      "properties": {
+        "deviceId": { "type": "string" },
+        "claimedAt": { "type": "string", "format": "date-time" },
+        "expiresAt": { "type": "string", "format": "date-time" },
+        "claimedEmail": { "type": "string" },
+        "claimedUserId": { "type": "string" }
+      },
+      "required": ["deviceId", "claimedAt", "expiresAt"]
     }
   },
   "rules": {
     "users": {
       "read": "auth != null",
       "write": "auth != null && auth.uid == resource.id"
+    },
+    "device_trials": {
+      "read": "true",
+      "write": "true"
     }
   }
 }

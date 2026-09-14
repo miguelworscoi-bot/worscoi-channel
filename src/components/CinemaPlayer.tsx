@@ -15,6 +15,9 @@ import {
   ShieldCheck,
   Sliders,
   Leaf,
+  Lock,
+  CreditCard,
+  KeyRound,
 } from 'lucide-react';
 import { Canal, LatencyMode } from '@/types';
 import { motion, AnimatePresence } from 'motion/react';
@@ -23,6 +26,8 @@ import { getChannelSchedule } from '@/utils/channelProgramExtractor';
 import { getSafeStreamUrl, isStreamAutoProxied, getHlsOptionsForLatencyMode } from '@/utils/streamUtils';
 import { PlayerSettingsModal } from './PlayerSettingsModal';
 import { PlayerTransitionSkeleton } from './PlayerTransitionSkeleton';
+import { SubscriptionCountdownBadge } from './SubscriptionCountdownBadge';
+import { useAuth } from '@/context/AuthContext';
 
 interface CinemaPlayerProps {
   canalAtivo: Canal;
@@ -44,6 +49,8 @@ interface CinemaPlayerProps {
   transitionDirection?: 'to-cinema' | 'to-hero' | null;
   isAudioTransitionMuted?: boolean;
   onVideoEnded?: () => void;
+  onOpenPaymentPlans?: () => void;
+  onOpenRedeemToken?: () => void;
 }
 
 export function CinemaPlayer({
@@ -66,7 +73,11 @@ export function CinemaPlayer({
   transitionDirection = null,
   isAudioTransitionMuted = false,
   onVideoEnded,
+  onOpenPaymentPlans,
+  onOpenRedeemToken,
 }: CinemaPlayerProps) {
+  const { isAdmin, countdown, isSubscriptionExpired } = useAuth();
+  const isPlanExpired = !isAdmin && (isSubscriptionExpired || countdown.expired);
   const [_isReady, setIsReady] = useState(false);
   const [isBuffering, setIsBuffering] = useState(true);
   const [hasFirstFrame, setHasFirstFrame] = useState(false);
@@ -321,6 +332,9 @@ export function CinemaPlayer({
             )}
           </button>
 
+          {/* Cronômetro de Assinatura no Modo Cinema */}
+          <SubscriptionCountdownBadge onClick={onOpenPaymentPlans} compact />
+
           {/* Configurações do Player */}
           <button
             type="button"
@@ -507,6 +521,53 @@ export function CinemaPlayer({
             },
             onError: onPlayerError,
           }
+        )}
+
+        {/* BLOQUEIO POR EXPIRAÇÃO DE ASSINATURA NO MODO CINEMA */}
+        {isPlanExpired && (
+          <div
+            id="cinema-plan-expired-overlay"
+            className="absolute inset-0 z-50 bg-zinc-950/95 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center animate-in fade-in duration-300"
+          >
+            <div className="w-16 h-16 rounded-2xl bg-red-500/15 border border-red-500/30 flex items-center justify-center text-red-400 shadow-xl mb-3">
+              <Lock className="w-8 h-8 text-red-400" />
+            </div>
+            <h3 className="text-xl font-black text-white max-w-md">Tempo de Acesso Expirado</h3>
+            <div className="font-mono text-3xl font-black text-rose-500 tracking-wider my-2 bg-black/60 px-5 py-1.5 rounded-xl border border-rose-500/30 shadow-inner">
+              00:00:00
+            </div>
+            <p className="text-xs text-zinc-400 max-w-md mt-1 leading-relaxed">
+              O tempo de acesso contratado para esta conta chegou ao fim. As transmissões foram pausadas.
+            </p>
+            <div className="mt-5 flex flex-wrap items-center justify-center gap-2.5">
+              {onOpenPaymentPlans && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    onClose();
+                    onOpenPaymentPlans();
+                  }}
+                  className="py-2.5 px-5 rounded-xl bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white font-bold text-xs flex items-center gap-2 cursor-pointer shadow-lg shadow-rose-950/50"
+                >
+                  <CreditCard className="w-4 h-4" />
+                  <span>Ver Planos & Renovar</span>
+                </button>
+              )}
+              {onOpenRedeemToken && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    onClose();
+                    onOpenRedeemToken();
+                  }}
+                  className="py-2.5 px-4 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-200 font-bold text-xs flex items-center gap-2 border border-zinc-700 cursor-pointer"
+                >
+                  <KeyRound className="w-4 h-4 text-[#00E676]" />
+                  <span>Ativar Código (5 Dígitos)</span>
+                </button>
+              )}
+            </div>
+          </div>
         )}
 
         {isSettingsOpen && (

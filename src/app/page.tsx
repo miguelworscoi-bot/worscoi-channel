@@ -1,28 +1,35 @@
 'use client';
-import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { AnimatePresence } from 'motion/react';
-import { Canal, FiltroAtivo, LatencyMode } from '@/types';
+import { Canal, LatencyMode, WorscoiView, FiltroAtivo } from '@/types';
+import { Tv } from 'lucide-react';
 import { LOCAL_STORAGE_LATENCY_KEY } from '@/utils/streamUtils';
 import { CANAIS_PADRAO } from '@/app/api/canais/route';
-import { Header } from '@/components/Header';
+import { WorscoiSidebar } from '@/components/WorscoiSidebar';
+import { WorscoiTopBar } from '@/components/WorscoiTopBar';
 import { PlayerHero } from '@/components/PlayerHero';
-import { ChannelSidebar } from '@/components/ChannelSidebar';
-import { NowPlayingRail } from '@/components/NowPlayingRail';
+import { WorscoiControlPanel } from '@/components/WorscoiControlPanel';
+import { WorscoiSubscribersView } from '@/components/WorscoiSubscribersView';
+import { WorscoiLoginModal } from '@/components/WorscoiLoginModal';
 import { CinemaPlayer } from '@/components/CinemaPlayer';
 import { AddChannelModal } from '@/components/AddChannelModal';
 import { AdminPanelModal } from '@/components/AdminPanelModal';
-import { AuthModal } from '@/components/AuthModal';
 import { SubscribersModal } from '@/components/SubscribersModal';
 import { RedeemTokenModal } from '@/components/RedeemTokenModal';
 import { PaymentPlansModal } from '@/components/PaymentPlansModal';
 import { UserProfileModal } from '@/components/UserProfileModal';
+import { SubscriptionExpiredModal } from '@/components/SubscriptionExpiredModal';
 import { useAuth } from '@/context/AuthContext';
 
 const LOCAL_STORAGE_FAVORITES_KEY = 'playsports_favorites';
 const LOCAL_STORAGE_CUSTOM_KEY = 'playsports_custom_channels';
 
 export default function Home() {
-  const { loading: authLoading, isAdmin } = useAuth();
+  const { isAdmin, signOut, isAccountClosedDueToExpiration, closeExpiredNotice } = useAuth();
+  const [currentView, setCurrentView] = useState<WorscoiView>('explorar');
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
   const [canais, setCanais] = useState<Canal[]>(CANAIS_PADRAO);
   const [customChannels, setCustomChannels] = useState<Canal[]>([]);
   const [canalAtivo, setCanalAtivo] = useState<Canal | null>(CANAIS_PADRAO[0] || null);
@@ -32,55 +39,42 @@ export default function Home() {
   const [isMuted, setIsMuted] = useState(true);
   const [failoverNotice, setFailoverNotice] = useState<string | null>(null);
   const [useProxy, setUseProxy] = useState(false);
-  // Modo Economia como padrão para poupar imediatamente a franquia de internet móvel do espectador
   const [latencyMode, setLatencyMode] = useState<LatencyMode>('economy');
   const [isCinemaMode, setIsCinemaMode] = useState(false);
 
-  // Estados para transição suave (skeleton / fade-out) e silenciamento preventivo entre players
-  const [isTransitioningPlayer, setIsTransitioningPlayer] = useState(false);
-  const [transitionDirection, setTransitionDirection] = useState<'to-cinema' | 'to-hero' | null>(null);
-  const [isAudioTransitionMuted, setIsAudioTransitionMuted] = useState(false);
-  const transitionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const audioRestoreTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
+  // Modais do sistema
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAdminPanelOpen, setIsAdminPanelOpen] = useState(false);
   const [isSubscribersModalOpen, setIsSubscribersModalOpen] = useState(false);
   const [isRedeemModalOpen, setIsRedeemModalOpen] = useState(false);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [isUserProfileModalOpen, setIsUserProfileModalOpen] = useState(false);
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
-  const [busca, setBusca] = useState('');
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [isMiniPlayerDismissed, setIsMiniPlayerDismissed] = useState(false);
 
-  // Limpa timeouts ao desmontar
-  useEffect(() => {
-    return () => {
-      if (transitionTimeoutRef.current) clearTimeout(transitionTimeoutRef.current);
-      if (audioRestoreTimeoutRef.current) clearTimeout(audioRestoreTimeoutRef.current);
-    };
-  }, []);
-
-  // Carrega favoritos e canais personalizados do localStorage ao inicializar
+  // Carrega favoritos e canais personalizados do localStorage
   useEffect(() => {
     try {
       const storedFavs = localStorage.getItem(LOCAL_STORAGE_FAVORITES_KEY);
       if (storedFavs) {
         const parsed = JSON.parse(storedFavs);
-        if (Array.isArray(parsed)) {
-          setFavorites(parsed);
-        }
+        if (Array.isArray(parsed)) setFavorites(parsed);
       }
 
       const storedCustom = localStorage.getItem(LOCAL_STORAGE_CUSTOM_KEY);
       if (storedCustom) {
         const parsedCustom = JSON.parse(storedCustom);
-        if (Array.isArray(parsedCustom)) {
-          setCustomChannels(parsedCustom);
-        }
+        if (Array.isArray(parsedCustom)) setCustomChannels(parsedCustom);
       }
 
-      const storedLatency = localStorage.getItem(LOCAL_STORAGE_LATENCY_KEY) || localStorage.getItem('futebol_ao_vivo_latency_mode');
-      if (storedLatency === 'economy' || storedLatency === 'stable' || storedLatency === 'low-latency') {
+      const storedLatency =
+        localStorage.getItem(LOCAL_STORAGE_LATENCY_KEY) ||
+        localStorage.getItem('futebol_ao_vivo_latency_mode');
+      if (
+        storedLatency === 'economy' ||
+        storedLatency === 'stable' ||
+        storedLatency === 'low-latency'
+      ) {
         setLatencyMode(storedLatency);
       }
     } catch {
@@ -88,20 +82,23 @@ export default function Home() {
     }
   }, []);
 
-  // Carrega lista atualizada de canais da API (com fallback nos canais padrão já montados)
+  // Carrega lista atualizada de canais da API
   useEffect(() => {
     fetch('/api/canais')
       .then((res) => res.json())
       .then((data) => {
         if (Array.isArray(data) && data.length > 0) {
-          const seen = new Set<string>();
+          const seenIds = new Set<string>();
+          const seenUrls = new Set<string>();
           const clean: Canal[] = [];
           for (const item of data) {
-            const key = (item.id || item.url || '').trim();
-            if (key && !seen.has(key)) {
-              seen.add(key);
-              clean.push(item);
-            }
+            const idKey = (item.id || '').trim();
+            const urlKey = (item.url || '').trim().toLowerCase();
+            if (idKey && seenIds.has(idKey)) continue;
+            if (urlKey && seenUrls.has(urlKey)) continue;
+            if (idKey) seenIds.add(idKey);
+            if (urlKey) seenUrls.add(urlKey);
+            clean.push(item);
           }
           setCanais(clean);
           setCanalAtivo((prev) => prev || clean[0]);
@@ -112,14 +109,18 @@ export default function Home() {
       });
   }, []);
 
-  // Combina canais personalizados com os canais da API garantindo que não haja IDs duplicados
+  // Combina canais personalizados com os canais da API sem IDs duplicados
   const todosCanais = useMemo(() => {
     const seenIds = new Set<string>();
+    const seenUrls = new Set<string>();
     const result: Canal[] = [];
     for (const c of [...customChannels, ...canais]) {
-      const idKey = (c.id || c.url || '').trim();
+      const idKey = (c.id || '').trim();
+      const urlKey = (c.url || '').trim().toLowerCase();
       if (idKey && seenIds.has(idKey)) continue;
+      if (urlKey && seenUrls.has(urlKey)) continue;
       if (idKey) seenIds.add(idKey);
+      if (urlKey) seenUrls.add(urlKey);
       result.push(c);
     }
     return result;
@@ -144,10 +145,7 @@ export default function Home() {
   );
 
   // Toggle favorito com persistência
-  const toggleFavorite = (canal: Canal, e?: React.MouseEvent) => {
-    if (e) {
-      e.stopPropagation();
-    }
+  const toggleFavorite = (canal: Canal) => {
     const chave = canal.id || canal.url;
     setFavorites((prev) => {
       const isFav =
@@ -159,12 +157,9 @@ export default function Home() {
         : [...prev, chave];
 
       try {
-        localStorage.setItem(
-          LOCAL_STORAGE_FAVORITES_KEY,
-          JSON.stringify(nextFavorites)
-        );
+        localStorage.setItem(LOCAL_STORAGE_FAVORITES_KEY, JSON.stringify(nextFavorites));
       } catch {
-        // Ignora erro de escrita
+        // Ignora erro
       }
       return nextFavorites;
     });
@@ -172,20 +167,24 @@ export default function Home() {
 
   // Troca de canal ativo
   const handleSelectCanal = (canal: Canal) => {
-    if (canalAtivo?.url !== canal.url || canalAtivo?.id !== canal.id) {
+    const isSame = canalAtivo
+      ? canalAtivo.id && canal.id
+        ? canalAtivo.id === canal.id
+        : canalAtivo.url === canal.url
+      : false;
+
+    if (!isSame) {
       setStreamIndex(0);
       setFailoverNotice(null);
       setCanalAtivo(canal);
-      // Scroll suave para o player no mobile
-      if (typeof window !== 'undefined' && window.innerWidth < 1024) {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      }
+      setIsMobileMenuOpen(false);
+      setIsMiniPlayerDismissed(false);
     }
   };
 
-  // Navegação rápida de canais (Zapping Anterior / Próximo)
+  // Navegação de canais (Zapping Anterior / Próximo)
   const currentCanalIndex = todosCanais.findIndex(
-    (c) => (canalAtivo?.id && c.id === canalAtivo.id) || c.url === canalAtivo?.url
+    (c) => (canalAtivo?.id && c.id ? c.id === canalAtivo.id : c.url === canalAtivo?.url)
   );
 
   const handleNextCanal = useCallback(() => {
@@ -200,7 +199,7 @@ export default function Home() {
     handleSelectCanal(todosCanais[prevIdx]);
   }, [currentCanalIndex, todosCanais]);
 
-  // Failover inteligente quando o player dispara erro ou timeout
+  // Failover automático quando o player dispara erro
   const handlePlayerError = () => {
     if (!canalAtivo) return;
     const streams = [canalAtivo.url, ...(canalAtivo.backupUrls || [])];
@@ -214,442 +213,181 @@ export default function Home() {
       const nextIndex = streamIndex + 1;
       if (nextIndex < streams.length) {
         setFailoverNotice(
-          `Alternando para vídeo alternativo do canal (${nextIndex + 1}/${streams.length})...`
+          `Alternando para vídeo alternativo (${nextIndex + 1}/${streams.length})...`
         );
         setStreamIndex(nextIndex);
-        setTimeout(() => {
-          setFailoverNotice(null);
-        }, 5000);
+        setTimeout(() => setFailoverNotice(null), 4000);
       } else {
-        setFailoverNotice(
-          'Vídeo com restrição de incorporação no YouTube. Utilize o botão para assistir diretamente.'
-        );
+        setFailoverNotice('Vídeo com restrição no player.');
       }
       return;
     }
 
-    // Se o sinal direto falhou (CORS ou bloqueio de rede), ativa imediatamente o Proxy Seguro
     if (!useProxy) {
-      setFailoverNotice(
-        'Sinal direto instável. Ativando conexão protegida por Proxy Seguro...'
-      );
+      setFailoverNotice('Sinal direto instável. Ativando conexão protegida...');
       setUseProxy(true);
-      setTimeout(() => {
-        setFailoverNotice(null);
-      }, 5000);
+      setTimeout(() => setFailoverNotice(null), 4000);
       return;
     }
 
-    // Se já estava no proxy e falhou, avança para o próximo servidor reserva
     const nextIndex = streamIndex + 1;
     if (nextIndex < streams.length) {
       setFailoverNotice(
-        `Alternando automaticamente para o servidor reserva (${nextIndex + 1}/${streams.length})...`
+        `Alternando para o servidor reserva (${nextIndex + 1}/${streams.length})...`
       );
       setStreamIndex(nextIndex);
-      setTimeout(() => {
-        setFailoverNotice(null);
-      }, 4000);
+      setTimeout(() => setFailoverNotice(null), 4000);
     } else {
-      setFailoverNotice(
-        'Sinal deste canal demorando a responder. Conectando automaticamente ao próximo canal...'
-      );
+      setFailoverNotice('Sintonizando próximo canal...');
       setTimeout(() => {
         setFailoverNotice(null);
         handleNextCanal();
-      }, 1800);
+      }, 1500);
     }
   };
 
-  const handleManualStreamChange = (newIndex: number) => {
-    setStreamIndex(newIndex);
-    setFailoverNotice(null);
-  };
-
-  // Reprodução contínua automática para canais do YouTube e playlists de vídeos
   const handleVideoEnded = useCallback(() => {
     if (!canalAtivo) return;
-
-    const isYouTube =
-      canalAtivo.categoria === 'YouTube' ||
-      canalAtivo.rede === 'YouTube' ||
-      canalAtivo.url.includes('youtube.com') ||
-      canalAtivo.url.includes('youtu.be');
-
     const streams = [canalAtivo.url, ...(canalAtivo.backupUrls || [])];
-
-    if (isYouTube) {
-      // 1. Se ainda há vídeos na lista deste canal, avança para o próximo vídeo
-      if (streamIndex < streams.length - 1) {
-        const nextIndex = streamIndex + 1;
-        setFailoverNotice(
-          `Vídeo finalizado. Reproduzindo próximo vídeo (${nextIndex + 1}/${streams.length})...`
-        );
-        setStreamIndex(nextIndex);
-        setTimeout(() => {
-          setFailoverNotice(null);
-        }, 4000);
-      } else {
-        // 2. Concluiu todos os vídeos deste canal: avança automaticamente para o próximo canal do YouTube
-        const canaisYoutube = todosCanais.filter(
-          (c) =>
-            c.categoria === 'YouTube' ||
-            c.rede === 'YouTube' ||
-            c.url.includes('youtube.com') ||
-            c.url.includes('youtu.be')
-        );
-        const currentIdx = canaisYoutube.findIndex((c) => c.id === canalAtivo.id);
-        const nextCanal =
-          currentIdx !== -1 && currentIdx < canaisYoutube.length - 1
-            ? canaisYoutube[currentIdx + 1]
-            : canaisYoutube[0];
-
-        if (nextCanal && nextCanal.id !== canalAtivo.id) {
-          setFailoverNotice(
-            `Fim dos vídeos deste canal. Sintonizando automaticamente: ${nextCanal.nome}...`
-          );
-          setTimeout(() => {
-            setFailoverNotice(null);
-            handleSelectCanal(nextCanal);
-          }, 1800);
-        } else {
-          // Loop contínuo: reinicia do primeiro vídeo
-          setFailoverNotice('Reiniciando reprodução contínua do canal...');
-          setStreamIndex(0);
-          setTimeout(() => {
-            setFailoverNotice(null);
-          }, 3000);
-        }
-      }
+    if (streamIndex < streams.length - 1) {
+      setStreamIndex(streamIndex + 1);
     } else {
-      // Para canais com múltiplos episódios ou gravações
-      if (streams.length > 1) {
-        const nextIndex = (streamIndex + 1) % streams.length;
-        setStreamIndex(nextIndex);
-      }
+      handleNextCanal();
     }
-  }, [canalAtivo, streamIndex, todosCanais, handleSelectCanal]);
+  }, [canalAtivo, streamIndex, handleNextCanal]);
 
-  // Salvar novo canal personalizado (Permissão exclusiva de Administrador)
-  const handleAddCustomChannel = (novoCanal: Canal) => {
-    if (!isAdmin) {
-      alert('Acesso restrito: Apenas a sessão de Administrador pode adicionar novos canais.');
-      return;
-    }
-    const atualizados = [novoCanal, ...customChannels];
-    setCustomChannels(atualizados);
+  // Alterna o modo de latência e consumo de dados
+  const handleToggleLatencyMode = (forcedMode?: LatencyMode) => {
+    const nextMode: LatencyMode =
+      forcedMode ||
+      (latencyMode === 'economy'
+        ? 'stable'
+        : latencyMode === 'stable'
+        ? 'low-latency'
+        : 'economy');
+    setLatencyMode(nextMode);
     try {
-      localStorage.setItem(LOCAL_STORAGE_CUSTOM_KEY, JSON.stringify(atualizados));
+      localStorage.setItem(LOCAL_STORAGE_LATENCY_KEY, nextMode);
     } catch {
       // Ignora erro
     }
-    // Sintoniza imediatamente
-    setCanalAtivo(novoCanal);
-    setStreamIndex(0);
-    setFailoverNotice(null);
   };
 
-  // Excluir canal personalizado (Permissão exclusiva de Administrador)
-  const handleDeleteCustomChannel = (id: string, e?: React.MouseEvent) => {
-    if (e) e.stopPropagation();
-    if (!isAdmin) {
-      alert('Acesso restrito: Apenas a sessão de Administrador pode excluir canais.');
-      return;
-    }
-    const atualizados = customChannels.filter((c) => c.id !== id);
-    setCustomChannels(atualizados);
+  const handleDeleteCustomChannel = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const nextCustom = customChannels.filter((c) => c.id !== id);
+    setCustomChannels(nextCustom);
     try {
-      localStorage.setItem(LOCAL_STORAGE_CUSTOM_KEY, JSON.stringify(atualizados));
+      localStorage.setItem(LOCAL_STORAGE_CUSTOM_KEY, JSON.stringify(nextCustom));
     } catch {
       // Ignora erro
     }
-
-    if (canalAtivo?.id === id) {
-      const proximo = atualizados[0] || canais[0] || null;
-      setCanalAtivo(proximo);
-      setStreamIndex(0);
-    }
   };
 
-  const handleToggleLatencyMode = (mode?: LatencyMode) => {
-    setLatencyMode((prev) => {
-      let next: LatencyMode;
-      if (mode) {
-        next = mode;
-      } else if (prev === 'economy') {
-        next = 'stable';
-      } else if (prev === 'stable') {
-        next = 'low-latency';
-      } else {
-        next = 'economy';
-      }
-      try {
-        localStorage.setItem(LOCAL_STORAGE_LATENCY_KEY, next);
-      } catch {
-        // Ignora erro de localStorage
-      }
-      return next;
-    });
+  const handleLogout = () => {
+    signOut();
+    setIsLoginModalOpen(true);
   };
-
-  // Transição suave (skeleton + fade-out) e silenciamento preventivo para evitar picos de áudio
-  const handleEnterCinemaMode = useCallback(() => {
-    if (isCinemaMode || isTransitioningPlayer) return;
-
-    // 1. Silencia imediatamente qualquer áudio ativo para eliminar estalos / picos de áudio
-    setIsAudioTransitionMuted(true);
-    setIsTransitioningPlayer(true);
-    setTransitionDirection('to-cinema');
-
-    if (transitionTimeoutRef.current) clearTimeout(transitionTimeoutRef.current);
-    if (audioRestoreTimeoutRef.current) clearTimeout(audioRestoreTimeoutRef.current);
-
-    // 2. Aguarda o fade-out/skeleton do PlayerHero (220ms) antes de alternar componentes
-    transitionTimeoutRef.current = setTimeout(() => {
-      setIsCinemaMode(true);
-
-      // 3. Mantém o skeleton no CinemaPlayer até a inicialização estável (320ms)
-      transitionTimeoutRef.current = setTimeout(() => {
-        setIsTransitioningPlayer(false);
-        setTransitionDirection(null);
-
-        // 4. Restaura o estado de áudio do usuário suavemente
-        audioRestoreTimeoutRef.current = setTimeout(() => {
-          setIsAudioTransitionMuted(false);
-        }, 100);
-      }, 320);
-    }, 220);
-  }, [isCinemaMode, isTransitioningPlayer]);
-
-  const handleCloseCinemaMode = useCallback(() => {
-    if (!isCinemaMode || isTransitioningPlayer) return;
-
-    // 1. Silencia imediatamente no CinemaPlayer para evitar corte abrupto ou estalo
-    setIsAudioTransitionMuted(true);
-    setIsTransitioningPlayer(true);
-    setTransitionDirection('to-hero');
-
-    if (transitionTimeoutRef.current) clearTimeout(transitionTimeoutRef.current);
-    if (audioRestoreTimeoutRef.current) clearTimeout(audioRestoreTimeoutRef.current);
-
-    // 2. Desativa isCinemaMode permitindo que CinemaPlayer execute sua animação de saída (fade-out)
-    setIsCinemaMode(false);
-
-    // 3. Mantém o skeleton no PlayerHero enquanto o novo player se conecta
-    transitionTimeoutRef.current = setTimeout(() => {
-      setIsTransitioningPlayer(false);
-      setTransitionDirection(null);
-
-      // 4. Restaura o áudio do usuário de forma limpa
-      audioRestoreTimeoutRef.current = setTimeout(() => {
-        setIsAudioTransitionMuted(false);
-      }, 100);
-    }, 450);
-  }, [isCinemaMode, isTransitioningPlayer]);
-
-  const isCurrentCanalFavorited = isCanalFavorited(canalAtivo);
-  const totalFavoritos = todosCanais.filter((c) => isCanalFavorited(c)).length;
-
-  if (authLoading) {
-    return (
-      <div className="min-h-screen bg-[#0A0A0B] flex flex-col items-center justify-center">
-        <div className="relative flex items-center justify-center mb-3">
-          <span className="animate-ping absolute inline-flex h-12 w-12 rounded-full bg-[#00E676] opacity-30"></span>
-          <div className="w-10 h-10 rounded-full border-2 border-[#00E676] border-t-transparent animate-spin"></div>
-        </div>
-        <p className="text-xs font-semibold text-zinc-400">Verificando credenciais...</p>
-      </div>
-    );
-  }
 
   return (
-    <main className="min-h-screen bg-[#0A0A0B] text-zinc-100 font-sans antialiased selection:bg-[#00E676] selection:text-black">
-      {/* 🚀 HEADER FIXO COM BUSCA, FAVORITOS E NOVO CANAL */}
-      <Header
-        filtroAtivo={filtroAtivo}
-        onSelectFiltro={setFiltroAtivo}
-        totalFavoritos={totalFavoritos}
-        onOpenAddChannel={() => setIsModalOpen(true)}
-        onOpenAdminPanel={() => setIsAdminPanelOpen(true)}
-        onOpenSubscribers={() => setIsSubscribersModalOpen(true)}
-        onOpenRedeemToken={() => setIsRedeemModalOpen(true)}
-        onOpenPaymentPlans={() => setIsPaymentModalOpen(true)}
-        onOpenUserProfile={() => setIsUserProfileModalOpen(true)}
-        onOpenAuth={() => setIsAuthModalOpen(true)}
-        todosCanais={todosCanais}
-        onSelectCanal={handleSelectCanal}
-        latencyMode={latencyMode}
-        onToggleLatencyMode={handleToggleLatencyMode}
-      />
+    <main className="flex h-screen w-screen overflow-hidden bg-[#070709] text-zinc-100 antialiased font-sans">
+      {/* SIDEBAR WORSCOI DESKTOP COM OS CANAIS REAIS */}
+      <div className="hidden lg:block shrink-0 h-full">
+        <WorscoiSidebar
+          currentView={currentView}
+          onNavigate={(view) => setCurrentView(view)}
+          todosCanais={todosCanais}
+          canalAtivo={canalAtivo}
+          onSelectCanal={handleSelectCanal}
+          onLogout={handleLogout}
+          favorites={favorites}
+          onToggleFavorite={toggleFavorite}
+          filtroAtivo={filtroAtivo}
+          onSelectFiltro={setFiltroAtivo}
+          customChannels={customChannels}
+          onDeleteCustomChannel={handleDeleteCustomChannel}
+          isAdmin={isAdmin}
+          isCollapsed={isSidebarCollapsed}
+          onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+        />
+      </div>
 
-      {/* 📺 PÁGINA PRINCIPAL DO PLAYER AO VIVO: HIERARQUIA HERÓI (~67%) + SIDEBAR (~33%) + CONTEXT RAIL */}
-      <div className="max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-        {/* Status de reprodução & Economia de Internet */}
-        <div className="flex items-center justify-between flex-wrap gap-2">
-          <div className="flex items-center gap-2">
-            <span className="relative flex h-2.5 w-2.5">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00E676] opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#00E676]"></span>
-            </span>
-            <h1 className="text-sm sm:text-base font-extrabold text-white tracking-tight">
-              Transmissão Ao Vivo
-            </h1>
-          </div>
-
-          <div className="flex items-center gap-2.5">
-            {/* Tag / Botão rápido de Economia de Internet */}
-            <button
-              type="button"
-              id="live-status-data-saver-btn"
-              onClick={() => handleToggleLatencyMode()}
-              className={`text-xs px-2.5 py-1 rounded-full border flex items-center gap-1.5 transition-all cursor-pointer ${
-                latencyMode === 'economy'
-                  ? 'bg-emerald-500/15 border-[#00E676]/40 text-[#00E676] font-bold ring-1 ring-[#00E676]/20'
-                  : latencyMode === 'stable'
-                  ? 'bg-cyan-500/10 border-cyan-500/30 text-cyan-300 font-semibold'
-                  : 'bg-amber-500/10 border-amber-500/30 text-amber-300 font-semibold'
-              }`}
-              title="Clique para alternar o modo de conexão e consumo de internet"
-            >
-              <span className="w-1.5 h-1.5 rounded-full bg-current" />
-              <span>
-                {latencyMode === 'economy'
-                  ? '🍃 Economia Ativa (-75% Dados)'
-                  : latencyMode === 'stable'
-                  ? '🛡️ Modo HD Equilibrado'
-                  : '⚡ Baixa Latência (Live)'}
-              </span>
-            </button>
-
-            <span className="text-xs text-zinc-500 hidden md:inline">
-              Canal em reprodução: <strong className="text-zinc-300">{canalAtivo?.nome}</strong>
-            </span>
+      {/* DRAWER DA SIDEBAR NO MOBILE */}
+      {isMobileMenuOpen && (
+        <div className="fixed inset-0 z-50 lg:hidden flex">
+          <div
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="fixed inset-0 bg-black/80 backdrop-blur-sm"
+          />
+          <div className="relative w-80 max-w-[85vw] h-full bg-[#050507] z-10 animate-in slide-in-from-left duration-200">
+            <WorscoiSidebar
+              currentView={currentView}
+              onNavigate={(view) => {
+                setCurrentView(view);
+                setIsMobileMenuOpen(false);
+              }}
+              todosCanais={todosCanais}
+              canalAtivo={canalAtivo}
+              onSelectCanal={handleSelectCanal}
+              onLogout={() => {
+                setIsMobileMenuOpen(false);
+                handleLogout();
+              }}
+              favorites={favorites}
+              onToggleFavorite={toggleFavorite}
+              filtroAtivo={filtroAtivo}
+              onSelectFiltro={setFiltroAtivo}
+              customChannels={customChannels}
+              onDeleteCustomChannel={handleDeleteCustomChannel}
+              isAdmin={isAdmin}
+            />
           </div>
         </div>
+      )}
 
-        {/* 🌟 BARRA DE NAVEGAÇÃO DE CATEGORIAS RÁPIDAS */}
+      {/* ÁREA DE CONTEÚDO PRINCIPAL DIREITA */}
+      <div className="flex-1 flex flex-col h-screen overflow-y-auto custom-scrollbar min-w-0 bg-[#070709]">
+        {/* BARRA SUPERIOR COM AVATAR DO USUÁRIO E ATALHOS */}
+        <WorscoiTopBar
+          currentView={currentView}
+          canalAtivo={canalAtivo}
+          onOpenMobileMenu={() => setIsMobileMenuOpen(true)}
+          onOpenRedeemToken={() => setIsRedeemModalOpen(true)}
+          onOpenPlans={() => setIsPaymentModalOpen(true)}
+          onOpenUserProfile={() => setIsUserProfileModalOpen(true)}
+          onOpenAuth={() => setIsLoginModalOpen(true)}
+          onOpenAdminPanel={isAdmin ? () => setIsAdminPanelOpen(true) : undefined}
+        />
+
+        {/* CORPO CENTRAL DINÂMICO BASEADO NA ABA ATIVA */}
         <div
-          id="quick-categories-bar"
-          className="flex items-center gap-2 overflow-x-auto custom-scrollbar pb-1 pt-0.5 select-none"
+          className={`flex-1 p-3 sm:p-6 flex flex-col items-center overflow-y-auto custom-scrollbar ${
+            currentView === 'explorar' ? 'justify-center' : 'justify-start'
+          }`}
         >
-          {[
-            { id: 'Todos' as FiltroAtivo, label: 'Todos os Canais', icon: '⚡', count: todosCanais.length },
-            {
-              id: 'Esportes' as FiltroAtivo,
-              label: 'Esportes Ao Vivo',
-              icon: '⚽',
-              badge: 'Libertadores & Champions',
-              count: todosCanais.filter((c) => c.categoria === 'Esportes').length,
-            },
-            {
-              id: 'Bonecos' as FiltroAtivo,
-              label: 'Bonecos & Animes',
-              icon: '🧸',
-              badge: 'Nick, Cartoon & Disney',
-              count: todosCanais.filter((c) => c.categoria === 'Bonecos').length,
-            },
-            {
-              id: 'Filmes' as FiltroAtivo,
-              label: 'Filmes & Séries',
-              icon: '🍿',
-              badge: 'HBO, Telecine & Ação',
-              count: todosCanais.filter((c) => c.categoria === 'Filmes' || c.categoria === 'Lazer').length,
-            },
-            {
-              id: 'Novelas' as FiltroAtivo,
-              label: 'Novelas & Dramas',
-              icon: '🎭',
-              badge: 'ZAP Novelas & Televisa',
-              count: todosCanais.filter((c) => c.categoria === 'Novelas').length,
-            },
-            {
-              id: 'Portugal' as FiltroAtivo,
-              label: 'Portugal',
-              icon: '🇵🇹',
-              badge: 'RTP, SIC, TVI & Sport TV',
-              count: todosCanais.filter((c) => {
-                const cName = c.nome.toLowerCase();
-                return (
-                  c.pais === 'PT' ||
-                  cName.includes('portugal') ||
-                  cName.includes('rtp') ||
-                  cName.includes('sic') ||
-                  cName.includes('tvi') ||
-                  (c.grupo && c.grupo.toLowerCase().includes('portugal'))
-                );
-              }).length,
-            },
-            {
-              id: 'Notícias' as FiltroAtivo,
-              label: 'Notícias 24h',
-              icon: '📰',
-              badge: 'SIC & RTP 3',
-              count: todosCanais.filter((c) => c.categoria === 'Notícias').length,
-            },
-            {
-              id: 'Músicas' as FiltroAtivo,
-              label: 'Músicas & Shows',
-              icon: '🎵',
-              badge: 'Afro Music & MTV',
-              count: todosCanais.filter((c) => c.categoria === 'Músicas').length,
-            },
-            { id: 'Favoritos' as FiltroAtivo, label: 'Favoritos', icon: '⭐', count: totalFavoritos },
-          ].map((cat) => {
-            const isActive = filtroAtivo === cat.id;
-            return (
-              <button
-                key={`quick-cat-${cat.id}`}
-                type="button"
-                id={`btn-category-${cat.id.toLowerCase().replace(/[^a-z0-9]/g, '-')}`}
-                onClick={() => setFiltroAtivo(cat.id)}
-                className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold shrink-0 transition-all cursor-pointer border ${
-                  isActive
-                    ? 'bg-[#00E676] text-black border-[#00E676] shadow-lg shadow-[#00E676]/25 font-extrabold scale-[1.02]'
-                    : 'bg-[#121214] text-zinc-300 border-zinc-800/80 hover:border-zinc-700 hover:text-white hover:bg-zinc-900'
-                }`}
-              >
-                <span className="text-sm">{cat.icon}</span>
-                <span>{cat.label}</span>
-                {cat.count !== undefined && (
-                  <span
-                    className={`text-[10px] px-1.5 py-0.5 rounded-full font-mono font-bold ${
-                      isActive ? 'bg-black/20 text-black' : 'bg-zinc-800 text-zinc-400'
-                    }`}
-                  >
-                    {cat.count}
-                  </span>
-                )}
-                {cat.badge && (
-                  <span
-                    className={`text-[9px] px-1.5 py-0.5 rounded uppercase tracking-wider hidden md:inline-block ${
-                      isActive ? 'bg-black/15 text-black' : 'bg-zinc-900 text-zinc-500 border border-zinc-800'
-                    }`}
-                  >
-                    {cat.badge}
-                  </span>
-                )}
-              </button>
-            );
-          })}
-        </div>
-
-        {/* GRID HEROICO: PLAYER (~67% LARGURA) + SIDEBAR (~33% LARGURA) */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-          {/* COLUNA DO PLAYER HERO (COL-SPAN 8) */}
-          <div className="lg:col-span-8 w-full">
+          {/* REPRODUTOR DE TV (PERMANECE MONTADO PARA PiP E CONTINUIDADE AO NAVEGAR) */}
+          <div
+            className={
+              currentView === 'explorar'
+                ? 'w-full max-w-5xl mx-auto py-1 my-auto flex flex-col items-center justify-center'
+                : isMiniPlayerDismissed
+                ? 'pointer-events-none opacity-0 fixed -bottom-96 -right-96 w-1 h-1 overflow-hidden'
+                : 'contents'
+            }
+          >
             <PlayerHero
               canalAtivo={canalAtivo}
               streamIndex={streamIndex}
-              onStreamChange={handleManualStreamChange}
+              onStreamChange={(idx) => setStreamIndex(idx)}
               isMuted={isMuted}
-              onToggleMute={() => setIsMuted((prev) => !prev)}
+              onToggleMute={() => setIsMuted(!isMuted)}
               useProxy={useProxy}
-              onToggleProxy={() => setUseProxy((prev) => !prev)}
+              onToggleProxy={() => setUseProxy(!useProxy)}
               latencyMode={latencyMode}
               onToggleLatencyMode={handleToggleLatencyMode}
               isCinemaMode={isCinemaMode}
-              onEnterCinemaMode={handleEnterCinemaMode}
-              isFavorited={isCurrentCanalFavorited}
+              onEnterCinemaMode={() => setIsCinemaMode(true)}
+              isFavorited={isCanalFavorited(canalAtivo)}
               onToggleFavorite={() => canalAtivo && toggleFavorite(canalAtivo)}
               failoverNotice={failoverNotice}
               onClearFailoverNotice={() => setFailoverNotice(null)}
@@ -658,103 +396,117 @@ export default function Home() {
               onPrevCanal={handlePrevCanal}
               onOpenPaymentPlans={() => setIsPaymentModalOpen(true)}
               onOpenRedeemToken={() => setIsRedeemModalOpen(true)}
-              isTransitioning={isTransitioningPlayer}
-              transitionDirection={transitionDirection}
-              isAudioTransitionMuted={isAudioTransitionMuted}
               onVideoEnded={handleVideoEnded}
+              isMiniMode={currentView !== 'explorar'}
+              onRestoreFromMiniMode={() => setCurrentView('explorar')}
+              onDismissMiniMode={() => setIsMiniPlayerDismissed(true)}
             />
           </div>
 
-          {/* COLUNA DA SIDEBAR (COL-SPAN 4) */}
-          <div className="lg:col-span-4 w-full">
-            <ChannelSidebar
-              todosCanais={todosCanais}
-              canalAtivo={canalAtivo}
-              onSelectCanal={handleSelectCanal}
-              filtroAtivo={filtroAtivo}
-              onSelectFiltro={setFiltroAtivo}
-              favorites={favorites}
-              onToggleFavorite={toggleFavorite}
-              customChannels={customChannels}
-              onDeleteCustomChannel={handleDeleteCustomChannel}
-              totalFavoritos={totalFavoritos}
-              isAdmin={isAdmin}
-              busca={busca}
-              onBuscaChange={setBusca}
+          {/* BOTÃO FLUTUANTE DISCRETO PARA RESTAURAR O MINI-PLAYER SE DISPENSADO */}
+          {currentView !== 'explorar' && isMiniPlayerDismissed && canalAtivo && (
+            <button
+              type="button"
+              id="restore-mini-player-pill"
+              onClick={() => setIsMiniPlayerDismissed(false)}
+              className="fixed bottom-5 right-5 z-40 flex items-center gap-2 px-3 py-2 rounded-full bg-zinc-900/95 hover:bg-zinc-800 text-zinc-200 hover:text-white border border-zinc-700 shadow-xl backdrop-blur-md transition cursor-pointer text-xs group ring-1 ring-zinc-700/50"
+              title="Restaurar reprodutor flutuante"
+            >
+              <span className="w-2 h-2 rounded-full bg-[#FF2D55] animate-pulse" />
+              <span className="font-semibold max-w-[120px] truncate">{canalAtivo.nome}</span>
+              <Tv className="w-3.5 h-3.5 text-zinc-400 group-hover:text-[#FF2D55] transition-colors" />
+            </button>
+          )}
+
+          {/* VISTA 2: PAINEL DE CONTROLE (MÉTRICAS & GESTÃO) */}
+          {currentView === 'painel' && (
+            <WorscoiControlPanel
+              onNavigateToSubscribers={() => setCurrentView('assinantes')}
+              onOpenTokenGenerator={() => setIsSubscribersModalOpen(true)}
+              onSelectPlan={() => setIsPaymentModalOpen(true)}
             />
-          </div>
+          )}
+
+          {/* VISTA 3: ASSINANTES (CHAVES DE ACESSO & ASSINATURAS) */}
+          {currentView === 'assinantes' && (
+            <WorscoiSubscribersView
+              onBackToControlPanel={() => setCurrentView('painel')}
+              onOpenTokenGenerator={() => setIsSubscribersModalOpen(true)}
+            />
+          )}
         </div>
-
-        {/* 🎬 BARRA INFERIOR DE CONTEXTO: AGORA NO AR + FAVORITOS RÁPIDOS + CANAIS RELACIONADOS */}
-        <NowPlayingRail
-          canalAtivo={canalAtivo}
-          todosCanais={todosCanais}
-          favorites={favorites}
-          onSelectCanal={handleSelectCanal}
-          onToggleFavorite={toggleFavorite}
-        />
       </div>
 
-      {/* 🎭 MODO CINEMA (TELA CHEIA IMERSIVA COM TRANSIÇÃO SUAVE E ANIMAÇÃO EXIT) */}
+      {/* MODAL MODO CINEMA */}
       <AnimatePresence>
         {isCinemaMode && canalAtivo && (
           <CinemaPlayer
             key="active-cinema-player-modal"
             canalAtivo={canalAtivo}
             streamIndex={streamIndex}
-            onStreamChange={handleManualStreamChange}
+            onStreamChange={(idx) => setStreamIndex(idx)}
             isMuted={isMuted}
-            onToggleMute={() => setIsMuted((prev) => !prev)}
+            onToggleMute={() => setIsMuted(!isMuted)}
             useProxy={useProxy}
-            onToggleProxy={() => setUseProxy((prev) => !prev)}
+            onToggleProxy={() => setUseProxy(!useProxy)}
             latencyMode={latencyMode}
             onToggleLatencyMode={handleToggleLatencyMode}
-            onClose={handleCloseCinemaMode}
+            onClose={() => setIsCinemaMode(false)}
             failoverNotice={failoverNotice}
             onClearFailoverNotice={() => setFailoverNotice(null)}
             onPlayerError={handlePlayerError}
             onNextCanal={handleNextCanal}
             onPrevCanal={handlePrevCanal}
-            isTransitioning={isTransitioningPlayer}
-            transitionDirection={transitionDirection}
-            isAudioTransitionMuted={isAudioTransitionMuted}
             onVideoEnded={handleVideoEnded}
+            onOpenPaymentPlans={() => {
+              setIsCinemaMode(false);
+              setIsPaymentModalOpen(true);
+            }}
+            onOpenRedeemToken={() => {
+              setIsCinemaMode(false);
+              setIsRedeemModalOpen(true);
+            }}
           />
         )}
       </AnimatePresence>
 
-      {/* 📝 MODAL DE ADICIONAR CANAL PRÓPRIO */}
-      <AddChannelModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onAddChannel={handleAddCustomChannel}
+      {/* MODAL DE CONTA ENCERRADA POR EXPIRAÇÃO DO CRONÔMETRO */}
+      <SubscriptionExpiredModal
+        isOpen={isAccountClosedDueToExpiration}
+        onClose={closeExpiredNotice}
+        onOpenPaymentPlans={() => {
+          closeExpiredNotice();
+          setIsPaymentModalOpen(true);
+        }}
+        onOpenRedeemToken={() => {
+          closeExpiredNotice();
+          setIsRedeemModalOpen(true);
+        }}
+        onOpenLogin={() => {
+          closeExpiredNotice();
+          setIsLoginModalOpen(true);
+        }}
       />
 
-      {/* 👑 MODAL DE PAINEL ADMIN E GESTÃO DE SESSÕES */}
-      <AdminPanelModal
-        isOpen={isAdminPanelOpen}
-        onClose={() => setIsAdminPanelOpen(false)}
-        todosCanais={todosCanais}
-        customChannels={customChannels}
-        onOpenAddChannel={() => setIsModalOpen(true)}
-        onRemoveCustomChannel={(id) => handleDeleteCustomChannel(id)}
-        onOpenSubscribers={() => setIsSubscribersModalOpen(true)}
-        onOpenPaymentPlans={() => setIsPaymentModalOpen(true)}
+      {/* MODAL WORSCOI DE LOGIN (IMAGEM 1) */}
+      <WorscoiLoginModal
+        isOpen={isLoginModalOpen}
+        onClose={() => setIsLoginModalOpen(false)}
       />
 
-      {/* 👥 MODAL MEUS ASSINANTES & GERADOR DE TOKENS (5 CARACTERES) */}
+      {/* MODAL DE GERADOR DE TOKENS & ASSINANTES */}
       <SubscribersModal
         isOpen={isSubscribersModalOpen}
         onClose={() => setIsSubscribersModalOpen(false)}
       />
 
-      {/* 🔑 MODAL DE RESGATE DE TOKEN DE ACESSO */}
+      {/* MODAL DE RESGATE DE TOKEN */}
       <RedeemTokenModal
         isOpen={isRedeemModalOpen}
         onClose={() => setIsRedeemModalOpen(false)}
       />
 
-      {/* 💳 MODAL DE PLANOS & PAGAMENTOS (MULTICAIXA EXPRESS E PAYPAY: 942472983) */}
+      {/* MODAL DE PLANOS E PAGAMENTO */}
       <PaymentPlansModal
         isOpen={isPaymentModalOpen}
         onClose={() => setIsPaymentModalOpen(false)}
@@ -764,7 +516,7 @@ export default function Home() {
         }}
       />
 
-      {/* 👤 MODAL DE PERFIL E PLANO DO ESPECTADOR (NÃO-ADMIN) */}
+      {/* MODAL DE PERFIL DO USUÁRIO */}
       <UserProfileModal
         isOpen={isUserProfileModalOpen}
         onClose={() => setIsUserProfileModalOpen(false)}
@@ -776,12 +528,47 @@ export default function Home() {
           setIsUserProfileModalOpen(false);
           setIsRedeemModalOpen(true);
         }}
+        onOpenAuth={() => {
+          setIsUserProfileModalOpen(false);
+          setIsLoginModalOpen(true);
+        }}
       />
 
-      {/* 🔐 MODAL DE AUTENTICAÇÃO / INSCRIÇÃO / MODO CONVIDADO */}
-      {isAuthModalOpen && (
-        <AuthModal onClose={() => setIsAuthModalOpen(false)} />
-      )}
+      {/* MODAL DE ADMIN */}
+      <AdminPanelModal
+        isOpen={isAdminPanelOpen}
+        onClose={() => setIsAdminPanelOpen(false)}
+        todosCanais={todosCanais}
+        customChannels={customChannels}
+        onOpenAddChannel={() => setIsModalOpen(true)}
+        onRemoveCustomChannel={(id) => {
+          const atualizados = customChannels.filter((c) => c.id !== id);
+          setCustomChannels(atualizados);
+          try {
+            localStorage.setItem(LOCAL_STORAGE_CUSTOM_KEY, JSON.stringify(atualizados));
+          } catch {
+            // Ignora
+          }
+        }}
+        onOpenSubscribers={() => setIsSubscribersModalOpen(true)}
+        onOpenPaymentPlans={() => setIsPaymentModalOpen(true)}
+      />
+
+      {/* MODAL DE ADICIONAR CANAL */}
+      <AddChannelModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onAddChannel={(novo) => {
+          const atualizados = [novo, ...customChannels];
+          setCustomChannels(atualizados);
+          try {
+            localStorage.setItem(LOCAL_STORAGE_CUSTOM_KEY, JSON.stringify(atualizados));
+          } catch {
+            // Ignora
+          }
+          setCanalAtivo(novo);
+        }}
+      />
     </main>
   );
 }
