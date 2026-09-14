@@ -128,7 +128,7 @@ export function Header({
             </div>
             <div className="flex flex-col">
               <div className="flex items-center gap-2">
-                <span className="text-xl font-extrabold tracking-tight text-white font-['Space_Grotesk']">
+                <span className="text-xl font-extrabold tracking-tight text-white">
                   PLAY<span className="text-[#00E676] drop-shadow-[0_0_12px_rgba(0,230,118,0.4)]">SPORTS</span>
                 </span>
                 <span className="inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded bg-[#00E676]/10 text-[#00E676] border border-[#00E676]/30">

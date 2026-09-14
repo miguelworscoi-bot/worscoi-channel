@@ -23,7 +23,13 @@ import { Canal, LatencyMode } from '@/types';
 import { motion, AnimatePresence } from 'motion/react';
 import { getNetworkBadge, getSportTag, getChannelQuality } from '@/utils/channelUtils';
 import { getChannelSchedule } from '@/utils/channelProgramExtractor';
-import { getSafeStreamUrl, isStreamAutoProxied, getHlsOptionsForLatencyMode } from '@/utils/streamUtils';
+import {
+  getSafeStreamUrl,
+  isStreamAutoProxied,
+  getHlsOptionsForLatencyMode,
+  SPORTS_TRIVIA,
+  getEmergencyFallbackStream,
+} from '@/utils/streamUtils';
 import { PlayerSettingsModal } from './PlayerSettingsModal';
 import { PlayerTransitionSkeleton } from './PlayerTransitionSkeleton';
 import { SubscriptionCountdownBadge } from './SubscriptionCountdownBadge';
@@ -83,14 +89,19 @@ export function CinemaPlayer({
   const [hasFirstFrame, setHasFirstFrame] = useState(false);
   const [loadSeconds, setLoadSeconds] = useState(0);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [triviaIndex, setTriviaIndex] = useState(0);
+  const [emergencyOverrideUrl, setEmergencyOverrideUrl] = useState<string | null>(null);
 
   // Áudio suavizado durante transição entre componentes para evitar picos e ruídos
   const effectiveMuted = isMuted || isAudioTransitionMuted;
 
   const streamsDisponiveis = [canalAtivo.url, ...(canalAtivo.backupUrls || [])];
   const activeRawStreamUrl = streamsDisponiveis[streamIndex] || canalAtivo.url;
-  const finalStreamUrl = getSafeStreamUrl(activeRawStreamUrl, useProxy);
-  const isCurrentlyProxied = isStreamAutoProxied(activeRawStreamUrl, useProxy);
+  const rawStreamToPlay = emergencyOverrideUrl || activeRawStreamUrl;
+  const finalStreamUrl = emergencyOverrideUrl
+    ? emergencyOverrideUrl
+    : getSafeStreamUrl(activeRawStreamUrl, useProxy);
+  const isCurrentlyProxied = isStreamAutoProxied(rawStreamToPlay, useProxy);
   const isYouTubeChannel =
     canalAtivo.categoria === 'YouTube' ||
     canalAtivo.rede === 'YouTube' ||
@@ -108,9 +119,19 @@ export function CinemaPlayer({
     setIsBuffering(true);
     setHasFirstFrame(false);
     setLoadSeconds(0);
+    setEmergencyOverrideUrl(null);
   }, [canalAtivo.id, canalAtivo.url, streamIndex, useProxy]);
 
-  // Watchdog de failover ultrarrápido no modo cinema: 4s para conexões imediatas
+  // Rotaciona curiosidades e dicas esportivas a cada 3.5s enquanto o sinal carrega
+  useEffect(() => {
+    if (hasFirstFrame) return;
+    const triviaTimer = setInterval(() => {
+      setTriviaIndex((prev) => (prev + 1) % SPORTS_TRIVIA.length);
+    }, 3500);
+    return () => clearInterval(triviaTimer);
+  }, [hasFirstFrame]);
+
+  // Watchdog de failover ultrarrápido no modo cinema: 3.5s para conexões imediatas
   useEffect(() => {
     if (hasFirstFrame) return;
 
@@ -120,14 +141,19 @@ export function CinemaPlayer({
         if (next === 4 && !hasFirstFrame) {
           if (streamsDisponiveis.length > 1 && streamIndex < streamsDisponiveis.length - 1) {
             onStreamChange(streamIndex + 1);
+          } else if (!useProxy && !isYouTubeChannel) {
+            onToggleProxy();
           }
+        }
+        if (next === 7 && !hasFirstFrame) {
+          onPlayerError?.(new Error('Tempo limite excedido'));
         }
         return next;
       });
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [hasFirstFrame, streamsDisponiveis.length, streamIndex, onStreamChange]);
+  }, [hasFirstFrame, streamsDisponiveis.length, streamIndex, onStreamChange, useProxy, isYouTubeChannel, onToggleProxy, onPlayerError]);
 
   // Teclado: ESC fecha cinema, Setas zapam canais, M muta, S alterna modo
   useEffect(() => {
@@ -430,11 +456,42 @@ export function CinemaPlayer({
                     ? 'Sincronizando sinal de alta velocidade...'
                     : loadSeconds < 5
                     ? 'Otimizando taxa de bits e buffer...'
-                    : 'Sinal demorando a responder. Alternando rota...'}
+                    : 'Sinal de origem demorando. Alternando rota...'}
                 </span>
               </div>
 
+              {/* CARD ROTATIVO DE CURIOSIDADES NO CINEMA (ANTI-TÉDIO) */}
+              <div
+                onClick={() => setTriviaIndex((prev) => (prev + 1) % SPORTS_TRIVIA.length)}
+                className="mt-4 w-full bg-zinc-900/90 hover:bg-zinc-850 border border-zinc-750 p-3 rounded-2xl text-left shadow-2xl backdrop-blur-md cursor-pointer transition select-none group"
+                title="Toque para ver outro fato esportivo"
+              >
+                <div className="flex items-center justify-between mb-1">
+                  <span className="px-2 py-0.5 rounded-full bg-zinc-800 text-amber-300 text-[10px] font-bold border border-amber-400/20">
+                    {SPORTS_TRIVIA[triviaIndex].icon} {SPORTS_TRIVIA[triviaIndex].tag}
+                  </span>
+                  <span className="text-[10px] text-zinc-500 group-hover:text-zinc-300 transition">Toque p/ trocar</span>
+                </div>
+                <h5 className="text-xs font-bold text-white mb-0.5">{SPORTS_TRIVIA[triviaIndex].title}</h5>
+                <p className="text-[11px] text-zinc-300 leading-relaxed">{SPORTS_TRIVIA[triviaIndex].fact}</p>
+              </div>
+
               <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+                {/* Botão de Emergência quando a transmissão de origem demora */}
+                {loadSeconds >= 5 && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEmergencyOverrideUrl(getEmergencyFallbackStream(canalAtivo.categoria));
+                    }}
+                    className="px-3.5 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white border border-amber-400/40 text-xs font-bold flex items-center gap-1.5 transition-all shadow-lg hover:scale-105 active:scale-95 cursor-pointer"
+                    title="Ativar canal reserva HD com sinal garantido"
+                  >
+                    <Zap className="w-3.5 h-3.5 fill-white" />
+                    <span>Sinal Reserva HD</span>
+                  </button>
+                )}
+
                 {streamsDisponiveis.length > 1 && (
                   <button
                     type="button"

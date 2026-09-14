@@ -7,6 +7,8 @@ import {
   updateDoc,
   query,
   orderBy,
+  where,
+  limit,
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { AccessTokenRecord, PlanInfo, SubscriberUser, SubscriptionPlanId } from '@/types';
@@ -506,11 +508,192 @@ export async function recordDeviceTrial(
   try {
     const docRef = doc(db, 'device_trials', deviceId);
     await setDoc(docRef, record, { merge: true });
+
+    // Sincroniza também pelo e-mail indexado no Firestore para evitar criação de novas contas
+    if (email && email.trim()) {
+      const cleanEmail = email.trim().toLowerCase();
+      const emailDocRef = doc(db, 'device_trials', `email_${cleanEmail.replace(/[^a-z0-9]/g, '_')}`);
+      await setDoc(emailDocRef, record, { merge: true });
+    }
   } catch {
     // Ignora
   }
 
   return record;
+}
+
+export interface FreePlanUsageCheckResult {
+  isBlocked: boolean;
+  reason?: 'device_already_used' | 'email_already_used' | 'trial_expired';
+  message?: string;
+  deviceRecord?: DeviceTrialRecord | null;
+  deviceId: string;
+}
+
+/**
+ * Verifica no Firestore se o deviceId único ou o e-mail já foram utilizados em um plano gratuito anteriormente.
+ * Se o e-mail ou dispositivo já tiver sido usado em um plano gratuito anteriormente,
+ * impede o acesso e retorna mensagem amigável sugerindo a atualização para um plano pago.
+ */
+export async function checkDeviceAndEmailFreePlanInFirestore(
+  email: string,
+  userRole?: string,
+  userPlan?: SubscriptionPlanId,
+  planExpiresAt?: string | null
+): Promise<FreePlanUsageCheckResult> {
+  const deviceId = getOrCreateDeviceId();
+  const cleanEmail = (email || '').trim().toLowerCase();
+
+  // 1. Administrador tem acesso irrestrito
+  if (userRole === 'admin') {
+    return { isBlocked: false, deviceId };
+  }
+
+  // 2. Se o usuário possuir plano pago ativo não expirado, acesso permitido
+  if (userPlan && userPlan !== 'free') {
+    const isPaidActive = !planExpiresAt || new Date(planExpiresAt).getTime() > Date.now();
+    if (isPaidActive) {
+      return { isBlocked: false, deviceId };
+    }
+  }
+
+  // 3. Consulta ao Firestore: Verificação do deviceId único
+  let deviceRecord: DeviceTrialRecord | null = null;
+  try {
+    const deviceDocRef = doc(db, 'device_trials', deviceId);
+    const snap = await getDoc(deviceDocRef);
+    if (snap.exists()) {
+      deviceRecord = snap.data() as DeviceTrialRecord;
+    }
+  } catch (err) {
+    console.warn('Firestore device_trials check error:', err);
+  }
+
+  // Fallback local caso o Firestore esteja offline
+  if (!deviceRecord) {
+    try {
+      const raw = localStorage.getItem(LOCAL_DEVICE_TRIAL_KEY);
+      if (raw) deviceRecord = JSON.parse(raw);
+    } catch {
+      // Ignora
+    }
+  }
+
+  // Se o dispositivo já foi registrado em plano gratuito anteriormente
+  if (deviceRecord && deviceRecord.claimedAt) {
+    const expiry = new Date(deviceRecord.expiresAt).getTime();
+    const isExpired = Date.now() >= expiry;
+    const isDifferentUser =
+      deviceRecord.claimedEmail &&
+      cleanEmail &&
+      deviceRecord.claimedEmail.toLowerCase() !== cleanEmail;
+
+    // Se o teste já expirou ou foi utilizado por outra conta neste aparelho físico
+    if (isExpired || isDifferentUser) {
+      return {
+        isBlocked: true,
+        reason: 'device_already_used',
+        message:
+          'Este dispositivo já utilizou o período de teste gratuito de 24 horas anteriormente. O acesso de degustação é liberado apenas 1 vez por aparelho. Para continuar assistindo à nossa programação esportiva ao vivo, por favor atualize para um plano a partir de 1.500 Kz ou ative um Código de 5 Dígitos.',
+        deviceRecord,
+        deviceId,
+      };
+    }
+  }
+
+  // 4. Consulta ao Firestore: Verificação do e-mail
+  if (cleanEmail) {
+    // 4.1 Registro específico de e-mail na coleção de testes
+    try {
+      const emailDocRef = doc(db, 'device_trials', `email_${cleanEmail.replace(/[^a-z0-9]/g, '_')}`);
+      const emailSnap = await getDoc(emailDocRef);
+      if (emailSnap.exists()) {
+        const emailRec = emailSnap.data() as DeviceTrialRecord;
+        if (emailRec && emailRec.claimedAt) {
+          const emailExpiry = new Date(emailRec.expiresAt).getTime();
+          if (Date.now() >= emailExpiry) {
+            return {
+              isBlocked: true,
+              reason: 'email_already_used',
+              message:
+                'Este e-mail já utilizou o plano gratuito anteriormente. O teste grátis é concedido apenas uma vez por conta. Por favor, atualize para um de nossos planos pagos a partir de 1.500 Kz para liberar o acesso.',
+              deviceRecord: emailRec,
+              deviceId,
+            };
+          }
+        }
+      }
+    } catch (err) {
+      console.warn('Firestore email trial check error:', err);
+    }
+
+    // 4.2 Verificação na coleção 'users' do Firestore
+    try {
+      const qUsers = query(collection(db, 'users'), where('email', '==', cleanEmail), limit(1));
+      const snapUsers = await getDocs(qUsers);
+      if (!snapUsers.empty) {
+        const uDoc = snapUsers.docs[0].data();
+        if (uDoc.role === 'admin') {
+          return { isBlocked: false, deviceId };
+        }
+        if (uDoc.plan && uDoc.plan !== 'free') {
+          const isPaid = !uDoc.planExpiresAt || new Date(uDoc.planExpiresAt).getTime() > Date.now();
+          if (isPaid) return { isBlocked: false, deviceId };
+        }
+        // Se a conta já existe e o plano é gratuito ou já expirou
+        const createdAtTime = uDoc.createdAt ? new Date(uDoc.createdAt).getTime() : 0;
+        const oneDayMs = 24 * 60 * 60 * 1000;
+        const isFreeUsedOrExpired =
+          (uDoc.plan === 'free' || !uDoc.plan) &&
+          (Date.now() > createdAtTime + oneDayMs || Boolean(uDoc.planExpiresAt));
+
+        if (isFreeUsedOrExpired) {
+          return {
+            isBlocked: true,
+            reason: 'email_already_used',
+            message:
+              'A conta informada já aproveitou o período gratuito anteriormente. Não é permitido novo acesso gratuito com este e-mail. Assine um dos nossos planos a partir de 1.500 Kz ou resgate um Código de 5 Dígitos.',
+            deviceId,
+          };
+        }
+      }
+    } catch (err) {
+      console.warn('Firestore users collection check error:', err);
+    }
+
+    // 4.3 Fallback no registro local
+    try {
+      const rawReg = localStorage.getItem(LOCAL_REGISTRY_KEY);
+      if (rawReg) {
+        const regList = JSON.parse(rawReg);
+        if (Array.isArray(regList)) {
+          const localMatch = regList.find((u) => (u.email || '').toLowerCase() === cleanEmail);
+          if (localMatch) {
+            if (localMatch.role === 'admin') return { isBlocked: false, deviceId };
+            if (localMatch.plan && localMatch.plan !== 'free') {
+              const isPaid =
+                !localMatch.planExpiresAt || new Date(localMatch.planExpiresAt).getTime() > Date.now();
+              if (isPaid) return { isBlocked: false, deviceId };
+            }
+            const created = new Date(localMatch.createdAt || 0).getTime();
+            if (Date.now() > created + 24 * 60 * 60 * 1000 || localMatch.planExpiresAt) {
+              return {
+                isBlocked: true,
+                reason: 'email_already_used',
+                message:
+                  'Este e-mail já utilizou o plano gratuito anteriormente. Por favor, assine um plano ou ative um Código de 5 Dígitos.',
+                deviceId,
+              };
+            }
+          }
+        }
+      }
+    } catch {
+      // Ignora
+    }
+  }
+
+  return { isBlocked: false, deviceId, deviceRecord };
 }
 
 // Caracteres alfanuméricos limpos (sem 0/O ou 1/I para evitar confusão de digitação)

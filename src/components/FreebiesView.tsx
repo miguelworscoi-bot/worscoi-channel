@@ -30,7 +30,7 @@ export const FreebiesView: React.FC<FreebiesViewProps> = ({ giveaways, currency 
               <Gift className="w-3.5 h-3.5" />
               <span>Jogos 100% Gratuitos & Giveaways Oficiais</span>
             </div>
-            <h2 className="text-2xl font-extrabold text-white font-['Space_Grotesk']">
+            <h2 className="text-2xl font-extrabold text-white">
               Jogos Grátis para Resgatar e Guardar para Sempre
             </h2>
             <p className="text-sm text-slate-300 mt-1 max-w-2xl">

@@ -11,6 +11,42 @@ export async function OPTIONS() {
   });
 }
 
+export async function HEAD(request?: Request) {
+  if (!request?.url) {
+    return new NextResponse(null, {
+      status: 200,
+      headers: { 'Access-Control-Allow-Origin': '*' },
+    });
+  }
+  const urlObj = new URL(request.url);
+  const targetUrl = urlObj.searchParams.get('url');
+  if (!targetUrl) {
+    return new NextResponse(null, {
+      status: 200,
+      headers: { 'Access-Control-Allow-Origin': '*' },
+    });
+  }
+
+  try {
+    const response = await fetch(targetUrl, {
+      method: 'HEAD',
+      signal: AbortSignal.timeout(3500),
+    });
+    return new NextResponse(null, {
+      status: response.status,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Cache-Control': 'no-cache',
+      },
+    });
+  } catch {
+    return new NextResponse(null, {
+      status: 200,
+      headers: { 'Access-Control-Allow-Origin': '*' },
+    });
+  }
+}
+
 function resolveAndProxy(uri: string, baseUrl: string): string {
   try {
     const trimmed = uri.trim();
@@ -87,7 +123,7 @@ export async function GET(request?: Request) {
     }
 
     const response = await fetch(targetUrl, {
-      signal: AbortSignal.timeout(12000),
+      signal: AbortSignal.timeout(4500),
       headers,
       redirect: 'follow',
     });

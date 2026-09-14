@@ -63,7 +63,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             </div>
             <div>
               <div className="flex items-center gap-1.5">
-                <span className="font-bold text-lg tracking-tight text-white font-['Space_Grotesk']">
+                <span className="font-bold text-lg tracking-tight text-white">
                   Agregador<span className="text-emerald-400">Jogos</span>
                 </span>
                 <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse hidden sm:inline-block" title="Ao vivo" />

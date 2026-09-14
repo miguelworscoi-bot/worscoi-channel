@@ -1,4 +1,36 @@
+@import "@fontsource/tiktok-sans/index.css";
+@import "@fontsource/tiktok-sans/400.css";
+@import "@fontsource/tiktok-sans/500.css";
+@import "@fontsource/tiktok-sans/600.css";
+@import "@fontsource/tiktok-sans/700.css";
+@import "@fontsource/tiktok-sans/800.css";
 @import "tailwindcss";
+
+@theme {
+  --font-sans: 'TikTok Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-tiktok: 'TikTok Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-logomark: 'Caveat', 'Dancing Script', cursive;
+}
+
+:root {
+  --font-sans: 'TikTok Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-logomark: 'Caveat', 'Dancing Script', cursive;
+}
+
+/* Aplica a fonte TikTok Sans em todo o sistema globalmente */
+html,
+body,
+#root {
+  font-family: 'TikTok Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* Exceção explícita para preservar a tipografia autêntica da nossa logomarca */
+.font-logomark,
+.logomark-font,
+[data-logomark="true"],
+[data-logomark="true"] * {
+  font-family: 'Caveat', 'Dancing Script', cursive !important;
+}
 
 @layer utilities {
   /* Minimalist smooth scrollbar */

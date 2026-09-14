@@ -340,8 +340,9 @@ export function WorscoiSidebar({
               title="Worscoi"
             >
               <span
+                data-logomark="true"
                 style={{ fontFamily: "'Caveat', 'Dancing Script', cursive" }}
-                className="text-2xl font-bold text-[#FF2D55]"
+                className="text-2xl font-bold text-[#FF2D55] font-logomark logomark-font"
               >
                 W
               </span>

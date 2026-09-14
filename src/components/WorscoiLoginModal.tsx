@@ -174,6 +174,10 @@ export function WorscoiLoginModal({
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Falha ao processar solicitação. Tente novamente.';
       setErrorMsg(message);
+      const lower = message.toLowerCase();
+      if (lower.includes('bloqueado') || lower.includes('teste gratuito') || lower.includes('degustação')) {
+        onClose();
+      }
     } finally {
       setLoading(false);
     }
@@ -185,8 +189,13 @@ export function WorscoiLoginModal({
     try {
       await signInWithGoogle();
       onClose();
-    } catch {
-      onClose();
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Falha ao autenticar com Google.';
+      setErrorMsg(message);
+      const lower = message.toLowerCase();
+      if (lower.includes('bloqueado') || lower.includes('teste gratuito') || lower.includes('degustação')) {
+        onClose();
+      }
     } finally {
       setLoading(false);
     }
@@ -201,6 +210,10 @@ export function WorscoiLoginModal({
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Falha ao entrar como convidado.';
       setErrorMsg(msg);
+      const lower = msg.toLowerCase();
+      if (lower.includes('bloqueado') || lower.includes('teste gratuito') || lower.includes('degustação')) {
+        onClose();
+      }
     } finally {
       setLoading(false);
     }

@@ -19,6 +19,8 @@ import {
   checkDeviceTrialStatus,
   recordDeviceTrial,
   DeviceTrialRecord,
+  checkDeviceAndEmailFreePlanInFirestore,
+  getOrCreateDeviceId,
 } from '@/services/subscriptionService';
 
 export type UserRole = 'user' | 'admin';
@@ -60,6 +62,20 @@ interface AuthContextType {
   isSubscriptionExpired: boolean;
   isAccountClosedDueToExpiration: boolean;
   closeExpiredNotice: () => void;
+  isFreePlanBlocked: boolean;
+  freePlanBlockedDetails: {
+    email?: string;
+    deviceId?: string;
+    message: string;
+    reason?: 'device_already_used' | 'email_already_used' | 'trial_expired';
+  } | null;
+  closeFreePlanBlockedAlert: () => void;
+  triggerFreePlanBlocked: (details: {
+    email?: string;
+    deviceId?: string;
+    message?: string;
+    reason?: 'device_already_used' | 'email_already_used' | 'trial_expired';
+  }) => void;
   deviceTrial: {
     hasClaimed: boolean;
     isExpired: boolean;
@@ -128,6 +144,38 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     calculateRealtimeCountdown(null)
   );
   const [isAccountClosedDueToExpiration, setIsAccountClosedDueToExpiration] = useState(false);
+  const [isFreePlanBlocked, setIsFreePlanBlocked] = useState(false);
+  const [freePlanBlockedDetails, setFreePlanBlockedDetails] = useState<{
+    email?: string;
+    deviceId?: string;
+    message: string;
+    reason?: 'device_already_used' | 'email_already_used' | 'trial_expired';
+  } | null>(null);
+
+  const triggerFreePlanBlocked = useCallback(
+    (details: {
+      email?: string;
+      deviceId?: string;
+      message?: string;
+      reason?: 'device_already_used' | 'email_already_used' | 'trial_expired';
+    }) => {
+      setIsFreePlanBlocked(true);
+      setFreePlanBlockedDetails({
+        email: details.email,
+        deviceId: details.deviceId || getOrCreateDeviceId(),
+        message:
+          details.message ||
+          'Este dispositivo ou e-mail já utilizou o período de teste gratuito anteriormente. Por favor, atualize para um plano a partir de 1.500 Kz para continuar assistindo.',
+        reason: details.reason || 'device_already_used',
+      });
+    },
+    []
+  );
+
+  const closeFreePlanBlockedAlert = useCallback(() => {
+    setIsFreePlanBlocked(false);
+  }, []);
+
   const [deviceTrial, setDeviceTrial] = useState<{
     hasClaimed: boolean;
     isExpired: boolean;
@@ -430,20 +478,73 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     const { email: cleanEmail, displayName, isPhone } = normalizeIdentifier(rawInput);
+    const deviceId = getOrCreateDeviceId();
+
+    // Se for tentativa de login administrativo direto
+    const isAdminAccount =
+      resolveRole(cleanEmail) === 'admin' ||
+      rawInput.toLowerCase().includes('admin') ||
+      rawInput.toLowerCase().includes('gestor');
 
     // 1. Tenta Firebase Auth primeiro
     try {
       const cred = await signInWithEmailAndPassword(auth, cleanEmail, passClean);
       if (cred.user) {
         let role = resolveRole(cred.user.email);
+        let userPlan: SubscriptionPlanId | undefined = role === 'admin' ? undefined : 'free';
+        let planName: string | undefined = undefined;
+        let planExpiresAt: string | null = null;
+        let activatedToken: string | null = null;
+        let createdAt = new Date().toISOString();
+
         try {
           const userDocRef = doc(db, 'users', cred.user.uid);
           const snap = await getDoc(userDocRef);
           if (snap.exists()) {
-            role = resolveRole(cred.user.email, snap.data().role);
+            const data = snap.data();
+            role = resolveRole(cred.user.email, data.role);
+            userPlan = data.plan;
+            planName = data.planName;
+            planExpiresAt = data.planExpiresAt ?? null;
+            activatedToken = data.activatedToken ?? null;
+            if (data.createdAt) createdAt = data.createdAt;
           }
         } catch {
           // Ignora se Firestore não responder
+        }
+
+        const isPaidActive =
+          userPlan &&
+          userPlan !== 'free' &&
+          (!planExpiresAt || new Date(planExpiresAt).getTime() > Date.now());
+
+        // Se NÃO for admin e NÃO tiver plano pago ativo:
+        // Verifica no Firestore se este deviceId único ou e-mail já utilizou plano gratuito anteriormente
+        if (role !== 'admin' && !isPaidActive) {
+          const checkResult = await checkDeviceAndEmailFreePlanInFirestore(
+            cleanEmail,
+            role,
+            userPlan,
+            planExpiresAt
+          );
+
+          if (checkResult.isBlocked) {
+            try {
+              await firebaseSignOut(auth);
+            } catch {
+              // Ignora
+            }
+            triggerFreePlanBlocked({
+              email: cleanEmail,
+              deviceId: checkResult.deviceId || deviceId,
+              message: checkResult.message,
+              reason: checkResult.reason,
+            });
+            throw new Error(
+              checkResult.message ||
+                'Acesso bloqueado: Este dispositivo ou e-mail já utilizou o plano gratuito anteriormente. Por favor, atualize para um plano pago a partir de 1.500 Kz ou ative um Código de 5 Dígitos.'
+            );
+          }
         }
 
         const profile: UserProfile = {
@@ -452,15 +553,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           displayName: cred.user.displayName || displayName || 'Usuário',
           photoURL: cred.user.photoURL || '',
           role,
-          createdAt: new Date().toISOString(),
+          createdAt,
+          plan: userPlan,
+          planName,
+          planExpiresAt,
+          activatedToken,
         };
         saveSession(profile);
         saveInRegistry({ ...profile, password: passClean });
         return;
       }
-    } catch {
-      // Firebase falhou (credenciais locais, provider desativado ou senha não sincronizada no Firebase)
-      // Não bloqueia: segue para o banco local resiliente
+    } catch (err: unknown) {
+      // Se o erro foi o bloqueio anti-abuso de plano gratuito, propaga o erro imediatamente
+      if (err instanceof Error && err.message.includes('Acesso bloqueado')) {
+        throw err;
+      }
+      // Caso contrário, Firebase falhou (credenciais locais, provider desativado ou senha não sincronizada no Firebase)
     }
 
     // 2. Verifica no registro local
@@ -479,9 +587,40 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (existing.password && passClean && existing.password !== passClean) {
         // Senhas de homologação administrativa padrão aceitas
         const validAdminPasses = ['admin123', 'admin', '123456', 'playsports', 'gestor'];
-        const isAdminAccount = existing.role === 'admin' || cleanEmail.includes('admin');
-        if (!isAdminAccount || !validAdminPasses.includes(passClean)) {
+        const isAdm = existing.role === 'admin' || cleanEmail.includes('admin');
+        if (!isAdm || !validAdminPasses.includes(passClean)) {
           throw new Error('Senha incorreta para esta conta.');
+        }
+      }
+
+      const userRole = existing.role || resolveRole(cleanEmail);
+      const userPlan = existing.plan;
+      const planExpiresAt = existing.planExpiresAt;
+      const isPaidActive =
+        userPlan &&
+        userPlan !== 'free' &&
+        (!planExpiresAt || new Date(planExpiresAt).getTime() > Date.now());
+
+      if (userRole !== 'admin' && !isPaidActive) {
+        // Verifica no Firestore o deviceId único e o e-mail
+        const checkResult = await checkDeviceAndEmailFreePlanInFirestore(
+          cleanEmail,
+          userRole,
+          userPlan,
+          planExpiresAt
+        );
+
+        if (checkResult.isBlocked) {
+          triggerFreePlanBlocked({
+            email: cleanEmail,
+            deviceId: checkResult.deviceId || deviceId,
+            message: checkResult.message,
+            reason: checkResult.reason,
+          });
+          throw new Error(
+            checkResult.message ||
+              'Acesso bloqueado: Este dispositivo ou e-mail já utilizou o período gratuito anteriormente. Por favor, atualize para um plano pago a partir de 1.500 Kz para continuar assistindo.'
+          );
         }
       }
 
@@ -490,7 +629,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         email: existing.email,
         displayName: existing.displayName || displayName,
         photoURL: existing.photoURL || '',
-        role: existing.role || resolveRole(cleanEmail),
+        role: userRole,
         createdAt: existing.createdAt || new Date().toISOString(),
         plan: existing.plan,
         planName: existing.planName,
@@ -501,11 +640,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    // 3. Login sem fricção: Auto-criação instantânea da conta com sessão ativa
-    const isAdminAccount =
-      resolveRole(cleanEmail) === 'admin' ||
-      rawInput.toLowerCase().includes('admin') ||
-      rawInput.toLowerCase().includes('gestor');
+    // 3. Login sem fricção: Se for nova conta tentando login sem cadastro prévio
+    if (!isAdminAccount) {
+      // Verifica no Firestore se o deviceId único ou e-mail já foi usado em plano gratuito anteriormente
+      const checkResult = await checkDeviceAndEmailFreePlanInFirestore(cleanEmail, 'user', 'free');
+      if (checkResult.isBlocked) {
+        triggerFreePlanBlocked({
+          email: cleanEmail,
+          deviceId: checkResult.deviceId || deviceId,
+          message: checkResult.message,
+          reason: checkResult.reason,
+        });
+        throw new Error(
+          checkResult.message ||
+            'Acesso bloqueado: Este dispositivo ou e-mail já utilizou o período gratuito anteriormente. Por favor, assine um plano pago a partir de 1.500 Kz ou ative um Código de 5 Dígitos para assistir.'
+        );
+      }
+    }
 
     const newProfile: UserProfile = {
       id: (isAdminAccount ? 'admin_' : 'usr_') + Math.random().toString(36).substring(2, 9),
@@ -514,7 +665,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       photoURL: '',
       role: isAdminAccount ? 'admin' : 'user',
       createdAt: new Date().toISOString(),
+      plan: isAdminAccount ? undefined : 'free',
+      planName: isAdminAccount ? undefined : 'Plano Gratuito (Teste 24h)',
+      planExpiresAt: isAdminAccount
+        ? null
+        : new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
     };
+
+    if (!isAdminAccount) {
+      await recordDeviceTrial(cleanEmail, newProfile.id, newProfile.planExpiresAt || undefined);
+      refreshDeviceTrial();
+    }
 
     saveInRegistry({ ...newProfile, password: passClean });
     saveSession(newProfile);
@@ -545,6 +706,44 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const { email: cleanEmail, displayName } = normalizeIdentifier(rawInput);
     const finalName = (name || '').trim() || displayName;
 
+    // Determina o plano inicial
+    const assignedPlan = selectedRole === 'admin' ? undefined : (plan || 'free');
+    let resolvedExpiresAt = planExpiresAt;
+
+    if (assignedPlan === 'free') {
+      // Verifica no Firestore o deviceId único e o e-mail antes de criar
+      const checkResult = await checkDeviceAndEmailFreePlanInFirestore(
+        cleanEmail,
+        selectedRole,
+        'free'
+      );
+      if (checkResult.isBlocked) {
+        triggerFreePlanBlocked({
+          email: cleanEmail,
+          deviceId: checkResult.deviceId || getOrCreateDeviceId(),
+          message: checkResult.message,
+          reason: checkResult.reason,
+        });
+        throw new Error(
+          checkResult.message ||
+            'Este dispositivo ou e-mail já utilizou o teste gratuito de 1 dia (24 horas). Não é permitido criar novas contas gratuitas no mesmo aparelho. Por favor, escolha um dos nossos planos a partir de 1.500 Kz ou ative um Código de 5 Dígitos.'
+        );
+      }
+
+      const devStatus = await checkDeviceTrialStatus();
+      if (devStatus.hasClaimed && !devStatus.isExpired && devStatus.trialRecord) {
+        // Dispositivo já iniciou o teste: continua com o mesmo relógio em contagem regressiva contínua
+        resolvedExpiresAt = devStatus.trialRecord.expiresAt;
+      } else {
+        // Primeira vez neste dispositivo
+        if (!resolvedExpiresAt) {
+          resolvedExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+        }
+        await recordDeviceTrial(cleanEmail, 'new_user', resolvedExpiresAt);
+      }
+      refreshDeviceTrial();
+    }
+
     let firebaseUid: string | null = null;
     if (passClean.length >= 6) {
       try {
@@ -563,31 +762,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const userId =
       firebaseUid ||
       (selectedRole === 'admin' ? 'admin_' : 'usr_') + Math.random().toString(36).substring(2, 10);
-
-    // Determina o plano inicial
-    const assignedPlan = selectedRole === 'admin' ? undefined : (plan || 'free');
-    let resolvedExpiresAt = planExpiresAt;
-
-    if (assignedPlan === 'free') {
-      const devStatus = await checkDeviceTrialStatus();
-      if (devStatus.hasClaimed && devStatus.isExpired) {
-        throw new Error(
-          'Este dispositivo já utilizou o teste gratuito de 1 dia (24 horas). Não é permitido criar novas contas gratuitas no mesmo aparelho. Por favor, escolha um dos nossos planos a partir de 1.500 Kz ou ative um Código de 5 Dígitos.'
-        );
-      }
-
-      if (devStatus.hasClaimed && !devStatus.isExpired && devStatus.trialRecord) {
-        // Dispositivo já iniciou o teste: continua com o mesmo relógio em contagem regressiva contínua
-        resolvedExpiresAt = devStatus.trialRecord.expiresAt;
-      } else {
-        // Primeira vez neste dispositivo
-        if (!resolvedExpiresAt) {
-          resolvedExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
-        }
-        await recordDeviceTrial(cleanEmail, userId, resolvedExpiresAt);
-      }
-      refreshDeviceTrial();
-    }
 
     const profileData: UserProfile = {
       id: userId,
@@ -617,9 +791,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const res = await signInWithPopup(auth, provider);
       if (res.user) {
         const role = resolveRole(res.user.email);
+        const googleEmail = res.user.email || 'google.user@playsports.tv';
+
+        if (role !== 'admin') {
+          // Verifica no Firestore o deviceId único e o e-mail
+          const checkResult = await checkDeviceAndEmailFreePlanInFirestore(
+            googleEmail,
+            role,
+            'free'
+          );
+          if (checkResult.isBlocked) {
+            try {
+              await firebaseSignOut(auth);
+            } catch {
+              // Ignora
+            }
+            triggerFreePlanBlocked({
+              email: googleEmail,
+              deviceId: checkResult.deviceId || getOrCreateDeviceId(),
+              message: checkResult.message,
+              reason: checkResult.reason,
+            });
+            throw new Error(
+              checkResult.message ||
+                'Acesso bloqueado: Este dispositivo ou e-mail já utilizou o teste gratuito anteriormente. Por favor, assine um plano pago a partir de 1.500 Kz para liberar o acesso.'
+            );
+          }
+        }
+
         const profile: UserProfile = {
           id: res.user.uid,
-          email: res.user.email || 'google.user@playsports.tv',
+          email: googleEmail,
           displayName: res.user.displayName || 'Usuário Google',
           photoURL: res.user.photoURL || '',
           role,
@@ -629,13 +831,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return;
       }
     } catch (err: unknown) {
+      if (err instanceof Error && err.message.includes('Acesso bloqueado')) {
+        throw err;
+      }
       console.warn('Google Auth popup restrito ou indisponível:', err);
     }
 
     // Fallback gracioso para ambiente de iframe e testes
+    const googleEmail = 'usuario.google@playsports.tv';
+    const checkResult = await checkDeviceAndEmailFreePlanInFirestore(googleEmail, 'user', 'free');
+    if (checkResult.isBlocked) {
+      triggerFreePlanBlocked({
+        email: googleEmail,
+        deviceId: checkResult.deviceId || getOrCreateDeviceId(),
+        message: checkResult.message,
+        reason: checkResult.reason,
+      });
+      throw new Error(
+        checkResult.message ||
+          'Este dispositivo já utilizou o teste gratuito de 24 horas anteriormente. Por favor, atualize para um plano a partir de 1.500 Kz para continuar assistindo.'
+      );
+    }
+
     const googleProfile: UserProfile = {
       id: 'google_' + Math.random().toString(36).substring(2, 9),
-      email: 'usuario.google@playsports.tv',
+      email: googleEmail,
       displayName: 'Usuário Google (Ao Vivo)',
       photoURL: '',
       role: 'user',
@@ -650,13 +870,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     let resolvedExpiresAt: string | null = null;
 
     if (!isAdm) {
-      const devStatus = await checkDeviceTrialStatus();
-      if (devStatus.hasClaimed && devStatus.isExpired) {
+      // Verifica no Firestore o deviceId único
+      const checkResult = await checkDeviceAndEmailFreePlanInFirestore(
+        'espectador@playsports.tv',
+        'user',
+        'free'
+      );
+      if (checkResult.isBlocked) {
+        triggerFreePlanBlocked({
+          email: 'espectador@playsports.tv',
+          deviceId: checkResult.deviceId || getOrCreateDeviceId(),
+          message: checkResult.message,
+          reason: checkResult.reason,
+        });
         throw new Error(
-          'Este dispositivo já utilizou o teste gratuito de 1 dia (24 horas). Para continuar assistindo à programação esportiva, assine um plano a partir de 1.500 Kz ou ative um Código de 5 Dígitos.'
+          checkResult.message ||
+            'Este dispositivo já utilizou o teste gratuito de 1 dia (24 horas). Para continuar assistindo à programação esportiva, assine um plano a partir de 1.500 Kz ou ative um Código de 5 Dígitos.'
         );
       }
 
+      const devStatus = await checkDeviceTrialStatus();
       if (devStatus.hasClaimed && !devStatus.isExpired && devStatus.trialRecord) {
         resolvedExpiresAt = devStatus.trialRecord.expiresAt;
       } else {
@@ -745,6 +978,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isSubscriptionExpired,
         isAccountClosedDueToExpiration,
         closeExpiredNotice,
+        isFreePlanBlocked,
+        freePlanBlockedDetails,
+        closeFreePlanBlockedAlert,
+        triggerFreePlanBlocked,
         deviceTrial,
         refreshDeviceTrial,
         signInWithEmail,

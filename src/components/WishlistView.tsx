@@ -28,7 +28,7 @@ export const WishlistView: React.FC<WishlistViewProps> = ({
         <div className="w-16 h-16 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-400 flex items-center justify-center mx-auto mb-4">
           <Heart className="w-8 h-8" />
         </div>
-        <h3 className="text-xl font-bold text-white mb-2 font-['Space_Grotesk']">
+        <h3 className="text-xl font-bold text-white mb-2">
           Sua Lista de Desejos está vazia
         </h3>
         <p className="text-sm text-slate-400 mb-6 leading-relaxed">
@@ -56,7 +56,7 @@ export const WishlistView: React.FC<WishlistViewProps> = ({
               <Heart className="w-3.5 h-3.5 fill-rose-400 text-rose-400" />
               <span>{wishlist.length} {wishlist.length === 1 ? 'jogo salvo' : 'jogos salvos'}</span>
             </div>
-            <h2 className="text-2xl font-black text-white font-['Space_Grotesk']">
+            <h2 className="text-2xl font-black text-white">
               Sua Lista de Desejos e Alertas
             </h2>
             <p className="text-sm text-slate-300 mt-1">

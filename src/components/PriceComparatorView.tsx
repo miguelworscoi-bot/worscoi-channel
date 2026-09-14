@@ -65,7 +65,7 @@ export const PriceComparatorView: React.FC<PriceComparatorViewProps> = ({ curren
           <Scale className="w-4 h-4" />
           <span>Comparador Multi-Lojas</span>
         </div>
-        <h2 className="text-2xl font-black text-white font-['Space_Grotesk']">
+        <h2 className="text-2xl font-black text-white">
           Compare Preços entre Steam, Epic, GOG e Mais
         </h2>
         <p className="text-sm text-slate-300 mt-1 max-w-2xl">

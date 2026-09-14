@@ -15,11 +15,12 @@ export function WorscoiLogo({ size = 'md', showDot = false, className = '' }: Wo
   };
 
   return (
-    <div className={`inline-flex items-center gap-1.5 select-none ${className}`}>
-      {/* Cursive handwritten Worscoi brand typography */}
+    <div className={`inline-flex items-center gap-1.5 select-none font-logomark ${className}`} data-logomark="true">
+      {/* Cursive handwritten Worscoi brand typography (Preservada como Logomarca oficial) */}
       <span
+        data-logomark="true"
         style={{ fontFamily: "'Caveat', 'Dancing Script', cursive" }}
-        className={`${sizeClasses[size]} font-bold tracking-wide text-[#FF2D55] drop-shadow-[0_0_12px_rgba(255,45,85,0.4)] transition-all`}
+        className={`${sizeClasses[size]} font-bold tracking-wide text-[#FF2D55] drop-shadow-[0_0_12px_rgba(255,45,85,0.4)] transition-all font-logomark logomark-font`}
       >
         Worscoi
       </span>

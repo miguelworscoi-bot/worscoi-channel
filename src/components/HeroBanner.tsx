@@ -32,7 +32,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
             <span>Monitoramento em Tempo Real de Preços</span>
           </div>
 
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white tracking-tight leading-tight mb-3 font-['Space_Grotesk']">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white tracking-tight leading-tight mb-3">
             Compare preços, ache descontos e nunca mais perca um <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-200">jogo grátis</span>.
           </h1>
 

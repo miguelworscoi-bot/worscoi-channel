@@ -19,13 +19,22 @@ import { RedeemTokenModal } from '@/components/RedeemTokenModal';
 import { PaymentPlansModal } from '@/components/PaymentPlansModal';
 import { UserProfileModal } from '@/components/UserProfileModal';
 import { SubscriptionExpiredModal } from '@/components/SubscriptionExpiredModal';
+import { FreePlanBlockedModal } from '@/components/FreePlanBlockedModal';
 import { useAuth } from '@/context/AuthContext';
 
 const LOCAL_STORAGE_FAVORITES_KEY = 'playsports_favorites';
 const LOCAL_STORAGE_CUSTOM_KEY = 'playsports_custom_channels';
 
 export default function Home() {
-  const { isAdmin, signOut, isAccountClosedDueToExpiration, closeExpiredNotice } = useAuth();
+  const {
+    isAdmin,
+    signOut,
+    isAccountClosedDueToExpiration,
+    closeExpiredNotice,
+    isFreePlanBlocked,
+    freePlanBlockedDetails,
+    closeFreePlanBlockedAlert,
+  } = useAuth();
   const [currentView, setCurrentView] = useState<WorscoiView>('explorar');
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -400,6 +409,8 @@ export default function Home() {
               isMiniMode={currentView !== 'explorar'}
               onRestoreFromMiniMode={() => setCurrentView('explorar')}
               onDismissMiniMode={() => setIsMiniPlayerDismissed(true)}
+              todosCanais={todosCanais}
+              onSelectCanal={handleSelectCanal}
             />
           </div>
 
@@ -485,6 +496,21 @@ export default function Home() {
         onOpenLogin={() => {
           closeExpiredNotice();
           setIsLoginModalOpen(true);
+        }}
+      />
+
+      {/* ALERTA AMIGÁVEL: BLOQUEIO DE PLANO GRATUITO JÁ UTILIZADO (DEVICEID OU E-MAIL) */}
+      <FreePlanBlockedModal
+        isOpen={isFreePlanBlocked}
+        onClose={closeFreePlanBlockedAlert}
+        details={freePlanBlockedDetails}
+        onOpenPaymentPlans={() => {
+          closeFreePlanBlockedAlert();
+          setIsPaymentModalOpen(true);
+        }}
+        onOpenRedeemToken={() => {
+          closeFreePlanBlockedAlert();
+          setIsRedeemModalOpen(true);
         }}
       />
 

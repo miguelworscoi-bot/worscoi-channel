@@ -87,6 +87,78 @@ export function PlayerSettingsModal({
 
         {/* BODY */}
         <div className="p-5 sm:p-6 space-y-6 max-h-[75vh] overflow-y-auto">
+          {/* SELETOR RÁPIDO SOLICITADO: ALTERNAR ENTRE MODO ESTÁVEL E MODO BAIXA LATÊNCIA */}
+          <div className="p-4 bg-zinc-950/90 rounded-2xl border border-zinc-800 space-y-3">
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <label className="text-xs sm:text-sm font-bold text-white flex items-center gap-2">
+                <Sliders className="w-4 h-4 text-[#00E676]" />
+                <span>Modo de Desempenho da Rede</span>
+              </label>
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-300 border border-zinc-700">
+                {latencyMode === 'stable'
+                  ? '🛡️ Modo Estável'
+                  : latencyMode === 'low-latency'
+                  ? '⚡ Baixa Latência'
+                  : '🌿 Poupança de Dados'}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2.5">
+              <button
+                type="button"
+                id="quick-toggle-modo-estavel"
+                onClick={() => onSelectLatencyMode('stable')}
+                className={`py-3 px-3 rounded-xl border text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer ${
+                  latencyMode === 'stable'
+                    ? 'bg-cyan-500/20 text-cyan-300 border-cyan-400 shadow-md shadow-cyan-950/40 ring-1 ring-cyan-400/40'
+                    : 'bg-zinc-900/90 text-zinc-400 hover:text-white border-zinc-800 hover:border-zinc-700'
+                }`}
+              >
+                <ShieldCheck className="w-4 h-4 text-cyan-400 shrink-0" />
+                <span className="truncate">Modo Estável</span>
+              </button>
+
+              <button
+                type="button"
+                id="quick-toggle-modo-baixa-latencia"
+                onClick={() => onSelectLatencyMode('low-latency')}
+                className={`py-3 px-3 rounded-xl border text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer ${
+                  latencyMode === 'low-latency'
+                    ? 'bg-amber-500/20 text-amber-300 border-amber-400 shadow-md shadow-amber-950/40 ring-1 ring-amber-400/40'
+                    : 'bg-zinc-900/90 text-zinc-400 hover:text-white border-zinc-800 hover:border-zinc-700'
+                }`}
+              >
+                <Zap className="w-4 h-4 text-amber-400 shrink-0" />
+                <span className="truncate">Modo Baixa Latência</span>
+              </button>
+            </div>
+
+            <div className="p-2.5 rounded-xl bg-zinc-900/70 border border-zinc-800/80 text-[11px] text-zinc-300 flex items-start gap-2">
+              {latencyMode === 'stable' ? (
+                <>
+                  <ShieldCheck className="w-4 h-4 text-cyan-400 shrink-0 mt-0.5" />
+                  <p>
+                    <strong className="text-cyan-300">Modo Estável selecionado:</strong> Otimizado para redes lentas ou instáveis. Amplia o buffer do sinal para evitar pausas e congelamentos na transmissão.
+                  </p>
+                </>
+              ) : latencyMode === 'low-latency' ? (
+                <>
+                  <Zap className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                  <p>
+                    <strong className="text-amber-300">Modo Baixa Latência selecionado:</strong> Transmissão imediata com atraso mínimo em tempo real. Ideal para redes de alta velocidade e Fibra Óptica.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <Leaf className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                  <p>
+                    <strong className="text-emerald-300">Economia de Dados ativa:</strong> Reduz drasticamente o consumo de pacotes móveis (3G/4G/Unitel).
+                  </p>
+                </>
+              )}
+            </div>
+          </div>
+
           {/* BANNER DE POUPANÇA ATIVA SE ESTIVER NO MODO ECONOMIA */}
           <div
             className={`p-3.5 rounded-2xl border flex items-center justify-between gap-3 ${
@@ -201,7 +273,7 @@ export function PlayerSettingsModal({
                 </div>
               </button>
 
-              {/* OPÇÃO 2: MODO EQUILIBRADO (HD BALANCEADO) */}
+              {/* OPÇÃO 2: MODO ESTÁVEL (BUFFER ESTENDIDO PARA REDES LENTAS) */}
               <button
                 type="button"
                 id="select-mode-stable"
@@ -225,19 +297,19 @@ export function PlayerSettingsModal({
                   <div>
                     <div className="flex items-center gap-2 flex-wrap">
                       <h4 className="text-xs sm:text-sm font-bold text-white">
-                        Modo Equilibrado (HD 720p)
+                        Modo Estável (Buffer Estendido)
                       </h4>
                       <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/40">
-                        Buffer 14s
+                        Melhor p/ Redes Lentas
                       </span>
                     </div>
                     <p className="text-[11px] text-zinc-400 leading-relaxed mt-1">
-                      Buffer moderado para evitar congelamentos mesmo com oscilações normais de rede doméstica.
+                      Buffer estendido de 14s. Estabiliza o sinal e absorve lentidões ou oscilações de conexão, prevenindo travamentos durante a transmissão.
                     </p>
                     <div className="mt-2 flex items-center gap-3 text-[10px] text-zinc-400">
                       <span className="text-cyan-400 font-semibold">Consumo: ~900 MB / hora</span>
                       <span>•</span>
-                      <span>Wi-Fi Residencial</span>
+                      <span>Recomendado p/ conexões lentas ou instáveis</span>
                     </div>
                   </div>
                 </div>
@@ -275,19 +347,19 @@ export function PlayerSettingsModal({
                   <div>
                     <div className="flex items-center gap-2 flex-wrap">
                       <h4 className="text-xs sm:text-sm font-bold text-white">
-                        Baixa Latência (Tempo Real)
+                        Modo Baixa Latência (Tempo Real)
                       </h4>
                       <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40">
                         Ao Vivo 2s
                       </span>
                     </div>
                     <p className="text-[11px] text-zinc-400 leading-relaxed mt-1">
-                      Sincronização imediata no limite do sinal sem atraso. Exige conexão rápida sem limites de tráfego.
+                      Sincronização imediata no limite do sinal com mínimo atraso (delay). Recomendado apenas para redes rápidas ou fibra óptica sem oscilação.
                     </p>
                     <div className="mt-2 flex items-center gap-3 text-[10px] text-zinc-400">
                       <span className="text-amber-400 font-semibold">Consumo: ~1.8 GB / hora</span>
                       <span>•</span>
-                      <span>Fibra Óptica / Wi-Fi Ilimitado</span>
+                      <span>Fibra Óptica / Conexões Rápidas</span>
                     </div>
                   </div>
                 </div>
