@@ -10,7 +10,7 @@ import {
   where,
   limit,
 } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { db, safeFirestoreCall } from '@/lib/firebase';
 import { AccessTokenRecord, PlanInfo, SubscriberUser, SubscriptionPlanId } from '@/types';
 
 export const LOCAL_TOKENS_KEY = 'playsports_access_tokens';
@@ -447,8 +447,8 @@ export async function checkDeviceTrialStatus(): Promise<{
   // Tenta sincronizar com Firestore
   try {
     const docRef = doc(db, 'device_trials', deviceId);
-    const snap = await getDoc(docRef);
-    if (snap.exists()) {
+    const snap = await safeFirestoreCall(() => getDoc(docRef), null, 2000);
+    if (snap && snap.exists()) {
       const data = snap.data() as DeviceTrialRecord;
       if (!localRecord || new Date(data.expiresAt).getTime() < new Date(localRecord.expiresAt).getTime()) {
         localRecord = data;
@@ -507,13 +507,13 @@ export async function recordDeviceTrial(
 
   try {
     const docRef = doc(db, 'device_trials', deviceId);
-    await setDoc(docRef, record, { merge: true });
+    await safeFirestoreCall(() => setDoc(docRef, record, { merge: true }), null, 2000);
 
     // Sincroniza também pelo e-mail indexado no Firestore para evitar criação de novas contas
     if (email && email.trim()) {
       const cleanEmail = email.trim().toLowerCase();
       const emailDocRef = doc(db, 'device_trials', `email_${cleanEmail.replace(/[^a-z0-9]/g, '_')}`);
-      await setDoc(emailDocRef, record, { merge: true });
+      await safeFirestoreCall(() => setDoc(emailDocRef, record, { merge: true }), null, 2000);
     }
   } catch {
     // Ignora
@@ -561,12 +561,12 @@ export async function checkDeviceAndEmailFreePlanInFirestore(
   let deviceRecord: DeviceTrialRecord | null = null;
   try {
     const deviceDocRef = doc(db, 'device_trials', deviceId);
-    const snap = await getDoc(deviceDocRef);
-    if (snap.exists()) {
+    const snap = await safeFirestoreCall(() => getDoc(deviceDocRef), null, 2000);
+    if (snap && snap.exists()) {
       deviceRecord = snap.data() as DeviceTrialRecord;
     }
   } catch (err) {
-    console.warn('Firestore device_trials check error:', err);
+    console.debug('Firestore device_trials check error:', err);
   }
 
   // Fallback local caso o Firestore esteja offline
@@ -606,8 +606,8 @@ export async function checkDeviceAndEmailFreePlanInFirestore(
     // 4.1 Registro específico de e-mail na coleção de testes
     try {
       const emailDocRef = doc(db, 'device_trials', `email_${cleanEmail.replace(/[^a-z0-9]/g, '_')}`);
-      const emailSnap = await getDoc(emailDocRef);
-      if (emailSnap.exists()) {
+      const emailSnap = await safeFirestoreCall(() => getDoc(emailDocRef), null, 2000);
+      if (emailSnap && emailSnap.exists()) {
         const emailRec = emailSnap.data() as DeviceTrialRecord;
         if (emailRec && emailRec.claimedAt) {
           const emailExpiry = new Date(emailRec.expiresAt).getTime();
@@ -624,14 +624,14 @@ export async function checkDeviceAndEmailFreePlanInFirestore(
         }
       }
     } catch (err) {
-      console.warn('Firestore email trial check error:', err);
+      console.debug('Firestore email trial check error:', err);
     }
 
     // 4.2 Verificação na coleção 'users' do Firestore
     try {
       const qUsers = query(collection(db, 'users'), where('email', '==', cleanEmail), limit(1));
-      const snapUsers = await getDocs(qUsers);
-      if (!snapUsers.empty) {
+      const snapUsers = await safeFirestoreCall(() => getDocs(qUsers), null, 2000);
+      if (snapUsers && !snapUsers.empty) {
         const uDoc = snapUsers.docs[0].data();
         if (uDoc.role === 'admin') {
           return { isBlocked: false, deviceId };
@@ -747,9 +747,9 @@ export async function getAccessTokens(): Promise<AccessTokenRecord[]> {
   try {
     const colRef = collection(db, 'access_tokens');
     const q = query(colRef, orderBy('createdAt', 'desc'));
-    const snap = await getDocs(q);
+    const snap = await safeFirestoreCall(() => getDocs(q), null, 2500);
 
-    if (!snap.empty) {
+    if (snap && !snap.empty) {
       const remoteTokens: AccessTokenRecord[] = [];
       snap.forEach((d) => {
         remoteTokens.push(d.data() as AccessTokenRecord);
@@ -767,7 +767,7 @@ export async function getAccessTokens(): Promise<AccessTokenRecord[]> {
       return merged;
     }
   } catch (err) {
-    console.warn('Firestore access_tokens inacessível, usando registro local:', err);
+    console.debug('Firestore access_tokens inacessível, usando registro local:', err);
   }
 
   // Se não houver nenhum token salvo, inicializa com alguns tokens autorizados para homologação
@@ -848,7 +848,7 @@ export async function createAccessTokens(params: {
       durationDays: duration,
       status: 'active',
       createdAt: new Date().toISOString(),
-      createdBy: creatorEmail || 'admin@playsports.com',
+      createdBy: creatorEmail || 'miguelworscoi@gmail.com',
       notes: notes?.trim() || `Token ${planInfo.name} (${duration} dias)`,
     };
 
@@ -856,9 +856,13 @@ export async function createAccessTokens(params: {
 
     // Salva no Firestore
     try {
-      await setDoc(doc(db, 'access_tokens', code), tokenRecord);
+      await safeFirestoreCall(
+        () => setDoc(doc(db, 'access_tokens', code), tokenRecord),
+        null,
+        2000
+      );
     } catch (err) {
-      console.warn('Erro ao salvar token no Firestore:', err);
+      console.debug('Erro ao salvar token no Firestore:', err);
     }
   }
 
@@ -881,7 +885,11 @@ export async function revokeAccessToken(code: string): Promise<void> {
   saveLocalTokens(updated);
 
   try {
-    await updateDoc(doc(db, 'access_tokens', cleanCode), { status: 'revoked' });
+    await safeFirestoreCall(
+      () => updateDoc(doc(db, 'access_tokens', cleanCode), { status: 'revoked' }),
+      null,
+      2000
+    );
   } catch {
     // Ignora
   }
@@ -962,26 +970,35 @@ export async function redeemAccessToken(
 
   // Atualiza no Firestore
   try {
-    await setDoc(doc(db, 'access_tokens', code), updatedToken, { merge: true });
+    await safeFirestoreCall(
+      () => setDoc(doc(db, 'access_tokens', code), updatedToken, { merge: true }),
+      null,
+      2000
+    );
   } catch (err) {
-    console.warn('Erro ao atualizar token no Firestore:', err);
+    console.debug('Erro ao atualizar token no Firestore:', err);
   }
 
   // Atualiza o plano do usuário no Firestore
   try {
     const userDocRef = doc(db, 'users', user.uid);
-    await setDoc(
-      userDocRef,
-      {
-        plan: token.plan,
-        planName: token.planName,
-        planExpiresAt: expiresAtISO,
-        activatedToken: code,
-      },
-      { merge: true }
+    await safeFirestoreCall(
+      () =>
+        setDoc(
+          userDocRef,
+          {
+            plan: token.plan,
+            planName: token.planName,
+            planExpiresAt: expiresAtISO,
+            activatedToken: code,
+          },
+          { merge: true }
+        ),
+      null,
+      2000
     );
   } catch (err) {
-    console.warn('Erro ao salvar plano do usuário no Firestore:', err);
+    console.debug('Erro ao salvar plano do usuário no Firestore:', err);
   }
 
   // Atualiza o perfil no registro local
@@ -1048,13 +1065,16 @@ export async function getSubscribers(): Promise<SubscriberUser[]> {
       const parsed = JSON.parse(regData);
       if (Array.isArray(parsed)) {
         parsed.forEach((u) => {
-          const plan: SubscriptionPlanId = u.plan || (u.role === 'admin' ? 'anual' : 'free');
+          // REGRA ABSOLUTA: Apenas miguelworscoi@gmail.com pode ter o papel de admin
+          const isOfficialAdmin = (u.email || '').trim().toLowerCase() === 'miguelworscoi@gmail.com';
+          const role: 'admin' | 'user' = isOfficialAdmin ? 'admin' : 'user';
+          const plan: SubscriptionPlanId = u.plan || (role === 'admin' ? 'anual' : 'free');
           subscribersMap.set(u.email.toLowerCase(), {
             id: u.id,
             email: u.email,
-            displayName: u.displayName || u.email.split('@')[0],
+            displayName: u.displayName || (isOfficialAdmin ? 'Miguel Worscoi' : u.email.split('@')[0]),
             photoURL: u.photoURL,
-            role: u.role || 'user',
+            role,
             plan,
             planName: PLANS[plan]?.name || 'Plano Gratuito',
             planExpiresAt: u.planExpiresAt || null,
@@ -1070,20 +1090,27 @@ export async function getSubscribers(): Promise<SubscriberUser[]> {
 
   // 2. Carrega do Firestore se disponível
   try {
-    const snap = await getDocs(collection(db, 'users'));
-    if (!snap.empty) {
+    const snap = await safeFirestoreCall(
+      () => getDocs(collection(db, 'users')),
+      null,
+      2500
+    );
+    if (snap && !snap.empty) {
       snap.forEach((d) => {
         const data = d.data();
         const email = (data.email || '').toLowerCase();
         if (email) {
+          // REGRA ABSOLUTA: Apenas miguelworscoi@gmail.com pode ter o papel de admin
+          const isOfficialAdmin = email === 'miguelworscoi@gmail.com';
+          const role: 'admin' | 'user' = isOfficialAdmin ? 'admin' : 'user';
           const plan: SubscriptionPlanId =
-            data.plan || (data.role === 'admin' ? 'anual' : 'free');
+            data.plan || (role === 'admin' ? 'anual' : 'free');
           subscribersMap.set(email, {
             id: d.id,
             email: data.email,
-            displayName: data.displayName || data.email.split('@')[0],
+            displayName: data.displayName || (isOfficialAdmin ? 'Miguel Worscoi' : data.email.split('@')[0]),
             photoURL: data.photoURL,
-            role: data.role || 'user',
+            role,
             plan,
             planName: PLANS[plan]?.name || 'Plano Gratuito',
             planExpiresAt: data.planExpiresAt || null,
@@ -1094,7 +1121,7 @@ export async function getSubscribers(): Promise<SubscriberUser[]> {
       });
     }
   } catch (err) {
-    console.warn('Firestore users inacessível para listagem completa de assinantes:', err);
+    console.debug('Firestore users inacessível para listagem completa de assinantes:', err);
   }
 
   // 3. Garante usuários padrão se o mapa estiver vazio
@@ -1102,8 +1129,8 @@ export async function getSubscribers(): Promise<SubscriberUser[]> {
     const defaultUsers: SubscriberUser[] = [
       {
         id: 'usr_admin',
-        email: 'admin@playsports.com',
-        displayName: 'Administrador PLAYSPORTS',
+        email: 'miguelworscoi@gmail.com',
+        displayName: 'Miguel Worscoi',
         role: 'admin',
         plan: 'anual',
         planName: PLANS.anual.name,
@@ -1161,14 +1188,19 @@ export async function updateSubscriberPlan(
 
   // Atualiza no Firestore
   try {
-    await setDoc(
-      doc(db, 'users', userId),
-      {
-        plan: newPlan,
-        planName: planInfo.name,
-        planExpiresAt: expiresAtISO,
-      },
-      { merge: true }
+    await safeFirestoreCall(
+      () =>
+        setDoc(
+          doc(db, 'users', userId),
+          {
+            plan: newPlan,
+            planName: planInfo.name,
+            planExpiresAt: expiresAtISO,
+          },
+          { merge: true }
+        ),
+      null,
+      2000
     );
   } catch {
     // Ignora

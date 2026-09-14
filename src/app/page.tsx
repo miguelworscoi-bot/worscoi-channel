@@ -20,6 +20,7 @@ import { PaymentPlansModal } from '@/components/PaymentPlansModal';
 import { UserProfileModal } from '@/components/UserProfileModal';
 import { SubscriptionExpiredModal } from '@/components/SubscriptionExpiredModal';
 import { FreePlanBlockedModal } from '@/components/FreePlanBlockedModal';
+import { CongratulationsNotification } from '@/components/CongratulationsNotification';
 import { useAuth } from '@/context/AuthContext';
 
 const LOCAL_STORAGE_FAVORITES_KEY = 'playsports_favorites';
@@ -60,6 +61,12 @@ export default function Home() {
   const [isUserProfileModalOpen, setIsUserProfileModalOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isMiniPlayerDismissed, setIsMiniPlayerDismissed] = useState(false);
+  const [celebrationData, setCelebrationData] = useState<{
+    isOpen: boolean;
+    userName?: string;
+    planName?: string;
+    message?: string;
+  } | null>(null);
 
   // Carrega favoritos e canais personalizados do localStorage
   useEffect(() => {
@@ -175,21 +182,22 @@ export default function Home() {
   };
 
   // Troca de canal ativo
-  const handleSelectCanal = (canal: Canal) => {
-    const isSame = canalAtivo
-      ? canalAtivo.id && canal.id
-        ? canalAtivo.id === canal.id
-        : canalAtivo.url === canal.url
-      : false;
+  const handleSelectCanal = useCallback((canal: Canal) => {
+    setCanalAtivo((prev) => {
+      const isSame = prev
+        ? prev.id && canal.id
+          ? prev.id === canal.id
+          : prev.url === canal.url
+        : false;
 
-    if (!isSame) {
-      setStreamIndex(0);
-      setFailoverNotice(null);
-      setCanalAtivo(canal);
-      setIsMobileMenuOpen(false);
-      setIsMiniPlayerDismissed(false);
-    }
-  };
+      if (isSame) return prev;
+      return canal;
+    });
+    setStreamIndex(0);
+    setFailoverNotice(null);
+    setIsMobileMenuOpen(false);
+    setIsMiniPlayerDismissed(false);
+  }, []);
 
   // Navegação de canais (Zapping Anterior / Próximo)
   const currentCanalIndex = todosCanais.findIndex(
@@ -200,60 +208,62 @@ export default function Home() {
     if (todosCanais.length === 0) return;
     const nextIdx = (currentCanalIndex + 1) % todosCanais.length;
     handleSelectCanal(todosCanais[nextIdx]);
-  }, [currentCanalIndex, todosCanais]);
+  }, [currentCanalIndex, todosCanais, handleSelectCanal]);
 
   const handlePrevCanal = useCallback(() => {
     if (todosCanais.length === 0) return;
     const prevIdx = (currentCanalIndex - 1 + todosCanais.length) % todosCanais.length;
     handleSelectCanal(todosCanais[prevIdx]);
-  }, [currentCanalIndex, todosCanais]);
+  }, [currentCanalIndex, todosCanais, handleSelectCanal]);
 
   // Failover automático quando o player dispara erro
-  const handlePlayerError = () => {
-    if (!canalAtivo) return;
-    const streams = [canalAtivo.url, ...(canalAtivo.backupUrls || [])];
-    const isYouTube =
-      canalAtivo.categoria === 'YouTube' ||
-      canalAtivo.rede === 'YouTube' ||
-      canalAtivo.url.includes('youtube.com') ||
-      canalAtivo.url.includes('youtu.be');
+  const handlePlayerError = useCallback(() => {
+    setTimeout(() => {
+      if (!canalAtivo) return;
+      const streams = [canalAtivo.url, ...(canalAtivo.backupUrls || [])];
+      const isYouTube =
+        canalAtivo.categoria === 'YouTube' ||
+        canalAtivo.rede === 'YouTube' ||
+        canalAtivo.url.includes('youtube.com') ||
+        canalAtivo.url.includes('youtu.be');
 
-    if (isYouTube) {
+      if (isYouTube) {
+        const nextIndex = streamIndex + 1;
+        if (nextIndex < streams.length) {
+          setFailoverNotice(
+            `Alternando para vídeo alternativo (${nextIndex + 1}/${streams.length})...`
+          );
+          setStreamIndex(nextIndex);
+          setTimeout(() => setFailoverNotice(null), 4000);
+        } else {
+          setFailoverNotice('Vídeo com restrição no player.');
+        }
+        return;
+      }
+
+      if (!useProxy) {
+        setFailoverNotice('Sinal direto instável. Ativando conexão protegida...');
+        setUseProxy(true);
+        setTimeout(() => setFailoverNotice(null), 4000);
+        return;
+      }
+
       const nextIndex = streamIndex + 1;
       if (nextIndex < streams.length) {
         setFailoverNotice(
-          `Alternando para vídeo alternativo (${nextIndex + 1}/${streams.length})...`
+          `Alternando para o servidor reserva (${nextIndex + 1}/${streams.length})...`
         );
         setStreamIndex(nextIndex);
         setTimeout(() => setFailoverNotice(null), 4000);
       } else {
-        setFailoverNotice('Vídeo com restrição no player.');
+        setFailoverNotice('Sintonizando próximo canal...');
+        setTimeout(() => {
+          setFailoverNotice(null);
+          handleNextCanal();
+        }, 1500);
       }
-      return;
-    }
-
-    if (!useProxy) {
-      setFailoverNotice('Sinal direto instável. Ativando conexão protegida...');
-      setUseProxy(true);
-      setTimeout(() => setFailoverNotice(null), 4000);
-      return;
-    }
-
-    const nextIndex = streamIndex + 1;
-    if (nextIndex < streams.length) {
-      setFailoverNotice(
-        `Alternando para o servidor reserva (${nextIndex + 1}/${streams.length})...`
-      );
-      setStreamIndex(nextIndex);
-      setTimeout(() => setFailoverNotice(null), 4000);
-    } else {
-      setFailoverNotice('Sintonizando próximo canal...');
-      setTimeout(() => {
-        setFailoverNotice(null);
-        handleNextCanal();
-      }, 1500);
-    }
-  };
+    }, 0);
+  }, [canalAtivo, streamIndex, useProxy, handleNextCanal]);
 
   const handleVideoEnded = useCallback(() => {
     if (!canalAtivo) return;
@@ -518,6 +528,7 @@ export default function Home() {
       <WorscoiLoginModal
         isOpen={isLoginModalOpen}
         onClose={() => setIsLoginModalOpen(false)}
+        onCelebration={(data) => setCelebrationData({ isOpen: true, ...data })}
       />
 
       {/* MODAL DE GERADOR DE TOKENS & ASSINANTES */}
@@ -540,7 +551,19 @@ export default function Home() {
           setIsPaymentModalOpen(false);
           setIsRedeemModalOpen(true);
         }}
+        onCelebration={(data) => setCelebrationData({ isOpen: true, ...data })}
       />
+
+      {/* NOTIFICAÇÃO DE PARABÉNS PELO PLANO ATIVADO */}
+      {celebrationData && (
+        <CongratulationsNotification
+          isOpen={celebrationData.isOpen}
+          onClose={() => setCelebrationData(null)}
+          userName={celebrationData.userName}
+          planName={celebrationData.planName}
+          message={celebrationData.message}
+        />
+      )}
 
       {/* MODAL DE PERFIL DO USUÁRIO */}
       <UserProfileModal

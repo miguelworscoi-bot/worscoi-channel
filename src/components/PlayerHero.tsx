@@ -311,34 +311,34 @@ export function PlayerHero({
   useEffect(() => {
     if (hasFirstFrame || !canalAtivo || isCinemaMode) return;
 
+    let seconds = 0;
     const interval = setInterval(() => {
-      setLoadSeconds((prev) => {
-        const nextSec = prev + 1;
+      seconds += 1;
+      setLoadSeconds(seconds);
 
-        // Aos 3.5s: tenta servidor alternativo ou ativa proxy
-        if (nextSec === 4 && !hasFirstFrame) {
-          if (streamsDisponiveis.length > 1 && streamIndex < streamsDisponiveis.length - 1) {
-            onStreamChange(streamIndex + 1);
-          } else if (
-            !useProxy &&
-            !activeRawStreamUrl.includes('youtube.com') &&
-            !activeRawStreamUrl.includes('youtu.be')
-          ) {
-            onToggleProxy();
-          }
+      // Aos 3.5s: tenta servidor alternativo ou ativa proxy
+      if (seconds === 4 && !hasFirstFrame) {
+        if (streamsDisponiveis.length > 1 && streamIndex < streamsDisponiveis.length - 1) {
+          onStreamChange(streamIndex + 1);
+        } else if (
+          !useProxy &&
+          !activeRawStreamUrl.includes('youtube.com') &&
+          !activeRawStreamUrl.includes('youtu.be')
+        ) {
+          onToggleProxy();
         }
+      }
 
-        // Aos 6.5s: se ainda não abriu, aciona a central de resgate para não intediar o espectador
-        if (nextSec >= 6 && !hasFirstFrame) {
-          setIsRescueActive(true);
-        }
+      // Aos 6s: se ainda não abriu, aciona a central de resgate para não intediar o espectador
+      if (seconds >= 6 && !hasFirstFrame) {
+        setIsRescueActive(true);
+      }
 
-        if (nextSec === 8 && !hasFirstFrame) {
+      if (seconds === 8 && !hasFirstFrame) {
+        setTimeout(() => {
           onPlayerError(new Error('Tempo limite de conexão'));
-        }
-
-        return nextSec;
-      });
+        }, 0);
+      }
     }, 1000);
 
     return () => clearInterval(interval);
@@ -348,19 +348,22 @@ export function PlayerHero({
   useEffect(() => {
     if (!isRescueActive || hasFirstFrame || isRescuePaused || isCinemaMode) return;
 
+    let countdown = rescueCountdown;
     const timer = setInterval(() => {
-      setRescueCountdown((prev) => {
-        if (prev <= 1) {
-          clearInterval(timer);
+      countdown -= 1;
+      if (countdown <= 0) {
+        clearInterval(timer);
+        setRescueCountdown(0);
+        setTimeout(() => {
           if (onNextCanal) {
             onNextCanal();
           } else {
             setEmergencyOverrideUrl(getEmergencyFallbackStream(canalAtivo?.categoria));
           }
-          return 0;
-        }
-        return prev - 1;
-      });
+        }, 0);
+      } else {
+        setRescueCountdown(countdown);
+      }
     }, 1000);
 
     return () => clearInterval(timer);
@@ -616,7 +619,11 @@ export function PlayerHero({
                     setIsBuffering(false);
                     setHasFirstFrame(true);
                   },
-                  onEnded: () => onVideoEnded?.(),
+                  onEnded: () => {
+                    setTimeout(() => {
+                      onVideoEnded?.();
+                    }, 0);
+                  },
                   onError: (err: unknown) => {
                     if (
                       activeRawStreamUrl.includes('youtube.com') ||
@@ -624,7 +631,9 @@ export function PlayerHero({
                     ) {
                       setHasYouTubeEmbedError(true);
                     }
-                    onPlayerError(err);
+                    setTimeout(() => {
+                      onPlayerError(err);
+                    }, 0);
                   },
                 }
               )

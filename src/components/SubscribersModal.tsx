@@ -128,7 +128,7 @@ export function SubscribersModal({ isOpen, onClose }: SubscribersModalProps) {
         quantity: Number(genQuantity) || 1,
         durationDays: Number(genDuration) || PLANS[genPlan].durationDays,
         notes: genNotes,
-        creatorEmail: user?.email || 'admin@playsports.com',
+        creatorEmail: user?.email || 'miguelworscoi@gmail.com',
       });
 
       setRecentlyGenerated(newTokens);

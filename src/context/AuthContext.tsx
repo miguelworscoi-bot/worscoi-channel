@@ -11,7 +11,7 @@ import {
   updateProfile,
 } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { auth, db } from '@/lib/firebase';
+import { auth, db, safeFirestoreCall } from '@/lib/firebase';
 import { SubscriptionPlanId } from '@/types';
 import {
   calculateRealtimeCountdown,
@@ -24,6 +24,15 @@ import {
 } from '@/services/subscriptionService';
 
 export type UserRole = 'user' | 'admin';
+
+// =========================================================================
+// REGRA ABSOLUTA DE SEGURANÇA WORSCOI:
+// Nunca temos 2 ou mais admins, apenas 1 único: miguelworscoi@gmail.com
+// Palavra-passe oficial: worscoi2004
+// Nenhuma outra conta pode ser aceita como admin sob nenhuma circunstância.
+// =========================================================================
+export const OFFICIAL_ADMIN_EMAIL = 'miguelworscoi@gmail.com';
+export const OFFICIAL_ADMIN_PASSWORD = 'worscoi2004';
 
 export interface UserProfile {
   id: string;
@@ -118,7 +127,16 @@ export function normalizeIdentifier(raw: string): { email: string; displayName: 
     const parts = clean.split('@');
     return {
       email: clean.toLowerCase(),
-      displayName: parts[0] || 'Usuário',
+      displayName: clean.toLowerCase() === OFFICIAL_ADMIN_EMAIL.toLowerCase() ? 'Miguel Worscoi' : (parts[0] || 'Usuário'),
+      isPhone: false,
+    };
+  }
+
+  // Se o usuário digitar apenas "miguelworscoi", reconhece automaticamente a conta de administrador
+  if (clean.toLowerCase() === 'miguelworscoi') {
+    return {
+      email: OFFICIAL_ADMIN_EMAIL.toLowerCase(),
+      displayName: 'Miguel Worscoi',
       isPhone: false,
     };
   }
@@ -223,20 +241,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => clearInterval(interval);
   }, [userProfile]);
 
-  // Helper to determine default role
-  const resolveRole = (identifier?: string | null, savedRole?: string): UserRole => {
-    if (savedRole === 'admin' || savedRole === 'user') {
-      return savedRole;
-    }
+  // REGRA ABSOLUTA DE SEGURANÇA WORSCOI:
+  // Nunca temos 2 ou mais admins, só 1: miguelworscoi@gmail.com.
+  // Palavra-passe: worscoi2004.
+  // Nenhuma outra conta pode ser aceita como admin além dessa.
+  const resolveRole = (identifier?: string | null, _savedRole?: string): UserRole => {
     if (!identifier) return 'user';
-    const lower = identifier.toLowerCase();
-    if (
-      lower.includes('admin') ||
-      lower.includes('gestor') ||
-      lower === 'beliziodos5@gmail.com' ||
-      lower === 'confirmacaomatriculaquessua@gmail.com' ||
-      lower === 'associacaoepfmalanje@gmail.com'
-    ) {
+    const lower = identifier.trim().toLowerCase();
+    if (lower === OFFICIAL_ADMIN_EMAIL.toLowerCase()) {
       return 'admin';
     }
     return 'user';
@@ -247,7 +259,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const data = localStorage.getItem(LOCAL_REGISTRY_KEY);
       if (data) {
         const parsed = JSON.parse(data);
-        if (Array.isArray(parsed)) return parsed;
+        if (Array.isArray(parsed)) {
+          // Garante estritamente que NENHUM outro usuário além de miguelworscoi@gmail.com seja admin
+          return parsed.map((u) => {
+            const isOfficialAdmin = (u.email || '').trim().toLowerCase() === OFFICIAL_ADMIN_EMAIL.toLowerCase();
+            return {
+              ...u,
+              role: isOfficialAdmin ? 'admin' : 'user',
+            };
+          });
+        }
       }
     } catch {
       // Ignora
@@ -257,10 +278,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const saveInRegistry = (record: LocalUserRecord) => {
     try {
+      // Garante estritamente que apenas miguelworscoi@gmail.com seja gravado como admin
+      const isOfficialAdmin = (record.email || '').trim().toLowerCase() === OFFICIAL_ADMIN_EMAIL.toLowerCase();
+      const sanitizedRecord: LocalUserRecord = {
+        ...record,
+        role: isOfficialAdmin ? 'admin' : 'user',
+      };
       const list = getLocalRegistry().filter(
-        (u) => u.email.toLowerCase() !== record.email.toLowerCase() && u.id !== record.id
+        (u) => u.email.toLowerCase() !== sanitizedRecord.email.toLowerCase() && u.id !== sanitizedRecord.id
       );
-      list.push(record);
+      list.push(sanitizedRecord);
       localStorage.setItem(LOCAL_REGISTRY_KEY, JSON.stringify(list));
     } catch {
       // Ignora
@@ -268,11 +295,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const saveSession = (rawProfile: UserProfile) => {
-    const profile: UserProfile = { ...rawProfile };
-    // Garante que o plano gratuito tenha exatamente 1 dia (24 horas) de validade
+    const isOfficialAdmin = (rawProfile.email || '').trim().toLowerCase() === OFFICIAL_ADMIN_EMAIL.toLowerCase();
+    const profile: UserProfile = {
+      ...rawProfile,
+      // Se não for miguelworscoi@gmail.com, o papel é FORÇADO a ser 'user'
+      role: isOfficialAdmin ? rawProfile.role : 'user',
+    };
+
     if (profile.role === 'admin') {
       profile.plan = profile.plan || 'anual';
-      profile.planName = profile.planName || 'Passe Anual Campeão';
+      profile.planName = profile.planName || 'Acesso Total Administrador';
       profile.planExpiresAt = null;
     } else {
       profile.plan = profile.plan || 'free';
@@ -300,6 +332,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
+  // Garante a existência do administrador oficial único no registro local
+  useEffect(() => {
+    try {
+      const registry = getLocalRegistry();
+      const adminAcc = registry.find(
+        (u) => (u.email || '').toLowerCase() === OFFICIAL_ADMIN_EMAIL.toLowerCase()
+      );
+      if (!adminAcc) {
+        saveInRegistry({
+          id: 'admin_miguelworscoi',
+          email: OFFICIAL_ADMIN_EMAIL,
+          displayName: 'Miguel Worscoi',
+          role: 'admin',
+          password: OFFICIAL_ADMIN_PASSWORD,
+          createdAt: '2026-01-01T00:00:00.000Z',
+          plan: 'anual',
+          planName: 'Acesso Total Administrador',
+          planExpiresAt: null,
+        });
+      } else if (adminAcc.password !== OFFICIAL_ADMIN_PASSWORD || adminAcc.role !== 'admin') {
+        saveInRegistry({
+          ...adminAcc,
+          role: 'admin',
+          password: OFFICIAL_ADMIN_PASSWORD,
+        });
+      }
+    } catch {
+      // Ignora
+    }
+  }, []);
+
   // Carrega sessão salva imediatamente no boot com fallback rápido
   useEffect(() => {
     try {
@@ -307,6 +370,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (saved) {
         const parsed = JSON.parse(saved) as UserProfile;
         if (parsed && parsed.email) {
+          // Garante que nenhuma sessão anterior indevida permaneça com papel de admin
+          if (parsed.role === 'admin' && parsed.email.trim().toLowerCase() !== OFFICIAL_ADMIN_EMAIL.toLowerCase()) {
+            parsed.role = 'user';
+            try {
+              localStorage.setItem(LOCAL_SESSION_KEY, JSON.stringify(parsed));
+            } catch {
+              // Ignora
+            }
+          }
           setUserProfile(parsed);
           setUser({
             uid: parsed.id || 'local_' + Math.random().toString(36).substring(2, 9),
@@ -349,8 +421,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             setUser(currentUser);
             try {
               const userDocRef = doc(db, 'users', currentUser.uid);
-              const snap = await getDoc(userDocRef);
-              if (snap.exists()) {
+              const snap = await safeFirestoreCall(() => getDoc(userDocRef), null, 2500);
+              if (snap && snap.exists()) {
                 const data = snap.data();
                 const role = resolveRole(currentUser.email, data.role);
                 const profile: UserProfile = {
@@ -383,7 +455,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                   role: initialRole,
                   createdAt: new Date().toISOString(),
                 };
-                await setDoc(userDocRef, profileData, { merge: true });
+                await safeFirestoreCall(
+                  () => setDoc(userDocRef, profileData, { merge: true }),
+                  null,
+                  2000
+                );
                 saveSession(profileData);
               }
             } catch {
@@ -474,24 +550,69 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
     const passClean = (pass || '').trim();
     if (!passClean) {
-      throw new Error('Por favor, informe sua senha.');
+      throw new Error('Por favor, informe sua palavra-passe.');
     }
 
     const { email: cleanEmail, displayName, isPhone } = normalizeIdentifier(rawInput);
     const deviceId = getOrCreateDeviceId();
+    const isTargetingAdmin = cleanEmail.toLowerCase() === OFFICIAL_ADMIN_EMAIL.toLowerCase();
 
-    // Se for tentativa de login administrativo direto
-    const isAdminAccount =
-      resolveRole(cleanEmail) === 'admin' ||
-      rawInput.toLowerCase().includes('admin') ||
-      rawInput.toLowerCase().includes('gestor');
+    // =========================================================================
+    // 1. CONTA OFICIAL DO ÚNICO ADMINISTRADOR: miguelworscoi@gmail.com
+    // Palavra-passe oficial: worscoi2004
+    // =========================================================================
+    if (isTargetingAdmin) {
+      if (passClean !== OFFICIAL_ADMIN_PASSWORD) {
+        throw new Error('Palavra-passe incorreta para a conta oficial de administrador.');
+      }
 
-    // 1. Tenta Firebase Auth primeiro
+      const adminProfile: UserProfile = {
+        id: 'admin_miguelworscoi',
+        email: OFFICIAL_ADMIN_EMAIL,
+        displayName: 'Miguel Worscoi',
+        photoURL: '',
+        role: 'admin',
+        createdAt: '2026-01-01T00:00:00.000Z',
+        plan: 'anual',
+        planName: 'Acesso Total Administrador',
+        planExpiresAt: null,
+      };
+
+      saveSession(adminProfile);
+      saveInRegistry({ ...adminProfile, password: OFFICIAL_ADMIN_PASSWORD });
+
+      try {
+        await signInWithEmailAndPassword(auth, OFFICIAL_ADMIN_EMAIL, OFFICIAL_ADMIN_PASSWORD);
+      } catch {
+        try {
+          await createUserWithEmailAndPassword(auth, OFFICIAL_ADMIN_EMAIL, OFFICIAL_ADMIN_PASSWORD);
+        } catch {
+          // Mantém sessão local autenticada
+        }
+      }
+
+      try {
+        await safeFirestoreCall(
+          () => setDoc(doc(db, 'users', adminProfile.id), adminProfile, { merge: true }),
+          null,
+          2000
+        );
+      } catch {
+        // Ignora erro Firestore
+      }
+
+      return;
+    }
+
+    // =========================================================================
+    // 2. QUALQUER OUTRA CONTA (ESTRITAMENTE PAPEL 'user', NUNCA ADMIN)
+    // =========================================================================
+    // 2.1 Tenta Firebase Auth primeiro
     try {
       const cred = await signInWithEmailAndPassword(auth, cleanEmail, passClean);
       if (cred.user) {
-        let role = resolveRole(cred.user.email);
-        let userPlan: SubscriptionPlanId | undefined = role === 'admin' ? undefined : 'free';
+        const role: UserRole = 'user'; // REGRA: NUNCA aceita outra conta como admin
+        let userPlan: SubscriptionPlanId | undefined = 'free';
         let planName: string | undefined = undefined;
         let planExpiresAt: string | null = null;
         let activatedToken: string | null = null;
@@ -499,10 +620,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         try {
           const userDocRef = doc(db, 'users', cred.user.uid);
-          const snap = await getDoc(userDocRef);
-          if (snap.exists()) {
+          const snap = await safeFirestoreCall(() => getDoc(userDocRef), null, 2000);
+          if (snap && snap.exists()) {
             const data = snap.data();
-            role = resolveRole(cred.user.email, data.role);
             userPlan = data.plan;
             planName = data.planName;
             planExpiresAt = data.planExpiresAt ?? null;
@@ -518,9 +638,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           userPlan !== 'free' &&
           (!planExpiresAt || new Date(planExpiresAt).getTime() > Date.now());
 
-        // Se NÃO for admin e NÃO tiver plano pago ativo:
-        // Verifica no Firestore se este deviceId único ou e-mail já utilizou plano gratuito anteriormente
-        if (role !== 'admin' && !isPaidActive) {
+        if (!isPaidActive) {
           const checkResult = await checkDeviceAndEmailFreePlanInFirestore(
             cleanEmail,
             role,
@@ -552,7 +670,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           email: cred.user.email || cleanEmail,
           displayName: cred.user.displayName || displayName || 'Usuário',
           photoURL: cred.user.photoURL || '',
-          role,
+          role: 'user', // Forçado estritamente para 'user'
           createdAt,
           plan: userPlan,
           planName,
@@ -564,14 +682,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return;
       }
     } catch (err: unknown) {
-      // Se o erro foi o bloqueio anti-abuso de plano gratuito, propaga o erro imediatamente
       if (err instanceof Error && err.message.includes('Acesso bloqueado')) {
         throw err;
       }
-      // Caso contrário, Firebase falhou (credenciais locais, provider desativado ou senha não sincronizada no Firebase)
     }
 
-    // 2. Verifica no registro local
+    // 2.2 Registro local
     const registry = getLocalRegistry();
     const existing = registry.find((u) => {
       const uEmail = (u.email || '').toLowerCase();
@@ -585,15 +701,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     if (existing) {
       if (existing.password && passClean && existing.password !== passClean) {
-        // Senhas de homologação administrativa padrão aceitas
-        const validAdminPasses = ['admin123', 'admin', '123456', 'playsports', 'gestor'];
-        const isAdm = existing.role === 'admin' || cleanEmail.includes('admin');
-        if (!isAdm || !validAdminPasses.includes(passClean)) {
-          throw new Error('Senha incorreta para esta conta.');
-        }
+        throw new Error('Palavra-passe incorreta para esta conta.');
       }
 
-      const userRole = existing.role || resolveRole(cleanEmail);
+      const userRole: UserRole = 'user'; // NUNCA aceita outra conta como admin
       const userPlan = existing.plan;
       const planExpiresAt = existing.planExpiresAt;
       const isPaidActive =
@@ -601,8 +712,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         userPlan !== 'free' &&
         (!planExpiresAt || new Date(planExpiresAt).getTime() > Date.now());
 
-      if (userRole !== 'admin' && !isPaidActive) {
-        // Verifica no Firestore o deviceId único e o e-mail
+      if (!isPaidActive) {
         const checkResult = await checkDeviceAndEmailFreePlanInFirestore(
           cleanEmail,
           userRole,
@@ -629,7 +739,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         email: existing.email,
         displayName: existing.displayName || displayName,
         photoURL: existing.photoURL || '',
-        role: userRole,
+        role: 'user', // NUNCA aceita outra conta como admin
         createdAt: existing.createdAt || new Date().toISOString(),
         plan: existing.plan,
         planName: existing.planName,
@@ -640,49 +750,45 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    // 3. Login sem fricção: Se for nova conta tentando login sem cadastro prévio
-    if (!isAdminAccount) {
-      // Verifica no Firestore se o deviceId único ou e-mail já foi usado em plano gratuito anteriormente
-      const checkResult = await checkDeviceAndEmailFreePlanInFirestore(cleanEmail, 'user', 'free');
-      if (checkResult.isBlocked) {
-        triggerFreePlanBlocked({
-          email: cleanEmail,
-          deviceId: checkResult.deviceId || deviceId,
-          message: checkResult.message,
-          reason: checkResult.reason,
-        });
-        throw new Error(
-          checkResult.message ||
-            'Acesso bloqueado: Este dispositivo ou e-mail já utilizou o período gratuito anteriormente. Por favor, assine um plano pago a partir de 1.500 Kz ou ative um Código de 5 Dígitos para assistir.'
-        );
-      }
+    // 2.3 Se for nova conta tentando login sem cadastro prévio
+    const checkResult = await checkDeviceAndEmailFreePlanInFirestore(cleanEmail, 'user', 'free');
+    if (checkResult.isBlocked) {
+      triggerFreePlanBlocked({
+        email: cleanEmail,
+        deviceId: checkResult.deviceId || deviceId,
+        message: checkResult.message,
+        reason: checkResult.reason,
+      });
+      throw new Error(
+        checkResult.message ||
+          'Acesso bloqueado: Este dispositivo ou e-mail já utilizou o período gratuito anteriormente. Por favor, assine um plano pago a partir de 1.500 Kz ou ative um Código de 5 Dígitos para assistir.'
+      );
     }
 
     const newProfile: UserProfile = {
-      id: (isAdminAccount ? 'admin_' : 'usr_') + Math.random().toString(36).substring(2, 9),
+      id: 'usr_' + Math.random().toString(36).substring(2, 9),
       email: cleanEmail,
-      displayName: isAdminAccount ? 'Administrador PLAYSPORTS' : displayName,
+      displayName: displayName,
       photoURL: '',
-      role: isAdminAccount ? 'admin' : 'user',
+      role: 'user', // NUNCA aceita outra conta como admin
       createdAt: new Date().toISOString(),
-      plan: isAdminAccount ? undefined : 'free',
-      planName: isAdminAccount ? undefined : 'Plano Gratuito (Teste 24h)',
-      planExpiresAt: isAdminAccount
-        ? null
-        : new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+      plan: 'free',
+      planName: 'Plano Gratuito (Teste 24h)',
+      planExpiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
     };
 
-    if (!isAdminAccount) {
-      await recordDeviceTrial(cleanEmail, newProfile.id, newProfile.planExpiresAt || undefined);
-      refreshDeviceTrial();
-    }
+    await recordDeviceTrial(cleanEmail, newProfile.id, newProfile.planExpiresAt || undefined);
+    refreshDeviceTrial();
 
     saveInRegistry({ ...newProfile, password: passClean });
     saveSession(newProfile);
 
-    // Tenta sincronizar silenciosamente no Firestore
     try {
-      await setDoc(doc(db, 'users', newProfile.id), newProfile, { merge: true });
+      await safeFirestoreCall(
+        () => setDoc(doc(db, 'users', newProfile.id), newProfile, { merge: true }),
+        null,
+        2000
+      );
     } catch {
       // Ignora erro
     }
@@ -692,7 +798,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     identifier: string,
     pass: string,
     name: string,
-    selectedRole: UserRole = 'user',
+    _selectedRole: UserRole = 'user',
     plan?: SubscriptionPlanId,
     planName?: string,
     tokenCode?: string | null,
@@ -701,20 +807,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const rawInput = (identifier || '').trim();
     if (!rawInput) throw new Error('E-mail, telefone ou nome de usuário é obrigatório.');
     const passClean = (pass || '').trim();
-    if (!passClean) throw new Error('A senha é obrigatória.');
+    if (!passClean) throw new Error('A palavra-passe é obrigatória.');
 
     const { email: cleanEmail, displayName } = normalizeIdentifier(rawInput);
-    const finalName = (name || '').trim() || displayName;
+    const isTargetingAdmin = cleanEmail.toLowerCase() === OFFICIAL_ADMIN_EMAIL.toLowerCase();
+
+    // REGRA ABSOLUTA DE SEGURANÇA:
+    // Nunca aceita outra conta como admin além de miguelworscoi@gmail.com com a senha worscoi2004
+    if (isTargetingAdmin) {
+      if (passClean !== OFFICIAL_ADMIN_PASSWORD) {
+        throw new Error('Palavra-passe não autorizada para a conta de administrador.');
+      }
+    }
+
+    const finalRole: UserRole = isTargetingAdmin ? 'admin' : 'user';
+    const finalName = (name || '').trim() || (isTargetingAdmin ? 'Miguel Worscoi' : displayName);
 
     // Determina o plano inicial
-    const assignedPlan = selectedRole === 'admin' ? undefined : (plan || 'free');
+    const assignedPlan = finalRole === 'admin' ? undefined : (plan || 'free');
     let resolvedExpiresAt = planExpiresAt;
 
     if (assignedPlan === 'free') {
-      // Verifica no Firestore o deviceId único e o e-mail antes de criar
       const checkResult = await checkDeviceAndEmailFreePlanInFirestore(
         cleanEmail,
-        selectedRole,
+        finalRole,
         'free'
       );
       if (checkResult.isBlocked) {
@@ -732,10 +848,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       const devStatus = await checkDeviceTrialStatus();
       if (devStatus.hasClaimed && !devStatus.isExpired && devStatus.trialRecord) {
-        // Dispositivo já iniciou o teste: continua com o mesmo relógio em contagem regressiva contínua
         resolvedExpiresAt = devStatus.trialRecord.expiresAt;
       } else {
-        // Primeira vez neste dispositivo
         if (!resolvedExpiresAt) {
           resolvedExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
         }
@@ -761,13 +875,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const userId =
       firebaseUid ||
-      (selectedRole === 'admin' ? 'admin_' : 'usr_') + Math.random().toString(36).substring(2, 10);
+      (finalRole === 'admin' ? 'admin_miguelworscoi' : 'usr_' + Math.random().toString(36).substring(2, 10));
 
     const profileData: UserProfile = {
       id: userId,
       email: cleanEmail,
       displayName: finalName,
-      role: selectedRole,
+      role: finalRole,
       createdAt: new Date().toISOString(),
       plan: assignedPlan,
       planName: planName || (assignedPlan === 'free' ? 'Plano Gratuito (Teste 24h)' : undefined),
@@ -779,7 +893,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     saveSession(profileData);
 
     try {
-      await setDoc(doc(db, 'users', userId), profileData, { merge: true });
+      await safeFirestoreCall(
+        () => setDoc(doc(db, 'users', userId), profileData, { merge: true }),
+        null,
+        2000
+      );
     } catch {
       // Silently fall back
     }
@@ -864,64 +982,70 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     saveSession(googleProfile);
   };
 
-  const signInAsGuest = async (chosenRole: UserRole = 'user') => {
-    const isAdm = chosenRole === 'admin';
-    const assignedPlan: SubscriptionPlanId | undefined = isAdm ? undefined : 'free';
-    let resolvedExpiresAt: string | null = null;
+  const signInAsGuest = async (_chosenRole: UserRole = 'user') => {
+    // REGRA: Convidados NUNCA podem ser administradores. Apenas miguelworscoi@gmail.com é admin.
+    const assignedPlan: SubscriptionPlanId = 'free';
+    let resolvedExpiresAt: string;
 
-    if (!isAdm) {
-      // Verifica no Firestore o deviceId único
-      const checkResult = await checkDeviceAndEmailFreePlanInFirestore(
-        'espectador@playsports.tv',
-        'user',
-        'free'
+    // Verifica no Firestore o deviceId único
+    const checkResult = await checkDeviceAndEmailFreePlanInFirestore(
+      'espectador@playsports.tv',
+      'user',
+      'free'
+    );
+    if (checkResult.isBlocked) {
+      triggerFreePlanBlocked({
+        email: 'espectador@playsports.tv',
+        deviceId: checkResult.deviceId || getOrCreateDeviceId(),
+        message: checkResult.message,
+        reason: checkResult.reason,
+      });
+      throw new Error(
+        checkResult.message ||
+          'Este dispositivo já utilizou o teste gratuito de 1 dia (24 horas). Para continuar assistindo à programação esportiva, assine um plano a partir de 1.500 Kz ou ative um Código de 5 Dígitos.'
       );
-      if (checkResult.isBlocked) {
-        triggerFreePlanBlocked({
-          email: 'espectador@playsports.tv',
-          deviceId: checkResult.deviceId || getOrCreateDeviceId(),
-          message: checkResult.message,
-          reason: checkResult.reason,
-        });
-        throw new Error(
-          checkResult.message ||
-            'Este dispositivo já utilizou o teste gratuito de 1 dia (24 horas). Para continuar assistindo à programação esportiva, assine um plano a partir de 1.500 Kz ou ative um Código de 5 Dígitos.'
-        );
-      }
-
-      const devStatus = await checkDeviceTrialStatus();
-      if (devStatus.hasClaimed && !devStatus.isExpired && devStatus.trialRecord) {
-        resolvedExpiresAt = devStatus.trialRecord.expiresAt;
-      } else {
-        resolvedExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
-        await recordDeviceTrial('espectador@playsports.tv', 'convidado', resolvedExpiresAt);
-      }
-      refreshDeviceTrial();
     }
 
+    const devStatus = await checkDeviceTrialStatus();
+    if (devStatus.hasClaimed && !devStatus.isExpired && devStatus.trialRecord) {
+      resolvedExpiresAt = devStatus.trialRecord.expiresAt;
+    } else {
+      resolvedExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+      await recordDeviceTrial('espectador@playsports.tv', 'convidado', resolvedExpiresAt);
+    }
+    refreshDeviceTrial();
+
     const profile: UserProfile = {
-      id: (isAdm ? 'admin_' : 'guest_') + Math.random().toString(36).substring(2, 9),
-      email: isAdm ? 'admin@playsports.com' : 'espectador@playsports.tv',
-      displayName: isAdm ? 'Administrador PLAYSPORTS' : 'Espectador Esportivo',
+      id: 'guest_' + Math.random().toString(36).substring(2, 9),
+      email: 'espectador@playsports.tv',
+      displayName: 'Espectador Esportivo',
       photoURL: '',
-      role: chosenRole,
+      role: 'user', // NUNCA aceita admin aqui
       createdAt: new Date().toISOString(),
       plan: assignedPlan,
-      planName: assignedPlan === 'free' ? 'Plano Gratuito (Teste 24h)' : undefined,
+      planName: 'Plano Gratuito (Teste 24h)',
       planExpiresAt: resolvedExpiresAt,
     };
-    saveInRegistry({ ...profile, password: isAdm ? 'admin123' : '123456' });
+    saveInRegistry({ ...profile, password: 'guest' });
     saveSession(profile);
   };
 
   const switchRole = async (newRole: UserRole) => {
     if (!userProfile) return;
+    // REGRA ABSOLUTA: Apenas a conta oficial miguelworscoi@gmail.com pode assumir papel de admin
+    if (newRole === 'admin' && userProfile.email.toLowerCase() !== OFFICIAL_ADMIN_EMAIL.toLowerCase()) {
+      throw new Error('Apenas a conta oficial miguelworscoi@gmail.com pode assumir o papel de administrador.');
+    }
     const updated: UserProfile = { ...userProfile, role: newRole };
     saveSession(updated);
 
     if (user) {
       try {
-        await setDoc(doc(db, 'users', user.uid), { role: newRole }, { merge: true });
+        await safeFirestoreCall(
+          () => setDoc(doc(db, 'users', user.uid), { role: newRole }, { merge: true }),
+          null,
+          2000
+        );
       } catch {
         // Ignora
       }

@@ -214,7 +214,7 @@ export function WorscoiControlPanel({
         </div>
 
         {/* GRÁFICO DE CRESCIMENTO DE ASSINANTES / RECEITA */}
-        <div className="w-full max-w-2xl mx-auto rounded-3xl bg-white/95 p-4 sm:p-6 shadow-xl shadow-black/40">
+        <div className="w-full max-w-2xl mx-auto rounded-3xl bg-transparent p-4 sm:p-6">
           <div className="h-64 sm:h-72 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={REVENUE_DATA} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
@@ -224,12 +224,12 @@ export function WorscoiControlPanel({
                     <stop offset="95%" stopColor="#00E5FF" stopOpacity={0.05} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#27272a" />
                 <XAxis
                   dataKey="hora"
                   axisLine={false}
                   tickLine={false}
-                  tick={{ fill: '#0f172a', fontSize: 11, fontWeight: 600 }}
+                  tick={{ fill: '#a1a1aa', fontSize: 11, fontWeight: 600 }}
                 />
                 <YAxis
                   domain={[0, 6000]}
@@ -237,7 +237,7 @@ export function WorscoiControlPanel({
                   axisLine={false}
                   tickLine={false}
                   tickFormatter={(val) => `R$ ${val.toLocaleString('pt-BR')},00`}
-                  tick={{ fill: '#0f172a', fontSize: 10, fontWeight: 600 }}
+                  tick={{ fill: '#a1a1aa', fontSize: 10, fontWeight: 600 }}
                 />
                 <Tooltip
                   formatter={(val: number) => [`R$ ${val.toLocaleString('pt-BR')},00`, 'Receita']}

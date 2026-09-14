@@ -135,21 +135,22 @@ export function CinemaPlayer({
   useEffect(() => {
     if (hasFirstFrame) return;
 
+    let seconds = 0;
     const interval = setInterval(() => {
-      setLoadSeconds((prev) => {
-        const next = prev + 1;
-        if (next === 4 && !hasFirstFrame) {
-          if (streamsDisponiveis.length > 1 && streamIndex < streamsDisponiveis.length - 1) {
-            onStreamChange(streamIndex + 1);
-          } else if (!useProxy && !isYouTubeChannel) {
-            onToggleProxy();
-          }
+      seconds += 1;
+      setLoadSeconds(seconds);
+      if (seconds === 4 && !hasFirstFrame) {
+        if (streamsDisponiveis.length > 1 && streamIndex < streamsDisponiveis.length - 1) {
+          onStreamChange(streamIndex + 1);
+        } else if (!useProxy && !isYouTubeChannel) {
+          onToggleProxy();
         }
-        if (next === 7 && !hasFirstFrame) {
+      }
+      if (seconds === 7 && !hasFirstFrame) {
+        setTimeout(() => {
           onPlayerError?.(new Error('Tempo limite excedido'));
-        }
-        return next;
-      });
+        }, 0);
+      }
     }, 1000);
 
     return () => clearInterval(interval);
@@ -574,9 +575,15 @@ export function CinemaPlayer({
             },
             onEnded: () => {
               // Transição automática para o próximo vídeo quando terminar
-              onVideoEnded?.();
+              setTimeout(() => {
+                onVideoEnded?.();
+              }, 0);
             },
-            onError: onPlayerError,
+            onError: (err) => {
+              setTimeout(() => {
+                onPlayerError?.(err);
+              }, 0);
+            },
           }
         )}
 

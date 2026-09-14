@@ -1,6 +1,6 @@
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
 import { getAuth, Auth } from 'firebase/auth';
-import { getFirestore, Firestore } from 'firebase/firestore';
+import { initializeFirestore, getFirestore, Firestore } from 'firebase/firestore';
 import firebaseConfig from '../../firebase-applet-config.json';
 
 export const app: FirebaseApp =
@@ -8,12 +8,53 @@ export const app: FirebaseApp =
 
 export const auth: Auth = getAuth(app);
 
-export const db: Firestore = getFirestore(
-  app,
-  firebaseConfig.firestoreDatabaseId || '(default)'
-);
+const databaseId = firebaseConfig.firestoreDatabaseId || '(default)';
+
+let firestoreDb: Firestore;
+try {
+  firestoreDb = initializeFirestore(
+    app,
+    {
+      experimentalForceLongPolling: true,
+    },
+    databaseId
+  );
+} catch {
+  firestoreDb = getFirestore(app, databaseId);
+}
+
+export const db: Firestore = firestoreDb;
 
 export const getAuthInstance = (): Auth => auth;
 export const getDbInstance = (): Firestore => db;
+
+/**
+ * Executes a Firestore async operation bounded by a timeout.
+ * If the connection is unavailable (e.g. offline, proxy blocked, or slow network),
+ * it returns the fallback value without throwing or freezing the app.
+ */
+export async function safeFirestoreCall<T>(
+  operation: () => Promise<T>,
+  fallback: T,
+  timeoutMs: number = 3000
+): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  try {
+    const timeoutPromise = new Promise<T>((resolve) => {
+      timer = setTimeout(() => resolve(fallback), timeoutMs);
+    });
+    const opPromise = operation().catch((_err) => {
+      // Gracefully handle unavailable / network issues
+      return fallback;
+    });
+
+    const result = await Promise.race([opPromise, timeoutPromise]);
+    return result;
+  } catch {
+    return fallback;
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
+}
 
 export default app;
