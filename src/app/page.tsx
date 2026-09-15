@@ -315,18 +315,44 @@ export default function Home() {
     }
   };
 
+  const handleStreamChange = useCallback((idx: number) => {
+    setTimeout(() => {
+      setStreamIndex(idx);
+    }, 0);
+  }, []);
+
+  const handleToggleMute = useCallback(() => {
+    setTimeout(() => {
+      setIsMuted((prev) => !prev);
+    }, 0);
+  }, []);
+
+  const handleToggleProxy = useCallback(() => {
+    setTimeout(() => {
+      setUseProxy((prev) => !prev);
+    }, 0);
+  }, []);
+
+  const handleClearFailoverNotice = useCallback(() => {
+    setTimeout(() => {
+      setFailoverNotice(null);
+    }, 0);
+  }, []);
+
   const handleAddStreamToCanal = useCallback((url: string) => {
-    if (!canalAtivo) return;
-    const currentBackups = canalAtivo.backupUrls || [];
-    if (!currentBackups.includes(url) && canalAtivo.url !== url) {
-      const updatedCanal: Canal = {
-        ...canalAtivo,
-        backupUrls: [...currentBackups, url],
-      };
-      setCanalAtivo(updatedCanal);
-      const newIndex = updatedCanal.backupUrls!.length;
-      setStreamIndex(newIndex);
-    }
+    setTimeout(() => {
+      if (!canalAtivo) return;
+      const currentBackups = canalAtivo.backupUrls || [];
+      if (!currentBackups.includes(url) && canalAtivo.url !== url) {
+        const updatedCanal: Canal = {
+          ...canalAtivo,
+          backupUrls: [...currentBackups, url],
+        };
+        setCanalAtivo(updatedCanal);
+        const newIndex = updatedCanal.backupUrls!.length;
+        setStreamIndex(newIndex);
+      }
+    }, 0);
   }, [canalAtivo]);
 
   const handleEnterPlayer = useCallback(
@@ -548,12 +574,12 @@ export default function Home() {
             <PlayerHero
               canalAtivo={canalAtivo}
               streamIndex={streamIndex}
-              onStreamChange={(idx) => setStreamIndex(idx)}
+              onStreamChange={handleStreamChange}
               onAddStreamUrl={handleAddStreamToCanal}
               isMuted={isMuted}
-              onToggleMute={() => setIsMuted(!isMuted)}
+              onToggleMute={handleToggleMute}
               useProxy={useProxy}
-              onToggleProxy={() => setUseProxy(!useProxy)}
+              onToggleProxy={handleToggleProxy}
               latencyMode={latencyMode}
               onToggleLatencyMode={handleToggleLatencyMode}
               isCinemaMode={isCinemaMode}
@@ -561,7 +587,7 @@ export default function Home() {
               isFavorited={isCanalFavorited(canalAtivo)}
               onToggleFavorite={() => canalAtivo && toggleFavorite(canalAtivo)}
               failoverNotice={failoverNotice}
-              onClearFailoverNotice={() => setFailoverNotice(null)}
+              onClearFailoverNotice={handleClearFailoverNotice}
               onPlayerError={handlePlayerError}
               onNextCanal={handleNextCanal}
               onPrevCanal={handlePrevCanal}
@@ -624,17 +650,17 @@ export default function Home() {
             key="active-cinema-player-modal"
             canalAtivo={canalAtivo}
             streamIndex={streamIndex}
-            onStreamChange={(idx) => setStreamIndex(idx)}
+            onStreamChange={handleStreamChange}
             onAddStreamUrl={handleAddStreamToCanal}
             isMuted={isMuted}
-            onToggleMute={() => setIsMuted(!isMuted)}
+            onToggleMute={handleToggleMute}
             useProxy={useProxy}
-            onToggleProxy={() => setUseProxy(!useProxy)}
+            onToggleProxy={handleToggleProxy}
             latencyMode={latencyMode}
             onToggleLatencyMode={handleToggleLatencyMode}
             onClose={() => setIsCinemaMode(false)}
             failoverNotice={failoverNotice}
-            onClearFailoverNotice={() => setFailoverNotice(null)}
+            onClearFailoverNotice={handleClearFailoverNotice}
             onPlayerError={handlePlayerError}
             onNextCanal={handleNextCanal}
             onPrevCanal={handlePrevCanal}

@@ -260,11 +260,13 @@ export function PlayerHero({
               if (canalAtivo) {
                 const allUrls = [canalAtivo.url, ...(canalAtivo.backupUrls || [])];
                 const existingIndex = allUrls.findIndex((u) => u.includes(videoData.video_id));
-                if (existingIndex >= 0) {
-                  onStreamChange(existingIndex);
-                } else if (onAddStreamUrl) {
-                  onAddStreamUrl(newUrl);
-                }
+                setTimeout(() => {
+                  if (existingIndex >= 0) {
+                    onStreamChange(existingIndex);
+                  } else if (onAddStreamUrl) {
+                    onAddStreamUrl(newUrl);
+                  }
+                }, 0);
               }
             }
           }
@@ -415,15 +417,17 @@ export function PlayerHero({
 
       // Aos 3.5s: tenta servidor alternativo ou ativa proxy
       if (seconds === 4 && !hasFirstFrame) {
-        if (streamsDisponiveis.length > 1 && streamIndex < streamsDisponiveis.length - 1) {
-          onStreamChange(streamIndex + 1);
-        } else if (
-          !useProxy &&
-          !activeRawStreamUrl.includes('youtube.com') &&
-          !activeRawStreamUrl.includes('youtu.be')
-        ) {
-          onToggleProxy();
-        }
+        setTimeout(() => {
+          if (streamsDisponiveis.length > 1 && streamIndex < streamsDisponiveis.length - 1) {
+            onStreamChange(streamIndex + 1);
+          } else if (
+            !useProxy &&
+            !activeRawStreamUrl.includes('youtube.com') &&
+            !activeRawStreamUrl.includes('youtu.be')
+          ) {
+            onToggleProxy();
+          }
+        }, 0);
       }
 
       // Aos 6s: se ainda não abriu, aciona a central de resgate para não intediar o espectador
@@ -763,13 +767,13 @@ export function PlayerHero({
                     }, 0);
                   },
                   onError: (err: unknown) => {
-                    if (
-                      activeRawStreamUrl.includes('youtube.com') ||
-                      activeRawStreamUrl.includes('youtu.be')
-                    ) {
-                      setHasYouTubeEmbedError(true);
-                    }
                     setTimeout(() => {
+                      if (
+                        activeRawStreamUrl.includes('youtube.com') ||
+                        activeRawStreamUrl.includes('youtu.be')
+                      ) {
+                        setHasYouTubeEmbedError(true);
+                      }
                       onPlayerError(err);
                     }, 0);
                   },

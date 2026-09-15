@@ -1132,6 +1132,388 @@ export const LOGO_I_CONCERTS = svgToUri(`
 </svg>
 `);
 
+// 53. AXN (Sony Pictures Television - Chevron vermelho e branco icônico)
+export const LOGO_AXN = svgToUri(`
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+  <rect width="120" height="120" rx="26" fill="#0d0d12"/>
+  <polygon points="24,28 42,28 62,60 44,60" fill="#e50914"/>
+  <polygon points="48,28 66,28 86,60 68,60" fill="#e50914" opacity="0.85"/>
+  <text x="60" y="74" font-family="'Impact','Arial Black',sans-serif" font-weight="900" font-size="28" fill="#ffffff" text-anchor="middle" letter-spacing="2">AXN</text>
+  <rect x="22" y="88" width="76" height="18" rx="6" fill="#e50914"/>
+  <text x="60" y="101" font-family="'Arial Black',sans-serif" font-weight="900" font-size="9" fill="#ffffff" text-anchor="middle" letter-spacing="2">ACTION HD</text>
+</svg>
+`);
+
+// 54. ADULT SWIM (Ícone minimalista oficial com colchetes)
+export const LOGO_ADULT_SWIM = svgToUri(`
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+  <rect width="120" height="120" rx="26" fill="#000000" stroke="#27272a" stroke-width="2"/>
+  <text x="60" y="58" font-family="'Helvetica Neue',Arial,sans-serif" font-weight="900" font-size="22" fill="#ffffff" text-anchor="middle" letter-spacing="-0.5">[adult swim]</text>
+  <rect x="26" y="84" width="68" height="18" rx="4" fill="#ffffff"/>
+  <text x="60" y="97" font-family="'Arial Black',sans-serif" font-weight="900" font-size="9" fill="#000000" text-anchor="middle" letter-spacing="1">CARTOON</text>
+</svg>
+`);
+
+// 55. A&E (Letras geométricas icônicas em vermelho e preto)
+export const LOGO_AE = svgToUri(`
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+  <rect width="120" height="120" rx="26" fill="#b91c1c"/>
+  <text x="60" y="66" font-family="'Impact','Arial Black',sans-serif" font-weight="900" font-size="38" fill="#ffffff" text-anchor="middle" letter-spacing="-2">A&amp;E</text>
+  <rect x="20" y="88" width="80" height="18" rx="5" fill="#18181b"/>
+  <text x="60" y="101" font-family="'Arial Black',sans-serif" font-weight="900" font-size="8.5" fill="#fca5a5" text-anchor="middle" letter-spacing="1.5">ENTERTAINMENT</text>
+</svg>
+`);
+
+// 56. PORTO CANAL (Portugal - Azul Royal, Brasão e identidade clássica)
+export const LOGO_PORTO_CANAL = svgToUri(`
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+  <defs>
+    <linearGradient id="portoBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#003580"/>
+      <stop offset="100%" stop-color="#001a40"/>
+    </linearGradient>
+  </defs>
+  <rect width="120" height="120" rx="26" fill="url(#portoBg)"/>
+  <circle cx="60" cy="42" r="22" fill="#ffffff"/>
+  <circle cx="60" cy="42" r="19" fill="#003580"/>
+  <!-- Dragão / Torre simplificada -->
+  <polygon points="60,28 65,36 55,36" fill="#ffd700"/>
+  <text x="60" y="47" font-family="'Impact',sans-serif" font-weight="900" font-size="14" fill="#ffffff" text-anchor="middle">FCP</text>
+  <text x="60" y="82" font-family="'Arial Black',sans-serif" font-weight="900" font-size="13" fill="#ffffff" text-anchor="middle" letter-spacing="-0.5">PORTO</text>
+  <rect x="22" y="90" width="76" height="18" rx="5" fill="#00a651"/>
+  <text x="60" y="103" font-family="'Arial Black',sans-serif" font-weight="900" font-size="9" fill="#ffffff" text-anchor="middle" letter-spacing="2">CANAL HD</text>
+</svg>
+`);
+
+// 57. BANDNEWS & BANDSPORTS
+export const LOGO_BAND_NEWS = svgToUri(`
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+  <rect width="120" height="120" rx="26" fill="#0b172a"/>
+  <!-- Olho da Band Prata -->
+  <circle cx="60" cy="42" r="22" fill="none" stroke="#00a651" stroke-width="4"/>
+  <circle cx="60" cy="42" r="10" fill="#00a651"/>
+  <text x="60" y="78" font-family="'Impact','Arial Black',sans-serif" font-weight="900" font-size="18" fill="#ffffff" text-anchor="middle">band</text>
+  <rect x="18" y="86" width="84" height="20" rx="5" fill="#dc2626"/>
+  <text x="60" y="100" font-family="'Arial Black',sans-serif" font-weight="900" font-size="10" fill="#ffffff" text-anchor="middle" letter-spacing="1">NEWS HD</text>
+</svg>
+`);
+
+export const LOGO_BAND_SPORTS = svgToUri(`
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+  <rect width="120" height="120" rx="26" fill="#022c22"/>
+  <circle cx="60" cy="42" r="22" fill="none" stroke="#00e676" stroke-width="4"/>
+  <circle cx="60" cy="42" r="10" fill="#facc15"/>
+  <text x="60" y="78" font-family="'Impact','Arial Black',sans-serif" font-weight="900" font-size="18" fill="#ffffff" text-anchor="middle">band</text>
+  <rect x="16" y="86" width="88" height="20" rx="5" fill="#00e676"/>
+  <text x="60" y="100" font-family="'Arial Black',sans-serif" font-weight="900" font-size="9" fill="#022c22" text-anchor="middle" letter-spacing="1">SPORTS</text>
+</svg>
+`);
+
+// 58. RECORD NEWS
+export const LOGO_RECORD_NEWS = svgToUri(`
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+  <rect width="120" height="120" rx="26" fill="#0f172a"/>
+  <!-- Esfera Record azul com anéis de luz -->
+  <circle cx="60" cy="42" r="20" fill="#2563eb"/>
+  <path d="M44 42 Q60 26 76 42 Q60 58 44 42 Z" fill="#60a5fa" opacity="0.6"/>
+  <circle cx="60" cy="42" r="7" fill="#ffffff"/>
+  <text x="60" y="78" font-family="'Arial Black',sans-serif" font-weight="900" font-size="13" fill="#ffffff" text-anchor="middle">RECORD</text>
+  <rect x="20" y="86" width="80" height="20" rx="5" fill="#b91c1c"/>
+  <text x="60" y="100" font-family="'Arial Black',sans-serif" font-weight="900" font-size="10" fill="#ffffff" text-anchor="middle" letter-spacing="1.5">NEWS</text>
+</svg>
+`);
+
+// 59. GLOBO NEWS
+export const LOGO_GLOBO_NEWS = svgToUri(`
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+  <rect width="120" height="120" rx="26" fill="#991b1b"/>
+  <!-- Esfera Globo simplificada -->
+  <circle cx="60" cy="40" r="22" fill="#ffffff"/>
+  <circle cx="60" cy="40" r="14" fill="#991b1b"/>
+  <circle cx="60" cy="40" r="7" fill="#ffffff"/>
+  <text x="60" y="78" font-family="'Arial Black',sans-serif" font-weight="900" font-size="14" fill="#ffffff" text-anchor="middle" letter-spacing="-0.5">globo</text>
+  <rect x="22" y="86" width="76" height="20" rx="6" fill="#18181b"/>
+  <text x="60" y="100" font-family="'Arial Black',sans-serif" font-weight="900" font-size="10" fill="#ffffff" text-anchor="middle" letter-spacing="1">NEWS HD</text>
+</svg>
+`);
+
+// 60. AMC (American Movie Classics)
+export const LOGO_AMC = svgToUri(`
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+  <rect width="120" height="120" rx="26" fill="#18181b"/>
+  <rect x="18" y="32" width="84" height="46" rx="6" fill="#d97706" stroke="#fbbf24" stroke-width="2"/>
+  <text x="60" y="65" font-family="'Impact','Arial Black',sans-serif" font-weight="900" font-size="30" fill="#000000" text-anchor="middle" letter-spacing="2">amc</text>
+  <text x="60" y="101" font-family="'Arial Black',sans-serif" font-weight="900" font-size="9" fill="#d97706" text-anchor="middle" letter-spacing="2">CINEMA HD</text>
+</svg>
+`);
+
+// 61. ARTE 1
+export const LOGO_ARTE1 = svgToUri(`
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+  <rect width="120" height="120" rx="26" fill="#2e1065"/>
+  <text x="52" y="66" font-family="'Arial Black',sans-serif" font-weight="900" font-size="26" fill="#ffffff" text-anchor="middle">arte</text>
+  <text x="86" y="66" font-family="'Impact',sans-serif" font-weight="900" font-size="34" fill="#d946ef" text-anchor="middle">1</text>
+  <rect x="20" y="88" width="80" height="18" rx="5" fill="#d946ef"/>
+  <text x="60" y="101" font-family="'Arial Black',sans-serif" font-weight="900" font-size="8" fill="#ffffff" text-anchor="middle" letter-spacing="1.5">CULTURA HD</text>
+</svg>
+`);
+
+// 62. FIFA+
+export const LOGO_FIFA_PLUS = svgToUri(`
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+  <defs>
+    <linearGradient id="fifaBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0284c7"/>
+      <stop offset="100%" stop-color="#0369a1"/>
+    </linearGradient>
+  </defs>
+  <rect width="120" height="120" rx="26" fill="url(#fifaBg)"/>
+  <text x="52" y="64" font-family="'Arial Black',sans-serif" font-weight="900" font-size="28" fill="#ffffff" text-anchor="middle" letter-spacing="1">FIFA</text>
+  <text x="86" y="60" font-family="'Impact',sans-serif" font-weight="900" font-size="36" fill="#38bdf8" text-anchor="middle">+</text>
+  <rect x="20" y="86" width="80" height="20" rx="6" fill="#0c4a6e"/>
+  <text x="60" y="100" font-family="'Arial Black',sans-serif" font-weight="900" font-size="9" fill="#38bdf8" text-anchor="middle" letter-spacing="2">OFFICIAL</text>
+</svg>
+`);
+
+// 63. MCM TOP (França)
+export const LOGO_MCM_TOP = svgToUri(`
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+  <rect width="120" height="120" rx="26" fill="#1e1b4b"/>
+  <circle cx="60" cy="46" r="26" fill="#f97316"/>
+  <text x="60" y="54" font-family="'Impact',sans-serif" font-weight="900" font-size="18" fill="#ffffff" text-anchor="middle">MCM</text>
+  <rect x="18" y="86" width="84" height="20" rx="6" fill="#f97316"/>
+  <text x="60" y="100" font-family="'Arial Black',sans-serif" font-weight="900" font-size="10" fill="#ffffff" text-anchor="middle" letter-spacing="2">TOP HITS</text>
+</svg>
+`);
+
+// 64. ABC NEWS
+export const LOGO_ABC_NEWS = svgToUri(`
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+  <rect width="120" height="120" rx="26" fill="#09090b"/>
+  <circle cx="60" cy="42" r="24" fill="#27272a" stroke="#ffffff" stroke-width="2"/>
+  <text x="60" y="51" font-family="'Helvetica Neue',Arial,sans-serif" font-weight="900" font-size="22" fill="#ffffff" text-anchor="middle" letter-spacing="-1">abc</text>
+  <rect x="18" y="84" width="84" height="22" rx="6" fill="#eab308"/>
+  <text x="60" y="99" font-family="'Arial Black',sans-serif" font-weight="900" font-size="11" fill="#000000" text-anchor="middle" letter-spacing="1.5">NEWS</text>
+</svg>
+`);
+
+// 65. BBC NEWS
+export const LOGO_BBC_NEWS = svgToUri(`
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+  <rect width="120" height="120" rx="26" fill="#b91c1c"/>
+  <g transform="translate(24, 30)">
+    <rect x="0" y="0" width="22" height="24" fill="#ffffff"/>
+    <text x="11" y="18" font-family="'Arial Black',sans-serif" font-weight="900" font-size="14" fill="#b91c1c" text-anchor="middle">B</text>
+    <rect x="25" y="0" width="22" height="24" fill="#ffffff"/>
+    <text x="36" y="18" font-family="'Arial Black',sans-serif" font-weight="900" font-size="14" fill="#b91c1c" text-anchor="middle">B</text>
+    <rect x="50" y="0" width="22" height="24" fill="#ffffff"/>
+    <text x="61" y="18" font-family="'Arial Black',sans-serif" font-weight="900" font-size="14" fill="#b91c1c" text-anchor="middle">C</text>
+  </g>
+  <text x="60" y="80" font-family="'Arial Black',sans-serif" font-weight="900" font-size="16" fill="#ffffff" text-anchor="middle" letter-spacing="1">NEWS</text>
+  <rect x="22" y="92" width="76" height="16" rx="4" fill="#18181b"/>
+  <text x="60" y="104" font-family="'Arial Black',sans-serif" font-weight="900" font-size="8" fill="#fca5a5" text-anchor="middle" letter-spacing="2">GLOBAL HD</text>
+</svg>
+`);
+
+// 66. AL JAZEERA
+export const LOGO_AL_JAZEERA = svgToUri(`
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+  <rect width="120" height="120" rx="26" fill="#0f172a"/>
+  <!-- Chama Dourada Al Jazeera -->
+  <path d="M60 20 C48 34 44 48 50 62 C54 70 66 70 70 62 C76 48 72 34 60 20 Z" fill="#eab308"/>
+  <circle cx="60" cy="46" r="6" fill="#0f172a"/>
+  <text x="60" y="86" font-family="'Arial Black',sans-serif" font-weight="900" font-size="10.5" fill="#ffffff" text-anchor="middle" letter-spacing="0.5">AL JAZEERA</text>
+  <rect x="20" y="94" width="80" height="14" rx="4" fill="#eab308"/>
+  <text x="60" y="104" font-family="'Arial Black',sans-serif" font-weight="900" font-size="7.5" fill="#000000" text-anchor="middle" letter-spacing="1">CHANNEL</text>
+</svg>
+`);
+
+// 67. SKY SPORTS
+export const LOGO_SKY_SPORTS = svgToUri(`
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+  <defs>
+    <linearGradient id="skyBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0284c7"/>
+      <stop offset="100%" stop-color="#b91c1c"/>
+    </linearGradient>
+  </defs>
+  <rect width="120" height="120" rx="26" fill="url(#skyBg)"/>
+  <text x="60" y="54" font-family="'Helvetica Neue',Arial,sans-serif" font-weight="900" font-size="28" fill="#ffffff" text-anchor="middle" letter-spacing="-1">sky</text>
+  <rect x="16" y="74" width="88" height="26" rx="6" fill="#ffffff"/>
+  <text x="60" y="92" font-family="'Impact','Arial Black',sans-serif" font-weight="900" font-size="14" fill="#b91c1c" text-anchor="middle" letter-spacing="1">SPORTS</text>
+</svg>
+`);
+
+// 68. AAJ TAK
+export const LOGO_AAJ_TAK = svgToUri(`
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+  <rect width="120" height="120" rx="26" fill="#991b1b"/>
+  <circle cx="60" cy="44" r="24" fill="#ffffff"/>
+  <polygon points="60,26 66,38 78,40 68,48 72,60 60,54 48,60 52,48 42,40 54,38" fill="#eab308"/>
+  <text x="60" y="82" font-family="'Impact',sans-serif" font-weight="900" font-size="16" fill="#ffffff" text-anchor="middle" letter-spacing="1">AAJ TAK</text>
+  <rect x="22" y="92" width="76" height="16" rx="4" fill="#facc15"/>
+  <text x="60" y="104" font-family="'Arial Black',sans-serif" font-weight="900" font-size="8" fill="#000000" text-anchor="middle" letter-spacing="1.5">NEWS HD</text>
+</svg>
+`);
+
+// 69. KURIAKOS TV
+export const LOGO_KURIAKOS = svgToUri(`
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+  <rect width="120" height="120" rx="26" fill="#1e1b4b"/>
+  <polygon points="60,18 72,42 96,44 76,60 82,86 60,72 38,86 44,60 24,44 48,42" fill="#38bdf8"/>
+  <text x="60" y="78" font-family="'Arial Black',sans-serif" font-weight="900" font-size="12" fill="#ffffff" text-anchor="middle">KURIAKOS</text>
+  <rect x="22" y="88" width="76" height="18" rx="5" fill="#38bdf8"/>
+  <text x="60" y="101" font-family="'Arial Black',sans-serif" font-weight="900" font-size="9" fill="#0f172a" text-anchor="middle" letter-spacing="1">TV HD</text>
+</svg>
+`);
+
+// 70. B4U (Bollywood & Cinema)
+export const LOGO_B4U = svgToUri(`
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+  <rect width="120" height="120" rx="26" fill="#4a044e"/>
+  <rect x="24" y="26" width="72" height="46" rx="8" fill="#facc15"/>
+  <text x="60" y="60" font-family="'Impact',sans-serif" font-weight="900" font-size="32" fill="#4a044e" text-anchor="middle">B4U</text>
+  <rect x="20" y="86" width="80" height="20" rx="6" fill="#facc15"/>
+  <text x="60" y="100" font-family="'Arial Black',sans-serif" font-weight="900" font-size="9" fill="#4a044e" text-anchor="middle" letter-spacing="1">MOVIES HD</text>
+</svg>
+`);
+
+// ============================================================================
+// GERADOR DINÂMICO E DISTINTO DE LOGOTIPOS PARA QUALQUER CANAL DA PLATAFORMA
+// (Garante 100% que nenhum canal fica com ícone genérico ou placeholder)
+// ============================================================================
+const bespokeLogoCache = new Map<string, string>();
+
+export function generateBespokeChannelLogo(canal?: Partial<Canal> | null): string {
+  if (!canal) return LOGO_TNT_SPORTS;
+  const rawName = (canal.nome || canal.id || 'TV').trim();
+  const cat = (canal.categoria || '').toLowerCase();
+  const pais = (canal.pais || 'TV').toUpperCase();
+  const cacheKey = `${rawName}_${cat}_${pais}`;
+
+  if (bespokeLogoCache.has(cacheKey)) {
+    return bespokeLogoCache.get(cacheKey)!;
+  }
+
+  // Limpeza de sufixos de resolução e metadados de stream
+  const cleanName = rawName
+    .replace(/\s*\(\d+p\)/gi, '')
+    .replace(/\s*\(\d+i\)/gi, '')
+    .replace(/\s*\[.*?\]/gi, '')
+    .replace(/\s*-\s*HD/gi, '')
+    .trim() || 'TV';
+
+  // Identificação temática de cores e símbolos por categoria
+  let bgGradient1: string;
+  let bgGradient2: string;
+  let accentColor: string;
+  let iconSvg: string;
+  let badgeLabel: string;
+
+  if (cat.includes('esporte') || cat.includes('sport')) {
+    bgGradient1 = '#064e3b';
+    bgGradient2 = '#022c22';
+    accentColor = '#00E676';
+    iconSvg = '<polygon points="60,18 64,28 75,28 66,35 69,45 60,39 51,45 54,35 45,28 56,28" fill="#00E676"/><circle cx="60" cy="32" r="18" fill="none" stroke="#00E676" stroke-width="1.5" stroke-opacity="0.3"/>';
+    badgeLabel = 'ESPORTES';
+  } else if (cat.includes('notícia') || cat.includes('noticia') || cat.includes('news')) {
+    bgGradient1 = '#881337';
+    bgGradient2 = '#4c0519';
+    accentColor = '#f43f5e';
+    iconSvg = '<circle cx="60" cy="30" r="10" fill="none" stroke="#f43f5e" stroke-width="2.5"/><circle cx="60" cy="30" r="4" fill="#f43f5e"/><circle cx="60" cy="30" r="15" fill="none" stroke="#f43f5e" stroke-width="1.5" stroke-dasharray="3,3" opacity="0.6"/>';
+    badgeLabel = 'NOTÍCIAS';
+  } else if (cat.includes('filme') || cat.includes('série') || cat.includes('serie') || cat.includes('cinema')) {
+    bgGradient1 = '#3b0764';
+    bgGradient2 = '#1e0136';
+    accentColor = '#eab308';
+    iconSvg = '<rect x="46" y="20" width="28" height="20" rx="4" fill="#eab308" opacity="0.9"/><polygon points="57,25 57,35 66,30" fill="#1e0136"/>';
+    badgeLabel = 'CINEMA';
+  } else if (cat.includes('música') || cat.includes('musica') || cat.includes('music')) {
+    bgGradient1 = '#4a044e';
+    bgGradient2 = '#1f0226';
+    accentColor = '#f472b6';
+    iconSvg = '<rect x="46" y="24" width="4" height="14" rx="2" fill="#f472b6"/><rect x="53" y="18" width="4" height="20" rx="2" fill="#fb7185"/><rect x="60" y="22" width="4" height="16" rx="2" fill="#f472b6"/><rect x="67" y="26" width="4" height="12" rx="2" fill="#fb7185"/>';
+    badgeLabel = 'MÚSICA';
+  } else if (cat.includes('infantil') || cat.includes('boneco') || cat.includes('kid')) {
+    bgGradient1 = '#0284c7';
+    bgGradient2 = '#075985';
+    accentColor = '#f59e0b';
+    iconSvg = '<circle cx="60" cy="30" r="12" fill="#f59e0b"/><circle cx="56" cy="28" r="2.5" fill="#ffffff"/><circle cx="64" cy="28" r="2.5" fill="#ffffff"/><path d="M55 34 Q60 38 65 34" stroke="#ffffff" stroke-width="2" fill="none" stroke-linecap="round"/>';
+    badgeLabel = 'KIDS';
+  } else if (cat.includes('novela')) {
+    bgGradient1 = '#701a75';
+    bgGradient2 = '#3b0764';
+    accentColor = '#f472b6';
+    iconSvg = '<path d="M60 20 C50 12 38 22 60 38 C82 22 70 12 60 20 Z" fill="#f472b6" opacity="0.9"/>';
+    badgeLabel = 'NOVELAS';
+  } else {
+    // Geral / Lazer / Entretenimento
+    bgGradient1 = '#1e1b4b';
+    bgGradient2 = '#0f172a';
+    accentColor = '#38bdf8';
+    iconSvg = '<rect x="48" y="20" width="24" height="18" rx="4" fill="none" stroke="#38bdf8" stroke-width="2.5"/><polyline points="54,14 60,20 66,14" stroke="#38bdf8" stroke-width="2" fill="none"/>';
+    badgeLabel = pais || 'TV HD';
+  }
+
+  // Divisão harmoniosa do nome para exibição tipográfica nítida
+  const words = cleanName.split(/\s+/);
+  let mainLine = cleanName;
+  let subLine = '';
+
+  if (words.length >= 2 && cleanName.length > 8) {
+    if (words.length === 2) {
+      mainLine = words[0];
+      subLine = words[1];
+    } else {
+      mainLine = words.slice(0, 2).join(' ');
+      subLine = words.slice(2).join(' ');
+    }
+  }
+
+  const displayMain = mainLine.slice(0, 13).toUpperCase();
+  const displaySub = subLine.slice(0, 15).toUpperCase();
+  const fontSizeMain = displayMain.length > 8 ? (displayMain.length > 11 ? '13' : '15') : '18';
+  const fontSizeSub = '10';
+
+  const svg = `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+  <defs>
+    <linearGradient id="bg_${cacheKey.replace(/[^a-zA-Z0-9]/g, '')}" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="${bgGradient1}"/>
+      <stop offset="100%" stop-color="${bgGradient2}"/>
+    </linearGradient>
+    <radialGradient id="gl_${cacheKey.replace(/[^a-zA-Z0-9]/g, '')}" cx="50%" cy="30%" r="65%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.16"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0.4"/>
+    </radialGradient>
+  </defs>
+  <rect width="120" height="120" rx="26" fill="url(#bg_${cacheKey.replace(/[^a-zA-Z0-9]/g, '')})"/>
+  <rect width="120" height="120" rx="26" fill="url(#gl_${cacheKey.replace(/[^a-zA-Z0-9]/g, '')})"/>
+  <rect x="3" y="3" width="114" height="114" rx="23" fill="none" stroke="${accentColor}" stroke-opacity="0.3" stroke-width="1.5"/>
+
+  <!-- Emblema de categoria -->
+  <g>${iconSvg}</g>
+
+  <!-- Tipografia Principal do Canal -->
+  ${
+    displaySub
+      ? `<text x="60" y="58" font-family="'Impact','Arial Black',system-ui,sans-serif" font-weight="900" font-size="${fontSizeMain}" fill="#ffffff" text-anchor="middle" letter-spacing="-0.3">${displayMain}</text>
+         <text x="60" y="73" font-family="'Arial Black',sans-serif" font-weight="800" font-size="${fontSizeSub}" fill="${accentColor}" text-anchor="middle" letter-spacing="0.5">${displaySub}</text>`
+      : `<text x="60" y="66" font-family="'Impact','Arial Black',system-ui,sans-serif" font-weight="900" font-size="${fontSizeMain}" fill="#ffffff" text-anchor="middle" letter-spacing="-0.3">${displayMain}</text>`
+  }
+
+  <!-- Pílula de Identificação do Canal -->
+  <rect x="18" y="88" width="84" height="20" rx="6" fill="#000000" fill-opacity="0.65" stroke="${accentColor}" stroke-opacity="0.45" stroke-width="1"/>
+  <text x="60" y="102" font-family="'Arial Black',sans-serif" font-weight="900" font-size="8.5" fill="${accentColor}" text-anchor="middle" letter-spacing="1.2">${badgeLabel}</text>
+</svg>
+  `;
+
+  const uri = svgToUri(svg);
+  bespokeLogoCache.set(cacheKey, uri);
+  return uri;
+}
+
+
 // ============================================================================
 // RESOLVEDOR INTELIGENTE DE ÍCONES DE CANAIS
 // ============================================================================
@@ -1494,13 +1876,7 @@ export function getChannelLogo(canal?: Partial<Canal> | null): string {
 
   // 20. Globo / GloboNews
   if (name.includes('globonews') || id.includes('globonews')) {
-    return svgToUri(`
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
-        <rect width="120" height="120" rx="26" fill="#c4170c"/>
-        <text x="60" y="58" font-family="'Arial Black',sans-serif" font-weight="900" font-size="16" fill="#ffffff" text-anchor="middle" letter-spacing="-0.5">globonews</text>
-        <circle cx="60" cy="82" r="6" fill="#ffffff"/>
-      </svg>
-    `);
+    return LOGO_GLOBO_NEWS;
   }
   if (name.includes('globo') || id.includes('globo')) {
     return LOGO_GLOBO;
@@ -1512,11 +1888,20 @@ export function getChannelLogo(canal?: Partial<Canal> | null): string {
   }
 
   // 22. Band / BandNews / BandSports
+  if (name.includes('bandnews') || id.includes('bandnews') || id.includes('band-news')) {
+    return LOGO_BAND_NEWS;
+  }
+  if (name.includes('bandsports') || id.includes('bandsports') || id.includes('band-sports')) {
+    return LOGO_BAND_SPORTS;
+  }
   if (name.includes('band') || id.includes('band')) {
     return LOGO_BAND;
   }
 
   // 23. Record / Record News
+  if (name.includes('record news') || id.includes('record-news') || id.includes('recordnews')) {
+    return LOGO_RECORD_NEWS;
+  }
   if (name.includes('record') || id.includes('record')) {
     return LOGO_RECORD;
   }
@@ -1526,7 +1911,82 @@ export function getChannelLogo(canal?: Partial<Canal> | null): string {
     return LOGO_CNN;
   }
 
-  // 25. Cartoon Network & Infantis
+  // 25. AXN (Sony Pictures)
+  if (name.includes('axn') || id.includes('axn') || rede.includes('axn')) {
+    return LOGO_AXN;
+  }
+
+  // 26. Adult Swim
+  if (name.includes('adult swim') || id.includes('adult-swim') || name.includes('[as]')) {
+    return LOGO_ADULT_SWIM;
+  }
+
+  // 27. A&E
+  if (name.includes('a&e') || id.includes('a-e') || id.includes('ae-')) {
+    return LOGO_AE;
+  }
+
+  // 28. Porto Canal
+  if (name.includes('porto canal') || id.includes('porto-canal')) {
+    return LOGO_PORTO_CANAL;
+  }
+
+  // 29. AMC
+  if (name.includes('amc') || id.includes('amc')) {
+    return LOGO_AMC;
+  }
+
+  // 30. Arte 1
+  if (name.includes('arte 1') || name.includes('arte1') || id.includes('arte-1')) {
+    return LOGO_ARTE1;
+  }
+
+  // 31. FIFA+
+  if (name.includes('fifa+') || name.includes('fifa') || id.includes('fifa')) {
+    return LOGO_FIFA_PLUS;
+  }
+
+  // 32. MCM Top
+  if (name.includes('mcm') || id.includes('mcm')) {
+    return LOGO_MCM_TOP;
+  }
+
+  // 33. ABC News
+  if (name.includes('abc news') || name.includes('abc ') || id.includes('abc-news')) {
+    return LOGO_ABC_NEWS;
+  }
+
+  // 34. BBC News
+  if (name.includes('bbc') || id.includes('bbc')) {
+    return LOGO_BBC_NEWS;
+  }
+
+  // 35. Al Jazeera
+  if (name.includes('jazeera') || id.includes('jazeera')) {
+    return LOGO_AL_JAZEERA;
+  }
+
+  // 36. Sky Sports
+  if (name.includes('sky sports') || name.includes('sky sport') || id.includes('sky-sports')) {
+    return LOGO_SKY_SPORTS;
+  }
+
+  // 37. Aaj Tak
+  if (name.includes('aaj tak') || id.includes('aaj-tak')) {
+    return LOGO_AAJ_TAK;
+  }
+
+  // 38. Kuriakos TV
+  if (name.includes('kuriakos') || id.includes('kuriakos')) {
+    return LOGO_KURIAKOS;
+  }
+
+  // 39. B4U
+  if (name.includes('b4u') || id.includes('b4u')) {
+    return LOGO_B4U;
+  }
+
+  // 40. Cartoon Network & Infantis
   if (
     rede.includes('cartoon') ||
     name.includes('cartoon network') ||
@@ -1558,7 +2018,7 @@ export function getChannelLogo(canal?: Partial<Canal> | null): string {
     return LOGO_CANAL_PANDA;
   }
 
-  // 26. Filmes & Séries (HBO, Telecine, Cinemax)
+  // 41. Filmes & Séries (HBO, Telecine, Cinemax)
   if (
     rede.includes('hbo') ||
     name.includes('hbo') ||
@@ -1575,7 +2035,7 @@ export function getChannelLogo(canal?: Partial<Canal> | null): string {
     return LOGO_TELECINE;
   }
 
-  // 27. Músicas (MTV, Trace, Stingray)
+  // 42. Músicas (MTV, Trace, Stingray)
   if (
     rede.includes('mtv') ||
     name.includes('mtv') ||
@@ -1584,7 +2044,7 @@ export function getChannelLogo(canal?: Partial<Canal> | null): string {
     return LOGO_MTV;
   }
 
-  // 28. YouTube Creators & Transmissões
+  // 43. YouTube Creators & Transmissões
   if (name.includes('mrbeast') || id.includes('mrbeast')) {
     return LOGO_MRBEAST;
   }
@@ -1595,7 +2055,7 @@ export function getChannelLogo(canal?: Partial<Canal> | null): string {
     return LOGO_CAZE_TV;
   }
 
-  // 29. Categoria específica caso não haja match exato de rede
+  // 44. Categoria específica caso não haja match exato de rede
   const cat = (canal.categoria || '').toLowerCase();
   if (cat === 'bonecos') {
     return LOGO_CARTOON_NETWORK;
@@ -1613,14 +2073,15 @@ export function getChannelLogo(canal?: Partial<Canal> | null): string {
     return LOGO_CNN;
   }
 
-  // Fallback esportivo de alto nível (nunca texto plano!)
-  return LOGO_TNT_SPORTS;
+  // GERAÇÃO PERSONALIZADA DE ALTA RESOLUÇÃO:
+  // NUNCA retorna um ícone genérico ou logotipo de outro canal.
+  return generateBespokeChannelLogo(canal);
 }
 
 /**
  * Fallback à prova de falhas para o evento onError de tags <img>.
- * NUNCA gera um texto genérico 'placehold.co?text=TV'!
+ * NUNCA gera um texto genérico ou placeholder.
  */
 export function getChannelFallbackLogo(canal?: Partial<Canal> | null): string {
-  return getChannelLogo(canal);
+  return generateBespokeChannelLogo(canal);
 }

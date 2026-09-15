@@ -8,7 +8,7 @@ import {
 } from 'firebase/firestore';
 import firebaseConfig from '../../firebase-applet-config.json';
 
-// Suprime mensagens e avisos internos transitórios do SDK do Firestore no console
+// Suprime mensagens e avisos internos de timeout e reconexão transitória do SDK do Firestore
 try {
   setLogLevel('silent');
 } catch {
@@ -27,7 +27,8 @@ try {
   firestoreDb = initializeFirestore(
     app,
     {
-      experimentalAutoDetectLongPolling: true,
+      // Força Long Polling imediatamente para evitar o timeout de 10s de WebSockets bloqueados no iframe sandbox
+      experimentalForceLongPolling: true,
     },
     databaseId
   );
@@ -47,8 +48,8 @@ export const getDbInstance = (): Firestore => db;
  */
 export async function safeFirestoreCall<T>(
   operation: () => Promise<T>,
-  fallback: T,
-  timeoutMs: number = 3000
+  fallback: T = null as unknown as T,
+  timeoutMs: number = 2500
 ): Promise<T> {
   let timer: ReturnType<typeof setTimeout> | undefined;
   try {

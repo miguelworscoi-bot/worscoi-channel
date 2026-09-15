@@ -253,11 +253,13 @@ export function CinemaPlayer({
               const newUrl = `https://www.youtube.com/watch?v=${videoData.video_id}`;
               const allUrls = [canalAtivo.url, ...(canalAtivo.backupUrls || [])];
               const existingIndex = allUrls.findIndex((u) => u.includes(videoData.video_id));
-              if (existingIndex >= 0) {
-                onStreamChange(existingIndex);
-              } else if (onAddStreamUrl) {
-                onAddStreamUrl(newUrl);
-              }
+              setTimeout(() => {
+                if (existingIndex >= 0) {
+                  onStreamChange(existingIndex);
+                } else if (onAddStreamUrl) {
+                  onAddStreamUrl(newUrl);
+                }
+              }, 0);
             }
           }
         }
