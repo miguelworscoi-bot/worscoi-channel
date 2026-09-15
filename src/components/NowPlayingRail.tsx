@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { Canal } from '@/types';
 import { getChannelQuality, getNetworkBadge, getSportTag } from '@/utils/channelUtils';
+import { getChannelLogo, getChannelFallbackLogo } from '@/utils/channelLogoUtils';
 
 interface NowPlayingRailProps {
   canalAtivo: Canal | null;
@@ -83,12 +84,11 @@ export function NowPlayingRail({
             <div className="flex items-center gap-4 sm:gap-5 min-w-0">
               <div className="relative shrink-0">
                 <img
-                  src={canalAtivo.logo}
+                  src={getChannelLogo(canalAtivo)}
                   alt={canalAtivo.nome}
                   className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl object-contain bg-zinc-950 border border-zinc-800 p-1.5 shadow-2xl"
                   onError={(e) => {
-                    (e.target as HTMLImageElement).src =
-                      'https://placehold.co/80x80/222222/ffffff?text=TV';
+                    (e.target as HTMLImageElement).src = getChannelFallbackLogo(canalAtivo);
                   }}
                 />
                 <div className="absolute -bottom-2 -right-1 bg-black/90 border border-[#00E676]/50 rounded-full px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-[#00E676] flex items-center gap-1 shadow-lg">
@@ -207,12 +207,11 @@ export function NowPlayingRail({
                   }`}
                 >
                   <img
-                    src={c.logo}
+                    src={getChannelLogo(c)}
                     alt={c.nome}
                     className="w-9 h-9 rounded-lg object-contain bg-zinc-950 border border-zinc-800 p-0.5 shrink-0"
                     onError={(e) => {
-                      (e.target as HTMLImageElement).src =
-                        'https://placehold.co/80x80/222222/ffffff?text=TV';
+                      (e.target as HTMLImageElement).src = getChannelFallbackLogo(c);
                     }}
                   />
                   <div className="truncate flex-1 min-w-0">
@@ -278,12 +277,11 @@ export function NowPlayingRail({
                   className="flex items-center gap-3 p-3 rounded-xl border border-zinc-800/80 bg-[#121214] hover:bg-zinc-900 hover:border-[#00E676]/40 hover:scale-[1.02] shrink-0 transition-all cursor-pointer select-none group min-w-[240px] max-w-[280px]"
                 >
                   <img
-                    src={c.logo}
+                    src={getChannelLogo(c)}
                     alt={c.nome}
                     className="w-10 h-10 rounded-lg object-contain bg-zinc-950 border border-zinc-800 p-0.5 shrink-0"
                     onError={(e) => {
-                      (e.target as HTMLImageElement).src =
-                        'https://placehold.co/80x80/222222/ffffff?text=TV';
+                      (e.target as HTMLImageElement).src = getChannelFallbackLogo(c);
                     }}
                   />
                   <div className="truncate flex-1 min-w-0">

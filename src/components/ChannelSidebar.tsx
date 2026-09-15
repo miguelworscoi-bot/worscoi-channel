@@ -18,6 +18,7 @@ import {
   getNetworkBadge,
   getSportTag,
 } from '@/utils/channelUtils';
+import { getChannelLogo, getChannelFallbackLogo } from '@/utils/channelLogoUtils';
 
 interface ChannelSidebarProps {
   todosCanais: Canal[];
@@ -812,12 +813,11 @@ export function ChannelSidebar({
                                 {/* LOGO DO CANAL */}
                                 <div className="relative shrink-0">
                                   <img
-                                    src={canal.logo}
+                                    src={getChannelLogo(canal)}
                                     alt={canal.nome}
                                     className="w-9 h-9 rounded-lg object-contain bg-zinc-950 border border-zinc-800 p-0.5 shadow-sm"
                                     onError={(e) => {
-                                      (e.target as HTMLImageElement).src =
-                                        'https://placehold.co/80x80/222222/ffffff?text=TV';
+                                      (e.target as HTMLImageElement).src = getChannelFallbackLogo(canal);
                                     }}
                                   />
                                   {isActive && (

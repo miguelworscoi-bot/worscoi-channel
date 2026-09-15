@@ -303,6 +303,20 @@ export default function Home() {
     }
   };
 
+  const handleAddStreamToCanal = useCallback((url: string) => {
+    if (!canalAtivo) return;
+    const currentBackups = canalAtivo.backupUrls || [];
+    if (!currentBackups.includes(url) && canalAtivo.url !== url) {
+      const updatedCanal: Canal = {
+        ...canalAtivo,
+        backupUrls: [...currentBackups, url],
+      };
+      setCanalAtivo(updatedCanal);
+      const newIndex = updatedCanal.backupUrls!.length;
+      setStreamIndex(newIndex);
+    }
+  }, [canalAtivo]);
+
   const handleLogout = () => {
     signOut();
     setIsLoginModalOpen(true);
@@ -398,6 +412,7 @@ export default function Home() {
               canalAtivo={canalAtivo}
               streamIndex={streamIndex}
               onStreamChange={(idx) => setStreamIndex(idx)}
+              onAddStreamUrl={handleAddStreamToCanal}
               isMuted={isMuted}
               onToggleMute={() => setIsMuted(!isMuted)}
               useProxy={useProxy}
@@ -466,6 +481,7 @@ export default function Home() {
             canalAtivo={canalAtivo}
             streamIndex={streamIndex}
             onStreamChange={(idx) => setStreamIndex(idx)}
+            onAddStreamUrl={handleAddStreamToCanal}
             isMuted={isMuted}
             onToggleMute={() => setIsMuted(!isMuted)}
             useProxy={useProxy}

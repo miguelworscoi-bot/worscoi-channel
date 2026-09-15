@@ -16,7 +16,6 @@ import {
   Tv,
   AlertCircle,
   X,
-  ExternalLink,
   Send,
   PictureInPicture2,
   Maximize2,
@@ -32,6 +31,7 @@ import {
   SignalHigh,
   SignalMedium,
   SignalLow,
+  Film,
 } from 'lucide-react';
 import { Canal, LatencyMode } from '@/types';
 import { motion, AnimatePresence } from 'motion/react';
@@ -46,11 +46,14 @@ import { useAuth } from '@/context/AuthContext';
 import { isUserPlanExpired } from '@/services/subscriptionService';
 import { PlayerTransitionSkeleton } from './PlayerTransitionSkeleton';
 import { PlayerSettingsModal } from './PlayerSettingsModal';
+import { getChannelLogo, getChannelFallbackLogo } from '@/utils/channelLogoUtils';
+import { ChannelVideosModal, extractYouTubeId } from './ChannelVideosModal';
 
 interface PlayerHeroProps {
   canalAtivo: Canal | null;
   streamIndex: number;
   onStreamChange: (index: number) => void;
+  onAddStreamUrl?: (url: string) => void;
   isMuted: boolean;
   onToggleMute: () => void;
   useProxy: boolean;
@@ -83,6 +86,7 @@ export function PlayerHero({
   canalAtivo,
   streamIndex,
   onStreamChange,
+  onAddStreamUrl,
   isMuted,
   onToggleMute,
   useProxy,
@@ -120,6 +124,7 @@ export function PlayerHero({
   const [loadSeconds, setLoadSeconds] = useState(0);
   const [playedPercent, setPlayedPercent] = useState(45);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isChannelVideosOpen, setIsChannelVideosOpen] = useState(false);
 
   // Estados anti-tédio e recuperação inteligente de streaming
   const [triviaIndex, setTriviaIndex] = useState(0);
@@ -182,6 +187,43 @@ export function PlayerHero({
     // Reseta a latência base para o novo canal
     setStreamLatency(latencyMode === 'low-latency' ? 120 : latencyMode === 'economy' ? 260 : 180);
   }, [canalAtivo?.id, canalAtivo?.url, streamIndex, useProxy, latencyMode]);
+
+  // Sincronização inteligente com mensagens do YouTube (ao escolher outro vídeo, reproduz no player do sistema)
+  useEffect(() => {
+    const handleYouTubeMessage = (event: MessageEvent) => {
+      try {
+        let data = event.data;
+        if (typeof data === 'string') {
+          data = JSON.parse(data);
+        }
+        if (data && (data.event === 'infoDelivery' || data.event === 'initialDelivery')) {
+          const videoData = data.info?.videoData;
+          if (videoData && videoData.video_id) {
+            const currentVideoId = extractYouTubeId(activeRawStreamUrl);
+            if (currentVideoId && videoData.video_id !== currentVideoId) {
+              const newUrl = `https://www.youtube.com/watch?v=${videoData.video_id}`;
+              if (canalAtivo) {
+                const allUrls = [canalAtivo.url, ...(canalAtivo.backupUrls || [])];
+                const existingIndex = allUrls.findIndex((u) => u.includes(videoData.video_id));
+                if (existingIndex >= 0) {
+                  onStreamChange(existingIndex);
+                } else if (onAddStreamUrl) {
+                  onAddStreamUrl(newUrl);
+                }
+              }
+            }
+          }
+        }
+      } catch {
+        // Ignora mensagens que não são do player
+      }
+    };
+
+    window.addEventListener('message', handleYouTubeMessage);
+    return () => {
+      window.removeEventListener('message', handleYouTubeMessage);
+    };
+  }, [activeRawStreamUrl, canalAtivo, onStreamChange, onAddStreamUrl]);
 
   // Medição contínua e dinâmica da latência do sinal da transmissão (ping RTT)
   useEffect(() => {
@@ -722,12 +764,11 @@ export function PlayerHero({
                 <div className="relative mb-2">
                   <div className="w-13 h-13 sm:w-16 sm:h-16 rounded-2xl bg-zinc-900/90 border border-zinc-700/80 p-2 shadow-2xl flex items-center justify-center backdrop-blur-md">
                     <img
-                      src={canalAtivo.logo}
+                      src={getChannelLogo(canalAtivo)}
                       alt={canalAtivo.nome}
                       className="w-full h-full object-contain filter drop-shadow"
                       onError={(e) => {
-                        (e.target as HTMLImageElement).src =
-                          'https://placehold.co/120x120/18181b/ffffff?text=TV';
+                        (e.target as HTMLImageElement).src = getChannelFallbackLogo(canalAtivo);
                       }}
                     />
                   </div>
@@ -777,15 +818,27 @@ export function PlayerHero({
                 </div>
 
                 {hasYouTubeEmbedError && (
-                  <a
-                    href={activeRawStreamUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mt-3 px-3.5 py-1.5 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-lg shadow-red-950/50"
-                  >
-                    <ExternalLink className="w-3.5 h-3.5" />
-                    <span>Assistir no YouTube</span>
-                  </a>
+                  <div className="mt-3 flex items-center gap-2 flex-wrap justify-center">
+                    <button
+                      type="button"
+                      onClick={() => setIsChannelVideosOpen(true)}
+                      className="px-3.5 py-1.5 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-lg shadow-red-950/50 transition"
+                      title="Ver mais vídeos deste canal"
+                    >
+                      <Film className="w-3.5 h-3.5" />
+                      <span>Ver mais vídeos do canal</span>
+                    </button>
+                    {streamsDisponiveis.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => onStreamChange((streamIndex + 1) % streamsDisponiveis.length)}
+                        className="px-3.5 py-1.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-bold flex items-center gap-1.5 cursor-pointer border border-zinc-700 transition"
+                      >
+                        <Zap className="w-3.5 h-3.5 text-amber-400" />
+                        <span>Sinal Alternativo</span>
+                      </button>
+                    )}
+                  </div>
                 )}
               </div>
 
@@ -936,6 +989,18 @@ export function PlayerHero({
 
               {/* RODAPÉ: AÇÕES DIRETAS PARA O USUÁRIO NUNCA FICAR PRESO */}
               <div className="relative z-10 w-full flex flex-wrap items-center justify-center gap-2 pb-1">
+                {/* BOTÃO VER MAIS VÍDEOS DO CANAL NO RODAPÉ DO CARREGAMENTO */}
+                <button
+                  type="button"
+                  id="player-rescue-channel-videos-btn"
+                  onClick={() => setIsChannelVideosOpen(true)}
+                  className="px-2.5 py-1.5 rounded-xl bg-red-950/40 hover:bg-red-900/60 text-red-200 hover:text-white text-xs font-semibold border border-red-500/40 flex items-center gap-1.5 cursor-pointer shadow transition"
+                  title="Ver mais vídeos do canal (reproduzir diretamente no nosso player)"
+                >
+                  <Film className="w-3.5 h-3.5 text-red-400" />
+                  <span>Ver mais vídeos {streamsDisponiveis.length > 1 ? `(${streamsDisponiveis.length})` : ''}</span>
+                </button>
+
                 {streamsDisponiveis.length > 1 && (
                   <button
                     type="button"
@@ -1073,11 +1138,11 @@ export function PlayerHero({
               title={canalAtivo.nome}
             >
               <img
-                src={canalAtivo.logo}
+                src={getChannelLogo(canalAtivo)}
                 alt={canalAtivo.nome}
                 className="w-10 h-10 sm:w-11 sm:h-11 rounded-full object-cover bg-zinc-950"
                 onError={(e) => {
-                  (e.target as HTMLImageElement).src = 'https://placehold.co/80x80/222222/ffffff?text=TV';
+                  (e.target as HTMLImageElement).src = getChannelFallbackLogo(canalAtivo);
                 }}
               />
             </div>
@@ -1142,6 +1207,22 @@ export function PlayerHero({
                 />
               </div>
             </button>
+
+            {/* BOTÃO VER MAIS VÍDEOS DO CANAL NA COLUNA VERTICAL */}
+            <button
+              type="button"
+              id="player-action-channel-videos-btn"
+              onClick={() => setIsChannelVideosOpen(true)}
+              className="flex flex-col items-center gap-1 group cursor-pointer"
+              title="Ver mais vídeos do canal (reproduzir no nosso player)"
+            >
+              <div className="p-1.5 rounded-full text-white group-hover:text-red-400 hover:bg-red-500/15 transition-all group-hover:scale-110 active:scale-90 border border-transparent group-hover:border-red-500/30">
+                <Film className="w-6 h-6 sm:w-7 sm:h-7 text-red-500 group-hover:text-red-400" />
+              </div>
+              <span className="text-[10px] sm:text-[11px] font-bold text-zinc-300 group-hover:text-white tracking-tight text-center leading-tight max-w-[48px]">
+                Vídeos
+              </span>
+            </button>
           </div>
         )}
       </div>
@@ -1149,7 +1230,7 @@ export function PlayerHero({
       {/* BARRA INFERIOR DE CONTROLE (EXATAMENTE COMO NA REFERÊNCIA: PÍLULAS À ESQUERDA, SETAS NO CENTRO) */}
       {!isMiniMode && (
         <div className="w-full max-w-[860px] flex items-center justify-between mt-4 px-1 select-none flex-wrap gap-y-3">
-          {/* LADO ESQUERDO: PÍLULAS "MODO CINEMA", "MODO ESTÁVEL / BAIXA LATÊNCIA", "CONFIGURAÇÕES", "PIP" */}
+          {/* LADO ESQUERDO: PÍLULAS "MODO CINEMA", "VER MAIS VÍDEOS DO CANAL", "MODO ESTÁVEL / BAIXA LATÊNCIA", ETC. */}
           <div className="flex items-center gap-2 flex-wrap">
             <button
               type="button"
@@ -1158,6 +1239,23 @@ export function PlayerHero({
               className="px-4 py-2 rounded-full bg-[#141416] hover:bg-[#202024] text-zinc-200 hover:text-white border border-zinc-800/90 text-xs font-medium transition cursor-pointer shadow-sm"
             >
               Modo Cinema
+            </button>
+
+            {/* BOTÃO VER MAIS VÍDEOS DO CANAL */}
+            <button
+              type="button"
+              id="player-pill-channel-videos"
+              onClick={() => setIsChannelVideosOpen(true)}
+              className="px-3.5 sm:px-4 py-2 rounded-full border text-xs font-semibold transition cursor-pointer shadow-sm flex items-center gap-1.5 bg-gradient-to-r from-red-600/20 via-zinc-900 to-zinc-900 text-zinc-100 hover:text-white border-red-500/40 hover:border-red-500/70 hover:scale-[1.02] active:scale-95"
+              title="Ver mais vídeos do canal (reproduzir diretamente no nosso player)"
+            >
+              <Film className="w-3.5 h-3.5 text-red-500 shrink-0" />
+              <span>Ver mais vídeos do canal</span>
+              {streamsDisponiveis.length > 1 && (
+                <span className="px-1.5 py-0.2 rounded-full bg-red-600/30 text-red-300 text-[10px] font-bold border border-red-500/30">
+                  {streamsDisponiveis.length}
+                </span>
+              )}
             </button>
 
             {/* PÍLULA DE QUALIDADE DO SINAL & LATÊNCIA REAL */}
@@ -1418,6 +1516,20 @@ export function PlayerHero({
           onSelectStream={onStreamChange}
         />
       )}
+
+      {/* MODAL / PAINEL VER MAIS VÍDEOS DO CANAL (REPRODUZ 100% NO REPRODUTOR DO SISTEMA) */}
+      <ChannelVideosModal
+        isOpen={isChannelVideosOpen}
+        onClose={() => setIsChannelVideosOpen(false)}
+        canal={canalAtivo}
+        streamIndex={streamIndex}
+        onSelectStream={(idx) => {
+          onStreamChange(idx);
+          setEmergencyOverrideUrl(null);
+          setHasYouTubeEmbedError(false);
+        }}
+        onAddStreamUrl={onAddStreamUrl}
+      />
     </div>
   );
 }

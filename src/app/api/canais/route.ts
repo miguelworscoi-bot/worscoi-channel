@@ -1,5 +1,20 @@
 import { NextResponse } from 'next/server';
 import { TODOS_OS_CANAIS_CATALOGO } from '@/data/channelsCatalog';
+import {
+  LOGO_TNT_SPORTS,
+  LOGO_CHAMPIONS_LEAGUE as LOGO_CHAMPIONS,
+  LOGO_LIBERTADORES,
+  LOGO_LALIGA,
+  LOGO_NBA,
+  LOGO_ESPN,
+  LOGO_CBS_GOLAZO,
+  LOGO_REAL_MADRID as LOGO_REALMADRID,
+  LOGO_FOX_SPORTS,
+  LOGO_BEIN_SPORTS as LOGO_BEIN,
+  LOGO_ZAP_VIVA as LOGO_ZAP,
+  LOGO_SPORT_TV as LOGO_SUPERSPORT,
+  getChannelLogo,
+} from '@/utils/channelLogoUtils';
 
 export type CategoriaCanal =
   | 'Esportes'
@@ -60,114 +75,40 @@ export interface CanalItem {
   competicoes?: string[];
 }
 
-// Logotipos em SVG embutidos para máxima nitidez e sem falhas de carregamento
-const LOGO_TNT_SPORTS =
-  'data:image/svg+xml;utf8,' +
-  encodeURIComponent(
-    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="16" fill="#120024"/><circle cx="50" cy="50" r="38" fill="#e50914" opacity="0.15"/><text x="50" y="46" font-family="system-ui,-apple-system,sans-serif" font-weight="900" font-size="20" fill="#ffd100" text-anchor="middle">TNT</text><text x="50" y="70" font-family="system-ui,-apple-system,sans-serif" font-weight="900" font-size="12" fill="#ffffff" text-anchor="middle" letter-spacing="1">SPORTS</text></svg>'
-  );
-
-const LOGO_CHAMPIONS =
-  'data:image/svg+xml;utf8,' +
-  encodeURIComponent(
-    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="16" fill="#001438"/><polygon points="50,15 54,28 67,28 56,36 60,49 50,41 40,49 44,36 33,28 46,28" fill="#ffffff"/><text x="50" y="68" font-family="system-ui,-apple-system,sans-serif" font-weight="900" font-size="11" fill="#00e5ff" text-anchor="middle" letter-spacing="0.5">CHAMPIONS</text><text x="50" y="82" font-family="system-ui,-apple-system,sans-serif" font-weight="800" font-size="9" fill="#ffffff" text-anchor="middle" letter-spacing="1">LEAGUE</text></svg>'
-  );
-
-const LOGO_LIBERTADORES =
-  'data:image/svg+xml;utf8,' +
-  encodeURIComponent(
-    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="16" fill="#0b1329"/><path d="M40 28 L60 28 L56 46 C56 52 44 52 44 46 Z" fill="#ffd700"/><rect x="47" y="52" width="6" height="10" fill="#ffd700"/><rect x="42" y="62" width="16" height="4" rx="2" fill="#ffd700"/><text x="50" y="78" font-family="system-ui,-apple-system,sans-serif" font-weight="900" font-size="8.5" fill="#ffffff" text-anchor="middle" letter-spacing="0.5">LIBERTADORES</text><text x="50" y="90" font-family="system-ui,-apple-system,sans-serif" font-weight="800" font-size="7" fill="#ffd700" text-anchor="middle" letter-spacing="1">CONMEBOL</text></svg>'
-  );
-
-const LOGO_LALIGA =
-  'data:image/svg+xml;utf8,' +
-  encodeURIComponent(
-    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="16" fill="#ff0046"/><text x="50" y="52" font-family="system-ui,-apple-system,sans-serif" font-weight="900" font-size="20" fill="#ffffff" text-anchor="middle">LaLiga</text><text x="50" y="74" font-family="system-ui,-apple-system,sans-serif" font-weight="800" font-size="11" fill="#ffffff" text-anchor="middle" letter-spacing="1">ESPAÑA</text></svg>'
-  );
-
-const LOGO_NBA =
-  'data:image/svg+xml;utf8,' +
-  encodeURIComponent(
-    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="16" fill="#002b66"/><path d="M50 14 L80 14 C86 14 90 18 90 24 L90 76 C90 82 86 86 80 86 L50 86 Z" fill="#d61f26"/><text x="50" y="56" font-family="system-ui,-apple-system,sans-serif" font-weight="900" font-size="26" fill="#ffffff" text-anchor="middle">NBA</text><text x="50" y="76" font-family="system-ui,-apple-system,sans-serif" font-weight="800" font-size="10" fill="#ffd100" text-anchor="middle" letter-spacing="1">LIVE HD</text></svg>'
-  );
-
 const LOGO_MLS =
   'data:image/svg+xml;utf8,' +
   encodeURIComponent(
-    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="16" fill="#0c1831"/><polygon points="50,15 82,24 82,58 50,85 18,58 18,24" fill="#002447" stroke="#00c853" stroke-width="4"/><text x="50" y="50" font-family="system-ui,-apple-system,sans-serif" font-weight="900" font-size="18" fill="#ffffff" text-anchor="middle">MLS</text><text x="50" y="68" font-family="system-ui,-apple-system,sans-serif" font-weight="800" font-size="9" fill="#00e676" text-anchor="middle" letter-spacing="1">SOCCER</text></svg>'
-  );
-
-const LOGO_ESPN =
-  'data:image/svg+xml;utf8,' +
-  encodeURIComponent(
-    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="16" fill="#cc0000"/><text x="50" y="58" font-family="system-ui,-apple-system,sans-serif" font-style="italic" font-weight="900" font-size="24" fill="#ffffff" text-anchor="middle">ESPN</text><text x="50" y="78" font-family="system-ui,-apple-system,sans-serif" font-weight="800" font-size="10" fill="#ffffff" text-anchor="middle" letter-spacing="1.5">SPORTS</text></svg>'
-  );
-
-const LOGO_CBS_GOLAZO =
-  'data:image/svg+xml;utf8,' +
-  encodeURIComponent(
-    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="16" fill="#002855"/><text x="50" y="44" font-family="system-ui,-apple-system,sans-serif" font-weight="900" font-size="13" fill="#ffffff" text-anchor="middle">CBS SPORTS</text><text x="50" y="70" font-family="system-ui,-apple-system,sans-serif" font-weight="900" font-size="16" fill="#00ff88" text-anchor="middle" letter-spacing="1">GOLAZO</text></svg>'
-  );
-
-const LOGO_REALMADRID =
-  'data:image/svg+xml;utf8,' +
-  encodeURIComponent(
-    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="16" fill="#1c0038"/><circle cx="50" cy="46" r="28" fill="none" stroke="#ffd700" stroke-width="3"/><text x="50" y="52" font-family="system-ui,-apple-system,sans-serif" font-weight="900" font-size="14" fill="#ffffff" text-anchor="middle">RMTV</text><text x="50" y="74" font-family="system-ui,-apple-system,sans-serif" font-weight="800" font-size="10" fill="#00d2ff" text-anchor="middle" letter-spacing="1">HD LIVE</text></svg>'
-  );
-
-const LOGO_FOX_SPORTS =
-  'data:image/svg+xml;utf8,' +
-  encodeURIComponent(
-    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="16" fill="#002244"/><text x="50" y="50" font-family="system-ui,-apple-system,sans-serif" font-weight="900" font-size="22" fill="#ffffff" text-anchor="middle">FOX</text><text x="50" y="72" font-family="system-ui,-apple-system,sans-serif" font-weight="800" font-size="12" fill="#ffd100" text-anchor="middle" letter-spacing="1">SPORTS</text></svg>'
-  );
-
-// Logotipos em SVG embutidos para máxima nitidez e sem falhas de carregamento
-const LOGO_BEIN =
-  'data:image/svg+xml;utf8,' +
-  encodeURIComponent(
-    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="16" fill="#562680"/><text x="50" y="52" font-family="system-ui,-apple-system,sans-serif" font-weight="900" font-size="24" fill="#ffffff" text-anchor="middle">beIN</text><text x="50" y="73" font-family="system-ui,-apple-system,sans-serif" font-weight="800" font-size="13" fill="#00ffd5" text-anchor="middle" letter-spacing="1">SPORTS</text></svg>'
-  );
-
-const LOGO_ZAP =
-  'data:image/svg+xml;utf8,' +
-  encodeURIComponent(
-    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="16" fill="#ff6600"/><text x="50" y="52" font-family="system-ui,-apple-system,sans-serif" font-weight="900" font-size="28" fill="#ffffff" text-anchor="middle">ZAP</text><text x="50" y="73" font-family="system-ui,-apple-system,sans-serif" font-weight="800" font-size="11" fill="#ffffff" text-anchor="middle" letter-spacing="1.5">ANGOLA</text></svg>'
-  );
-
-const LOGO_SUPERSPORT =
-  'data:image/svg+xml;utf8,' +
-  encodeURIComponent(
-    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="16" fill="#002b66"/><text x="50" y="46" font-family="system-ui,-apple-system,sans-serif" font-weight="900" font-size="14" fill="#ffffff" text-anchor="middle">SUPER</text><text x="50" y="68" font-family="system-ui,-apple-system,sans-serif" font-weight="900" font-size="16" fill="#00bfff" text-anchor="middle">SPORT</text></svg>'
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120"><rect width="120" height="120" rx="26" fill="#002447"/><polygon points="60,18 96,28 96,68 60,102 24,68 24,28" fill="#002447" stroke="#00c853" stroke-width="4"/><text x="60" y="58" font-family="Arial Black,sans-serif" font-weight="900" font-size="20" fill="#ffffff" text-anchor="middle">MLS</text><text x="60" y="80" font-family="Arial Black,sans-serif" font-weight="800" font-size="10" fill="#00e676" text-anchor="middle" letter-spacing="1">SOCCER</text></svg>'
   );
 
 const LOGO_REDBULL =
   'data:image/svg+xml;utf8,' +
   encodeURIComponent(
-    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="16" fill="#0c1831"/><text x="50" y="44" font-family="system-ui,-apple-system,sans-serif" font-weight="900" font-size="14" fill="#eb144c" text-anchor="middle" letter-spacing="1">RED BULL</text><text x="50" y="70" font-family="system-ui,-apple-system,sans-serif" font-weight="900" font-size="22" fill="#ffffff" text-anchor="middle">TV</text></svg>'
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120"><rect width="120" height="120" rx="26" fill="#0c1831"/><circle cx="60" cy="46" r="28" fill="#eb144c"/><text x="60" y="52" font-family="Arial Black,sans-serif" font-weight="900" font-size="14" fill="#ffffff" text-anchor="middle">RED BULL</text><text x="60" y="98" font-family="Arial Black,sans-serif" font-weight="900" font-size="18" fill="#ffd100" text-anchor="middle">TV HD</text></svg>'
   );
 
 const LOGO_ASPOR =
   'data:image/svg+xml;utf8,' +
   encodeURIComponent(
-    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="16" fill="#008037"/><text x="50" y="46" font-family="system-ui,-apple-system,sans-serif" font-weight="900" font-size="26" fill="#ffffff" text-anchor="middle">A</text><text x="50" y="72" font-family="system-ui,-apple-system,sans-serif" font-weight="900" font-size="15" fill="#ffffff" text-anchor="middle" letter-spacing="1">SPOR</text></svg>'
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120"><rect width="120" height="120" rx="26" fill="#008037"/><text x="60" y="56" font-family="Arial Black,sans-serif" font-weight="900" font-size="32" fill="#ffffff" text-anchor="middle">A</text><text x="60" y="92" font-family="Arial Black,sans-serif" font-weight="900" font-size="18" fill="#ffffff" text-anchor="middle" letter-spacing="2">SPOR</text></svg>'
   );
 
 const LOGO_ACC =
   'data:image/svg+xml;utf8,' +
   encodeURIComponent(
-    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="16" fill="#013ca6"/><text x="50" y="48" font-family="system-ui,-apple-system,sans-serif" font-weight="900" font-size="22" fill="#ffffff" text-anchor="middle">ACC</text><text x="50" y="70" font-family="system-ui,-apple-system,sans-serif" font-weight="800" font-size="12" fill="#ffd100" text-anchor="middle">SPORTS</text></svg>'
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120"><rect width="120" height="120" rx="26" fill="#013ca6"/><text x="60" y="58" font-family="Arial Black,sans-serif" font-weight="900" font-size="28" fill="#ffffff" text-anchor="middle">ACC</text><text x="60" y="92" font-family="Arial Black,sans-serif" font-weight="800" font-size="14" fill="#ffd100" text-anchor="middle" letter-spacing="1">SPORTS</text></svg>'
   );
 
 const LOGO_GOLF =
   'data:image/svg+xml;utf8,' +
   encodeURIComponent(
-    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="16" fill="#004d25"/><text x="50" y="48" font-family="system-ui,-apple-system,sans-serif" font-weight="900" font-size="18" fill="#ffffff" text-anchor="middle">GOLF</text><text x="50" y="70" font-family="system-ui,-apple-system,sans-serif" font-weight="800" font-size="12" fill="#80e0a7" text-anchor="middle">TOUR</text></svg>'
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120"><rect width="120" height="120" rx="26" fill="#004d25"/><circle cx="60" cy="46" r="26" fill="#ffffff"/><circle cx="60" cy="46" r="8" fill="#004d25"/><text x="60" y="96" font-family="Arial Black,sans-serif" font-weight="900" font-size="14" fill="#80e0a7" text-anchor="middle" letter-spacing="2">GOLF TOUR</text></svg>'
   );
 
 const LOGO_VIVO =
   'data:image/svg+xml;utf8,' +
   encodeURIComponent(
-    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="16" fill="#660099"/><text x="50" y="54" font-family="system-ui,-apple-system,sans-serif" font-weight="900" font-size="24" fill="#ffffff" text-anchor="middle">vivo</text><text x="50" y="74" font-family="system-ui,-apple-system,sans-serif" font-weight="800" font-size="12" fill="#ffffff" text-anchor="middle">TV</text></svg>'
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120"><rect width="120" height="120" rx="26" fill="#660099"/><text x="60" y="64" font-family="Arial Black,sans-serif" font-weight="900" font-size="28" fill="#ffffff" text-anchor="middle">vivo</text><text x="60" y="96" font-family="Arial Black,sans-serif" font-weight="800" font-size="14" fill="#ffffff" text-anchor="middle">TV HD</text></svg>'
   );
 
 // CANAIS TNT SPORTS (Champions League, Paulistão & NBA)
@@ -813,7 +754,7 @@ function parseM3U(
     if (linha.startsWith('#EXTINF:')) {
       const nome = linha.split(',').pop()?.trim() || 'Canal';
       const logoMatch = linha.match(/tvg-logo="([^"]+)"/);
-      const logo = logoMatch ? logoMatch[1] : 'https://placehold.co/80x80/222222/ffffff?text=TV';
+      const logo = logoMatch ? logoMatch[1] : '';
 
       const groupMatch = linha.match(/group-title="([^"]+)"/);
       const rawGroup = groupMatch ? groupMatch[1] : '';
@@ -1057,8 +998,17 @@ export async function GET(request?: Request) {
       );
     }
 
-    return NextResponse.json(canais);
+    const canaisComLogosOficiais = canais.map((c) => ({
+      ...c,
+      logo: getChannelLogo(c),
+    }));
+
+    return NextResponse.json(canaisComLogosOficiais);
   } catch {
-    return NextResponse.json(CANAIS_PADRAO);
+    const padraoComLogos = CANAIS_PADRAO.map((c) => ({
+      ...c,
+      logo: getChannelLogo(c),
+    }));
+    return NextResponse.json(padraoComLogos);
   }
 }

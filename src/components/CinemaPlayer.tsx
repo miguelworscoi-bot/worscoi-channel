@@ -18,10 +18,12 @@ import {
   Lock,
   CreditCard,
   KeyRound,
+  Film,
 } from 'lucide-react';
 import { Canal, LatencyMode } from '@/types';
 import { motion, AnimatePresence } from 'motion/react';
 import { getNetworkBadge, getSportTag, getChannelQuality } from '@/utils/channelUtils';
+import { getChannelLogo, getChannelFallbackLogo } from '@/utils/channelLogoUtils';
 import { getChannelSchedule } from '@/utils/channelProgramExtractor';
 import {
   getSafeStreamUrl,
@@ -34,11 +36,13 @@ import { PlayerSettingsModal } from './PlayerSettingsModal';
 import { PlayerTransitionSkeleton } from './PlayerTransitionSkeleton';
 import { SubscriptionCountdownBadge } from './SubscriptionCountdownBadge';
 import { useAuth } from '@/context/AuthContext';
+import { ChannelVideosModal, extractYouTubeId } from './ChannelVideosModal';
 
 interface CinemaPlayerProps {
   canalAtivo: Canal;
   streamIndex: number;
   onStreamChange: (index: number) => void;
+  onAddStreamUrl?: (url: string) => void;
   isMuted: boolean;
   onToggleMute: () => void;
   useProxy: boolean;
@@ -63,6 +67,7 @@ export function CinemaPlayer({
   canalAtivo,
   streamIndex,
   onStreamChange,
+  onAddStreamUrl,
   isMuted,
   onToggleMute,
   useProxy,
@@ -89,6 +94,7 @@ export function CinemaPlayer({
   const [hasFirstFrame, setHasFirstFrame] = useState(false);
   const [loadSeconds, setLoadSeconds] = useState(0);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isChannelVideosOpen, setIsChannelVideosOpen] = useState(false);
   const [triviaIndex, setTriviaIndex] = useState(0);
   const [emergencyOverrideUrl, setEmergencyOverrideUrl] = useState<string | null>(null);
 
@@ -112,6 +118,41 @@ export function CinemaPlayer({
   const sportTag = getSportTag(canalAtivo);
   const programaAtual = getChannelSchedule(canalAtivo)[0];
   const quality = getChannelQuality(canalAtivo);
+
+  // Sincronização inteligente com mensagens do YouTube (ao escolher outro vídeo, reproduz no player do sistema)
+  useEffect(() => {
+    const handleYouTubeMessage = (event: MessageEvent) => {
+      try {
+        let data = event.data;
+        if (typeof data === 'string') {
+          data = JSON.parse(data);
+        }
+        if (data && (data.event === 'infoDelivery' || data.event === 'initialDelivery')) {
+          const videoData = data.info?.videoData;
+          if (videoData && videoData.video_id) {
+            const currentVideoId = extractYouTubeId(activeRawStreamUrl);
+            if (currentVideoId && videoData.video_id !== currentVideoId) {
+              const newUrl = `https://www.youtube.com/watch?v=${videoData.video_id}`;
+              const allUrls = [canalAtivo.url, ...(canalAtivo.backupUrls || [])];
+              const existingIndex = allUrls.findIndex((u) => u.includes(videoData.video_id));
+              if (existingIndex >= 0) {
+                onStreamChange(existingIndex);
+              } else if (onAddStreamUrl) {
+                onAddStreamUrl(newUrl);
+              }
+            }
+          }
+        }
+      } catch {
+        // Ignora
+      }
+    };
+
+    window.addEventListener('message', handleYouTubeMessage);
+    return () => {
+      window.removeEventListener('message', handleYouTubeMessage);
+    };
+  }, [activeRawStreamUrl, canalAtivo, onStreamChange, onAddStreamUrl]);
 
   // Reset de estados
   useEffect(() => {
@@ -217,12 +258,11 @@ export function CinemaPlayer({
       >
         <div className="flex items-center gap-3">
           <img
-            src={canalAtivo.logo}
+            src={getChannelLogo(canalAtivo)}
             alt={canalAtivo.nome}
             className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl object-contain bg-zinc-900 border border-zinc-700/80 p-1 shadow-lg"
             onError={(e) => {
-              (e.target as HTMLImageElement).src =
-                'https://placehold.co/80x80/222222/ffffff?text=TV';
+              (e.target as HTMLImageElement).src = getChannelFallbackLogo(canalAtivo);
             }}
           />
           <div>
@@ -267,6 +307,24 @@ export function CinemaPlayer({
               <SkipForward className="w-4 h-4" />
             </button>
           )}
+
+          {/* BOTÃO VER MAIS VÍDEOS DO CANAL NO MODO CINEMA */}
+          <button
+            type="button"
+            id="cinema-btn-channel-videos"
+            onClick={() => setIsChannelVideosOpen(true)}
+            className="px-3 py-1.5 rounded-full text-xs font-bold border bg-red-600/20 border-red-500/50 text-red-300 hover:bg-red-600/30 flex items-center gap-1.5 cursor-pointer shadow-lg transition"
+            title="Ver mais vídeos do canal (reproduzir diretamente no nosso player)"
+          >
+            <Film className="w-3.5 h-3.5 text-red-400" />
+            <span className="hidden sm:inline">Ver mais vídeos</span>
+            <span className="sm:hidden">Vídeos</span>
+            {streamsDisponiveis.length > 1 && (
+              <span className="px-1.5 py-0.2 rounded-full bg-red-500/30 text-white text-[10px] font-bold">
+                {streamsDisponiveis.length}
+              </span>
+            )}
+          </button>
 
           {/* Seletor rápido de rota no modo cinema */}
           {streamsDisponiveis.length > 1 && (
@@ -649,6 +707,19 @@ export function CinemaPlayer({
             onSelectStream={onStreamChange}
           />
         )}
+
+        {/* MODAL VER MAIS VÍDEOS DO CANAL NO MODO CINEMA */}
+        <ChannelVideosModal
+          isOpen={isChannelVideosOpen}
+          onClose={() => setIsChannelVideosOpen(false)}
+          canal={canalAtivo}
+          streamIndex={streamIndex}
+          onSelectStream={(idx) => {
+            onStreamChange(idx);
+            setEmergencyOverrideUrl(null);
+          }}
+          onAddStreamUrl={onAddStreamUrl}
+        />
       </div>
     </motion.div>
   );

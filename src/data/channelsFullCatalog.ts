@@ -1,11 +1,13 @@
 import { Canal } from '@/types';
 import { CANAIS_YOUTUBE } from './channelsYoutube';
+import { CANAIS_NOVOS_SOLICITADOS } from './channelsNewUserList';
+import { LOGO_TNT_SPORTS, LOGO_CHAMPIONS_LEAGUE } from '@/utils/channelLogoUtils';
 
 export const CANAIS_COMPLETOS: Canal[] = [
   {
     "id": "tnt-sports-brasil-hd",
     "nome": "TNT Sports Brasil HD (Champions League & NBA)",
-    "logo": "https://placehold.co/100x100/120024/ffd100?text=TNT+SPORTS",
+    "logo": LOGO_TNT_SPORTS,
     "url": "http://45.162.64.114/SPACE/index.m3u8",
     "categoria": "Esportes",
     "pais": "BR",
@@ -20,7 +22,7 @@ export const CANAIS_COMPLETOS: Canal[] = [
   {
     "id": "uefa-champions-league-live-hd",
     "nome": "UEFA Champions League Live HD",
-    "logo": "https://placehold.co/100x100/001438/00e5ff?text=UCL+LIVE",
+    "logo": LOGO_CHAMPIONS_LEAGUE,
     "url": "https://dai.google.com/linear/hls/event/7f3Wv6f7QEKfQna22jHqLQ/master.m3u8",
     "categoria": "Esportes",
     "pais": "Global",
@@ -4180,6 +4182,7 @@ export const CANAIS_COMPLETOS: Canal[] = [
 ];
 
 export const TODOS_OS_CANAIS: Canal[] = [
+  ...CANAIS_NOVOS_SOLICITADOS,
   ...CANAIS_COMPLETOS,
   ...CANAIS_YOUTUBE,
 ];
@@ -4191,3 +4194,4 @@ export const CANAIS_NOVELAS: Canal[] = TODOS_OS_CANAIS.filter(c => c.categoria =
 export const CANAIS_NOTICIAS: Canal[] = TODOS_OS_CANAIS.filter(c => c.categoria === 'Notícias');
 export const CANAIS_MUSICAS: Canal[] = TODOS_OS_CANAIS.filter(c => c.categoria === 'Músicas');
 export const CANAIS_LAZER: Canal[] = TODOS_OS_CANAIS.filter(c => c.categoria === 'Lazer');
+export { CANAIS_NOVOS_SOLICITADOS };

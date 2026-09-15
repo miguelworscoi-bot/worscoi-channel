@@ -1,12 +1,17 @@
 import { Canal } from '@/types';
-import { createSvgLogo } from './channelLogos';
+import {
+  createSvgLogo,
+  LOGO_MRBEAST,
+  LOGO_DUDE_PERFECT,
+  LOGO_BARCELONA,
+} from './channelLogos';
 
 export const CANAIS_YOUTUBE: Canal[] = [
   {
     id: 'yt-mrbeast',
     nome: 'MrBeast (Desafios & Entretenimento)',
     handle: 'mrbeast',
-    logo: createSvgLogo('MRBEAST', 'YOUTUBE', '#00b4d8', '#ffffff', '#ffd100'),
+    logo: LOGO_MRBEAST,
     url: 'https://www.youtube.com/watch?v=0e3GPea1Tyg',
     backupUrls: [
       'https://www.youtube.com/watch?v=9bqk6ZUsKyA',
@@ -26,7 +31,7 @@ export const CANAIS_YOUTUBE: Canal[] = [
     id: 'yt-mrbeast-gaming',
     nome: 'MrBeast Gaming',
     handle: 'mrbeastgaming',
-    logo: createSvgLogo('BEAST', 'GAMING', '#0077b6', '#ffffff', '#00e676'),
+    logo: LOGO_MRBEAST,
     url: 'https://www.youtube.com/watch?v=kJu5VMN3yow',
     backupUrls: [
       'https://www.youtube.com/watch?v=0e3GPea1Tyg',
@@ -66,7 +71,7 @@ export const CANAIS_YOUTUBE: Canal[] = [
     id: 'yt-dude-perfect-main',
     nome: 'Dude Perfect (Trick Shots & Esportes)',
     handle: 'dudeperfect',
-    logo: createSvgLogo('DUDE', 'PERFECT', '#06d6a0', '#ffffff', '#118ab2'),
+    logo: LOGO_DUDE_PERFECT,
     url: 'https://www.youtube.com/watch?v=LVhFuyABxBE',
     backupUrls: [
       'https://www.youtube.com/watch?v=hFZFjoX2cGg',
@@ -233,7 +238,7 @@ export const CANAIS_YOUTUBE: Canal[] = [
   {
     id: 'yt-fc-barcelona',
     nome: 'FC Barcelona (Barça TV YouTube)',
-    logo: createSvgLogo('BARÇA', 'OFICIAL', '#004d98', '#edbb00', '#db0030'),
+    logo: LOGO_BARCELONA,
     url: 'https://www.youtube.com/watch?v=XqSrz6MKVlk',
     backupUrls: [
       'https://www.youtube.com/watch?v=0y4ZT2aaK1k',

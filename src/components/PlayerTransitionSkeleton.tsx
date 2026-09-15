@@ -3,6 +3,7 @@ import React from 'react';
 import { Maximize2, Minimize2, Tv, Volume2, ShieldCheck } from 'lucide-react';
 import { Canal } from '@/types';
 import { getSportTag, getChannelQuality } from '@/utils/channelUtils';
+import { getChannelLogo, getChannelFallbackLogo } from '@/utils/channelLogoUtils';
 
 interface PlayerTransitionSkeletonProps {
   canal: Canal | null;
@@ -37,11 +38,14 @@ export function PlayerTransitionSkeleton({
         <div className="flex items-center gap-3">
           {/* LOGO MINI SKELETON */}
           <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl bg-zinc-900/90 border border-zinc-800/80 p-1 flex items-center justify-center shrink-0 shadow-lg">
-            {canal?.logo ? (
+            {canal ? (
               <img
-                src={canal.logo}
+                src={getChannelLogo(canal)}
                 alt={canal.nome}
                 className="w-full h-full object-contain opacity-70 filter grayscale"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = getChannelFallbackLogo(canal);
+                }}
               />
             ) : (
               <Tv className="w-5 h-5 text-zinc-600 animate-pulse" />

@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { Canal, FiltroAtivo, LatencyMode } from '@/types';
 import { getChannelQuality, getNetworkBadge, getSportTag } from '@/utils/channelUtils';
+import { getChannelLogo, getChannelFallbackLogo } from '@/utils/channelLogoUtils';
 import { useAuth } from '@/context/AuthContext';
 import { PLANS, isUserPlanExpired, getRemainingPlanTime } from '@/services/subscriptionService';
 
@@ -210,12 +211,11 @@ export function Header({
                       >
                         <div className="flex items-center gap-3 min-w-0">
                           <img
-                            src={c.logo}
+                            src={getChannelLogo(c)}
                             alt={c.nome}
                             className="w-9 h-9 rounded-lg object-contain bg-zinc-950 p-0.5 border border-zinc-800 shrink-0"
                             onError={(e) => {
-                              (e.target as HTMLImageElement).src =
-                                'https://placehold.co/80x80/222222/ffffff?text=TV';
+                              (e.target as HTMLImageElement).src = getChannelFallbackLogo(c);
                             }}
                           />
                           <div className="truncate">

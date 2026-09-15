@@ -24,6 +24,7 @@ import {
   getNetworkBadge,
   getSportTag,
 } from '@/utils/channelUtils';
+import { getChannelLogo, getChannelFallbackLogo } from '@/utils/channelLogoUtils';
 
 interface WorscoiSidebarProps {
   currentView: WorscoiView;
@@ -551,20 +552,15 @@ export function WorscoiSidebar({
 
                                   {/* LOGO DO CANAL DE TV */}
                                   <div className="relative shrink-0 w-8 h-8 rounded-lg overflow-hidden bg-zinc-900 border border-zinc-800 p-0.5 flex items-center justify-center">
-                                    {canal.logo ? (
-                                      <img
-                                        src={canal.logo}
-                                        alt={canal.nome}
-                                        className="w-full h-full object-contain"
-                                        referrerPolicy="no-referrer"
-                                        onError={(e) => {
-                                          (e.target as HTMLImageElement).src =
-                                            'https://placehold.co/60x60/1a1a1a/ffffff?text=TV';
-                                        }}
-                                      />
-                                    ) : (
-                                      <Tv className="w-4 h-4 text-zinc-500" />
-                                    )}
+                                    <img
+                                      src={getChannelLogo(canal)}
+                                      alt={canal.nome}
+                                      className="w-full h-full object-contain"
+                                      referrerPolicy="no-referrer"
+                                      onError={(e) => {
+                                        (e.target as HTMLImageElement).src = getChannelFallbackLogo(canal);
+                                      }}
+                                    />
                                     {isAtivo && (
                                       <span className="absolute -top-1 -right-1 flex h-2 w-2">
                                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#FF2D55] opacity-75"></span>

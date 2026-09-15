@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Radio, X, AlertCircle, Plus } from 'lucide-react';
 import { Canal } from '@/types';
 import { useAuth } from '@/context/AuthContext';
+import { getChannelFallbackLogo } from '@/utils/channelLogoUtils';
 
 interface AddChannelModalProps {
   isOpen: boolean;
@@ -58,7 +59,7 @@ export function AddChannelModal({
       grupo: 'Meus Canais',
       logo:
         novoLogo.trim() ||
-        'https://placehold.co/80x80/065f46/ffffff?text=TV',
+        getChannelFallbackLogo({ nome: novoNome.trim(), categoria: novaCategoria }),
       isCustom: true,
     };
 

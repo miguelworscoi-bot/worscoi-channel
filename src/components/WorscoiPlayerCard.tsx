@@ -19,6 +19,7 @@ import {
 import { Canal, LatencyMode } from '@/types';
 import { getChannelHandle, isChannelVerified } from '@/utils/channelUtils';
 import { getSafeStreamUrl, isStreamAutoProxied } from '@/utils/streamUtils';
+import { getChannelLogo, getChannelFallbackLogo } from '@/utils/channelLogoUtils';
 
 interface WorscoiPlayerCardProps {
   canalAtivo: Canal | null;
@@ -177,16 +178,15 @@ export function WorscoiPlayerCard({
               <div className="relative cursor-pointer group/avatar">
                 <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full p-[2px] bg-gradient-to-tr from-[#FF2D55] via-purple-500 to-amber-400 flex items-center justify-center">
                   <div className="w-full h-full rounded-full overflow-hidden bg-zinc-950 flex items-center justify-center">
-                    {canalAtivo.logo ? (
-                      <img
-                        src={canalAtivo.logo}
-                        alt={canalAtivo.nome}
-                        className="w-full h-full object-cover"
-                        referrerPolicy="no-referrer"
-                      />
-                    ) : (
-                      <Tv className="w-4 h-4 text-zinc-400" />
-                    )}
+                    <img
+                      src={getChannelLogo(canalAtivo)}
+                      alt={canalAtivo.nome}
+                      className="w-full h-full object-cover"
+                      referrerPolicy="no-referrer"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = getChannelFallbackLogo(canalAtivo);
+                      }}
+                    />
                   </div>
                 </div>
                 {/* Botão seguir (+) pequenino */}
