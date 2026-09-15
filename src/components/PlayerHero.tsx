@@ -251,7 +251,8 @@ export function PlayerHero({
         if (typeof data === 'string') {
           data = JSON.parse(data);
         }
-        if (data && (data.event === 'infoDelivery' || data.event === 'initialDelivery')) {
+        // Ignora initialDelivery para evitar loop de atualização durante a montagem do componente
+        if (data && data.event === 'infoDelivery') {
           const videoData = data.info?.videoData;
           if (videoData && videoData.video_id) {
             const currentVideoId = extractYouTubeId(activeRawStreamUrl);
@@ -262,7 +263,7 @@ export function PlayerHero({
                 const existingIndex = allUrls.findIndex((u) => u.includes(videoData.video_id));
                 setTimeout(() => {
                   if (existingIndex >= 0) {
-                    onStreamChange(existingIndex);
+                    onStreamChange?.(existingIndex);
                   } else if (onAddStreamUrl) {
                     onAddStreamUrl(newUrl);
                   }
@@ -479,15 +480,15 @@ export function PlayerHero({
         return;
       }
       if (e.key === 'ArrowRight' || e.key === ']') {
-        onNextCanal?.();
+        setTimeout(() => onNextCanal?.(), 0);
       } else if (e.key === 'ArrowLeft' || e.key === '[') {
-        onPrevCanal?.();
+        setTimeout(() => onPrevCanal?.(), 0);
       } else if (e.key.toLowerCase() === 'm') {
-        onToggleMute();
+        setTimeout(() => onToggleMute(), 0);
       } else if (e.key.toLowerCase() === 'f') {
-        onEnterCinemaMode();
+        setTimeout(() => onEnterCinemaMode(), 0);
       } else if (e.key.toLowerCase() === 's') {
-        onToggleLatencyMode();
+        setTimeout(() => onToggleLatencyMode(), 0);
       } else if (e.key.toLowerCase() === 'p') {
         handleTogglePip();
       }
@@ -589,7 +590,7 @@ export function PlayerHero({
     setIsBuffering(true);
     setHasFirstFrame(false);
     setLoadSeconds(0);
-    onClearFailoverNotice();
+    setTimeout(() => onClearFailoverNotice(), 0);
   };
 
   const suggestedChannels = (todosCanais || [])

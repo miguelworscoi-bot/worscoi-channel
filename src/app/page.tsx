@@ -173,42 +173,46 @@ export default function Home() {
   );
 
   // Toggle favorito com persistência
-  const toggleFavorite = (canal: Canal) => {
-    const chave = canal.id || canal.url;
-    setFavorites((prev) => {
-      const isFav =
-        (canal.id && prev.includes(canal.id)) ||
-        (canal.url && prev.includes(canal.url));
+  const toggleFavorite = useCallback((canal: Canal) => {
+    setTimeout(() => {
+      const chave = canal.id || canal.url;
+      setFavorites((prev) => {
+        const isFav =
+          (canal.id && prev.includes(canal.id)) ||
+          (canal.url && prev.includes(canal.url));
 
-      const nextFavorites = isFav
-        ? prev.filter((u) => u !== canal.id && u !== canal.url)
-        : [...prev, chave];
+        const nextFavorites = isFav
+          ? prev.filter((u) => u !== canal.id && u !== canal.url)
+          : [...prev, chave];
 
-      try {
-        localStorage.setItem(LOCAL_STORAGE_FAVORITES_KEY, JSON.stringify(nextFavorites));
-      } catch {
-        // Ignora erro
-      }
-      return nextFavorites;
-    });
-  };
+        try {
+          localStorage.setItem(LOCAL_STORAGE_FAVORITES_KEY, JSON.stringify(nextFavorites));
+        } catch {
+          // Ignora erro
+        }
+        return nextFavorites;
+      });
+    }, 0);
+  }, []);
 
   // Troca de canal ativo
   const handleSelectCanal = useCallback((canal: Canal) => {
-    setCanalAtivo((prev) => {
-      const isSame = prev
-        ? prev.id && canal.id
-          ? prev.id === canal.id
-          : prev.url === canal.url
-        : false;
+    setTimeout(() => {
+      setCanalAtivo((prev) => {
+        const isSame = prev
+          ? prev.id && canal.id
+            ? prev.id === canal.id
+            : prev.url === canal.url
+          : false;
 
-      if (isSame) return prev;
-      return canal;
-    });
-    setStreamIndex(0);
-    setFailoverNotice(null);
-    setIsMobileMenuOpen(false);
-    setIsMiniPlayerDismissed(false);
+        if (isSame) return prev;
+        return canal;
+      });
+      setStreamIndex(0);
+      setFailoverNotice(null);
+      setIsMobileMenuOpen(false);
+      setIsMiniPlayerDismissed(false);
+    }, 0);
   }, []);
 
   // Navegação de canais (Zapping Anterior / Próximo)
@@ -217,15 +221,19 @@ export default function Home() {
   );
 
   const handleNextCanal = useCallback(() => {
-    if (todosCanais.length === 0) return;
-    const nextIdx = (currentCanalIndex + 1) % todosCanais.length;
-    handleSelectCanal(todosCanais[nextIdx]);
+    setTimeout(() => {
+      if (todosCanais.length === 0) return;
+      const nextIdx = (currentCanalIndex + 1) % todosCanais.length;
+      handleSelectCanal(todosCanais[nextIdx]);
+    }, 0);
   }, [currentCanalIndex, todosCanais, handleSelectCanal]);
 
   const handlePrevCanal = useCallback(() => {
-    if (todosCanais.length === 0) return;
-    const prevIdx = (currentCanalIndex - 1 + todosCanais.length) % todosCanais.length;
-    handleSelectCanal(todosCanais[prevIdx]);
+    setTimeout(() => {
+      if (todosCanais.length === 0) return;
+      const prevIdx = (currentCanalIndex - 1 + todosCanais.length) % todosCanais.length;
+      handleSelectCanal(todosCanais[prevIdx]);
+    }, 0);
   }, [currentCanalIndex, todosCanais, handleSelectCanal]);
 
   // Failover automático quando o player dispara erro
@@ -288,21 +296,25 @@ export default function Home() {
   }, [canalAtivo, streamIndex, handleNextCanal]);
 
   // Alterna o modo de latência e consumo de dados
-  const handleToggleLatencyMode = (forcedMode?: LatencyMode) => {
-    const nextMode: LatencyMode =
-      forcedMode ||
-      (latencyMode === 'economy'
-        ? 'stable'
-        : latencyMode === 'stable'
-        ? 'low-latency'
-        : 'economy');
-    setLatencyMode(nextMode);
-    try {
-      localStorage.setItem(LOCAL_STORAGE_LATENCY_KEY, nextMode);
-    } catch {
-      // Ignora erro
-    }
-  };
+  const handleToggleLatencyMode = useCallback((forcedMode?: LatencyMode) => {
+    setTimeout(() => {
+      setLatencyMode((current) => {
+        const nextMode: LatencyMode =
+          forcedMode ||
+          (current === 'economy'
+            ? 'stable'
+            : current === 'stable'
+            ? 'low-latency'
+            : 'economy');
+        try {
+          localStorage.setItem(LOCAL_STORAGE_LATENCY_KEY, nextMode);
+        } catch {
+          // Ignora erro
+        }
+        return nextMode;
+      });
+    }, 0);
+  }, []);
 
   const handleDeleteCustomChannel = (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -541,7 +553,7 @@ export default function Home() {
       )}
 
       {/* ÁREA DE CONTEÚDO PRINCIPAL DIREITA */}
-      <div className="flex-1 flex flex-col h-screen overflow-y-auto custom-scrollbar min-w-0 bg-[#070709]">
+      <div className="flex-1 flex flex-col h-screen overflow-hidden min-w-0 bg-[#070709]">
         {/* BARRA SUPERIOR COM AVATAR DO USUÁRIO E ATALHOS */}
         <WorscoiTopBar
           currentView={currentView}
@@ -557,7 +569,7 @@ export default function Home() {
 
         {/* CORPO CENTRAL DINÂMICO BASEADO NA ABA ATIVA */}
         <div
-          className={`flex-1 p-3 sm:p-6 flex flex-col items-center overflow-y-auto custom-scrollbar ${
+          className={`flex-1 w-full p-3 sm:p-6 flex flex-col items-center overflow-y-auto custom-scrollbar ${
             currentView === 'explorar' ? 'justify-center' : 'justify-start'
           }`}
         >
@@ -583,7 +595,7 @@ export default function Home() {
               latencyMode={latencyMode}
               onToggleLatencyMode={handleToggleLatencyMode}
               isCinemaMode={isCinemaMode}
-              onEnterCinemaMode={() => setIsCinemaMode(true)}
+              onEnterCinemaMode={() => setTimeout(() => setIsCinemaMode(true), 0)}
               isFavorited={isCanalFavorited(canalAtivo)}
               onToggleFavorite={() => canalAtivo && toggleFavorite(canalAtivo)}
               failoverNotice={failoverNotice}
@@ -591,12 +603,12 @@ export default function Home() {
               onPlayerError={handlePlayerError}
               onNextCanal={handleNextCanal}
               onPrevCanal={handlePrevCanal}
-              onOpenPaymentPlans={() => setIsPaymentModalOpen(true)}
-              onOpenRedeemToken={() => setIsRedeemModalOpen(true)}
+              onOpenPaymentPlans={() => setTimeout(() => setIsPaymentModalOpen(true), 0)}
+              onOpenRedeemToken={() => setTimeout(() => setIsRedeemModalOpen(true), 0)}
               onVideoEnded={handleVideoEnded}
               isMiniMode={currentView !== 'explorar'}
-              onRestoreFromMiniMode={() => setCurrentView('explorar')}
-              onDismissMiniMode={() => setIsMiniPlayerDismissed(true)}
+              onRestoreFromMiniMode={() => setTimeout(() => setCurrentView('explorar'), 0)}
+              onDismissMiniMode={() => setTimeout(() => setIsMiniPlayerDismissed(true), 0)}
               todosCanais={todosCanais}
               onSelectCanal={handleSelectCanal}
             />
@@ -708,14 +720,6 @@ export default function Home() {
           closeFreePlanBlockedAlert();
           setIsRedeemModalOpen(true);
         }}
-      />
-
-      {/* MODAL WORSCOI DE LOGIN (IMAGEM 1) */}
-      <WorscoiLoginModal
-        isOpen={isLoginModalOpen}
-        onClose={() => setIsLoginModalOpen(false)}
-        initialMode={loginModalMode}
-        onCelebration={(data) => setCelebrationData({ isOpen: true, ...data })}
       />
 
       {/* MODAL DE GERADOR DE TOKENS & ASSINANTES */}

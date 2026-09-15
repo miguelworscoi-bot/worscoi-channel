@@ -15,6 +15,25 @@ try {
   // Silencioso se não disponível
 }
 
+if (typeof window !== 'undefined') {
+  const originalWarn = console.warn;
+  const originalError = console.error;
+  const isFirestoreBackendLog = (msg: unknown) =>
+    typeof msg === 'string' &&
+    (msg.includes('Could not reach Cloud Firestore backend') ||
+      msg.includes('Backend didn\'t respond within 10 seconds') ||
+      msg.includes('@firebase/firestore'));
+
+  console.warn = (...args: unknown[]) => {
+    if (args[0] && isFirestoreBackendLog(args[0])) return;
+    originalWarn.apply(console, args as [unknown, ...unknown[]]);
+  };
+  console.error = (...args: unknown[]) => {
+    if (args[0] && isFirestoreBackendLog(args[0])) return;
+    originalError.apply(console, args as [unknown, ...unknown[]]);
+  };
+}
+
 export const app: FirebaseApp =
   getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 

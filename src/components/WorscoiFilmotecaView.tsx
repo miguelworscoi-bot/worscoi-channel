@@ -1,5 +1,5 @@
 'use client';
-import React, { useEffect, useState, useMemo, useCallback } from 'react';
+import React, { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import {
   Film,
   ArrowLeft,
@@ -14,47 +14,44 @@ import {
   ExternalLink,
   Sparkles,
   Maximize2,
+  Zap,
+  ShieldCheck,
+  Globe2,
+  Tv,
+  Star,
+  AlertTriangle
 } from 'lucide-react';
 import { FilmeItem } from '@/app/api/filmes/route';
+import {
+  StreamService,
+  StreamProviderId,
+  STREAM_IFRAME_ALLOW,
+  STREAM_REFERRER_POLICY
+} from '@/services/streamService';
 
 interface WorscoiFilmotecaViewProps {
   onBackToTV: () => void;
 }
 
-const LOCAL_STORAGE_FILMOTECAS_KEY = 'playsports_filmoteca_cache_v10';
-const LOCAL_STORAGE_FILMOTECAS_TIME_KEY = 'playsports_filmoteca_cache_time_v10';
-// Cache válido por 6 horas (mesmo intervalo de revalidação do repositório)
+const LOCAL_STORAGE_FILMOTECAS_KEY = 'playsports_filmoteca_cache_v18';
+const LOCAL_STORAGE_FILMOTECAS_TIME_KEY = 'playsports_filmoteca_cache_time_v18';
+// Cache de 6 horas
 const CACHE_MAX_AGE_MS = 6 * 60 * 60 * 1000;
 
-type ServidorFilme = 'dailymotion' | 'multiembed' | 'vidsrc' | 'trailer';
+export type ServidorFilme = StreamProviderId;
 
-function obterUrlFilme(filme: FilmeItem, servidor: ServidorFilme): string {
-  if (servidor === 'dailymotion') {
-    return (
-      filme.dailymotionUrl ||
-      `https://www.dailymotion.com/embed/video/xat72da?autoplay=1`
-    );
-  }
-  if (servidor === 'multiembed') {
-    return (
-      filme.videoUrl ||
-      (filme.imdbId ? `https://multiembed.mov/directstream.php?video_id=${filme.imdbId}` : '')
-    );
-  }
-  if (servidor === 'vidsrc') {
-    return (
-      filme.fallbackUrl ||
-      (filme.imdbId ? `https://vidsrc.me/embed/movie?imdb=${filme.imdbId}` : '')
-    );
-  }
-  if (servidor === 'trailer') {
-    return filme.trailerUrl || '';
-  }
-  return filme.dailymotionUrl || filme.trailerUrl || '';
+export function obterUrlFilme(filme: FilmeItem, servidor: ServidorFilme): string {
+  return StreamService.getUrlForProvider(filme, servidor);
+}
+
+export function obterServidorPadrao(filme: FilmeItem): ServidorFilme {
+  if (filme.directStreamUrl) return 'direct';
+  if (filme.imdbId) return 'videasy';
+  if (filme.tmdbId) return 'vidsrc';
+  return 'videasy';
 }
 
 export function WorscoiFilmotecaView({ onBackToTV }: WorscoiFilmotecaViewProps) {
-  // Inicializa o estado diretamente do localStorage para evitar telas de carregamento ao trocar de abas
   const [filmes, setFilmes] = useState<FilmeItem[]>(() => {
     if (typeof window === 'undefined') return [];
     try {
@@ -66,7 +63,7 @@ export function WorscoiFilmotecaView({ onBackToTV }: WorscoiFilmotecaViewProps) 
         }
       }
     } catch {
-      // Ignora erro de leitura
+      // Ignora erro
     }
     return [];
   });
@@ -88,15 +85,39 @@ export function WorscoiFilmotecaView({ onBackToTV }: WorscoiFilmotecaViewProps) 
   });
 
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isSearchingRemote, setIsSearchingRemote] = useState(false);
   const [filmeAtivo, setFilmeAtivo] = useState<FilmeItem | null>(null);
-  const [servidorAtivo, setServidorAtivo] = useState<ServidorFilme>('dailymotion');
+  const [servidorAtivo, setServidorAtivo] = useState<ServidorFilme>('videasy');
   const [filmeSelecionado, setFilmeSelecionado] = useState<FilmeItem | null>(null);
-  const [modoPlayer, setModoPlayer] = useState<ServidorFilme>('dailymotion');
+  const [modoPlayer, setModoPlayer] = useState<ServidorFilme>('videasy');
+  const [reloadKey, setReloadKey] = useState(0);
   const [busca, setBusca] = useState('');
   const [generoAtivo, setGeneroAtivo] = useState<string>('todos');
+  const [isInsideIframe, setIsInsideIframe] = useState<boolean>(false);
+  const playerContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    try {
+      if (typeof window !== 'undefined') {
+        setIsInsideIframe(window.self !== window.top);
+      }
+    } catch {
+      setIsInsideIframe(true);
+    }
+  }, []);
+
+  const alternarProximoServidor = useCallback(() => {
+    if (!filmeAtivo) return;
+    const proximo = StreamService.getNextProvider(filmeAtivo, servidorAtivo);
+    setServidorAtivo(proximo);
+    setReloadKey((k) => k + 1);
+  }, [filmeAtivo, servidorAtivo]);
+
+  const recarregarPlayer = useCallback(() => {
+    setReloadKey((k) => k + 1);
+  }, []);
 
   const carregarFilmes = useCallback(async (force = false) => {
-    // Se não for forçado e já temos dados em cache dentro da validade, não recarrega
     if (!force) {
       try {
         const salvo = localStorage.getItem(LOCAL_STORAGE_FILMOTECAS_KEY);
@@ -113,7 +134,7 @@ export function WorscoiFilmotecaView({ onBackToTV }: WorscoiFilmotecaViewProps) 
           }
         }
       } catch {
-        // Prossegue com requisição
+        // Prossegue com fetch
       }
     }
 
@@ -133,7 +154,7 @@ export function WorscoiFilmotecaView({ onBackToTV }: WorscoiFilmotecaViewProps) 
           localStorage.setItem(LOCAL_STORAGE_FILMOTECAS_KEY, JSON.stringify(dados));
           localStorage.setItem(LOCAL_STORAGE_FILMOTECAS_TIME_KEY, Date.now().toString());
         } catch {
-          // localStorage cota excedida ou restrição
+          // Ignora cota excedida
         }
       }
     } catch (err) {
@@ -148,28 +169,57 @@ export function WorscoiFilmotecaView({ onBackToTV }: WorscoiFilmotecaViewProps) 
     carregarFilmes(false);
   }, [carregarFilmes]);
 
-  // Seleciona automaticamente o primeiro filme caso nenhum esteja ativo
+  // Define o filme ativo padrão com servidor ideal
   useEffect(() => {
     if (!filmeAtivo && filmes.length > 0) {
-      setFilmeAtivo(filmes[0]);
+      const primeiro = filmes[0];
+      setFilmeAtivo(primeiro);
+      setServidorAtivo(obterServidorPadrao(primeiro));
     }
   }, [filmes, filmeAtivo]);
 
-  // Extrai lista única de gêneros dos filmes retornados pela API
+  // Busca remota oficial quando usuário pesquisa um título fora da lista local
+  const executarBuscaGlobal = async (termo: string) => {
+    if (!termo || termo.trim().length < 2) return;
+    setIsSearchingRemote(true);
+    try {
+      const res = await fetch(`/api/filmes?q=${encodeURIComponent(termo.trim())}`);
+      if (res.ok) {
+        const resultados: FilmeItem[] = await res.json();
+        if (Array.isArray(resultados) && resultados.length > 0) {
+          // Adiciona ao topo da lista sem duplicar IDs
+          setFilmes((prev) => {
+            const idsExistentes = new Set(prev.map((f) => String(f.imdbId || f.id)));
+            const novos = resultados.filter((r) => !idsExistentes.has(String(r.imdbId || r.id)));
+            return [...novos, ...prev];
+          });
+          // Seleciona o primeiro resultado imediatamente
+          const primeiro = resultados[0];
+          setFilmeAtivo(primeiro);
+          setServidorAtivo(obterServidorPadrao(primeiro));
+        }
+      }
+    } catch (err) {
+      console.warn('Erro na busca remota:', err);
+    } finally {
+      setIsSearchingRemote(false);
+    }
+  };
+
+  // Extrai lista única de gêneros dos filmes
   const generosDisponiveis = useMemo(() => {
     const setGeneros = new Set<string>();
     filmes.forEach((f) => {
       if (f.genero) {
         f.genero.split(/[/,]/).forEach((g) => {
           const trimmed = g.trim();
-          if (trimmed) setGeneros.add(trimmed);
+          if (trimmed && trimmed.length > 2) setGeneros.add(trimmed);
         });
       }
     });
-    return Array.from(setGeneros);
+    return Array.from(setGeneros).slice(0, 8);
   }, [filmes]);
 
-  // Função para normalizar acentuação e caixa
   const normalizar = (texto: string) =>
     (texto || '')
       .toLowerCase()
@@ -177,11 +227,10 @@ export function WorscoiFilmotecaView({ onBackToTV }: WorscoiFilmotecaViewProps) 
       .replace(/[\u0300-\u036f]/g, '')
       .trim();
 
-  // Filtragem combinada por título ou gênero
+  // Filtragem local
   const filmesFiltrados = useMemo(() => {
     const termo = normalizar(busca);
     return filmes.filter((f) => {
-      // Valida filtro de gênero clicável
       if (generoAtivo !== 'todos') {
         const generoFilmeNorm = normalizar(f.genero);
         const generoAtivoNorm = normalizar(generoAtivo);
@@ -190,24 +239,61 @@ export function WorscoiFilmotecaView({ onBackToTV }: WorscoiFilmotecaViewProps) 
         }
       }
 
-      // Se a barra de busca estiver vazia, exibe de acordo com o gênero
       if (!termo) return true;
 
       const tituloNorm = normalizar(f.titulo);
       const generoNorm = normalizar(f.genero);
       const sinopseNorm = normalizar(f.sinopse);
+      const imdbNorm = normalizar(f.imdbId || '');
 
       return (
         tituloNorm.includes(termo) ||
         generoNorm.includes(termo) ||
-        sinopseNorm.includes(termo)
+        sinopseNorm.includes(termo) ||
+        imdbNorm.includes(termo)
       );
     });
   }, [filmes, busca, generoAtivo]);
 
+  const handleSelecionarFilme = (filme: FilmeItem) => {
+    setFilmeAtivo(filme);
+    setServidorAtivo(obterServidorPadrao(filme));
+    if (playerContainerRef.current) {
+      playerContainerRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
   const limparFiltros = () => {
     setBusca('');
     setGeneroAtivo('todos');
+  };
+
+  const renderServerPill = (
+    id: ServidorFilme,
+    label: string,
+    icon: React.ReactNode,
+    currentServer: ServidorFilme,
+    onSelect: (s: ServidorFilme) => void,
+    highlight = false
+  ) => {
+    const isSelected = currentServer === id;
+    return (
+      <button
+        type="button"
+        id={`filmoteca-server-${id}`}
+        onClick={() => onSelect(id)}
+        className={`px-3 py-1.5 rounded-lg text-xs font-medium transition cursor-pointer flex items-center gap-1.5 shrink-0 ${
+          isSelected
+            ? 'bg-[#FF2D55] text-white shadow-md shadow-[#FF2D55]/30 ring-1 ring-[#FF2D55]'
+            : highlight
+            ? 'bg-zinc-900 hover:bg-zinc-800 text-amber-300 border border-amber-500/30'
+            : 'bg-zinc-900 text-zinc-300 hover:text-white border border-zinc-800 hover:border-zinc-700'
+        }`}
+      >
+        {icon}
+        <span>{label}</span>
+      </button>
+    );
   };
 
   return (
@@ -227,20 +313,20 @@ export function WorscoiFilmotecaView({ onBackToTV }: WorscoiFilmotecaViewProps) 
             </button>
 
             <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#FF2D55]/20 to-zinc-900 border border-[#FF2D55]/30 flex items-center justify-center">
-                <Film className="w-4 h-4 text-[#FF2D55]" />
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#FF2D55]/20 to-zinc-900 border border-[#FF2D55]/40 flex items-center justify-center shadow-lg shadow-[#FF2D55]/10">
+                <Film className="w-5 h-5 text-[#FF2D55]" />
               </div>
               <div>
                 <div className="flex items-center gap-2">
                   <h1 className="text-lg sm:text-xl font-bold text-white tracking-tight">
-                    Filmoteca
+                    Filmoteca & Cinema VOD
                   </h1>
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-[#FF2D55]/10 text-[#FF2D55] border border-[#FF2D55]/20">
-                    VOD & Open Source
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#FF2D55]/10 text-[#FF2D55] border border-[#FF2D55]/20">
+                    Multi-Provedor VIP
                   </span>
                 </div>
                 <p className="text-xs text-zinc-400">
-                  Catálogo sob demanda com busca dinâmica por título e gênero
+                  Transmissão sob demanda dos verdadeiros filmes em alta definição com múltiplos servidores
                 </p>
               </div>
             </div>
@@ -248,7 +334,7 @@ export function WorscoiFilmotecaView({ onBackToTV }: WorscoiFilmotecaViewProps) 
 
           {/* BARRA DE PESQUISA PRINCIPAL E BOTÃO DE RECARREGAR */}
           <div className="w-full md:w-auto flex items-center gap-2">
-            <div className="w-full md:w-80 relative">
+            <div className="w-full md:w-96 relative">
               <div className="relative flex items-center">
                 <Search className="w-4 h-4 text-zinc-500 absolute left-3.5 pointer-events-none" />
                 <input
@@ -257,32 +343,66 @@ export function WorscoiFilmotecaView({ onBackToTV }: WorscoiFilmotecaViewProps) 
                   value={busca}
                   onChange={(e) => setBusca(e.target.value)}
                   onKeyDown={(e) => {
-                    if (e.key === 'Escape') setBusca('');
+                    if (e.key === 'Enter') {
+                      executarBuscaGlobal(busca);
+                    } else if (e.key === 'Escape') {
+                      setBusca('');
+                    }
                   }}
-                  placeholder="Pesquisar por título ou gênero..."
-                  className="w-full pl-10 pr-9 py-2 rounded-xl bg-zinc-900/90 hover:bg-zinc-900 text-zinc-100 text-xs placeholder:text-zinc-500 border border-zinc-800 focus:outline-none focus:border-[#FF2D55]/60 focus:ring-1 focus:ring-[#FF2D55]/30 transition"
+                  placeholder="Pesquisar filme ou pressionar Enter para buscar global..."
+                  className="w-full pl-10 pr-20 py-2.5 rounded-xl bg-zinc-900/90 hover:bg-zinc-900 text-zinc-100 text-xs placeholder:text-zinc-500 border border-zinc-800 focus:outline-none focus:border-[#FF2D55]/60 focus:ring-1 focus:ring-[#FF2D55]/30 transition"
                 />
-                {busca && (
+                <div className="absolute right-2 flex items-center gap-1">
+                  {busca && (
+                    <button
+                      type="button"
+                      id="filmoteca-clear-search-btn"
+                      onClick={() => setBusca('')}
+                      className="p-1 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition cursor-pointer"
+                      title="Limpar pesquisa"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  )}
                   <button
                     type="button"
-                    id="filmoteca-clear-search-btn"
-                    onClick={() => setBusca('')}
-                    className="absolute right-2.5 p-1 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition cursor-pointer"
-                    title="Limpar pesquisa"
+                    id="filmoteca-do-search-btn"
+                    onClick={() => executarBuscaGlobal(busca)}
+                    disabled={isSearchingRemote || !busca.trim()}
+                    className="p-1.5 rounded-lg bg-[#FF2D55] text-white hover:bg-[#e0264a] transition disabled:opacity-40 disabled:cursor-not-allowed text-[10px] font-bold"
+                    title="Pesquisar catálogo global"
                   >
-                    <X className="w-3.5 h-3.5" />
+                    {isSearchingRemote ? (
+                      <Loader2 className="w-3 h-3 animate-spin" />
+                    ) : (
+                      'Buscar'
+                    )}
                   </button>
-                )}
+                </div>
               </div>
             </div>
+
+            {isInsideIframe && (
+              <button
+                type="button"
+                id="filmoteca-header-open-tab-btn"
+                onClick={() => StreamService.openAppInNewTab()}
+                className="px-3 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-amber-300 hover:text-amber-200 border border-amber-500/30 transition cursor-pointer flex items-center gap-1.5 text-xs font-semibold shrink-0 shadow-sm"
+                title="Executar sem sandbox: Abre o Worscoi Channel em uma aba dedicada sem iframes"
+              >
+                <ExternalLink className="w-3.5 h-3.5 text-amber-400" />
+                <span className="hidden sm:inline">Desativar Sandbox (Nova Aba)</span>
+                <span className="sm:hidden">Nova Aba</span>
+              </button>
+            )}
 
             <button
               type="button"
               id="filmoteca-refresh-btn"
               onClick={() => carregarFilmes(true)}
               disabled={isRefreshing || isLoading}
-              className="p-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white border border-zinc-800 transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
-              title="Atualizar catálogo do repositório"
+              className="p-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white border border-zinc-800 transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
+              title="Recarregar catálogo atualizado"
             >
               <RotateCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin text-[#FF2D55]' : ''}`} />
             </button>
@@ -292,9 +412,8 @@ export function WorscoiFilmotecaView({ onBackToTV }: WorscoiFilmotecaViewProps) 
         {/* FILTROS POR GÊNERO & CONTADOR DE RESULTADOS */}
         {!isLoading && filmes.length > 0 && (
           <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
-            {/* CHIPS DE GÊNEROS */}
             <div className="flex items-center gap-1.5 overflow-x-auto custom-scrollbar py-1 max-w-full">
-              <span className="text-[11px] font-medium text-zinc-500 flex items-center gap-1 mr-1">
+              <span className="text-[11px] font-medium text-zinc-500 flex items-center gap-1 mr-1 shrink-0">
                 <SlidersHorizontal className="w-3 h-3" />
                 <span>Gêneros:</span>
               </span>
@@ -329,10 +448,9 @@ export function WorscoiFilmotecaView({ onBackToTV }: WorscoiFilmotecaViewProps) 
               ))}
             </div>
 
-            {/* CONTADOR DE ITENS */}
             <div className="text-xs text-zinc-500 font-mono shrink-0">
               {filmesFiltrados.length === filmes.length ? (
-                <span>{filmes.length} filmes disponíveis</span>
+                <span>{filmes.length} filmes prontos para assistir</span>
               ) : (
                 <span className="text-zinc-400">
                   <span className="text-[#FF2D55] font-semibold">
@@ -348,99 +466,258 @@ export function WorscoiFilmotecaView({ onBackToTV }: WorscoiFilmotecaViewProps) 
 
       {/* PLAYER PRINCIPAL DE CINEMA / FILME ATIVO */}
       {!isLoading && (
-        <div className="mb-8 flex flex-col gap-3">
-          {/* SELETOR DE SERVIDOR DE STREAMING */}
+        <div ref={playerContainerRef} className="w-full max-w-full mb-8 flex flex-col gap-3">
           {filmeAtivo && (
-            <div className="flex flex-wrap items-center justify-between gap-2 px-3.5 py-2.5 bg-zinc-950/90 rounded-xl border border-zinc-800/90 text-xs shadow-lg">
-              <div className="flex items-center gap-1.5 flex-wrap">
-                <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider font-mono mr-1">
-                  Servidor:
-                </span>
-                <button
-                  type="button"
-                  id="filmoteca-servidor-vidsrc"
-                  onClick={() => setServidorAtivo('vidsrc')}
-                  className={`px-3 py-1.5 rounded-lg font-medium transition cursor-pointer flex items-center gap-1.5 ${
-                    servidorAtivo === 'vidsrc'
-                      ? 'bg-[#FF2D55] text-white shadow-md'
-                      : 'bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800'
-                  }`}
-                  title="Player VidSrc Principal (Compatível sem erros de sandbox)"
-                >
-                  <Play className="w-3 h-3 fill-current" />
-                  <span>VidSrc VIP (Principal)</span>
-                </button>
-                <button
-                  type="button"
-                  id="filmoteca-servidor-vidsrc-alt"
-                  onClick={() => setServidorAtivo('vidsrc_alt')}
-                  className={`px-3 py-1.5 rounded-lg font-medium transition cursor-pointer flex items-center gap-1.5 ${
-                    servidorAtivo === 'vidsrc_alt'
-                      ? 'bg-[#FF2D55] text-white shadow-md'
-                      : 'bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800'
-                  }`}
-                  title="Servidor secundário alternativo"
-                >
-                  <Film className="w-3 h-3" />
-                  <span>VidSrc HD (Alt)</span>
-                </button>
-                {filmeAtivo.trailerUrl && (
+            <div className="w-full max-w-full flex flex-col gap-2">
+              {/* BARRA DE SELEÇÃO DE PROVEDORES E FONTES */}
+              <div className="flex flex-wrap items-center justify-between gap-2 px-3.5 py-2.5 bg-zinc-950/95 rounded-xl border border-zinc-800/90 text-xs shadow-xl">
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider font-mono mr-1 flex items-center gap-1">
+                    <Zap className="w-3.5 h-3.5 text-[#FF2D55]" />
+                    <span>Fontes:</span>
+                  </span>
+
+                  {filmeAtivo.directStreamUrl &&
+                    renderServerPill(
+                      'direct',
+                      'Nativo (HTML5 Sem Bloqueios)',
+                      <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />,
+                      servidorAtivo,
+                      setServidorAtivo,
+                      true
+                    )}
+
+                  {renderServerPill(
+                    'videasy',
+                    'Fonte 1: Videasy VIP (Recomendada)',
+                    <Film className="w-3 h-3 text-cyan-400" />,
+                    servidorAtivo,
+                    setServidorAtivo
+                  )}
+
+                  {renderServerPill(
+                    'vidsrc',
+                    'Fonte 2: VidSrc Ultra',
+                    <Tv className="w-3 h-3 text-amber-400" />,
+                    servidorAtivo,
+                    setServidorAtivo
+                  )}
+
+                  {renderServerPill(
+                    'vidsrcin',
+                    'Fonte 3: VidSrc In',
+                    <Sparkles className="w-3 h-3 text-emerald-400" />,
+                    servidorAtivo,
+                    setServidorAtivo
+                  )}
+
+                  {renderServerPill(
+                    'vidlink',
+                    'Fonte 4: VidLink Pro (Ultra HD)',
+                    <Play className="w-3 h-3 fill-current text-white" />,
+                    servidorAtivo,
+                    setServidorAtivo
+                  )}
+
+                  {renderServerPill(
+                    'autoembed',
+                    'Fonte 5: AutoEmbed VIP',
+                    <Globe2 className="w-3 h-3 text-indigo-400" />,
+                    servidorAtivo,
+                    setServidorAtivo
+                  )}
+
+                  {filmeAtivo.trailerUrl &&
+                    renderServerPill(
+                      'trailer',
+                      'Trailer Oficial',
+                      <Sparkles className="w-3 h-3 text-amber-300" />,
+                      servidorAtivo,
+                      setServidorAtivo
+                    )}
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0">
                   <button
                     type="button"
-                    id="filmoteca-servidor-trailer"
-                    onClick={() => setServidorAtivo('trailer')}
-                    className={`px-3 py-1.5 rounded-lg font-medium transition cursor-pointer flex items-center gap-1.5 ${
-                      servidorAtivo === 'trailer'
-                        ? 'bg-[#FF2D55] text-white shadow-md'
-                        : 'bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800'
-                    }`}
+                    id="filmoteca-open-external-safe"
+                    onClick={() => {
+                      const url = obterUrlFilme(filmeAtivo, servidorAtivo);
+                      if (url) StreamService.openSafeExternal(url);
+                    }}
+                    className="px-3 py-1.5 rounded-lg text-xs font-medium text-white bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 transition cursor-pointer flex items-center gap-1.5 shadow-sm"
+                    title="Abre o player numa aba dedicada sem restrições de sandbox ou navegador"
                   >
-                    <Sparkles className="w-3 h-3 text-amber-300" />
-                    <span>Trailer Oficial 4K</span>
+                    <ExternalLink className="w-3.5 h-3.5 text-zinc-300" />
+                    <span>Ecrã Externo Seguro</span>
                   </button>
-                )}
+                </div>
               </div>
 
-              <div className="flex items-center gap-2 shrink-0">
-                <button
-                  type="button"
-                  id="filmoteca-open-external-safe"
-                  onClick={() => {
-                    const url = obterUrlFilme(filmeAtivo, servidorAtivo);
-                    if (url) window.open(url, '_blank', 'noopener,noreferrer');
-                  }}
-                  className="px-3 py-1.5 rounded-lg text-xs font-medium text-white bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 transition cursor-pointer flex items-center gap-1.5"
-                  title="Abre o player numa aba isolada sem restrições de sandbox"
-                >
-                  <ExternalLink className="w-3.5 h-3.5 text-zinc-300" />
-                  <span>Ecrã Externo Seguro</span>
-                </button>
+              {/* AVISO DE QUALIDADE E DICA DE CONTORNAR POLÍTICAS DE SANDBOX */}
+              <div className="px-3.5 py-1.5 rounded-lg bg-zinc-900/60 border border-zinc-800/60 text-[11px] text-zinc-400 flex items-center justify-between gap-2">
+                <span className="flex items-center gap-1.5">
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                  <span>
+                    Reprodução do filme completo. Se uma fonte demorar ou ficar escura no seu navegador, selecione outra fonte acima ou use o <strong>Ecrã Externo</strong>.
+                  </span>
+                </span>
+                <span className="text-zinc-500 font-mono text-[10px] hidden sm:inline">
+                  IMDb: {filmeAtivo.imdbId || 'HD'} {filmeAtivo.tmdbId ? `• TMDB: ${filmeAtivo.tmdbId}` : ''}
+                </span>
               </div>
+
+              {/* BANNER DE DESATIVAÇÃO DE SANDBOX HERDADO (AI STUDIO IFRAME) */}
+              {isInsideIframe && (
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 rounded-xl bg-gradient-to-r from-amber-950/40 via-zinc-900/90 to-zinc-950 border border-amber-500/40 text-xs shadow-lg">
+                  <div className="flex items-start sm:items-center gap-2.5">
+                    <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5 sm:mt-0" />
+                    <div>
+                      <p className="font-semibold text-amber-200">
+                        Aviso de Restrição de Sandbox (Visualizador Embutido)
+                      </p>
+                      <p className="text-[11px] text-zinc-400">
+                        Se o player apresentar &quot;Playback blocked / restricted (sandboxed) frame&quot;, clique ao lado para assistir sem qualquer restrição de sandbox herdada pelo navegador:
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0 flex-wrap">
+                    <button
+                      type="button"
+                      id="filmoteca-unconstrained-player-btn"
+                      onClick={() => {
+                        const url = obterUrlFilme(filmeAtivo, servidorAtivo);
+                        if (url) StreamService.openSafeExternal(url);
+                      }}
+                      className="px-3 py-1.5 rounded-lg bg-[#FF2D55] hover:bg-[#e0264a] text-white font-semibold text-[11px] flex items-center gap-1.5 transition shadow-sm cursor-pointer"
+                      title="Abre o player em uma janela/aba dedicada sem qualquer restrição de sandbox"
+                    >
+                      <Play className="w-3.5 h-3.5 fill-current" />
+                      <span>Ecrã Livre (Sem Sandbox)</span>
+                    </button>
+                    <button
+                      type="button"
+                      id="filmoteca-open-app-newtab-btn"
+                      onClick={() => StreamService.openAppInNewTab()}
+                      className="px-3 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 text-[11px] flex items-center gap-1.5 transition cursor-pointer"
+                      title="Abre toda a aplicação numa nova aba do navegador, removendo 100% dos iframes do editor"
+                    >
+                      <ExternalLink className="w-3.5 h-3.5" />
+                      <span>Abrir App em Nova Aba</span>
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
-          {/* TELA DE REPRODUÇÃO SEM RESTRIÇÃO SANDBOX */}
-          <div className="relative aspect-video bg-zinc-950 rounded-2xl overflow-hidden border border-zinc-800/80 shadow-2xl">
+          {/* TELA DE REPRODUÇÃO (VÍDEO NATIVO OU IFRAME OTIMIZADO) */}
+          <div
+            className="relative w-full aspect-video max-w-full bg-zinc-950 rounded-2xl overflow-hidden border border-zinc-800/80 shadow-2xl shrink-0"
+            style={{ aspectRatio: '16 / 9' }}
+          >
+            {/* BOTÃO FLUTUANTE DE DESBLOQUEIO DE SANDBOX NO TOPO DO PLAYER */}
+            {filmeAtivo && (
+              <div className="absolute top-3 right-3 z-30 flex items-center gap-2 pointer-events-auto">
+                <button
+                  type="button"
+                  id="filmoteca-overlay-safe-external"
+                  onClick={() => {
+                    const url = obterUrlFilme(filmeAtivo, servidorAtivo);
+                    if (url) StreamService.openSafeExternal(url);
+                  }}
+                  className="px-2.5 py-1.5 rounded-lg bg-black/85 hover:bg-[#FF2D55] text-white text-[11px] font-semibold backdrop-blur-md border border-white/20 transition flex items-center gap-1.5 shadow-xl cursor-pointer"
+                  title="Abrir reprodutor fora do iframe para contornar qualquer erro de sandbox"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" />
+                  <span>Ecrã Sem Sandbox</span>
+                </button>
+              </div>
+            )}
+
             {filmeAtivo ? (
-              <iframe
-                key={`${filmeAtivo.id}-${servidorAtivo}`}
-                src={obterUrlFilme(filmeAtivo, servidorAtivo) || filmeAtivo.videoUrl}
-                title={filmeAtivo.titulo}
-                width="100%"
-                height="100%"
-                scrolling="no"
-                frameBorder="0"
-                allowFullScreen={true}
-                /* Deixamos apenas os triggers de mídia, sem a tag restrictiva sandbox */
-                allow="autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                className="absolute inset-0 w-full h-full"
-              ></iframe>
+              servidorAtivo === 'direct' && filmeAtivo.directStreamUrl ? (
+                <video
+                  key={`${filmeAtivo.id}-direct-${reloadKey}`}
+                  src={filmeAtivo.directStreamUrl}
+                  controls
+                  autoPlay
+                  playsInline
+                  className="absolute inset-0 w-full h-full object-contain bg-black"
+                >
+                  Seu navegador não suporta reprodução direta deste formato de vídeo.
+                </video>
+              ) : (
+                <iframe
+                  key={`${filmeAtivo.id}-${servidorAtivo}-${reloadKey}`}
+                  src={obterUrlFilme(filmeAtivo, servidorAtivo)}
+                  title={filmeAtivo.titulo}
+                  width="100%"
+                  height="100%"
+                  scrolling="no"
+                  frameBorder="0"
+                  allowFullScreen={true}
+                  referrerPolicy={STREAM_REFERRER_POLICY}
+                  allow={STREAM_IFRAME_ALLOW}
+                  className="absolute inset-0 w-full h-full bg-black border-0"
+                ></iframe>
+              )
             ) : (
               <div className="flex items-center justify-center h-full text-zinc-500">
                 Selecione um filme para iniciar
               </div>
             )}
           </div>
+
+          {/* ASSISTENTE DE REPRODUÇÃO RÁPIDA (FALLBACK & CORREÇÃO 1-CLIQUE) */}
+          {filmeAtivo && (
+            <div className="flex flex-wrap items-center justify-between gap-2.5 px-4 py-2.5 rounded-xl bg-zinc-900/80 border border-zinc-800 text-xs shadow-md">
+              <div className="flex items-center gap-2 text-zinc-300">
+                <span className="flex h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+                <span className="text-[11px] text-zinc-300">
+                  Fonte ativa: <strong className="text-white uppercase font-mono">{servidorAtivo}</strong>
+                </span>
+              </div>
+
+              <div className="flex items-center gap-2 flex-wrap">
+                <button
+                  type="button"
+                  id="filmoteca-next-server-btn"
+                  onClick={alternarProximoServidor}
+                  className="px-3 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-200 hover:text-white border border-zinc-700 transition cursor-pointer flex items-center gap-1.5 text-[11px] font-medium"
+                  title="Se a tela estiver preta ou demorando, clique aqui para trocar de fonte"
+                >
+                  <RotateCw className="w-3.5 h-3.5 text-[#FF2D55]" />
+                  <span>Alternar Servidor (Se não reproduzir)</span>
+                </button>
+
+                <button
+                  type="button"
+                  id="filmoteca-reload-player-btn"
+                  onClick={recarregarPlayer}
+                  className="px-2.5 py-1.5 rounded-lg bg-zinc-800/70 hover:bg-zinc-700 text-zinc-300 hover:text-white border border-zinc-700/80 transition cursor-pointer flex items-center gap-1 text-[11px]"
+                  title="Recarregar player atual"
+                >
+                  <RotateCw className="w-3 h-3 text-zinc-400" />
+                  <span>Recarregar</span>
+                </button>
+
+                <button
+                  type="button"
+                  id="filmoteca-direct-external-btn"
+                  onClick={() => {
+                    const url = obterUrlFilme(filmeAtivo, servidorAtivo);
+                    if (url) StreamService.openSafeExternal(url);
+                  }}
+                  className="px-3 py-1.5 rounded-lg bg-[#FF2D55] hover:bg-[#e0264a] text-white transition cursor-pointer flex items-center gap-1.5 text-[11px] font-semibold shadow-sm"
+                  title="Abre o player em nova aba sem nenhuma limitação de iframe ou navegador"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" />
+                  <span>Ecrã Externo (Sem Bloqueios)</span>
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* BARRA DE INFORMAÇÕES DO FILME ATIVO */}
           {filmeAtivo && (
@@ -450,8 +727,14 @@ export function WorscoiFilmotecaView({ onBackToTV }: WorscoiFilmotecaViewProps) 
                   <h2 className="text-sm sm:text-base font-bold text-white truncate">
                     {filmeAtivo.titulo}
                   </h2>
+                  {filmeAtivo.rating && (
+                    <span className="px-1.5 py-0.5 rounded bg-amber-400 text-black text-[9px] font-black font-mono shadow flex items-center gap-0.5">
+                      <Star className="w-2.5 h-2.5 fill-black" />
+                      <span>{filmeAtivo.rating}</span>
+                    </span>
+                  )}
                   {filmeAtivo.imdbId && (
-                    <span className="px-1.5 py-0.5 rounded bg-amber-400 text-black text-[9px] font-black font-mono shadow">
+                    <span className="px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 text-[9px] font-mono font-bold border border-amber-500/30">
                       {filmeAtivo.imdbId}
                     </span>
                   )}
@@ -483,7 +766,7 @@ export function WorscoiFilmotecaView({ onBackToTV }: WorscoiFilmotecaViewProps) 
                 </button>
                 <div className="text-[11px] text-emerald-400/90 font-mono bg-emerald-950/40 border border-emerald-900/60 px-2.5 py-1 rounded-lg flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                  <span>Servidor VIP Ativo</span>
+                  <span>Filme Completo</span>
                 </div>
               </div>
             </div>
@@ -496,25 +779,21 @@ export function WorscoiFilmotecaView({ onBackToTV }: WorscoiFilmotecaViewProps) 
         <div className="flex-1 flex flex-col items-center justify-center py-24 text-center">
           <Loader2 className="w-8 h-8 text-[#FF2D55] animate-spin mb-4" />
           <p className="text-sm font-medium text-zinc-300">
-            Lendo repositório público de filmes...
+            Carregando repositório de filmes em alta resolução...
           </p>
           <p className="text-xs text-zinc-500 font-mono mt-1">
-            Extraindo metadados, capas e links VOD
+            Conectando fontes VidLink, Videasy, VidSrc e streams diretos
           </p>
         </div>
       )}
 
-      {/* GRELHA ESTILO NETFLIX / STREAMING */}
+      {/* GRELHA ESTILO STREAMING / NETFLIX */}
       {!isLoading && filmesFiltrados.length > 0 && (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
           {filmesFiltrados.map((filme) => (
             <div
               key={filme.id}
-              onClick={() => {
-                setFilmeAtivo(filme);
-                // Rola suavemente até o player no topo se estiver abaixo
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }}
+              onClick={() => handleSelecionarFilme(filme)}
               className={`group relative flex flex-col bg-zinc-950 rounded-xl overflow-hidden border transition duration-200 cursor-pointer shadow-lg hover:shadow-2xl hover:scale-[1.02] ${
                 filmeAtivo?.id === filme.id
                   ? 'border-[#FF2D55] ring-2 ring-[#FF2D55]/40'
@@ -552,7 +831,7 @@ export function WorscoiFilmotecaView({ onBackToTV }: WorscoiFilmotecaViewProps) 
                     onClick={(e) => {
                       e.stopPropagation();
                       setFilmeSelecionado(filme);
-                      setModoPlayer('videasy');
+                      setModoPlayer(obterServidorPadrao(filme));
                     }}
                     className="w-9 h-9 rounded-full bg-zinc-900/90 hover:bg-zinc-800 text-zinc-200 border border-zinc-700 flex items-center justify-center shadow-lg transform scale-90 group-hover:scale-100 transition cursor-pointer"
                   >
@@ -560,14 +839,15 @@ export function WorscoiFilmotecaView({ onBackToTV }: WorscoiFilmotecaViewProps) 
                   </button>
                 </div>
 
-                {/* BADGES IMDb / ANO */}
-                <div className="absolute top-2 right-2 flex items-center gap-1.5">
-                  {filme.imdbId && (
-                    <span className="px-1.5 py-0.5 rounded bg-amber-400 text-black text-[9px] font-black font-mono shadow tracking-wider">
-                      IMDb
+                {/* BADGES IMDb / RATING / ANO */}
+                <div className="absolute top-2 right-2 flex flex-col items-end gap-1">
+                  {filme.rating && (
+                    <span className="px-1.5 py-0.5 rounded bg-amber-400 text-black text-[9px] font-black font-mono shadow flex items-center gap-0.5">
+                      <Star className="w-2.5 h-2.5 fill-black" />
+                      <span>{filme.rating}</span>
                     </span>
                   )}
-                  <span className="px-1.5 py-0.5 rounded bg-black/70 backdrop-blur-md text-[10px] font-mono text-zinc-300 border border-white/10">
+                  <span className="px-1.5 py-0.5 rounded bg-black/75 backdrop-blur-md text-[10px] font-mono text-zinc-300 border border-white/10">
                     {filme.ano}
                   </span>
                 </div>
@@ -599,37 +879,42 @@ export function WorscoiFilmotecaView({ onBackToTV }: WorscoiFilmotecaViewProps) 
             <Info className="w-6 h-6 text-zinc-500" />
           </div>
           <h3 className="text-sm font-semibold text-zinc-300">
-            Nenhum filme encontrado
+            Nenhum filme na lista local para &quot;{busca}&quot;
           </h3>
           <p className="text-xs text-zinc-500 max-w-sm mt-1 mb-4">
-            {busca
-              ? `Não foram encontrados resultados para "${busca}" no título ou gênero.`
-              : 'Nenhum filme corresponde aos filtros selecionados.'}
+            Deseja buscar este título diretamente no catálogo global IMDb e gerar as fontes de reprodução?
           </p>
-          <button
-            type="button"
-            id="filmoteca-reset-filters-btn"
-            onClick={limparFiltros}
-            className="px-3 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-xs font-medium text-zinc-300 border border-zinc-800 transition cursor-pointer"
-          >
-            Limpar busca e filtros
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              id="filmoteca-search-global-btn"
+              onClick={() => executarBuscaGlobal(busca)}
+              disabled={isSearchingRemote}
+              className="px-4 py-2 rounded-xl bg-[#FF2D55] hover:bg-[#e0264a] text-xs font-bold text-white transition flex items-center gap-1.5 cursor-pointer shadow-md"
+            >
+              {isSearchingRemote ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <Globe2 className="w-3.5 h-3.5" />
+              )}
+              <span>Buscar no Catálogo Global IMDb</span>
+            </button>
+            <button
+              type="button"
+              id="filmoteca-reset-filters-btn"
+              onClick={limparFiltros}
+              className="px-3.5 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-xs font-medium text-zinc-300 border border-zinc-800 transition cursor-pointer"
+            >
+              Limpar busca
+            </button>
+          </div>
         </div>
       )}
 
-      {/* MODAL DO REPRODUTOR DE FILME SELECIONADO */}
+      {/* MODAL DO REPRODUTOR DE FILME SELECIONADO (MODO TEATRO) */}
       {filmeSelecionado && (() => {
         const urlAtiva = obterUrlFilme(filmeSelecionado, modoPlayer);
-        const isEmbed = Boolean(
-          urlAtiva && (
-            urlAtiva.includes('videasy') ||
-            urlAtiva.includes('autoembed') ||
-            urlAtiva.includes('embed') ||
-            urlAtiva.includes('youtube') ||
-            urlAtiva.includes('youtu.be') ||
-            Boolean(filmeSelecionado.imdbId)
-          )
-        );
+        const isDirectVideo = modoPlayer === 'direct' && Boolean(filmeSelecionado.directStreamUrl);
 
         return (
           <div
@@ -641,14 +926,20 @@ export function WorscoiFilmotecaView({ onBackToTV }: WorscoiFilmotecaViewProps) 
               onClick={(e) => e.stopPropagation()}
             >
               {/* BARRA SUPERIOR DO MODAL */}
-              <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-800 bg-zinc-900/80">
+              <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-800 bg-zinc-900/90">
                 <div className="flex items-center gap-2 min-w-0">
                   <Clapperboard className="w-4 h-4 text-[#FF2D55] shrink-0" />
                   <span className="text-xs sm:text-sm font-bold text-white truncate">
                     {filmeSelecionado.titulo}
                   </span>
+                  {filmeSelecionado.rating && (
+                    <span className="px-1.5 py-0.5 rounded bg-amber-400 text-black text-[9px] font-black font-mono shrink-0 flex items-center gap-0.5">
+                      <Star className="w-2.5 h-2.5 fill-black" />
+                      <span>{filmeSelecionado.rating}</span>
+                    </span>
+                  )}
                   {filmeSelecionado.imdbId && (
-                    <span className="px-1.5 py-0.5 rounded bg-amber-400 text-black text-[9px] font-black font-mono shrink-0">
+                    <span className="px-1.5 py-0.5 rounded bg-zinc-800 text-amber-400 border border-amber-400/30 text-[9px] font-mono font-bold shrink-0">
                       {filmeSelecionado.imdbId}
                     </span>
                   )}
@@ -662,8 +953,8 @@ export function WorscoiFilmotecaView({ onBackToTV }: WorscoiFilmotecaViewProps) 
                     <button
                       type="button"
                       id="filmoteca-open-external-btn"
-                      onClick={() => window.open(urlAtiva, '_blank', 'noopener,noreferrer')}
-                      className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs text-zinc-300 hover:text-white bg-zinc-800/80 hover:bg-zinc-700 transition"
+                      onClick={() => StreamService.openSafeExternal(urlAtiva)}
+                      className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs text-zinc-200 hover:text-white bg-zinc-800/80 hover:bg-zinc-700 transition"
                       title="Abrir em Nova Aba Isolada"
                     >
                       <ExternalLink className="w-3.5 h-3.5" />
@@ -682,79 +973,109 @@ export function WorscoiFilmotecaView({ onBackToTV }: WorscoiFilmotecaViewProps) 
                 </div>
               </div>
 
-              {/* SELEÇÃO DE SERVIDOR / MODO DE REPRODUÇÃO */}
-              <div className="flex items-center gap-2 px-4 py-2 bg-zinc-900/50 border-b border-zinc-800/80 overflow-x-auto text-xs">
-                <button
-                  type="button"
-                  id="filmoteca-modal-server-vidsrc"
-                  onClick={() => setModoPlayer('vidsrc')}
-                  className={`flex items-center gap-1.5 px-3 py-1 rounded-lg font-medium transition cursor-pointer ${
-                    modoPlayer === 'vidsrc'
-                      ? 'bg-[#FF2D55] text-white shadow-sm'
-                      : 'bg-zinc-800 text-zinc-400 hover:text-white'
-                  }`}
-                  title="Player VidSrc Principal (Sem erros de sandbox)"
-                >
-                  <Play className="w-3 h-3 fill-current" />
-                  <span>VidSrc VIP (Principal)</span>
-                </button>
+              {/* SELEÇÃO DE FONTES NO MODAL */}
+              <div className="flex items-center gap-1.5 px-4 py-2 bg-zinc-900/60 border-b border-zinc-800/80 overflow-x-auto text-xs">
+                {filmeSelecionado.directStreamUrl &&
+                  renderServerPill(
+                    'direct',
+                    'Nativo HTML5',
+                    <ShieldCheck className="w-3 h-3 text-emerald-400" />,
+                    modoPlayer,
+                    setModoPlayer,
+                    true
+                  )}
 
-                <button
-                  type="button"
-                  id="filmoteca-modal-server-vidsrc-alt"
-                  onClick={() => setModoPlayer('vidsrc_alt')}
-                  className={`flex items-center gap-1.5 px-3 py-1 rounded-lg font-medium transition cursor-pointer ${
-                    modoPlayer === 'vidsrc_alt'
-                      ? 'bg-[#FF2D55] text-white shadow-sm'
-                      : 'bg-zinc-800 text-zinc-400 hover:text-white'
-                  }`}
-                  title="Servidor secundário alternativo"
-                >
-                  <Film className="w-3 h-3" />
-                  <span>VidSrc HD (Alt)</span>
-                </button>
-
-                {filmeSelecionado.trailerUrl && (
-                  <button
-                    type="button"
-                    id="filmoteca-modal-server-trailer"
-                    onClick={() => setModoPlayer('trailer')}
-                    className={`flex items-center gap-1.5 px-3 py-1 rounded-lg font-medium transition cursor-pointer ${
-                      modoPlayer === 'trailer'
-                        ? 'bg-[#FF2D55] text-white shadow-sm'
-                        : 'bg-zinc-800 text-zinc-400 hover:text-white'
-                    }`}
-                  >
-                    <Sparkles className="w-3 h-3 text-amber-300" />
-                    <span>Trailer Oficial 4K</span>
-                  </button>
+                {renderServerPill(
+                  'videasy',
+                  'Fonte 1: Videasy VIP',
+                  <Film className="w-3 h-3 text-cyan-400" />,
+                  modoPlayer,
+                  setModoPlayer
                 )}
+
+                {renderServerPill(
+                  'vidsrc',
+                  'Fonte 2: VidSrc Ultra',
+                  <Tv className="w-3 h-3 text-amber-400" />,
+                  modoPlayer,
+                  setModoPlayer
+                )}
+
+                {renderServerPill(
+                  'vidsrcin',
+                  'Fonte 3: VidSrc In',
+                  <Sparkles className="w-3 h-3 text-emerald-400" />,
+                  modoPlayer,
+                  setModoPlayer
+                )}
+
+                {renderServerPill(
+                  'vidlink',
+                  'Fonte 4: VidLink Pro',
+                  <Play className="w-3 h-3 fill-current" />,
+                  modoPlayer,
+                  setModoPlayer
+                )}
+
+                {renderServerPill(
+                  'autoembed',
+                  'Fonte 5: AutoEmbed VIP',
+                  <Globe2 className="w-3 h-3 text-indigo-400" />,
+                  modoPlayer,
+                  setModoPlayer
+                )}
+
+                {filmeSelecionado.trailerUrl &&
+                  renderServerPill(
+                    'trailer',
+                    'Trailer',
+                    <Sparkles className="w-3 h-3 text-amber-300" />,
+                    modoPlayer,
+                    setModoPlayer
+                  )}
               </div>
 
-              {/* PLAYER DE VÍDEO DO FILME (IFRAME OU VÍDEO NATIVO) SEM RESTRIÇÃO SANDBOX */}
-              <div className="relative aspect-video w-full bg-black flex items-center justify-center overflow-hidden">
+              {/* ÁREA DE REPRODUÇÃO */}
+              <div
+                className="relative aspect-video w-full max-w-full bg-black flex items-center justify-center overflow-hidden shrink-0"
+                style={{ aspectRatio: '16 / 9' }}
+              >
+                {urlAtiva && (
+                  <div className="absolute top-3 right-3 z-30 flex items-center gap-2 pointer-events-auto">
+                    <button
+                      type="button"
+                      id="modal-overlay-safe-external"
+                      onClick={() => StreamService.openSafeExternal(urlAtiva)}
+                      className="px-2.5 py-1.5 rounded-lg bg-black/85 hover:bg-[#FF2D55] text-white text-[11px] font-semibold backdrop-blur-md border border-white/20 transition flex items-center gap-1.5 shadow-xl cursor-pointer"
+                      title="Abrir reprodutor fora do iframe para contornar qualquer erro de sandbox"
+                    >
+                      <ExternalLink className="w-3.5 h-3.5" />
+                      <span>Ecrã Sem Sandbox</span>
+                    </button>
+                  </div>
+                )}
                 {urlAtiva ? (
-                  isEmbed ? (
-                    <iframe
-                      key={`${filmeSelecionado.id}-${modoPlayer}`}
-                      src={urlAtiva}
-                      title={filmeSelecionado.titulo}
-                      className="w-full h-full border-0"
-                      allowFullScreen
-                      /* Deixamos apenas os triggers de mídia, sem a tag restrictiva sandbox */
-                      allow="autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    />
-                  ) : (
+                  isDirectVideo ? (
                     <video
-                      key={urlAtiva}
+                      key={`${urlAtiva}-${reloadKey}`}
                       src={urlAtiva}
                       controls
                       autoPlay
                       playsInline
-                      className="w-full h-full object-contain"
+                      className="absolute inset-0 w-full h-full object-contain bg-black"
                     >
                       Seu navegador não suporta este formato de vídeo.
                     </video>
+                  ) : (
+                    <iframe
+                      key={`${filmeSelecionado.id}-${modoPlayer}-${reloadKey}`}
+                      src={urlAtiva}
+                      title={filmeSelecionado.titulo}
+                      className="absolute inset-0 w-full h-full border-0 bg-black"
+                      allowFullScreen
+                      referrerPolicy={STREAM_REFERRER_POLICY}
+                      allow={STREAM_IFRAME_ALLOW}
+                    />
                   )
                 ) : (
                   <div className="text-center p-6 text-zinc-500">
@@ -763,6 +1084,38 @@ export function WorscoiFilmotecaView({ onBackToTV }: WorscoiFilmotecaViewProps) 
                   </div>
                 )}
               </div>
+
+              {/* BARRA DE RESOLUÇÃO RÁPIDA NO MODAL */}
+              {urlAtiva && (
+                <div className="px-4 py-2 bg-zinc-900 border-t border-zinc-800 flex items-center justify-between gap-2 text-xs flex-wrap">
+                  <div className="text-[11px] text-zinc-400 flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                    <span>Se não reproduzir de imediato, troque a fonte ou abra no Ecrã Externo:</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const next = StreamService.getNextProvider(filmeSelecionado, modoPlayer);
+                        setModoPlayer(next);
+                        setReloadKey((k) => k + 1);
+                      }}
+                      className="px-2.5 py-1 rounded bg-zinc-800 hover:bg-zinc-700 text-white text-[11px] flex items-center gap-1 transition cursor-pointer"
+                    >
+                      <RotateCw className="w-3 h-3 text-[#FF2D55]" />
+                      <span>Alternar Fonte</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => StreamService.openSafeExternal(urlAtiva)}
+                      className="px-2.5 py-1 rounded bg-[#FF2D55] hover:bg-[#e0264a] text-white text-[11px] font-semibold flex items-center gap-1 transition cursor-pointer"
+                    >
+                      <ExternalLink className="w-3 h-3" />
+                      <span>Ecrã Externo (Sem Bloqueios)</span>
+                    </button>
+                  </div>
+                </div>
+              )}
 
               {/* DETALHES E SINOPSE */}
               <div className="p-4 bg-zinc-950 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">

@@ -205,10 +205,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const status = await checkDeviceTrialStatus();
       setDeviceTrial(status);
+      if (status.hasClaimed && status.isExpired) {
+        const saved = typeof window !== 'undefined' ? localStorage.getItem(LOCAL_SESSION_KEY) : null;
+        if (saved) {
+          const parsed = JSON.parse(saved) as UserProfile;
+          if (parsed && parsed.role !== 'admin' && (!parsed.plan || parsed.plan === 'free')) {
+            triggerFreePlanBlocked({
+              email: parsed.email,
+              deviceId: status.trialRecord?.deviceId || getOrCreateDeviceId(),
+              reason: 'trial_expired',
+              message:
+                'O período de teste gratuito de 24 horas deste dispositivo expirou. Por favor, assine um de nossos planos a partir de 1.500 Kz para continuar aproveitando nossa grade ao vivo.',
+            });
+          }
+        }
+      }
     } catch {
       // Ignora
     }
-  }, []);
+  }, [triggerFreePlanBlocked]);
 
   const closeExpiredNotice = useCallback(() => {
     setIsAccountClosedDueToExpiration(false);
