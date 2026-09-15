@@ -266,8 +266,8 @@ export function subscribeChannelStats(
         userHasAdorado: currentUserHasAdorado,
       });
     },
-    (err) => {
-      console.warn('Erro ao escutar estatísticas do canal no Firestore:', err);
+    (_err) => {
+      // Falha transitória de rede ou offline: mantém dados locais sem travar
     }
   );
 
@@ -293,8 +293,8 @@ export function subscribeChannelStats(
         userHasAdorado: currentUserHasAdorado,
       });
     },
-    (err) => {
-      console.warn('Erro ao verificar adoro do usuário no Firestore:', err);
+    (_err) => {
+      // Falha transitória de rede ou offline: mantém estado local
     }
   );
 
@@ -421,8 +421,8 @@ export function subscribeChannelComments(
       saveLocalComments(channelSlug, fetchedComments);
       onUpdate(fetchedComments);
     },
-    (err) => {
-      console.warn('Erro ao escutar comentários no Firestore:', err);
+    (_err) => {
+      // Falha transitória de rede ou offline: mantém comentários locais
     }
   );
 

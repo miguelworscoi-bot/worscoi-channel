@@ -19,8 +19,8 @@ export function WorscoiLogo({ size = 'md', showDot = false, className = '' }: Wo
       {/* Cursive handwritten Worscoi brand typography (Preservada como Logomarca oficial) */}
       <span
         data-logomark="true"
-        style={{ fontFamily: "'Caveat', 'Dancing Script', cursive" }}
-        className={`${sizeClasses[size]} font-bold tracking-wide text-[#FF2D55] drop-shadow-[0_0_12px_rgba(255,45,85,0.4)] transition-all font-logomark logomark-font`}
+        style={{ fontFamily: "'Brittany Signature', 'Brittany', 'Dancing Script', cursive" }}
+        className={`${sizeClasses[size]} font-normal tracking-wide text-[#FF2D55] drop-shadow-[0_0_12px_rgba(255,45,85,0.4)] transition-all font-logomark logomark-font`}
       >
         Worscoi
       </span>

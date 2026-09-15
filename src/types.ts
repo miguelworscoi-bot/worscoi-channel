@@ -132,7 +132,7 @@ export interface Canal {
   minPlan?: SubscriptionPlanId;
 }
 
-export type WorscoiView = 'explorar' | 'painel' | 'assinantes';
+export type WorscoiView = 'explorar' | 'painel' | 'assinantes' | 'filmoteca';
 
 export interface GameDeal {
   id: string;

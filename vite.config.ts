@@ -112,6 +112,25 @@ function apiRoutesPlugin(): Plugin {
           res.end(JSON.stringify({ error: message }));
         }
       });
+
+      server.middlewares.use('/api/filmes', async (req, res) => {
+        try {
+          const { GET } = await server.ssrLoadModule('/src/app/api/filmes/route.ts');
+          const pathAndQuery = req.originalUrl || `/api/filmes${req.url?.startsWith('?') ? req.url : `/${req.url || ''}`}`;
+          const fullUrl = `http://localhost:3000${pathAndQuery.startsWith('/') ? pathAndQuery : `/${pathAndQuery}`}`;
+          const webRequest = new Request(fullUrl);
+          const response = await GET(webRequest);
+          const json = await response.json();
+          res.statusCode = response.status || 200;
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify(json));
+        } catch (err: unknown) {
+          const message = err instanceof Error ? err.message : 'Erro ao buscar filmes';
+          res.statusCode = 500;
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify({ error: message }));
+        }
+      });
     },
   };
 }
@@ -120,7 +139,7 @@ export default defineConfig(() => {
   return {
     plugins: [react(), tailwindcss(), apiRoutesPlugin()],
     optimizeDeps: {
-      include: ['firebase/app', 'firebase/auth', 'firebase/firestore'],
+      include: ['firebase/app', 'firebase/auth', 'firebase/firestore', 'shaders/react'],
     },
     resolve: {
       alias: {

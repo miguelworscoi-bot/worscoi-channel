@@ -6,6 +6,7 @@ import {
   Crown,
   Shield,
   LogIn,
+  Film,
 } from 'lucide-react';
 import { WorscoiLogo } from './WorscoiLogo';
 import { SubscriptionCountdownBadge } from './SubscriptionCountdownBadge';
@@ -15,17 +16,20 @@ import { WorscoiView, Canal } from '@/types';
 interface WorscoiTopBarProps {
   currentView: WorscoiView;
   canalAtivo?: Canal | null;
+  onNavigate?: (view: WorscoiView) => void;
   onOpenMobileMenu: () => void;
   onOpenRedeemToken: () => void;
   onOpenPlans: () => void;
   onOpenUserProfile: () => void;
   onOpenAuth: () => void;
   onOpenAdminPanel?: () => void;
+  onOpenLanding?: () => void;
 }
 
 export function WorscoiTopBar({
   currentView,
   canalAtivo: _canalAtivo,
+  onNavigate,
   onOpenMobileMenu,
   onOpenRedeemToken,
   onOpenPlans,
@@ -50,8 +54,8 @@ export function WorscoiTopBar({
           : 'border-b border-zinc-900/80 bg-[#050507]/90 backdrop-blur-md sticky top-0'
       }`}
     >
-      {/* LADO ESQUERDO: BOTÃO MENU MOBILE + TÍTULO DA VIEW */}
-      <div className="flex items-center gap-3">
+      {/* LADO ESQUERDO: BOTÃO MENU MOBILE + BOTÃO FILMOTECA + TÍTULO DA VIEW */}
+      <div className="flex items-center gap-2 sm:gap-3">
         <button
           type="button"
           onClick={onOpenMobileMenu}
@@ -65,7 +69,23 @@ export function WorscoiTopBar({
           <WorscoiLogo size="sm" />
         </div>
 
-        {currentView !== 'explorar' && (
+        {/* BOTÃO FILMOTECA */}
+        <button
+          type="button"
+          id="header-filmoteca-btn"
+          onClick={() => onNavigate?.('filmoteca')}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition cursor-pointer ${
+            currentView === 'filmoteca'
+              ? 'bg-[#FF2D55] text-white font-semibold shadow-sm shadow-[#FF2D55]/30'
+              : 'text-zinc-300 hover:text-white bg-zinc-900/90 hover:bg-zinc-800 border border-zinc-800'
+          }`}
+          title="Filmoteca"
+        >
+          <Film className="w-3.5 h-3.5" />
+          <span>Filmoteca</span>
+        </button>
+
+        {currentView !== 'explorar' && currentView !== 'filmoteca' && (
           <div className="hidden lg:flex items-center gap-2 text-xs font-semibold text-zinc-400">
             <span className="capitalize text-zinc-300">
               {currentView === 'painel'

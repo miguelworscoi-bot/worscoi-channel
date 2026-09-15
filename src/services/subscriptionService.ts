@@ -361,7 +361,7 @@ export function getRequiredPlanForChannel(canal?: {
   const name = (canal.nome || '').toLowerCase();
   const cat = (canal.categoria || '').toLowerCase();
   const rede = (canal.rede || '').toLowerCase();
-  const grupo = (canal.grupo || '').toLowerCase();
+  const _grupo = (canal.grupo || '').toLowerCase();
 
   // 2. Canais Premium Ultra 4K (SuperSport, Sport TV Portugal, DAZN, Sky Sports, 4K)
   if (

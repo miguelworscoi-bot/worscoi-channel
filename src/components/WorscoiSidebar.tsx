@@ -14,13 +14,10 @@ import {
   PanelLeft,
   Tv,
   Trash2,
-  Lock,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Canal, FiltroAtivo, WorscoiView } from '@/types';
 import { WorscoiLogo } from './WorscoiLogo';
-import { useAuth } from '@/context/AuthContext';
-import { canUserWatchChannel, PLANS } from '@/services/subscriptionService';
 import {
   getChannelCategoryInfo,
   getChannelQuality,
@@ -345,8 +342,8 @@ export function WorscoiSidebar({
             >
               <span
                 data-logomark="true"
-                style={{ fontFamily: "'Caveat', 'Dancing Script', cursive" }}
-                className="text-2xl font-bold text-[#FF2D55] font-logomark logomark-font"
+                style={{ fontFamily: "'Brittany Signature', 'Brittany', 'Dancing Script', cursive" }}
+                className="text-2xl font-normal text-[#FF2D55] font-logomark logomark-font"
               >
                 W
               </span>
@@ -672,26 +669,28 @@ export function WorscoiSidebar({
           {!isCollapsed && <span>Transmissão</span>}
         </button>
 
-        {/* BOTÃO PAINEL DE CONTROLE */}
-        <button
-          type="button"
-          onClick={() => onNavigate('painel')}
-          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition cursor-pointer ${
-            currentView === 'painel' || currentView === 'assinantes'
-              ? 'bg-zinc-900 text-white ring-1 ring-zinc-800'
-              : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/50'
-          }`}
-          title="Painel de controle e métricas"
-        >
-          <TrendingUp
-            className={`w-4 h-4 ${
+        {/* BOTÃO PAINEL DE CONTROLE (EXCLUSIVO PARA ADMINISTRADOR) */}
+        {isAdmin && (
+          <button
+            type="button"
+            onClick={() => onNavigate('painel')}
+            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition cursor-pointer ${
               currentView === 'painel' || currentView === 'assinantes'
-                ? 'text-[#FF2D55]'
-                : 'text-zinc-400'
+                ? 'bg-zinc-900 text-white ring-1 ring-zinc-800'
+                : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/50'
             }`}
-          />
-          {!isCollapsed && <span>Painel de controle</span>}
-        </button>
+            title="Painel de controle e métricas"
+          >
+            <TrendingUp
+              className={`w-4 h-4 ${
+                currentView === 'painel' || currentView === 'assinantes'
+                  ? 'text-[#FF2D55]'
+                  : 'text-zinc-400'
+              }`}
+            />
+            {!isCollapsed && <span>Painel de controle</span>}
+          </button>
+        )}
 
         {/* BOTÃO TERMINAR SESSÃO */}
         <button

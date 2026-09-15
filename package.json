@@ -26,6 +26,7 @@
     "react-dom": "^19.0.1",
     "react-player": "^3.4.0",
     "recharts": "^3.10.1",
+    "shaders": "^3.2.470",
     "vite": "^6.2.3"
   },
   "devDependencies": {

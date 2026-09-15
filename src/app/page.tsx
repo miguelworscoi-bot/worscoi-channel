@@ -10,6 +10,7 @@ import { WorscoiTopBar } from '@/components/WorscoiTopBar';
 import { PlayerHero } from '@/components/PlayerHero';
 import { WorscoiControlPanel } from '@/components/WorscoiControlPanel';
 import { WorscoiSubscribersView } from '@/components/WorscoiSubscribersView';
+import { WorscoiFilmotecaView } from '@/components/WorscoiFilmotecaView';
 import { WorscoiLoginModal } from '@/components/WorscoiLoginModal';
 import { CinemaPlayer } from '@/components/CinemaPlayer';
 import { AddChannelModal } from '@/components/AddChannelModal';
@@ -21,6 +22,7 @@ import { UserProfileModal } from '@/components/UserProfileModal';
 import { SubscriptionExpiredModal } from '@/components/SubscriptionExpiredModal';
 import { FreePlanBlockedModal } from '@/components/FreePlanBlockedModal';
 import { CongratulationsNotification } from '@/components/CongratulationsNotification';
+import { LandingScreen } from '@/components/LandingScreen';
 import { useAuth } from '@/context/AuthContext';
 
 const LOCAL_STORAGE_FAVORITES_KEY = 'playsports_favorites';
@@ -28,6 +30,7 @@ const LOCAL_STORAGE_CUSTOM_KEY = 'playsports_custom_channels';
 
 export default function Home() {
   const {
+    user,
     isAdmin,
     signOut,
     isAccountClosedDueToExpiration,
@@ -53,6 +56,15 @@ export default function Home() {
   const [isCinemaMode, setIsCinemaMode] = useState(false);
 
   // Modais do sistema
+  const [isLandingOpen, setIsLandingOpen] = useState<boolean>(() => {
+    try {
+      const entered = sessionStorage.getItem('playsports_landing_entered');
+      return entered !== 'true';
+    } catch {
+      return true;
+    }
+  });
+  const [loginModalMode, setLoginModalMode] = useState<'login' | 'register'>('login');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAdminPanelOpen, setIsAdminPanelOpen] = useState(false);
   const [isSubscribersModalOpen, setIsSubscribersModalOpen] = useState(false);
@@ -317,10 +329,134 @@ export default function Home() {
     }
   }, [canalAtivo]);
 
-  const handleLogout = () => {
-    signOut();
+  const handleEnterPlayer = useCallback(
+    (canal?: Canal) => {
+      if (canal) {
+        handleSelectCanal(canal);
+      }
+      setIsLandingOpen(false);
+      try {
+        sessionStorage.setItem('playsports_landing_entered', 'true');
+      } catch {
+        // Ignora erro
+      }
+    },
+    [handleSelectCanal]
+  );
+
+  const handleOpenLoginModal = (mode: 'login' | 'register' = 'login') => {
+    setLoginModalMode(mode);
     setIsLoginModalOpen(true);
   };
+
+  const handleLoginSuccess = useCallback(() => {
+    setIsLoginModalOpen(false);
+    setIsLandingOpen(false);
+    try {
+      sessionStorage.setItem('playsports_landing_entered', 'true');
+    } catch {
+      // Ignora erro
+    }
+  }, []);
+
+  // Se o usuário estiver autenticado (não convidado espectador), avança para o app
+  useEffect(() => {
+    if (user && user.email && user.email !== 'espectador@playsports.tv' && !user.isAnonymous) {
+      setIsLandingOpen(false);
+      try {
+        sessionStorage.setItem('playsports_landing_entered', 'true');
+      } catch {
+        // Ignora erro
+      }
+    }
+  }, [user]);
+
+  // Se o usuário não for administrador, não tem acesso às telas de painel ou assinantes
+  useEffect(() => {
+    if (!isAdmin && (currentView === 'painel' || currentView === 'assinantes')) {
+      setCurrentView('explorar');
+    }
+  }, [isAdmin, currentView]);
+
+  const handleLogout = () => {
+    signOut();
+    setIsLandingOpen(true);
+    setLoginModalMode('login');
+    setIsLoginModalOpen(true);
+    try {
+      sessionStorage.removeItem('playsports_landing_entered');
+    } catch {
+      // Ignora erro
+    }
+  };
+
+  if (isLandingOpen) {
+    return (
+      <main className="min-h-screen w-full bg-[#050508] text-zinc-100 antialiased font-sans">
+        <LandingScreen
+          onEnterPlayer={handleEnterPlayer}
+          onOpenLogin={() => handleOpenLoginModal('login')}
+          onOpenRegister={() => handleOpenLoginModal('register')}
+          onOpenPlans={() => setIsPaymentModalOpen(true)}
+          onOpenRedeemToken={() => setIsRedeemModalOpen(true)}
+          featuredChannels={todosCanais}
+        />
+
+        {/* MODAL WORSCOI DE LOGIN */}
+        <WorscoiLoginModal
+          isOpen={isLoginModalOpen}
+          onClose={() => setIsLoginModalOpen(false)}
+          initialMode={loginModalMode}
+          onLoginSuccess={handleLoginSuccess}
+          onCelebration={(data) => {
+            setIsLandingOpen(false);
+            try {
+              sessionStorage.setItem('playsports_landing_entered', 'true');
+            } catch {
+              // Ignora erro
+            }
+            setCelebrationData({ isOpen: true, ...data });
+          }}
+        />
+
+        {/* MODAL DE PLANOS E PAGAMENTO */}
+        <PaymentPlansModal
+          isOpen={isPaymentModalOpen}
+          onClose={() => setIsPaymentModalOpen(false)}
+          onOpenRedeemToken={() => {
+            setIsPaymentModalOpen(false);
+            setIsRedeemModalOpen(true);
+          }}
+          onCelebration={(data) => {
+            setIsLandingOpen(false);
+            try {
+              sessionStorage.setItem('playsports_landing_entered', 'true');
+            } catch {
+              // Ignora erro
+            }
+            setCelebrationData({ isOpen: true, ...data });
+          }}
+        />
+
+        {/* MODAL DE RESGATE DE TOKEN */}
+        <RedeemTokenModal
+          isOpen={isRedeemModalOpen}
+          onClose={() => setIsRedeemModalOpen(false)}
+        />
+
+        {/* NOTIFICAÇÃO DE PARABÉNS PELO PLANO ATIVADO */}
+        {celebrationData && (
+          <CongratulationsNotification
+            isOpen={celebrationData.isOpen}
+            onClose={() => setCelebrationData(null)}
+            userName={celebrationData.userName}
+            planName={celebrationData.planName}
+            message={celebrationData.message}
+          />
+        )}
+      </main>
+    );
+  }
 
   return (
     <main className="flex h-screen w-screen overflow-hidden bg-[#070709] text-zinc-100 antialiased font-sans">
@@ -384,11 +520,12 @@ export default function Home() {
         <WorscoiTopBar
           currentView={currentView}
           canalAtivo={canalAtivo}
+          onNavigate={(view) => setCurrentView(view)}
           onOpenMobileMenu={() => setIsMobileMenuOpen(true)}
           onOpenRedeemToken={() => setIsRedeemModalOpen(true)}
           onOpenPlans={() => setIsPaymentModalOpen(true)}
           onOpenUserProfile={() => setIsUserProfileModalOpen(true)}
-          onOpenAuth={() => setIsLoginModalOpen(true)}
+          onOpenAuth={() => handleOpenLoginModal('login')}
           onOpenAdminPanel={isAdmin ? () => setIsAdminPanelOpen(true) : undefined}
         />
 
@@ -470,6 +607,13 @@ export default function Home() {
               onOpenTokenGenerator={() => setIsSubscribersModalOpen(true)}
             />
           )}
+
+          {/* VISTA 4: FILMOTECA (PÁGINA VAZIA) */}
+          {currentView === 'filmoteca' && (
+            <WorscoiFilmotecaView
+              onBackToTV={() => setCurrentView('explorar')}
+            />
+          )}
         </div>
       </div>
 
@@ -544,6 +688,7 @@ export default function Home() {
       <WorscoiLoginModal
         isOpen={isLoginModalOpen}
         onClose={() => setIsLoginModalOpen(false)}
+        initialMode={loginModalMode}
         onCelebration={(data) => setCelebrationData({ isOpen: true, ...data })}
       />
 
@@ -632,6 +777,17 @@ export default function Home() {
             // Ignora
           }
           setCanalAtivo(novo);
+        }}
+      />
+
+      {/* MODAL WORSCOI DE LOGIN NO APP PRINCIPAL */}
+      <WorscoiLoginModal
+        isOpen={isLoginModalOpen}
+        onClose={() => setIsLoginModalOpen(false)}
+        initialMode={loginModalMode}
+        onLoginSuccess={handleLoginSuccess}
+        onCelebration={(data) => {
+          setCelebrationData({ isOpen: true, ...data });
         }}
       />
     </main>

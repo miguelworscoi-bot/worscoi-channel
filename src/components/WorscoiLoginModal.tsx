@@ -22,6 +22,7 @@ interface WorscoiLoginModalProps {
   isOpen: boolean;
   onClose: () => void;
   initialMode?: 'login' | 'register';
+  onLoginSuccess?: () => void;
   onCelebration?: (data: {
     userName?: string;
     planName?: string;
@@ -33,6 +34,7 @@ export function WorscoiLoginModal({
   isOpen,
   onClose,
   initialMode = 'login',
+  onLoginSuccess,
   onCelebration,
 }: WorscoiLoginModalProps) {
   const { signInWithEmail, signUpWithEmail } = useAuth();
@@ -103,6 +105,7 @@ export function WorscoiLoginModal({
       }
 
       await signInWithEmail(email, password);
+      onLoginSuccess?.();
       onClose();
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Erro ao efetuar login. Verifique suas credenciais.';
@@ -129,6 +132,7 @@ export function WorscoiLoginModal({
         null
       );
 
+      onLoginSuccess?.();
       onClose();
 
       // Dispara notificação de parabéns exigida na instrução
@@ -172,6 +176,7 @@ export function WorscoiLoginModal({
         params.expiresAt
       );
 
+      onLoginSuccess?.();
       onClose();
 
       // Notificação de parabéns pela ativação do plano pago com token
