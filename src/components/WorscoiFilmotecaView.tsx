@@ -14,8 +14,6 @@ import {
   ExternalLink,
   Sparkles,
   Maximize2,
-  Tv,
-  Globe,
 } from 'lucide-react';
 import { FilmeItem } from '@/app/api/filmes/route';
 
