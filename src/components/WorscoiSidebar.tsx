@@ -14,10 +14,13 @@ import {
   PanelLeft,
   Tv,
   Trash2,
+  Lock,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Canal, FiltroAtivo, WorscoiView } from '@/types';
 import { WorscoiLogo } from './WorscoiLogo';
+import { useAuth } from '@/context/AuthContext';
+import { canUserWatchChannel, PLANS } from '@/services/subscriptionService';
 import {
   getChannelCategoryInfo,
   getChannelQuality,

@@ -17,6 +17,8 @@ export interface PlanInfo {
   popular?: boolean;
   description: string;
   features: string[];
+  channelsOffered?: string[];
+  channelCountLabel?: string;
 }
 
 export interface AccessTokenRecord {
@@ -127,6 +129,7 @@ export interface Canal {
   commentsCount?: string;
   hashtags?: string[];
   soundtrack?: string;
+  minPlan?: SubscriptionPlanId;
 }
 
 export type WorscoiView = 'explorar' | 'painel' | 'assinantes';

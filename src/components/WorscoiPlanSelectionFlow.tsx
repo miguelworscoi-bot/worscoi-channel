@@ -17,6 +17,7 @@ import { SubscriptionPlanId } from '@/types';
 import {
   createWhatsAppPaymentProofLink,
   redeemAccessToken,
+  PLANS,
 } from '@/services/subscriptionService';
 
 export interface PlanItemOption {
@@ -25,16 +26,20 @@ export interface PlanItemOption {
   priceFormatted: string;
   priceNumber: number;
   durationFormatted: string;
+  channelCountLabel?: string;
+  channelsOffered?: string[];
   isFree?: boolean;
 }
 
 const FLOW_PLANS: PlanItemOption[] = [
   {
     id: 'free',
-    name: 'Plano Grátis (1 Dia)',
+    name: 'Plano Grátis Degustação (24h)',
     priceFormatted: 'Grátis / 24 horas',
     priceNumber: 0,
     durationFormatted: '1 Dia (24h)',
+    channelCountLabel: PLANS.free.channelCountLabel,
+    channelsOffered: PLANS.free.channelsOffered,
     isFree: true,
   },
   {
@@ -43,20 +48,26 @@ const FLOW_PLANS: PlanItemOption[] = [
     priceFormatted: '1.500 Kz / 3 dias',
     priceNumber: 1500,
     durationFormatted: '3 Dias',
+    channelCountLabel: PLANS.diario.channelCountLabel,
+    channelsOffered: PLANS.diario.channelsOffered,
   },
   {
     id: 'basico',
-    name: 'Básico Esportes (30 Dias)',
+    name: 'Básico Esportes & Entretenimento (30 Dias)',
     priceFormatted: '2.500 Kz / 30 dias',
     priceNumber: 2500,
     durationFormatted: '30 Dias',
+    channelCountLabel: PLANS.basico.channelCountLabel,
+    channelsOffered: PLANS.basico.channelsOffered,
   },
   {
     id: 'vip',
-    name: 'VIP Esportes HD (30 Dias)',
+    name: 'VIP Esportes, ZAP & Filmes HD (30 Dias)',
     priceFormatted: '4.000 Kz / 30 dias',
     priceNumber: 4000,
     durationFormatted: '30 Dias',
+    channelCountLabel: PLANS.vip.channelCountLabel,
+    channelsOffered: PLANS.vip.channelsOffered,
   },
   {
     id: 'premium',
@@ -64,13 +75,17 @@ const FLOW_PLANS: PlanItemOption[] = [
     priceFormatted: '9.500 Kz / 90 dias',
     priceNumber: 9500,
     durationFormatted: '90 Dias',
+    channelCountLabel: PLANS.premium.channelCountLabel,
+    channelsOffered: PLANS.premium.channelsOffered,
   },
   {
     id: 'anual',
-    name: 'Passe Anual Campeão (365 Dias)',
+    name: 'Passe Anual Campeão 365 (1 Ano)',
     priceFormatted: '30.000 Kz / 365 dias',
     priceNumber: 30000,
     durationFormatted: '365 Dias',
+    channelCountLabel: PLANS.anual.channelCountLabel,
+    channelsOffered: PLANS.anual.channelsOffered,
   },
 ];
 
@@ -245,19 +260,37 @@ export function WorscoiPlanSelectionFlow({
 
             {/* CENTRO: NOME DO PLANO + PREÇO + CARTÃO VERMELHO VERTICAL */}
             <div className="flex-1 flex flex-col items-center justify-center my-2">
-              <div className="text-center mb-4">
+              <div className="text-center mb-3">
                 <h2 className="text-base sm:text-lg font-bold text-white tracking-wide">
                   {selectedPlan.name}
                 </h2>
                 <p className="text-sm font-medium text-zinc-300 mt-0.5">
                   {selectedPlan.priceFormatted}
                 </p>
+                {selectedPlan.channelCountLabel && (
+                  <span className="inline-block mt-1 px-3 py-0.5 rounded-full text-[11px] font-bold bg-[#00E676]/15 text-[#00E676] border border-[#00E676]/30">
+                    {selectedPlan.channelCountLabel}
+                  </span>
+                )}
               </div>
 
               {/* Cartão Worscoi Vertical (Imagem 7) */}
               <div className="relative">
                 <WorscoiCardVisual variant="vertical" />
               </div>
+
+              {/* Prévia dos Canais Oferecidos pelo Plano */}
+              {selectedPlan.channelsOffered && selectedPlan.channelsOffered.length > 0 && (
+                <div className="w-full max-w-sm mt-3 px-3 py-2 rounded-xl bg-zinc-900/80 border border-zinc-800 text-center">
+                  <p className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1">
+                    Canais Liberados neste Plano
+                  </p>
+                  <p className="text-xs text-zinc-200 line-clamp-2 leading-relaxed">
+                    {selectedPlan.channelsOffered.slice(0, 5).join(' • ')}
+                    {selectedPlan.channelsOffered.length > 5 ? ' e mais...' : ''}
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* BASE: NAVEGAÇÃO DO CARROSSEL (< >) + BOTÃO "ESCOLHER" */}
@@ -383,7 +416,17 @@ export function WorscoiPlanSelectionFlow({
                   </span>
                 </div>
 
-                {/* Linha 4: Total hoje */}
+                {/* Linha 4: Cobertura de Canais */}
+                {selectedPlan.channelCountLabel && (
+                  <div className="w-full bg-white text-black px-6 py-3 rounded-full flex justify-between items-center text-sm font-semibold shadow-md">
+                    <span className="text-zinc-700">Canais Liberados</span>
+                    <span className="font-extrabold text-[#00A859] text-right truncate ml-2 text-xs sm:text-sm">
+                      {selectedPlan.channelCountLabel}
+                    </span>
+                  </div>
+                )}
+
+                {/* Linha 5: Total hoje */}
                 <div className="w-full bg-white text-black px-6 py-3.5 rounded-full flex justify-between items-center text-sm font-semibold shadow-md">
                   <span className="text-zinc-700">Total hoje</span>
                   <span className="font-extrabold text-black">

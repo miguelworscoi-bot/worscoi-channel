@@ -19,6 +19,10 @@ import {
   CreditCard,
   KeyRound,
   Film,
+  Heart,
+  MessageCircle,
+  Send,
+  Trash2,
 } from 'lucide-react';
 import { Canal, LatencyMode } from '@/types';
 import { motion, AnimatePresence } from 'motion/react';
@@ -36,7 +40,20 @@ import { PlayerSettingsModal } from './PlayerSettingsModal';
 import { PlayerTransitionSkeleton } from './PlayerTransitionSkeleton';
 import { SubscriptionCountdownBadge } from './SubscriptionCountdownBadge';
 import { useAuth } from '@/context/AuthContext';
+import { isUserPlanExpired, canUserWatchChannel, PLANS } from '@/services/subscriptionService';
 import { ChannelVideosModal, extractYouTubeId } from './ChannelVideosModal';
+import {
+  getVideoItemSlug,
+  subscribeChannelStats,
+  toggleChannelAdoro,
+  subscribeChannelComments,
+  addChannelComment,
+  deleteChannelComment,
+  formatInteractionCount,
+  formatRelativeTime,
+  getEffectiveVisitorId,
+  ChannelComment,
+} from '@/services/channelInteractionsService';
 
 interface CinemaPlayerProps {
   canalAtivo: Canal;
@@ -87,8 +104,12 @@ export function CinemaPlayer({
   onOpenPaymentPlans,
   onOpenRedeemToken,
 }: CinemaPlayerProps) {
-  const { isAdmin, countdown, isSubscriptionExpired } = useAuth();
-  const isPlanExpired = !isAdmin && (isSubscriptionExpired || countdown.expired);
+  const { userProfile, isAdmin, countdown, isSubscriptionExpired } = useAuth();
+  const isPlanExpired = !isAdmin && (isSubscriptionExpired || countdown.expired || isUserPlanExpired(userProfile));
+  const channelAccess = canUserWatchChannel(canalAtivo, userProfile);
+  const isChannelLockedByPlan = !isAdmin && !channelAccess.allowed && channelAccess.reason === 'plan_too_low';
+  const requiredPlanInfo = PLANS[channelAccess.requiredPlan] || PLANS.vip;
+  const userPlanInfo = PLANS[channelAccess.userPlan] || PLANS.free;
   const [_isReady, setIsReady] = useState(false);
   const [isBuffering, setIsBuffering] = useState(true);
   const [hasFirstFrame, setHasFirstFrame] = useState(false);
@@ -97,6 +118,15 @@ export function CinemaPlayer({
   const [isChannelVideosOpen, setIsChannelVideosOpen] = useState(false);
   const [triviaIndex, setTriviaIndex] = useState(0);
   const [emergencyOverrideUrl, setEmergencyOverrideUrl] = useState<string | null>(null);
+
+  // Estados reais de Adoros e Comentários do vídeo selecionado
+  const [isLiked, setIsLiked] = useState(false);
+  const [adorosCount, setAdorosCount] = useState(0);
+  const [commentsCount, setCommentsCount] = useState(0);
+  const [isCommentsOpen, setIsCommentsOpen] = useState(false);
+  const [commentsList, setCommentsList] = useState<ChannelComment[]>([]);
+  const [commentInput, setCommentInput] = useState('');
+  const [isSubmittingComment, setIsSubmittingComment] = useState(false);
 
   // Áudio suavizado durante transição entre componentes para evitar picos e ruídos
   const effectiveMuted = isMuted || isAudioTransitionMuted;
@@ -108,11 +138,99 @@ export function CinemaPlayer({
     ? emergencyOverrideUrl
     : getSafeStreamUrl(activeRawStreamUrl, useProxy);
   const isCurrentlyProxied = isStreamAutoProxied(rawStreamToPlay, useProxy);
-  const isYouTubeChannel =
-    canalAtivo.categoria === 'YouTube' ||
-    canalAtivo.rede === 'YouTube' ||
-    activeRawStreamUrl.includes('youtube.com') ||
-    activeRawStreamUrl.includes('youtu.be');
+
+  // Sincronização em tempo real (onSnapshot) com Firestore para o vídeo selecionado no CinemaPlayer
+  useEffect(() => {
+    if (!canalAtivo) {
+      setIsLiked(false);
+      setAdorosCount(0);
+      setCommentsCount(0);
+      setCommentsList([]);
+      return;
+    }
+
+    const videoSlug = getVideoItemSlug(canalAtivo, streamIndex, activeRawStreamUrl);
+    const effectiveUserId = getEffectiveVisitorId(userProfile?.id);
+
+    const unsubStats = subscribeChannelStats(videoSlug, effectiveUserId, (stats) => {
+      setIsLiked(stats.userHasAdorado);
+      setAdorosCount(stats.adorosCount);
+      setCommentsCount(stats.commentsCount);
+    });
+
+    const unsubComments = subscribeChannelComments(videoSlug, (comments) => {
+      setCommentsList(comments);
+    });
+
+    return () => {
+      unsubStats();
+      unsubComments();
+    };
+  }, [canalAtivo?.id, canalAtivo?.nome, streamIndex, activeRawStreamUrl, userProfile?.id]);
+
+  const handleToggleLike = async () => {
+    if (!canalAtivo) return;
+    const videoSlug = getVideoItemSlug(canalAtivo, streamIndex, activeRawStreamUrl);
+    const effectiveUserId = getEffectiveVisitorId(userProfile?.id);
+    const res = await toggleChannelAdoro(videoSlug, canalAtivo.nome, effectiveUserId);
+    setIsLiked(res.userHasAdorado);
+    setAdorosCount(res.adorosCount);
+  };
+
+  const handleSendComment = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!commentInput.trim() || !canalAtivo || isSubmittingComment) return;
+
+    const videoSlug = getVideoItemSlug(canalAtivo, streamIndex, activeRawStreamUrl);
+    const effectiveUserId = getEffectiveVisitorId(userProfile?.id);
+    const effectiveUserName =
+      userProfile?.displayName ||
+      (userProfile?.email ? userProfile.email.split('@')[0] : 'Assinante');
+    const effectiveUserPhoto = userProfile?.photoURL || null;
+    const effectiveUserPlan = userProfile?.planName || userProfile?.plan || null;
+
+    const text = commentInput.trim();
+    setCommentInput('');
+    setIsSubmittingComment(true);
+
+    try {
+      await addChannelComment({
+        channelSlug: videoSlug,
+        channelName: canalAtivo.nome,
+        userId: effectiveUserId,
+        userName: effectiveUserName,
+        userPhoto: effectiveUserPhoto,
+        userPlan: effectiveUserPlan,
+        text,
+      });
+    } catch (err) {
+      console.error('Erro ao enviar comentário no Modo Cinema:', err);
+    } finally {
+      setIsSubmittingComment(false);
+    }
+  };
+
+  const handleDeleteComment = async (commentId: string) => {
+    if (!canalAtivo) return;
+    const videoSlug = getVideoItemSlug(canalAtivo, streamIndex, activeRawStreamUrl);
+    try {
+      await deleteChannelComment(commentId, videoSlug);
+    } catch (err) {
+      console.error('Erro ao excluir comentário no Modo Cinema:', err);
+    }
+  };
+  const isYouTubeChannel = Boolean(
+    canalAtivo && (
+      canalAtivo.categoria === 'YouTube' ||
+      canalAtivo.rede === 'YouTube' ||
+      canalAtivo.grupo?.toLowerCase().includes('youtube') ||
+      canalAtivo.url?.includes('youtube.com') ||
+      canalAtivo.url?.includes('youtu.be') ||
+      activeRawStreamUrl.includes('youtube.com') ||
+      activeRawStreamUrl.includes('youtu.be') ||
+      (canalAtivo.backupUrls && canalAtivo.backupUrls.some((u) => u.includes('youtube.com') || u.includes('youtu.be')))
+    )
+  );
 
   const networkBadge = getNetworkBadge(canalAtivo);
   const sportTag = getSportTag(canalAtivo);
@@ -308,23 +426,25 @@ export function CinemaPlayer({
             </button>
           )}
 
-          {/* BOTÃO VER MAIS VÍDEOS DO CANAL NO MODO CINEMA */}
-          <button
-            type="button"
-            id="cinema-btn-channel-videos"
-            onClick={() => setIsChannelVideosOpen(true)}
-            className="px-3 py-1.5 rounded-full text-xs font-bold border bg-red-600/20 border-red-500/50 text-red-300 hover:bg-red-600/30 flex items-center gap-1.5 cursor-pointer shadow-lg transition"
-            title="Ver mais vídeos do canal (reproduzir diretamente no nosso player)"
-          >
-            <Film className="w-3.5 h-3.5 text-red-400" />
-            <span className="hidden sm:inline">Ver mais vídeos</span>
-            <span className="sm:hidden">Vídeos</span>
-            {streamsDisponiveis.length > 1 && (
-              <span className="px-1.5 py-0.2 rounded-full bg-red-500/30 text-white text-[10px] font-bold">
-                {streamsDisponiveis.length}
-              </span>
-            )}
-          </button>
+          {/* BOTÃO VER MAIS VÍDEOS DO CANAL NO MODO CINEMA - APENAS SE FOR CANAL DO YOUTUBE */}
+          {isYouTubeChannel && (
+            <button
+              type="button"
+              id="cinema-btn-channel-videos"
+              onClick={() => setIsChannelVideosOpen(true)}
+              className="px-3 py-1.5 rounded-full text-xs font-bold border bg-red-600/20 border-red-500/50 text-red-300 hover:bg-red-600/30 flex items-center gap-1.5 cursor-pointer shadow-lg transition"
+              title="Ver mais vídeos do canal (reproduzir diretamente no nosso player)"
+            >
+              <Film className="w-3.5 h-3.5 text-red-400" />
+              <span className="hidden sm:inline">Ver mais vídeos</span>
+              <span className="sm:hidden">Vídeos</span>
+              {streamsDisponiveis.length > 1 && (
+                <span className="px-1.5 py-0.2 rounded-full bg-red-500/30 text-white text-[10px] font-bold">
+                  {streamsDisponiveis.length}
+                </span>
+              )}
+            </button>
+          )}
 
           {/* Seletor rápido de rota no modo cinema */}
           {streamsDisponiveis.length > 1 && (
@@ -419,6 +539,42 @@ export function CinemaPlayer({
 
           {/* Cronômetro de Assinatura no Modo Cinema */}
           <SubscriptionCountdownBadge onClick={onOpenPaymentPlans} compact />
+
+          {/* BOTÃO ADORO / LIKE REAL NO MODO CINEMA */}
+          <button
+            type="button"
+            id="cinema-action-like-btn"
+            onClick={handleToggleLike}
+            className={`px-3 py-1.5 rounded-full text-xs font-bold border backdrop-blur-md transition-all flex items-center gap-1.5 cursor-pointer shadow-lg hover:scale-105 active:scale-95 ${
+              isLiked
+                ? 'bg-rose-500/20 border-rose-500 text-[#FF2D55]'
+                : 'bg-zinc-900/90 border-zinc-700 text-zinc-200 hover:text-white'
+            }`}
+            title={isLiked ? 'Remover Adoro' : 'Dar Adoro'}
+          >
+            <Heart
+              className={`w-3.5 h-3.5 transition-colors ${
+                isLiked ? 'fill-[#FF2D55] text-[#FF2D55]' : 'text-zinc-300'
+              }`}
+            />
+            <span className="font-bold">{formatInteractionCount(adorosCount)}</span>
+          </button>
+
+          {/* BOTÃO COMENTÁRIOS REAL NO MODO CINEMA */}
+          <button
+            type="button"
+            id="cinema-action-comment-btn"
+            onClick={() => setIsCommentsOpen(!isCommentsOpen)}
+            className={`px-3 py-1.5 rounded-full text-xs font-bold border backdrop-blur-md transition-all flex items-center gap-1.5 cursor-pointer shadow-lg hover:scale-105 active:scale-95 ${
+              isCommentsOpen
+                ? 'bg-[#FF2D55]/20 border-[#FF2D55] text-white'
+                : 'bg-zinc-900/90 border-zinc-700 text-zinc-200 hover:text-white'
+            }`}
+            title="Comentários ao Vivo"
+          >
+            <MessageCircle className="w-3.5 h-3.5 text-zinc-300" />
+            <span className="font-bold">{formatInteractionCount(commentsCount)}</span>
+          </button>
 
           {/* Configurações do Player */}
           <button
@@ -595,9 +751,9 @@ export function CinemaPlayer({
             key: `cinema-${canalAtivo.id || canalAtivo.url}-${streamIndex}-${isCurrentlyProxied ? 'proxy' : 'direct'}`,
             url: finalStreamUrl,
             src: finalStreamUrl,
-            playing: true,
+            playing: !isPlanExpired && !isChannelLockedByPlan,
             muted: effectiveMuted,
-            controls: true,
+            controls: !isPlanExpired && !isChannelLockedByPlan,
             width: '100%',
             height: '100%',
             playsinline: true,
@@ -689,6 +845,157 @@ export function CinemaPlayer({
                 </button>
               )}
             </div>
+          </div>
+        )}
+
+        {/* BLOQUEIO HIERÁRQUICO NO MODO CINEMA: CANAL EXIGE PLANO SUPERIOR */}
+        {!isPlanExpired && isChannelLockedByPlan && (
+          <div
+            id="cinema-channel-plan-locked-overlay"
+            className="absolute inset-0 z-50 bg-zinc-950/95 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center animate-in fade-in duration-300"
+          >
+            <div className="w-16 h-16 rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shadow-xl mb-3">
+              <Lock className="w-8 h-8 text-amber-400" />
+            </div>
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-bold mb-2">
+              <span>Canal Exclusivo do {requiredPlanInfo.name}</span>
+            </div>
+            <h3 className="text-xl font-black text-white max-w-md">
+              Acesso Restrito ao Canal {canalAtivo.nome}
+            </h3>
+            <p className="text-xs sm:text-sm text-zinc-300 max-w-md mt-2 leading-relaxed">
+              O seu plano atual (<span className="text-white font-bold">{userPlanInfo.name}</span>) não permite assistir a este canal.
+              Faça upgrade para o plano <span className="text-[#00E676] font-bold">{requiredPlanInfo.name}</span> para liberar este e todos os outros canais da categoria.
+            </p>
+            <div className="mt-5 flex flex-wrap items-center justify-center gap-2.5">
+              {onOpenPaymentPlans && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    onClose();
+                    onOpenPaymentPlans();
+                  }}
+                  className="py-2.5 px-5 rounded-xl bg-gradient-to-r from-[#FF2D55] to-rose-600 hover:from-[#ff1744] hover:to-rose-500 text-white font-extrabold text-xs flex items-center gap-2 cursor-pointer shadow-lg shadow-rose-950/50 hover:scale-105 active:scale-95 transition-all"
+                >
+                  <CreditCard className="w-4 h-4" />
+                  <span>Fazer Upgrade para {requiredPlanInfo.name}</span>
+                </button>
+              )}
+              {onOpenRedeemToken && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    onClose();
+                    onOpenRedeemToken();
+                  }}
+                  className="py-2.5 px-4 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-200 font-bold text-xs flex items-center gap-2 border border-zinc-700 cursor-pointer transition-all"
+                >
+                  <KeyRound className="w-4 h-4 text-[#00E676]" />
+                  <span>Tenho Código de Ativação</span>
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* GAVETA DE COMENTÁRIOS REAIS EM TEMPO REAL NO MODO CINEMA */}
+        {isCommentsOpen && (
+          <div className="absolute inset-y-0 right-0 w-80 max-w-full bg-[#0E0E12]/95 backdrop-blur-xl border-l border-zinc-800 z-50 flex flex-col p-4 animate-in slide-in-from-right duration-200">
+            <div className="flex items-center justify-between pb-3 border-b border-zinc-800">
+              <div className="flex items-center gap-2">
+                <MessageCircle className="w-4 h-4 text-[#FF2D55]" />
+                <span className="text-xs font-bold text-zinc-200">
+                  Comentários ({commentsList.length})
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsCommentsOpen(false)}
+                className="p-1 text-zinc-400 hover:text-white rounded-lg hover:bg-zinc-800 transition cursor-pointer"
+                title="Fechar comentários"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto custom-scrollbar py-3 space-y-2.5">
+              {commentsList.length === 0 ? (
+                <div className="py-10 text-center flex flex-col items-center justify-center">
+                  <div className="w-8 h-8 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-600 mb-2">
+                    <MessageCircle className="w-4 h-4 text-zinc-500" />
+                  </div>
+                  <p className="text-xs font-medium text-zinc-400">
+                    Nenhum comentário registrado ainda neste vídeo.
+                  </p>
+                  <p className="text-[11px] text-zinc-600 mt-1">
+                    Seja o primeiro a interagir ao vivo!
+                  </p>
+                </div>
+              ) : (
+                commentsList.map((c) => {
+                  const effectiveUserId = getEffectiveVisitorId(userProfile?.id);
+                  const isAuthor = c.userId === effectiveUserId || isAdmin;
+
+                  return (
+                    <div key={c.id} className="text-xs bg-zinc-900/60 p-2.5 rounded-xl border border-zinc-800 group">
+                      <div className="flex items-center justify-between mb-1">
+                        <div className="flex items-center gap-1.5">
+                          {c.userPhoto ? (
+                            <img
+                              src={c.userPhoto}
+                              alt={c.userName}
+                              className="w-5 h-5 rounded-full object-cover border border-zinc-700"
+                            />
+                          ) : (
+                            <div className="w-5 h-5 rounded-full bg-gradient-to-tr from-[#FF2D55] to-purple-600 text-white font-bold text-[9px] flex items-center justify-center">
+                              {c.userName.charAt(0).toUpperCase()}
+                            </div>
+                          )}
+                          <span className="font-semibold text-zinc-200 text-[11px]">{c.userName}</span>
+                          {c.userPlan && (
+                            <span className="text-[8px] px-1 py-0.2 rounded bg-[#FF2D55]/15 text-[#FF2D55] border border-[#FF2D55]/30">
+                              {c.userPlan}
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <span className="text-[10px] text-zinc-500">{formatRelativeTime(c.createdAt)}</span>
+                          {isAuthor && (
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteComment(c.id)}
+                              className="opacity-0 group-hover:opacity-100 p-0.5 text-zinc-500 hover:text-rose-400 transition cursor-pointer"
+                              title="Excluir comentário"
+                            >
+                              <Trash2 className="w-3 h-3" />
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                      <p className="text-zinc-300 text-xs pl-6 break-words">{c.text}</p>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+
+            <form onSubmit={handleSendComment} className="pt-2 flex items-center gap-2">
+              <input
+                type="text"
+                value={commentInput}
+                onChange={(e) => setCommentInput(e.target.value)}
+                placeholder="Adicione um comentário..."
+                maxLength={400}
+                className="flex-1 bg-zinc-900 text-xs text-zinc-200 placeholder-zinc-500 rounded-full px-3 py-2 border border-zinc-800 focus:outline-none focus:border-[#FF2D55]"
+              />
+              <button
+                type="submit"
+                disabled={!commentInput.trim() || isSubmittingComment}
+                className="p-2 rounded-full bg-[#FF2D55] text-white hover:opacity-90 disabled:opacity-50 transition cursor-pointer shrink-0"
+              >
+                <Send className="w-3.5 h-3.5" />
+              </button>
+            </form>
           </div>
         )}
 

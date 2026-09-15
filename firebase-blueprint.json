@@ -62,6 +62,46 @@
         "claimedUserId": { "type": "string" }
       },
       "required": ["deviceId", "claimedAt", "expiresAt"]
+    },
+    "channel_stats": {
+      "title": "Channel Interaction Stats",
+      "description": "Real-time count of adoros (likes) and comments for each channel",
+      "type": "object",
+      "properties": {
+        "channelId": { "type": "string" },
+        "adorosCount": { "type": "number" },
+        "commentsCount": { "type": "number" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["channelId", "adorosCount", "commentsCount"]
+    },
+    "channel_likes": {
+      "title": "Channel Adoros (Likes)",
+      "description": "Individual adoro reaction record per user and channel",
+      "type": "object",
+      "properties": {
+        "channelId": { "type": "string" },
+        "userId": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["channelId", "userId", "createdAt"]
+    },
+    "channel_comments": {
+      "title": "Channel Comments",
+      "description": "Real-time live user comments per channel",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "channelId": { "type": "string" },
+        "channelName": { "type": "string" },
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "userPhoto": { "type": "string" },
+        "userPlan": { "type": "string" },
+        "text": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["channelId", "userId", "userName", "text", "createdAt"]
     }
   },
   "rules": {
@@ -70,6 +110,18 @@
       "write": "auth != null && auth.uid == resource.id"
     },
     "device_trials": {
+      "read": "true",
+      "write": "true"
+    },
+    "channel_stats": {
+      "read": "true",
+      "write": "true"
+    },
+    "channel_likes": {
+      "read": "true",
+      "write": "true"
+    },
+    "channel_comments": {
       "read": "true",
       "write": "true"
     }

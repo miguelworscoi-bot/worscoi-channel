@@ -1,5 +1,5 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import ReactPlayer from 'react-player';
 import {
   Heart,
@@ -15,11 +15,25 @@ import {
   Tv,
   Send,
   X,
+  Trash2,
 } from 'lucide-react';
 import { Canal, LatencyMode } from '@/types';
 import { getChannelHandle, isChannelVerified } from '@/utils/channelUtils';
 import { getSafeStreamUrl, isStreamAutoProxied } from '@/utils/streamUtils';
 import { getChannelLogo, getChannelFallbackLogo } from '@/utils/channelLogoUtils';
+import { useAuth } from '@/context/AuthContext';
+import {
+  getVideoItemSlug,
+  subscribeChannelStats,
+  toggleChannelAdoro,
+  subscribeChannelComments,
+  addChannelComment,
+  deleteChannelComment,
+  formatInteractionCount,
+  formatRelativeTime,
+  getEffectiveVisitorId,
+  ChannelComment,
+} from '@/services/channelInteractionsService';
 
 interface WorscoiPlayerCardProps {
   canalAtivo: Canal | null;
@@ -60,20 +74,46 @@ export function WorscoiPlayerCard({
   onPlayerError,
   onVideoEnded,
 }: WorscoiPlayerCardProps) {
+  const { userProfile, isAdmin } = useAuth();
   const [liked, setLiked] = useState(false);
-  const likesCount = '1.8M';
+  const [adorosCount, setAdorosCount] = useState<number>(0);
+  const [commentsCount, setCommentsCount] = useState<number>(0);
   const [isCommentsOpen, setIsCommentsOpen] = useState(false);
   const [commentInput, setCommentInput] = useState('');
-  const [commentsList, setCommentsList] = useState<
-    Array<{ id: string; user: string; text: string; time: string }>
-  >([
-    { id: '1', user: 'carlos_futebol', text: 'Transmissão incrível e sem travar! 🔥', time: '2m' },
-    { id: '2', user: 'mateus_silva', text: 'Melhor qualidade de imagem que já vi.', time: '5m' },
-    { id: '3', user: 'lucas_sp', text: 'Esse canal tá voando hoje!', time: '12m' },
-  ]);
+  const [commentsList, setCommentsList] = useState<ChannelComment[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const streams = [canalAtivo?.url || '', ...(canalAtivo?.backupUrls || [])].filter(Boolean);
   const currentStreamUrl = streams[streamIndex] || canalAtivo?.url || '';
+
+  useEffect(() => {
+    if (!canalAtivo) {
+      setLiked(false);
+      setAdorosCount(0);
+      setCommentsCount(0);
+      setCommentsList([]);
+      return;
+    }
+
+    const videoSlug = getVideoItemSlug(canalAtivo, streamIndex, currentStreamUrl);
+    const effectiveUserId = getEffectiveVisitorId(userProfile?.id);
+
+    // Consulta em tempo real (onSnapshot) ao Firestore para o vídeo selecionado
+    const unsubStats = subscribeChannelStats(videoSlug, effectiveUserId, (stats) => {
+      setLiked(stats.userHasAdorado);
+      setAdorosCount(stats.adorosCount);
+      setCommentsCount(stats.commentsCount);
+    });
+
+    const unsubComments = subscribeChannelComments(videoSlug, (comments) => {
+      setCommentsList(comments);
+    });
+
+    return () => {
+      unsubStats();
+      unsubComments();
+    };
+  }, [canalAtivo?.id, canalAtivo?.nome, streamIndex, currentStreamUrl, userProfile?.id]);
 
   const isYouTube =
     currentStreamUrl.includes('youtube.com') ||
@@ -94,23 +134,56 @@ export function WorscoiPlayerCard({
     canalAtivo?.soundtrack ||
     `original sound - ${handle}`;
 
-  const toggleLike = () => {
-    setLiked(!liked);
+  const toggleLike = async () => {
+    if (!canalAtivo) return;
+    const videoSlug = getVideoItemSlug(canalAtivo, streamIndex, currentStreamUrl);
+    const effectiveUserId = getEffectiveVisitorId(userProfile?.id);
+    const res = await toggleChannelAdoro(videoSlug, canalAtivo.nome, effectiveUserId);
+    setLiked(res.userHasAdorado);
+    setAdorosCount(res.adorosCount);
   };
 
-  const handleSendComment = (e: React.FormEvent) => {
+  const handleSendComment = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!commentInput.trim()) return;
-    setCommentsList([
-      ...commentsList,
-      {
-        id: Date.now().toString(),
-        user: 'você',
-        text: commentInput.trim(),
-        time: 'agora',
-      },
-    ]);
+    if (!commentInput.trim() || !canalAtivo || isSubmitting) return;
+
+    const videoSlug = getVideoItemSlug(canalAtivo, streamIndex, currentStreamUrl);
+    const effectiveUserId = getEffectiveVisitorId(userProfile?.id);
+    const effectiveUserName =
+      userProfile?.displayName ||
+      (userProfile?.email ? userProfile.email.split('@')[0] : 'Assinante');
+    const effectiveUserPhoto = userProfile?.photoURL || null;
+    const effectiveUserPlan = userProfile?.planName || userProfile?.plan || null;
+
+    const text = commentInput.trim();
     setCommentInput('');
+    setIsSubmitting(true);
+
+    try {
+      await addChannelComment({
+        channelSlug: videoSlug,
+        channelName: canalAtivo.nome,
+        userId: effectiveUserId,
+        userName: effectiveUserName,
+        userPhoto: effectiveUserPhoto,
+        userPlan: effectiveUserPlan,
+        text,
+      });
+    } catch (err) {
+      console.error('Erro ao enviar comentário:', err);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDeleteComment = async (commentId: string) => {
+    if (!canalAtivo) return;
+    const videoSlug = getVideoItemSlug(canalAtivo, streamIndex, currentStreamUrl);
+    try {
+      await deleteChannelComment(commentId, videoSlug);
+    } catch (err) {
+      console.error('Erro ao excluir comentário:', err);
+    }
   };
 
   return (
@@ -195,12 +268,12 @@ export function WorscoiPlayerCard({
                 </div>
               </div>
 
-              {/* BOTÃO DE LIKE (CORAÇÃO) */}
+              {/* BOTÃO DE LIKE (CORAÇÃO / ADORO) REAL */}
               <button
                 type="button"
                 onClick={toggleLike}
                 className="flex flex-col items-center gap-0.5 cursor-pointer text-white hover:scale-110 active:scale-95 transition"
-                title="Gostei"
+                title={liked ? 'Remover Adoro' : 'Dar Adoro'}
               >
                 <div
                   className={`w-9 h-9 rounded-full flex items-center justify-center ${
@@ -208,28 +281,28 @@ export function WorscoiPlayerCard({
                   } backdrop-blur-md border border-white/10`}
                 >
                   <Heart
-                    className={`w-5 h-5 ${
+                    className={`w-5 h-5 transition-colors ${
                       liked ? 'fill-[#FF2D55] text-[#FF2D55]' : 'text-white'
                     }`}
                   />
                 </div>
                 <span className="text-[10px] font-bold text-zinc-200">
-                  {liked ? '1.9M' : canalAtivo.likesCount || likesCount}
+                  {formatInteractionCount(adorosCount)}
                 </span>
               </button>
 
-              {/* BOTÃO DE COMENTÁRIOS / CHAT */}
+              {/* BOTÃO DE COMENTÁRIOS REAL */}
               <button
                 type="button"
                 onClick={() => setIsCommentsOpen(!isCommentsOpen)}
                 className="flex flex-col items-center gap-0.5 cursor-pointer text-white hover:scale-110 active:scale-95 transition"
-                title="Comentários e Chat"
+                title="Comentários ao Vivo"
               >
                 <div className="w-9 h-9 rounded-full bg-black/50 backdrop-blur-md border border-white/10 flex items-center justify-center text-white">
                   <MessageCircle className="w-5 h-5" />
                 </div>
                 <span className="text-[10px] font-bold text-zinc-200">
-                  {canalAtivo.commentsCount || '6605'}
+                  {formatInteractionCount(commentsCount)}
                 </span>
               </button>
 
@@ -292,30 +365,85 @@ export function WorscoiPlayerCard({
           </div>
         )}
 
-        {/* DRAWER / MODAL LATERAL DE COMENTÁRIOS */}
+        {/* DRAWER / MODAL LATERAL DE COMENTÁRIOS REAIS */}
         {isCommentsOpen && (
           <div className="absolute inset-y-0 right-0 w-80 max-w-full bg-[#0E0E12]/95 backdrop-blur-xl border-l border-zinc-800 z-30 flex flex-col p-4 animate-in slide-in-from-right duration-200">
             <div className="flex items-center justify-between pb-3 border-b border-zinc-800">
-              <span className="text-xs font-bold text-zinc-200">Comentários (6605)</span>
+              <div className="flex items-center gap-2">
+                <MessageCircle className="w-4 h-4 text-[#FF2D55]" />
+                <span className="text-xs font-bold text-zinc-200">
+                  Comentários ({commentsList.length})
+                </span>
+              </div>
               <button
                 type="button"
                 onClick={() => setIsCommentsOpen(false)}
                 className="p-1 rounded-lg text-zinc-400 hover:text-white transition cursor-pointer"
+                title="Fechar comentários"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto custom-scrollbar py-3 space-y-3">
-              {commentsList.map((c) => (
-                <div key={c.id} className="text-xs space-y-0.5">
-                  <div className="flex items-center justify-between">
-                    <span className="font-semibold text-zinc-300">@{c.user}</span>
-                    <span className="text-[10px] text-zinc-500">{c.time}</span>
+            <div className="flex-1 overflow-y-auto custom-scrollbar py-3 space-y-2.5">
+              {commentsList.length === 0 ? (
+                <div className="py-10 text-center flex flex-col items-center justify-center">
+                  <div className="w-8 h-8 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-600 mb-2">
+                    <MessageCircle className="w-4 h-4 text-zinc-500" />
                   </div>
-                  <p className="text-zinc-400">{c.text}</p>
+                  <p className="text-xs font-medium text-zinc-400">
+                    Nenhum comentário ou adoro registrado ainda neste canal.
+                  </p>
+                  <p className="text-[11px] text-zinc-600 mt-1">
+                    Seja o primeiro a interagir ao vivo!
+                  </p>
                 </div>
-              ))}
+              ) : (
+                commentsList.map((c) => {
+                  const effectiveUserId = getEffectiveVisitorId(userProfile?.id);
+                  const isAuthor = c.userId === effectiveUserId || isAdmin;
+
+                  return (
+                    <div key={c.id} className="text-xs bg-zinc-900/60 p-2 rounded-xl border border-zinc-850 group">
+                      <div className="flex items-center justify-between mb-1">
+                        <div className="flex items-center gap-1.5">
+                          {c.userPhoto ? (
+                            <img
+                              src={c.userPhoto}
+                              alt={c.userName}
+                              className="w-5 h-5 rounded-full object-cover border border-zinc-700"
+                            />
+                          ) : (
+                            <div className="w-5 h-5 rounded-full bg-gradient-to-tr from-[#FF2D55] to-purple-600 text-white font-bold text-[9px] flex items-center justify-center">
+                              {c.userName.charAt(0).toUpperCase()}
+                            </div>
+                          )}
+                          <span className="font-semibold text-zinc-200 text-[11px]">{c.userName}</span>
+                          {c.userPlan && (
+                            <span className="text-[8px] px-1 py-0.2 rounded bg-[#FF2D55]/15 text-[#FF2D55] border border-[#FF2D55]/30">
+                              {c.userPlan}
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <span className="text-[10px] text-zinc-500">{formatRelativeTime(c.createdAt)}</span>
+                          {isAuthor && (
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteComment(c.id)}
+                              className="opacity-0 group-hover:opacity-100 p-0.5 text-zinc-500 hover:text-rose-400 transition cursor-pointer"
+                              title="Excluir comentário"
+                            >
+                              <Trash2 className="w-3 h-3" />
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                      <p className="text-zinc-300 text-xs pl-6 break-words">{c.text}</p>
+                    </div>
+                  );
+                })
+              )}
             </div>
 
             <form onSubmit={handleSendComment} className="pt-2 flex items-center gap-2">
@@ -324,11 +452,13 @@ export function WorscoiPlayerCard({
                 value={commentInput}
                 onChange={(e) => setCommentInput(e.target.value)}
                 placeholder="Adicione um comentário..."
-                className="flex-1 bg-zinc-900 text-xs text-zinc-200 placeholder-zinc-500 rounded-full px-3 py-2 border border-zinc-800 focus:outline-none focus:border-zinc-700"
+                maxLength={400}
+                className="flex-1 bg-zinc-900 text-xs text-zinc-200 placeholder-zinc-500 rounded-full px-3 py-2 border border-zinc-800 focus:outline-none focus:border-[#FF2D55]"
               />
               <button
                 type="submit"
-                className="p-2 rounded-full bg-[#FF2D55] text-white hover:opacity-90 transition cursor-pointer"
+                disabled={!commentInput.trim() || isSubmitting}
+                className="p-2 rounded-full bg-[#FF2D55] text-white hover:opacity-90 disabled:opacity-50 transition cursor-pointer shrink-0"
               >
                 <Send className="w-3.5 h-3.5" />
               </button>

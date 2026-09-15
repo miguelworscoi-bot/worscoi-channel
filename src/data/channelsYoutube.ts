@@ -23,8 +23,6 @@ export const CANAIS_YOUTUBE: Canal[] = [
     rede: 'YouTube',
     grupo: 'YouTube & Criadores',
     competicoes: ['Desafios', 'Entretenimento'],
-    likesCount: '450M',
-    commentsCount: '1.2M',
     verified: true,
   },
   {
@@ -43,8 +41,6 @@ export const CANAIS_YOUTUBE: Canal[] = [
     rede: 'YouTube',
     grupo: 'YouTube & Criadores',
     competicoes: ['Gaming', 'Minecraft'],
-    likesCount: '45M',
-    commentsCount: '320K',
     verified: true,
   },
   {
@@ -63,8 +59,6 @@ export const CANAIS_YOUTUBE: Canal[] = [
     rede: 'YouTube',
     grupo: 'YouTube & Criadores',
     competicoes: ['Entretenimento', 'Gaming'],
-    likesCount: '5.2M',
-    commentsCount: '42K',
     verified: true,
   },
   {
@@ -83,8 +77,6 @@ export const CANAIS_YOUTUBE: Canal[] = [
     rede: 'YouTube',
     grupo: 'YouTube & Criadores',
     competicoes: ['Trick Shots', 'Basquete', 'Esportes'],
-    likesCount: '60M',
-    commentsCount: '450K',
     verified: true,
   },
   {
@@ -103,8 +95,6 @@ export const CANAIS_YOUTUBE: Canal[] = [
     rede: 'YouTube',
     grupo: 'YouTube & Criadores',
     competicoes: ['Futebol', 'Champions League', 'Desafios'],
-    likesCount: '4.2M',
-    commentsCount: '18K',
     verified: true,
   },
   {
@@ -123,8 +113,6 @@ export const CANAIS_YOUTUBE: Canal[] = [
     rede: 'YouTube',
     grupo: 'YouTube & Criadores',
     competicoes: ['Música', 'Animes'],
-    likesCount: '3.8M',
-    commentsCount: '25K',
     verified: true,
   },
   {
@@ -143,8 +131,6 @@ export const CANAIS_YOUTUBE: Canal[] = [
     rede: 'YouTube',
     grupo: 'YouTube & Criadores',
     competicoes: ['Educação', 'Ciência', 'Física'],
-    likesCount: '3.6M',
-    commentsCount: '40K',
     verified: true,
   },
   {
@@ -163,8 +149,6 @@ export const CANAIS_YOUTUBE: Canal[] = [
     rede: 'YouTube',
     grupo: 'YouTube & Criadores',
     competicoes: ['Ciência', 'Física'],
-    likesCount: '1.2M',
-    commentsCount: '15K',
     verified: true,
   },
   {
@@ -183,8 +167,6 @@ export const CANAIS_YOUTUBE: Canal[] = [
     rede: 'YouTube',
     grupo: 'YouTube & Criadores',
     competicoes: ['Ciência', 'Invenções'],
-    likesCount: '58M',
-    commentsCount: '380K',
     verified: true,
   },
   {

@@ -32,6 +32,7 @@ import {
   SignalMedium,
   SignalLow,
   Film,
+  Trash2,
 } from 'lucide-react';
 import { Canal, LatencyMode } from '@/types';
 import { motion, AnimatePresence } from 'motion/react';
@@ -43,11 +44,23 @@ import {
   getEmergencyFallbackStream,
 } from '@/utils/streamUtils';
 import { useAuth } from '@/context/AuthContext';
-import { isUserPlanExpired } from '@/services/subscriptionService';
+import { isUserPlanExpired, canUserWatchChannel, PLANS } from '@/services/subscriptionService';
 import { PlayerTransitionSkeleton } from './PlayerTransitionSkeleton';
 import { PlayerSettingsModal } from './PlayerSettingsModal';
 import { getChannelLogo, getChannelFallbackLogo } from '@/utils/channelLogoUtils';
 import { ChannelVideosModal, extractYouTubeId } from './ChannelVideosModal';
+import {
+  getVideoItemSlug,
+  subscribeChannelStats,
+  toggleChannelAdoro,
+  subscribeChannelComments,
+  addChannelComment,
+  deleteChannelComment,
+  formatInteractionCount,
+  formatRelativeTime,
+  getEffectiveVisitorId,
+  ChannelComment,
+} from '@/services/channelInteractionsService';
 
 interface PlayerHeroProps {
   canalAtivo: Canal | null;
@@ -116,6 +129,10 @@ export function PlayerHero({
 }: PlayerHeroProps) {
   const { userProfile, isAdmin, countdown, isSubscriptionExpired } = useAuth();
   const isPlanExpired = !isAdmin && (isSubscriptionExpired || countdown.expired || isUserPlanExpired(userProfile));
+  const channelAccess = canUserWatchChannel(canalAtivo, userProfile);
+  const isChannelLockedByPlan = !isAdmin && !channelAccess.allowed && channelAccess.reason === 'plan_too_low';
+  const requiredPlanInfo = PLANS[channelAccess.requiredPlan] || PLANS.vip;
+  const userPlanInfo = PLANS[channelAccess.userPlan] || PLANS.free;
 
   const [_isReady, setIsReady] = useState(false);
   const [isBuffering, setIsBuffering] = useState(true);
@@ -141,20 +158,14 @@ export function PlayerHero({
   });
   const [_isMeasuringLatency, setIsMeasuringLatency] = useState(false);
 
-  // Estados sociais interativos (Curtir e Comentários estilo Shorts/TikTok)
+  // Estados sociais interativos reais (Adoros e Comentários persistentes no Firestore)
   const [isLiked, setIsLiked] = useState(false);
-  const [likesCount, setLikesCount] = useState<string>('1.8M');
+  const [adorosCount, setAdorosCount] = useState<number>(0);
+  const [commentsCount, setCommentsCount] = useState<number>(0);
   const [showComments, setShowComments] = useState(false);
   const [newComment, setNewComment] = useState('');
-  const [commentsList, setCommentsList] = useState<string[]>([
-    'Melhor qualidade de transmissão!',
-    'Som e imagem impecáveis 🔥',
-    'Assistindo direto de Luanda 🇦🇴',
-    'Excelente velocidade, sem travar!',
-  ]);
-
-  // Áudio suavizado durante transição entre componentes para evitar picos
-  const effectiveMuted = isMuted || isAudioTransitionMuted;
+  const [commentsList, setCommentsList] = useState<ChannelComment[]>([]);
+  const [isSubmittingComment, setIsSubmittingComment] = useState(false);
 
   const streamsDisponiveis = canalAtivo
     ? [canalAtivo.url, ...(canalAtivo.backupUrls || [])]
@@ -163,11 +174,57 @@ export function PlayerHero({
     canalAtivo && streamsDisponiveis[streamIndex]
       ? streamsDisponiveis[streamIndex]
       : canalAtivo?.url || '';
+
+  // Sincronização em tempo real de Adoros e Comentários reais com Firestore para o vídeo selecionado
+  useEffect(() => {
+    if (!canalAtivo) {
+      setIsLiked(false);
+      setAdorosCount(0);
+      setCommentsCount(0);
+      setCommentsList([]);
+      return;
+    }
+
+    // Identificador único do canal e do vídeo/stream ativo
+    const videoSlug = getVideoItemSlug(canalAtivo, streamIndex, activeRawStreamUrl);
+    const effectiveUserId = getEffectiveVisitorId(userProfile?.id);
+
+    // Listener em tempo real (onSnapshot) para contadores de adoros e comentários no Firestore
+    const unsubStats = subscribeChannelStats(videoSlug, effectiveUserId, (stats) => {
+      setIsLiked(stats.userHasAdorado);
+      setAdorosCount(stats.adorosCount);
+      setCommentsCount(stats.commentsCount);
+    });
+
+    // Listener em tempo real (onSnapshot) para a lista de comentários no Firestore
+    const unsubComments = subscribeChannelComments(videoSlug, (comments) => {
+      setCommentsList(comments);
+    });
+
+    return () => {
+      unsubStats();
+      unsubComments();
+    };
+  }, [canalAtivo?.id, canalAtivo?.nome, streamIndex, activeRawStreamUrl, userProfile?.id]);
+  // Áudio suavizado durante transição entre componentes para evitar picos
+  const effectiveMuted = isMuted || isAudioTransitionMuted;
   const rawStreamToPlay = emergencyOverrideUrl || activeRawStreamUrl;
   const finalStreamUrl = emergencyOverrideUrl
     ? emergencyOverrideUrl
     : getSafeStreamUrl(activeRawStreamUrl, useProxy);
   const isCurrentlyProxied = isStreamAutoProxied(rawStreamToPlay, useProxy);
+  const isYouTubeChannel = Boolean(
+    canalAtivo && (
+      canalAtivo.categoria === 'YouTube' ||
+      canalAtivo.rede === 'YouTube' ||
+      canalAtivo.grupo?.toLowerCase().includes('youtube') ||
+      canalAtivo.url?.includes('youtube.com') ||
+      canalAtivo.url?.includes('youtu.be') ||
+      activeRawStreamUrl.includes('youtube.com') ||
+      activeRawStreamUrl.includes('youtu.be') ||
+      (canalAtivo.backupUrls && canalAtivo.backupUrls.some((u) => u.includes('youtube.com') || u.includes('youtu.be')))
+    )
+  );
 
   // Sincroniza metadados do canal selecionado
   useEffect(() => {
@@ -181,9 +238,7 @@ export function PlayerHero({
     setIsRescuePaused(false);
     setEmergencyOverrideUrl(null);
     setPlayedPercent(35);
-    setIsLiked(false);
     setShowComments(false);
-    setLikesCount(canalAtivo?.likesCount || '1.8M');
     // Reseta a latência base para o novo canal
     setStreamLatency(latencyMode === 'low-latency' ? 120 : latencyMode === 'economy' ? 260 : 180);
   }, [canalAtivo?.id, canalAtivo?.url, streamIndex, useProxy, latencyMode]);
@@ -473,15 +528,56 @@ export function PlayerHero({
     };
   }, [hasFirstFrame, canalAtivo?.id, streamIndex]);
 
-  const handleToggleLike = () => {
-    setIsLiked((prev) => !prev);
+  const handleToggleLike = async () => {
+    if (!canalAtivo) return;
+    const videoSlug = getVideoItemSlug(canalAtivo, streamIndex, activeRawStreamUrl);
+    const effectiveUserId = getEffectiveVisitorId(userProfile?.id);
+    const res = await toggleChannelAdoro(videoSlug, canalAtivo.nome, effectiveUserId);
+    setIsLiked(res.userHasAdorado);
+    setAdorosCount(res.adorosCount);
   };
 
-  const handleAddComment = (e: React.FormEvent) => {
+  const handleAddComment = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newComment.trim()) return;
-    setCommentsList((prev) => [newComment.trim(), ...prev]);
+    if (!newComment.trim() || !canalAtivo || isSubmittingComment) return;
+
+    const videoSlug = getVideoItemSlug(canalAtivo, streamIndex, activeRawStreamUrl);
+    const effectiveUserId = getEffectiveVisitorId(userProfile?.id);
+    const effectiveUserName =
+      userProfile?.displayName ||
+      (userProfile?.email ? userProfile.email.split('@')[0] : 'Assinante');
+    const effectiveUserPhoto = userProfile?.photoURL || null;
+    const effectiveUserPlan = userProfile?.planName || userProfile?.plan || null;
+
+    const commentText = newComment.trim();
     setNewComment('');
+    setIsSubmittingComment(true);
+
+    try {
+      await addChannelComment({
+        channelSlug: videoSlug,
+        channelName: canalAtivo.nome,
+        userId: effectiveUserId,
+        userName: effectiveUserName,
+        userPhoto: effectiveUserPhoto,
+        userPlan: effectiveUserPlan,
+        text: commentText,
+      });
+    } catch (err) {
+      console.error('Erro ao enviar comentário:', err);
+    } finally {
+      setIsSubmittingComment(false);
+    }
+  };
+
+  const handleDeleteComment = async (commentId: string) => {
+    if (!canalAtivo) return;
+    const videoSlug = getVideoItemSlug(canalAtivo, streamIndex, activeRawStreamUrl);
+    try {
+      await deleteChannelComment(commentId, videoSlug);
+    } catch (err) {
+      console.error('Erro ao excluir comentário:', err);
+    }
   };
 
   const handleReload = () => {
@@ -613,7 +709,7 @@ export function PlayerHero({
                   key: `${canalAtivo.id || canalAtivo.url}-${streamIndex}-${isCurrentlyProxied ? 'proxy' : 'direct'}-${latencyMode}`,
                   url: finalStreamUrl,
                   src: finalStreamUrl,
-                  playing: !isPlanExpired,
+                  playing: !isPlanExpired && !isChannelLockedByPlan,
                   muted: effectiveMuted,
                   controls: false,
                   width: '100%',
@@ -747,6 +843,51 @@ export function PlayerHero({
             </div>
           )}
 
+          {/* BLOQUEIO HIERÁRQUICO: CANAL EXIGE PLANO SUPERIOR (NUNCA ACESSÍVEL EM PLANO MAIS BAIXO) */}
+          {!isPlanExpired && isChannelLockedByPlan && (
+            <div
+              id="player-channel-plan-locked-overlay"
+              className="absolute inset-0 z-40 bg-zinc-950/95 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center animate-in fade-in duration-300"
+            >
+              <div className="w-16 h-16 rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shadow-xl mb-3">
+                <Lock className="w-8 h-8 text-amber-400" />
+              </div>
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 text-[11px] font-bold mb-2">
+                <span>Canal Exclusivo do {requiredPlanInfo.name}</span>
+              </div>
+              <h3 className="text-lg font-black text-white max-w-md">
+                Acesso Restrito ao Canal {canalAtivo.nome}
+              </h3>
+              <p className="text-xs text-zinc-300 max-w-md mt-2 leading-relaxed">
+                Seu plano atual (<span className="text-white font-bold">{userPlanInfo.name}</span>) não inclui este canal.
+                O canal <span className="text-amber-400 font-semibold">{canalAtivo.nome}</span> está liberado apenas a partir do plano{' '}
+                <span className="text-[#00E676] font-bold">{requiredPlanInfo.name}</span>.
+              </p>
+              <div className="mt-5 flex flex-wrap items-center justify-center gap-2.5">
+                {onOpenPaymentPlans && (
+                  <button
+                    type="button"
+                    onClick={onOpenPaymentPlans}
+                    className="py-2.5 px-5 rounded-xl bg-gradient-to-r from-[#FF2D55] to-rose-600 hover:from-[#ff1744] hover:to-rose-500 text-white font-extrabold text-xs flex items-center gap-2 cursor-pointer shadow-lg shadow-rose-950/50 hover:scale-105 active:scale-95 transition-all"
+                  >
+                    <CreditCard className="w-3.5 h-3.5" />
+                    <span>Fazer Upgrade para {requiredPlanInfo.name}</span>
+                  </button>
+                )}
+                {onOpenRedeemToken && (
+                  <button
+                    type="button"
+                    onClick={onOpenRedeemToken}
+                    className="py-2.5 px-4 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-200 font-bold text-xs flex items-center gap-1.5 border border-zinc-700 cursor-pointer transition-all"
+                  >
+                    <KeyRound className="w-3.5 h-3.5 text-[#00E676]" />
+                    <span>Tenho Código de Ativação</span>
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* BACKDROP INTERATIVO E ENGAJANTE DE PRÉ-CARREGAMENTO (ANTI-TÉDIO & ANTI-STALL) */}
           {!hasFirstFrame && (
             <div
@@ -819,15 +960,17 @@ export function PlayerHero({
 
                 {hasYouTubeEmbedError && (
                   <div className="mt-3 flex items-center gap-2 flex-wrap justify-center">
-                    <button
-                      type="button"
-                      onClick={() => setIsChannelVideosOpen(true)}
-                      className="px-3.5 py-1.5 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-lg shadow-red-950/50 transition"
-                      title="Ver mais vídeos deste canal"
-                    >
-                      <Film className="w-3.5 h-3.5" />
-                      <span>Ver mais vídeos do canal</span>
-                    </button>
+                    {isYouTubeChannel && (
+                      <button
+                        type="button"
+                        onClick={() => setIsChannelVideosOpen(true)}
+                        className="px-3.5 py-1.5 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-lg shadow-red-950/50 transition"
+                        title="Ver mais vídeos deste canal"
+                      >
+                        <Film className="w-3.5 h-3.5" />
+                        <span>Ver mais vídeos do canal</span>
+                      </button>
+                    )}
                     {streamsDisponiveis.length > 1 && (
                       <button
                         type="button"
@@ -989,17 +1132,19 @@ export function PlayerHero({
 
               {/* RODAPÉ: AÇÕES DIRETAS PARA O USUÁRIO NUNCA FICAR PRESO */}
               <div className="relative z-10 w-full flex flex-wrap items-center justify-center gap-2 pb-1">
-                {/* BOTÃO VER MAIS VÍDEOS DO CANAL NO RODAPÉ DO CARREGAMENTO */}
-                <button
-                  type="button"
-                  id="player-rescue-channel-videos-btn"
-                  onClick={() => setIsChannelVideosOpen(true)}
-                  className="px-2.5 py-1.5 rounded-xl bg-red-950/40 hover:bg-red-900/60 text-red-200 hover:text-white text-xs font-semibold border border-red-500/40 flex items-center gap-1.5 cursor-pointer shadow transition"
-                  title="Ver mais vídeos do canal (reproduzir diretamente no nosso player)"
-                >
-                  <Film className="w-3.5 h-3.5 text-red-400" />
-                  <span>Ver mais vídeos {streamsDisponiveis.length > 1 ? `(${streamsDisponiveis.length})` : ''}</span>
-                </button>
+                {/* BOTÃO VER MAIS VÍDEOS DO CANAL NO RODAPÉ DO CARREGAMENTO - APENAS SE FOR CANAL DO YOUTUBE */}
+                {isYouTubeChannel && (
+                  <button
+                    type="button"
+                    id="player-rescue-channel-videos-btn"
+                    onClick={() => setIsChannelVideosOpen(true)}
+                    className="px-2.5 py-1.5 rounded-xl bg-red-950/40 hover:bg-red-900/60 text-red-200 hover:text-white text-xs font-semibold border border-red-500/40 flex items-center gap-1.5 cursor-pointer shadow transition"
+                    title="Ver mais vídeos do canal (reproduzir diretamente no nosso player)"
+                  >
+                    <Film className="w-3.5 h-3.5 text-red-400" />
+                    <span>Ver mais vídeos {streamsDisponiveis.length > 1 ? `(${streamsDisponiveis.length})` : ''}</span>
+                  </button>
+                )}
 
                 {streamsDisponiveis.length > 1 && (
                   <button
@@ -1147,13 +1292,13 @@ export function PlayerHero({
               />
             </div>
 
-            {/* BOTÃO CURTIR / LIKE */}
+            {/* BOTÃO ADORO / LIKE REAL */}
             <button
               type="button"
               id="player-action-like-btn"
               onClick={handleToggleLike}
               className="flex flex-col items-center gap-1 group cursor-pointer"
-              title="Gostei"
+              title={isLiked ? 'Remover Adoro' : 'Dar Adoro'}
             >
               <div
                 className={`p-1.5 rounded-full transition-transform group-hover:scale-110 active:scale-90 ${
@@ -1161,29 +1306,29 @@ export function PlayerHero({
                 }`}
               >
                 <Heart
-                  className={`w-6 h-6 sm:w-7 sm:h-7 ${
+                  className={`w-6 h-6 sm:w-7 sm:h-7 transition-colors ${
                     isLiked ? 'fill-[#FF2D55] text-[#FF2D55]' : 'text-white'
                   }`}
                 />
               </div>
               <span className="text-[11px] sm:text-xs font-bold text-white tracking-tight">
-                {likesCount}
+                {formatInteractionCount(adorosCount)}
               </span>
             </button>
 
-            {/* BOTÃO COMENTÁRIOS */}
+            {/* BOTÃO COMENTÁRIOS REAL */}
             <button
               type="button"
               id="player-action-comment-btn"
               onClick={() => setShowComments((prev) => !prev)}
               className="flex flex-col items-center gap-1 group cursor-pointer"
-              title="Comentários"
+              title="Comentários ao Vivo"
             >
               <div className="p-1.5 rounded-full text-white group-hover:text-zinc-300 transition-transform group-hover:scale-110 active:scale-90">
                 <MessageCircle className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
               </div>
               <span className="text-[11px] sm:text-xs font-bold text-white tracking-tight">
-                {canalAtivo.commentsCount || '6605'}
+                {formatInteractionCount(commentsCount)}
               </span>
             </button>
 
@@ -1208,21 +1353,23 @@ export function PlayerHero({
               </div>
             </button>
 
-            {/* BOTÃO VER MAIS VÍDEOS DO CANAL NA COLUNA VERTICAL */}
-            <button
-              type="button"
-              id="player-action-channel-videos-btn"
-              onClick={() => setIsChannelVideosOpen(true)}
-              className="flex flex-col items-center gap-1 group cursor-pointer"
-              title="Ver mais vídeos do canal (reproduzir no nosso player)"
-            >
-              <div className="p-1.5 rounded-full text-white group-hover:text-red-400 hover:bg-red-500/15 transition-all group-hover:scale-110 active:scale-90 border border-transparent group-hover:border-red-500/30">
-                <Film className="w-6 h-6 sm:w-7 sm:h-7 text-red-500 group-hover:text-red-400" />
-              </div>
-              <span className="text-[10px] sm:text-[11px] font-bold text-zinc-300 group-hover:text-white tracking-tight text-center leading-tight max-w-[48px]">
-                Vídeos
-              </span>
-            </button>
+            {/* BOTÃO VER MAIS VÍDEOS DO CANAL NA COLUNA VERTICAL - APENAS SE FOR CANAL DO YOUTUBE */}
+            {isYouTubeChannel && (
+              <button
+                type="button"
+                id="player-action-channel-videos-btn"
+                onClick={() => setIsChannelVideosOpen(true)}
+                className="flex flex-col items-center gap-1 group cursor-pointer"
+                title="Ver mais vídeos do canal (reproduzir no nosso player)"
+              >
+                <div className="p-1.5 rounded-full text-white group-hover:text-red-400 hover:bg-red-500/15 transition-all group-hover:scale-110 active:scale-90 border border-transparent group-hover:border-red-500/30">
+                  <Film className="w-6 h-6 sm:w-7 sm:h-7 text-red-500 group-hover:text-red-400" />
+                </div>
+                <span className="text-[10px] sm:text-[11px] font-bold text-zinc-300 group-hover:text-white tracking-tight text-center leading-tight max-w-[48px]">
+                  Vídeos
+                </span>
+              </button>
+            )}
           </div>
         )}
       </div>
@@ -1241,22 +1388,24 @@ export function PlayerHero({
               Modo Cinema
             </button>
 
-            {/* BOTÃO VER MAIS VÍDEOS DO CANAL */}
-            <button
-              type="button"
-              id="player-pill-channel-videos"
-              onClick={() => setIsChannelVideosOpen(true)}
-              className="px-3.5 sm:px-4 py-2 rounded-full border text-xs font-semibold transition cursor-pointer shadow-sm flex items-center gap-1.5 bg-gradient-to-r from-red-600/20 via-zinc-900 to-zinc-900 text-zinc-100 hover:text-white border-red-500/40 hover:border-red-500/70 hover:scale-[1.02] active:scale-95"
-              title="Ver mais vídeos do canal (reproduzir diretamente no nosso player)"
-            >
-              <Film className="w-3.5 h-3.5 text-red-500 shrink-0" />
-              <span>Ver mais vídeos do canal</span>
-              {streamsDisponiveis.length > 1 && (
-                <span className="px-1.5 py-0.2 rounded-full bg-red-600/30 text-red-300 text-[10px] font-bold border border-red-500/30">
-                  {streamsDisponiveis.length}
-                </span>
-              )}
-            </button>
+            {/* BOTÃO VER MAIS VÍDEOS DO CANAL - APENAS SE FOR CANAL DO YOUTUBE */}
+            {isYouTubeChannel && (
+              <button
+                type="button"
+                id="player-pill-channel-videos"
+                onClick={() => setIsChannelVideosOpen(true)}
+                className="px-3.5 sm:px-4 py-2 rounded-full border text-xs font-semibold transition cursor-pointer shadow-sm flex items-center gap-1.5 bg-gradient-to-r from-red-600/20 via-zinc-900 to-zinc-900 text-zinc-100 hover:text-white border-red-500/40 hover:border-red-500/70 hover:scale-[1.02] active:scale-95"
+                title="Ver mais vídeos do canal (reproduzir diretamente no nosso player)"
+              >
+                <Film className="w-3.5 h-3.5 text-red-500 shrink-0" />
+                <span>Ver mais vídeos do canal</span>
+                {streamsDisponiveis.length > 1 && (
+                  <span className="px-1.5 py-0.2 rounded-full bg-red-600/30 text-red-300 text-[10px] font-bold border border-red-500/30">
+                    {streamsDisponiveis.length}
+                  </span>
+                )}
+              </button>
+            )}
 
             {/* PÍLULA DE QUALIDADE DO SINAL & LATÊNCIA REAL */}
             <div
@@ -1438,7 +1587,7 @@ export function PlayerHero({
         </div>
       )}
 
-      {/* GAVETA ELEGANTE DE COMENTÁRIOS SE O USUÁRIO CLICAR NO ÍCONE DE COMENTÁRIOS */}
+      {/* GAVETA ELEGANTE DE COMENTÁRIOS REAIS SINCRONIZADOS */}
       <AnimatePresence>
         {!isMiniMode && showComments && (
           <motion.div
@@ -1450,50 +1599,115 @@ export function PlayerHero({
             className="w-full max-w-[860px] mt-3 p-4 rounded-2xl bg-[#0e0e11] border border-zinc-800 text-zinc-200 shadow-xl"
           >
             <div className="flex items-center justify-between pb-3 border-b border-zinc-800/80 mb-3">
-              <h4 className="text-xs font-bold text-white flex items-center gap-2">
+              <div className="flex items-center gap-2">
                 <MessageCircle className="w-4 h-4 text-[#FF2D55]" />
-                <span>Comentários ao Vivo ({commentsList.length})</span>
-              </h4>
+                <h4 className="text-xs font-bold text-white">
+                  Comentários ao Vivo ({commentsList.length})
+                </h4>
+                <span className="text-[10px] text-zinc-500 font-medium">
+                  • {canalAtivo?.nome}
+                </span>
+              </div>
               <button
                 type="button"
                 onClick={() => setShowComments(false)}
-                className="text-zinc-500 hover:text-white p-1 cursor-pointer"
+                className="text-zinc-500 hover:text-white p-1 cursor-pointer transition-colors"
+                title="Fechar comentários"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <div className="max-h-44 overflow-y-auto custom-scrollbar space-y-2 mb-3 pr-1">
-              {commentsList.map((comm, idx) => (
-                <div
-                  key={idx}
-                  className="p-2.5 rounded-xl bg-zinc-900/80 border border-zinc-800/60 text-xs text-zinc-300 flex items-start gap-2.5"
-                >
-                  <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-[#FF2D55] to-purple-600 text-white font-bold text-[10px] flex items-center justify-center shrink-0">
-                    U{idx + 1}
+            {/* LISTA DE COMENTÁRIOS REAIS */}
+            <div className="max-h-52 overflow-y-auto custom-scrollbar space-y-2 mb-3 pr-1">
+              {commentsList.length === 0 ? (
+                <div className="py-6 text-center flex flex-col items-center justify-center">
+                  <div className="w-10 h-10 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-600 mb-2">
+                    <MessageCircle className="w-5 h-5 text-zinc-500" />
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="leading-snug">{comm}</p>
-                  </div>
+                  <p className="text-xs font-semibold text-zinc-400">
+                    Nenhum comentário ou adoro registrado ainda neste canal.
+                  </p>
+                  <p className="text-[11px] text-zinc-600 mt-0.5">
+                    Seja o primeiro a interagir e deixar sua mensagem!
+                  </p>
                 </div>
-              ))}
+              ) : (
+                commentsList.map((comm) => {
+                  const effectiveUserId = getEffectiveVisitorId(userProfile?.id);
+                  const isAuthor = comm.userId === effectiveUserId || isAdmin;
+
+                  return (
+                    <div
+                      key={comm.id}
+                      className="p-2.5 rounded-xl bg-zinc-900/80 border border-zinc-800/60 text-xs text-zinc-300 flex items-start gap-2.5 group"
+                    >
+                      {comm.userPhoto ? (
+                        <img
+                          src={comm.userPhoto}
+                          alt={comm.userName}
+                          className="w-7 h-7 rounded-full object-cover shrink-0 border border-zinc-700"
+                        />
+                      ) : (
+                        <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-[#FF2D55] to-purple-600 text-white font-bold text-[11px] flex items-center justify-center shrink-0">
+                          {comm.userName.charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-2 mb-0.5">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className="font-semibold text-white text-[11px]">
+                              {comm.userName}
+                            </span>
+                            {comm.userPlan && (
+                              <span className="px-1.5 py-0.2 text-[9px] font-bold rounded bg-[#FF2D55]/15 text-[#FF2D55] border border-[#FF2D55]/30">
+                                {comm.userPlan}
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-[10px] text-zinc-500 font-mono">
+                              {formatRelativeTime(comm.createdAt)}
+                            </span>
+                            {isAuthor && (
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteComment(comm.id)}
+                                className="opacity-0 group-hover:opacity-100 p-0.5 text-zinc-500 hover:text-rose-400 transition cursor-pointer"
+                                title="Excluir comentário"
+                              >
+                                <Trash2 className="w-3 h-3" />
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                        <p className="leading-snug text-zinc-200 text-xs break-words">
+                          {comm.text}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
             </div>
 
+            {/* FORMULÁRIO DE NOVO COMENTÁRIO */}
             <form onSubmit={handleAddComment} className="flex items-center gap-2">
               <input
                 type="text"
                 value={newComment}
                 onChange={(e) => setNewComment(e.target.value)}
-                placeholder="Adicionar um comentário..."
+                placeholder="Adicionar um comentário ao vivo..."
+                maxLength={400}
                 className="flex-1 bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-[#FF2D55]"
               />
               <button
                 type="submit"
-                disabled={!newComment.trim()}
-                className="px-3 py-2 rounded-xl bg-[#FF2D55] hover:bg-[#FF2D55]/90 text-white font-bold text-xs disabled:opacity-50 transition cursor-pointer flex items-center gap-1"
+                disabled={!newComment.trim() || isSubmittingComment}
+                className="px-3.5 py-2 rounded-xl bg-[#FF2D55] hover:bg-[#FF2D55]/90 text-white font-bold text-xs disabled:opacity-50 transition cursor-pointer flex items-center gap-1.5 shrink-0"
               >
                 <Send className="w-3 h-3" />
-                <span>Enviar</span>
+                <span>{isSubmittingComment ? 'Enviando...' : 'Enviar'}</span>
               </button>
             </form>
           </motion.div>
