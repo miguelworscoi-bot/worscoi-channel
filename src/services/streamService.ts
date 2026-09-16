@@ -93,9 +93,15 @@ export class StreamService {
   /**
    * Resolve todas as fontes ativas disponíveis para um filme específico
    */
-  public static resolveStreams(filme: FilmeItem): StreamResolutionResult {
+  public static resolveStreams(
+    filme: FilmeItem,
+    season: number = 1,
+    episode: number = 1
+  ): StreamResolutionResult {
     const { imdb, tmdb } = extrairIdentificadores(filme);
-    const cacheKey = `film_${filme.id}_${imdb}_${tmdb}`;
+    const s = Math.max(1, season || 1);
+    const ep = Math.max(1, episode || 1);
+    const cacheKey = `film_${filme.id}_${imdb}_${tmdb}_s${s}_ep${ep}`;
 
     if (streamCache.has(cacheKey)) {
       return streamCache.get(cacheKey)!;
@@ -104,6 +110,11 @@ export class StreamService {
     const idReferencia = imdb || tmdb;
     const tmdbRef = tmdb || imdb;
     const fontes: StreamSource[] = [];
+
+    const isSeries =
+      filme.tipo === 'serie' ||
+      filme.tipo === 'anime' ||
+      (filme.genero ? (filme.genero.toLowerCase().includes('série') || filme.genero.toLowerCase().includes('anime')) : false);
 
     // 1. FONTE NATIVA DIRETA (MP4 / HLS / CDN) - 100% livre de iframes, sem propagandas ou restrições
     if (filme.directStreamUrl) {
@@ -123,7 +134,9 @@ export class StreamService {
 
     // 2. FONTE 1: VIDEASY VIP - Provedor ultra confiável indexado pelo catálogo mundial IMDb
     if (idReferencia) {
-      const videasyUrl = `https://player.videasy.net/movie/${idReferencia}`;
+      const videasyUrl = isSeries
+        ? `https://player.videasy.net/tv/${idReferencia}/${s}/${ep}`
+        : `https://player.videasy.net/movie/${idReferencia}`;
       fontes.push({
         id: 'videasy',
         name: 'Fonte 1: Videasy VIP',
@@ -140,7 +153,9 @@ export class StreamService {
 
     // 3. FONTE 2: VIDSRC ULTRA (TO) - 100% livre de bloqueios ou mensagens de sandbox
     if (tmdbRef) {
-      const vidsrcUrl = `https://vidsrc.to/embed/movie/${tmdbRef}`;
+      const vidsrcUrl = isSeries
+        ? `https://vidsrc.to/embed/tv/${tmdbRef}/${s}/${ep}`
+        : `https://vidsrc.to/embed/movie/${tmdbRef}`;
       fontes.push({
         id: 'vidsrc',
         name: 'Fonte 2: VidSrc Ultra',
@@ -157,7 +172,9 @@ export class StreamService {
 
     // 4. FONTE 3: VIDSRC IN - Servidor adicional livre de sandbox
     if (tmdbRef) {
-      const vidsrcInUrl = `https://vidsrc.in/embed/movie/${tmdbRef}`;
+      const vidsrcInUrl = isSeries
+        ? `https://vidsrc.in/embed/tv/${tmdbRef}/${s}/${ep}`
+        : `https://vidsrc.in/embed/movie/${tmdbRef}`;
       fontes.push({
         id: 'vidsrcin',
         name: 'Fonte 3: VidSrc In',
@@ -174,7 +191,9 @@ export class StreamService {
 
     // 5. FONTE 4: VIDLINK PRO - Provedor moderno Ultra HD
     if (tmdbRef) {
-      const vidlinkUrl = `https://vidlink.pro/movie/${tmdbRef}?primaryColor=FF2D55&secondaryColor=18181b`;
+      const vidlinkUrl = isSeries
+        ? `https://vidlink.pro/tv/${tmdbRef}/${s}/${ep}?primaryColor=FF2D55&secondaryColor=18181b`
+        : `https://vidlink.pro/movie/${tmdbRef}?primaryColor=FF2D55&secondaryColor=18181b`;
       fontes.push({
         id: 'vidlink',
         name: 'Fonte 4: VidLink Pro',
@@ -191,7 +210,9 @@ export class StreamService {
 
     // 6. FONTE 5: AUTOEMBED CO - Espelho direto alternativo
     if (idReferencia) {
-      const autoembedUrl = `https://autoembed.co/movie/imdb/${idReferencia}`;
+      const autoembedUrl = isSeries
+        ? `https://autoembed.co/tv/imdb/${idReferencia}/${s}/${ep}`
+        : `https://autoembed.co/movie/imdb/${idReferencia}`;
       fontes.push({
         id: 'autoembed',
         name: 'Fonte 5: AutoEmbed VIP',
@@ -249,8 +270,13 @@ export class StreamService {
   /**
    * Obtém a URL de streaming ideal para um provedor específico
    */
-  public static getUrlForProvider(filme: FilmeItem, providerId: StreamProviderId): string {
-    const res = this.resolveStreams(filme);
+  public static getUrlForProvider(
+    filme: FilmeItem,
+    providerId: StreamProviderId,
+    season: number = 1,
+    episode: number = 1
+  ): string {
+    const res = this.resolveStreams(filme, season, episode);
     const fonte = res.availableSources.find((s) => s.id === providerId);
     if (fonte) return fonte.url;
     return res.primarySource?.url || '';
@@ -259,8 +285,13 @@ export class StreamService {
   /**
    * Retorna o próximo servidor disponível para alternância rápida em caso de falha
    */
-  public static getNextProvider(filme: FilmeItem, currentProviderId: StreamProviderId): StreamProviderId {
-    const res = this.resolveStreams(filme);
+  public static getNextProvider(
+    filme: FilmeItem,
+    currentProviderId: StreamProviderId,
+    season: number = 1,
+    episode: number = 1
+  ): StreamProviderId {
+    const res = this.resolveStreams(filme, season, episode);
     const streamingSources = res.availableSources.filter((s) => s.id !== 'trailer');
     if (streamingSources.length <= 1) return currentProviderId;
 

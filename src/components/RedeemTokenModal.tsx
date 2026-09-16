@@ -97,7 +97,7 @@ export function RedeemTokenModal({
     >
       <div
         id="redeem-token-modal"
-        className="relative w-full max-w-lg bg-zinc-950 border border-zinc-800 rounded-3xl p-6 sm:p-7 shadow-2xl shadow-black/90 my-8 animate-in fade-in zoom-in-95 duration-200"
+        className="relative w-full max-w-lg bg-[#0b0b10] border border-zinc-800/80 rounded-3xl p-6 sm:p-7 shadow-2xl shadow-black/90 ring-1 ring-white/10 my-8 animate-in fade-in zoom-in-95 duration-200"
         onClick={(e) => e.stopPropagation()}
       >
         {/* CABEÇALHO */}

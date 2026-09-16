@@ -142,32 +142,32 @@ export function WorscoiSubscribersView({
         </button>
       </div>
 
-      {/* 4 CARDS DE MÉTRICA COM BORDAS TRACEJADAS VERMELHAS */}
+      {/* 4 CARDS DE MÉTRICA COM DESIGN REFINADO */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <div className="rounded-2xl border-2 border-dashed border-[#FF2D55]/70 bg-zinc-950/60 p-4 text-center">
+        <div className="rounded-2xl border border-zinc-800/80 bg-gradient-to-b from-zinc-900/60 to-zinc-950/80 p-4 text-center hover-lift shadow-lg">
           <span className="text-xs font-semibold text-zinc-400 block">Assinantes Ativos</span>
-          <span className="text-xl sm:text-2xl font-black text-white mt-1 block">
+          <span className="text-xl sm:text-2xl font-black text-white mt-1 block tracking-tight">
             1.120
           </span>
         </div>
 
-        <div className="rounded-2xl border-2 border-dashed border-[#FF2D55]/70 bg-zinc-950/60 p-4 text-center">
+        <div className="rounded-2xl border border-zinc-800/80 bg-gradient-to-b from-zinc-900/60 to-zinc-950/80 p-4 text-center hover-lift shadow-lg">
           <span className="text-xs font-semibold text-zinc-400 block">Assinantes Novos</span>
-          <span className="text-xl sm:text-2xl font-black text-emerald-400 mt-1 block">
+          <span className="text-xl sm:text-2xl font-black text-emerald-400 mt-1 block tracking-tight">
             +94
           </span>
         </div>
 
-        <div className="rounded-2xl border-2 border-dashed border-[#FF2D55]/70 bg-zinc-950/60 p-4 text-center">
+        <div className="rounded-2xl border border-zinc-800/80 bg-gradient-to-b from-zinc-900/60 to-zinc-950/80 p-4 text-center hover-lift shadow-lg">
           <span className="text-xs font-semibold text-zinc-400 block">Tokens Resgatados</span>
-          <span className="text-xl sm:text-2xl font-black text-white mt-1 block">
+          <span className="text-xl sm:text-2xl font-black text-white mt-1 block tracking-tight">
             874
           </span>
         </div>
 
-        <div className="rounded-2xl border-2 border-dashed border-[#FF2D55]/70 bg-zinc-950/60 p-4 text-center">
+        <div className="rounded-2xl border border-zinc-800/80 bg-gradient-to-b from-zinc-900/60 to-zinc-950/80 p-4 text-center hover-lift shadow-lg">
           <span className="text-xs font-semibold text-zinc-400 block">Tokens Disponíveis</span>
-          <span className="text-xl sm:text-2xl font-black text-[#FF2D55] mt-1 block">
+          <span className="text-xl sm:text-2xl font-black text-[#FF2D55] mt-1 block tracking-tight">
             126
           </span>
         </div>

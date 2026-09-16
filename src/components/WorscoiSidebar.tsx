@@ -14,6 +14,7 @@ import {
   PanelLeft,
   Tv,
   Trash2,
+  Film,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Canal, FiltroAtivo, WorscoiView } from '@/types';
@@ -520,10 +521,10 @@ export function WorscoiSidebar({
                                     onNavigate('explorar');
                                   }
                                 }}
-                                className={`group relative flex items-center justify-between gap-2 p-2 rounded-xl transition cursor-pointer select-none ${
+                                className={`group relative flex items-center justify-between gap-2 p-2 rounded-xl transition-all cursor-pointer select-none ${
                                   isAtivo
-                                    ? 'bg-zinc-800 text-white font-medium ring-1 ring-[#FF2D55]/60 shadow-md shadow-[#FF2D55]/10'
-                                    : 'text-zinc-400 hover:text-zinc-100 hover:bg-zinc-900/80 border border-transparent hover:border-zinc-800'
+                                    ? 'bg-gradient-to-r from-[#FF2D55]/15 via-zinc-900/90 to-zinc-900/60 text-white font-medium ring-1 ring-[#FF2D55]/60 shadow-lg shadow-[#FF2D55]/10'
+                                    : 'text-zinc-400 hover:text-zinc-100 hover:bg-zinc-900/70 border border-transparent hover:border-zinc-800/80 hover:translate-x-0.5'
                                 }`}
                                 title={canal.nome}
                               >
@@ -667,6 +668,25 @@ export function WorscoiSidebar({
             }`}
           />
           {!isCollapsed && <span>Transmissão</span>}
+        </button>
+
+        {/* BOTÃO FILMOTECA */}
+        <button
+          type="button"
+          onClick={() => onNavigate('filmoteca')}
+          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition cursor-pointer ${
+            currentView === 'filmoteca'
+              ? 'bg-zinc-900 text-white ring-1 ring-zinc-800'
+              : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/50'
+          }`}
+          title="Filmoteca & Cinema VOD"
+        >
+          <Film
+            className={`w-4 h-4 ${
+              currentView === 'filmoteca' ? 'text-[#FF2D55]' : 'text-zinc-400'
+            }`}
+          />
+          {!isCollapsed && <span>Filmoteca</span>}
         </button>
 
         {/* BOTÃO PAINEL DE CONTROLE (EXCLUSIVO PARA ADMINISTRADOR) */}

@@ -143,8 +143,8 @@ export function WorscoiControlPanel({
                     setSelectedPlanPreview(plan.id);
                     if (onSelectPlan) onSelectPlan(plan.id);
                   }}
-                  className={`rounded-2xl border-2 border-dashed border-[#FF2D55]/70 hover:border-[#FF2D55] bg-zinc-950/60 p-4 transition flex flex-col justify-between space-y-3 cursor-pointer group ${
-                    selectedPlanPreview === plan.id ? 'ring-1 ring-[#FF2D55]' : ''
+                  className={`rounded-2xl border border-zinc-800/80 hover:border-[#FF2D55]/60 bg-gradient-to-b from-[#0e0e14] to-[#08080c] p-5 transition-all duration-300 flex flex-col justify-between space-y-3 cursor-pointer group hover-lift shadow-xl ${
+                    selectedPlanPreview === plan.id ? 'ring-2 ring-[#FF2D55] border-transparent shadow-[#FF2D55]/20' : ''
                   }`}
                 >
                   <div className="space-y-1.5">
@@ -182,32 +182,32 @@ export function WorscoiControlPanel({
           </h2>
         </div>
 
-        {/* 4 CARDS DE MÉTRICA COM BORDAS TRACEJADAS */}
+        {/* 4 CARDS DE MÉTRICA COM DESIGN REFINADO */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <div className="rounded-2xl border-2 border-dashed border-[#FF2D55]/70 bg-zinc-950/60 p-4 text-center">
+          <div className="rounded-2xl border border-zinc-800/80 bg-gradient-to-b from-zinc-900/60 to-zinc-950/80 p-4 text-center hover-lift shadow-lg">
             <span className="text-xs font-semibold text-zinc-400 block">Total</span>
-            <span className="text-xl sm:text-2xl font-black text-white mt-1 block">
+            <span className="text-xl sm:text-2xl font-black text-white mt-1 block tracking-tight">
               1.428
             </span>
           </div>
 
-          <div className="rounded-2xl border-2 border-dashed border-[#FF2D55]/70 bg-zinc-950/60 p-4 text-center">
+          <div className="rounded-2xl border border-zinc-800/80 bg-gradient-to-b from-zinc-900/60 to-zinc-950/80 p-4 text-center hover-lift shadow-lg">
             <span className="text-xs font-semibold text-zinc-400 block">Novos</span>
-            <span className="text-xl sm:text-2xl font-black text-emerald-400 mt-1 block">
+            <span className="text-xl sm:text-2xl font-black text-emerald-400 mt-1 block tracking-tight">
               +94
             </span>
           </div>
 
-          <div className="rounded-2xl border-2 border-dashed border-[#FF2D55]/70 bg-zinc-950/60 p-4 text-center">
+          <div className="rounded-2xl border border-zinc-800/80 bg-gradient-to-b from-zinc-900/60 to-zinc-950/80 p-4 text-center hover-lift shadow-lg">
             <span className="text-xs font-semibold text-zinc-400 block">Assinantes pagos</span>
-            <span className="text-xl sm:text-2xl font-black text-white mt-1 block">
+            <span className="text-xl sm:text-2xl font-black text-white mt-1 block tracking-tight">
               1.120
             </span>
           </div>
 
-          <div className="rounded-2xl border-2 border-dashed border-[#FF2D55]/70 bg-zinc-950/60 p-4 text-center">
+          <div className="rounded-2xl border border-zinc-800/80 bg-gradient-to-b from-zinc-900/60 to-zinc-950/80 p-4 text-center hover-lift shadow-lg">
             <span className="text-xs font-semibold text-zinc-400 block">Conversão Paga</span>
-            <span className="text-xl sm:text-2xl font-black text-[#FF2D55] mt-1 block">
+            <span className="text-xl sm:text-2xl font-black text-[#FF2D55] mt-1 block tracking-tight">
               78.4%
             </span>
           </div>

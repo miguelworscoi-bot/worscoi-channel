@@ -12,6 +12,10 @@ import {
 } from 'firebase/firestore';
 import { db, safeFirestoreCall } from '@/lib/firebase';
 import { AccessTokenRecord, PlanInfo, SubscriberUser, SubscriptionPlanId } from '@/types';
+import { tokenEfficiency, TokenEfficiencyMetrics } from './tokenEfficiency';
+
+export { tokenEfficiency };
+export type { TokenEfficiencyMetrics };
 
 export const LOCAL_TOKENS_KEY = 'playsports_access_tokens';
 export const LOCAL_REGISTRY_KEY = 'playsports_user_registry';
@@ -1053,7 +1057,9 @@ export async function getAccessTokens(): Promise<AccessTokenRecord[]> {
 }
 
 /**
- * Cria novos tokens de acesso com 5 caracteres alfanuméricos garantidamente únicos
+ * Cria novos tokens de acesso com 5 caracteres alfanuméricos garantidamente únicos.
+ * Utiliza o motor TokenEfficiency para operações atômicas em lote (writeBatch),
+ * economizando requisições de rede e garantindo consistência no Firestore e cache.
  */
 export async function createAccessTokens(params: {
   plan: SubscriptionPlanId;
@@ -1062,56 +1068,7 @@ export async function createAccessTokens(params: {
   notes?: string;
   creatorEmail?: string;
 }): Promise<AccessTokenRecord[]> {
-  const { plan, quantity, notes, creatorEmail } = params;
-  const planInfo = PLANS[plan];
-  const duration = params.durationDays ?? planInfo.durationDays;
-
-  const currentTokens = await getAccessTokens();
-  const existingCodes = new Set(currentTokens.map((t) => t.code));
-
-  const newTokens: AccessTokenRecord[] = [];
-
-  for (let i = 0; i < quantity; i++) {
-    let code = generateFiveCharCode();
-    // Garante que o código seja 100% único
-    let attempts = 0;
-    while (existingCodes.has(code) && attempts < 100) {
-      code = generateFiveCharCode();
-      attempts++;
-    }
-    existingCodes.add(code);
-
-    const tokenRecord: AccessTokenRecord = {
-      id: `tok_${code}_${Date.now()}`,
-      code,
-      plan,
-      planName: planInfo.name,
-      durationDays: duration,
-      status: 'active',
-      createdAt: new Date().toISOString(),
-      createdBy: creatorEmail || 'miguelworscoi@gmail.com',
-      notes: notes?.trim() || `Token ${planInfo.name} (${duration} dias)`,
-    };
-
-    newTokens.push(tokenRecord);
-
-    // Salva no Firestore
-    try {
-      await safeFirestoreCall(
-        () => setDoc(doc(db, 'access_tokens', code), tokenRecord),
-        null,
-        2000
-      );
-    } catch (err) {
-      console.debug('Erro ao salvar token no Firestore:', err);
-    }
-  }
-
-  // Atualiza persistência local
-  const updatedTokens = [...newTokens, ...currentTokens];
-  saveLocalTokens(updatedTokens);
-
-  return newTokens;
+  return tokenEfficiency.createTokensBatch(params);
 }
 
 /**
@@ -1138,7 +1095,8 @@ export async function revokeAccessToken(code: string): Promise<void> {
 
 /**
  * Resgata um token de acesso de 5 caracteres.
- * Impede combinações aleatórias conferindo estritamente a lista de tokens autorizados.
+ * Utiliza o motor TokenEfficiency com resolução O(1) de alta velocidade,
+ * cache LRU e validação contra combinações arbitrárias.
  */
 export async function redeemAccessToken(
   rawCode: string,
@@ -1151,146 +1109,26 @@ export async function redeemAccessToken(
   expiresAt?: string;
   token?: AccessTokenRecord;
 }> {
-  const code = rawCode.trim().toUpperCase();
+  const res = await tokenEfficiency.redeemToken(rawCode, user);
 
-  if (code.length !== 5) {
-    return {
-      success: false,
-      message: 'O código deve ter exatamente 5 caracteres (letras e números).',
-    };
-  }
-
-  // Busca tokens ativos
-  const tokens = await getAccessTokens();
-  const token = tokens.find((t) => t.code === code);
-
-  // Se não existir no histórico do administrador, barra tentativas aleatórias
-  if (!token) {
-    return {
-      success: false,
-      message:
-        'Código inválido ou inexistente. Apenas códigos autorizados gerados pelo administrador são aceitos.',
-    };
-  }
-
-  if (token.status === 'revoked') {
-    return {
-      success: false,
-      message: 'Este código de acesso foi revogado pelo administrador.',
-    };
-  }
-
-  if (token.status === 'used') {
-    const usedDate = token.usedAt
-      ? new Date(token.usedAt).toLocaleDateString('pt-BR')
-      : 'data anterior';
-    return {
-      success: false,
-      message: `Este código já foi resgatado em ${usedDate} pelo usuário ${token.usedByEmail || 'outro assinante'}.`,
-    };
-  }
-
-  // Token válido! Calcula data de expiração
-  const now = new Date();
-  const expiration = new Date(now);
-  expiration.setDate(expiration.getDate() + (token.durationDays || 30));
-  const expiresAtISO = expiration.toISOString();
-
-  // Marca token como utilizado
-  const updatedToken: AccessTokenRecord = {
-    ...token,
-    status: 'used',
-    usedAt: now.toISOString(),
-    usedByUserId: user.uid,
-    usedByEmail: user.email || 'usuario@playsports.tv',
-  };
-
-  // Atualiza lista local
-  const updatedList = tokens.map((t) => (t.code === code ? updatedToken : t));
-  saveLocalTokens(updatedList);
-
-  // Atualiza no Firestore
-  try {
-    await safeFirestoreCall(
-      () => setDoc(doc(db, 'access_tokens', code), updatedToken, { merge: true }),
-      null,
-      2000
-    );
-  } catch (err) {
-    console.debug('Erro ao atualizar token no Firestore:', err);
-  }
-
-  // Atualiza o plano do usuário no Firestore
-  try {
-    const userDocRef = doc(db, 'users', user.uid);
-    await safeFirestoreCall(
-      () =>
-        setDoc(
-          userDocRef,
-          {
-            plan: token.plan,
-            planName: token.planName,
-            planExpiresAt: expiresAtISO,
-            activatedToken: code,
-          },
-          { merge: true }
-        ),
-      null,
-      2000
-    );
-  } catch (err) {
-    console.debug('Erro ao salvar plano do usuário no Firestore:', err);
-  }
-
-  // Atualiza o perfil no registro local
-  try {
-    const registryData = localStorage.getItem(LOCAL_REGISTRY_KEY);
-    if (registryData) {
-      const registry = JSON.parse(registryData);
-      if (Array.isArray(registry)) {
-        const userEmail = (user.email || '').toLowerCase();
-        const updatedRegistry = registry.map((u) => {
-          if (u.id === user.uid || (u.email && u.email.toLowerCase() === userEmail)) {
-            return {
-              ...u,
-              plan: token.plan,
-              planName: token.planName,
-              planExpiresAt: expiresAtISO,
-              activatedToken: code,
-            };
-          }
-          return u;
-        });
-        localStorage.setItem(LOCAL_REGISTRY_KEY, JSON.stringify(updatedRegistry));
+  if (res.success && res.token) {
+    // Atualiza sessão ativa
+    try {
+      const sessionData = localStorage.getItem('playsports_auth_session');
+      if (sessionData) {
+        const parsed = JSON.parse(sessionData);
+        parsed.plan = res.token.plan;
+        parsed.planName = res.token.planName;
+        parsed.planExpiresAt = res.expiresAt;
+        parsed.activatedToken = res.token.code;
+        localStorage.setItem('playsports_auth_session', JSON.stringify(parsed));
       }
+    } catch {
+      // Ignora
     }
-  } catch {
-    // Ignora
   }
 
-  // Atualiza sessão ativa
-  try {
-    const sessionData = localStorage.getItem('playsports_auth_session');
-    if (sessionData) {
-      const parsed = JSON.parse(sessionData);
-      parsed.plan = token.plan;
-      parsed.planName = token.planName;
-      parsed.planExpiresAt = expiresAtISO;
-      parsed.activatedToken = code;
-      localStorage.setItem('playsports_auth_session', JSON.stringify(parsed));
-    }
-  } catch {
-    // Ignora
-  }
-
-  return {
-    success: true,
-    message: `Parabéns! O seu plano foi atualizado para ${token.planName} com sucesso até ${expiration.toLocaleDateString('pt-BR')}.`,
-    plan: token.plan,
-    planName: token.planName,
-    expiresAt: expiresAtISO,
-    token: updatedToken,
-  };
+  return res;
 }
 
 /**

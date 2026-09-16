@@ -42,6 +42,14 @@ export default function Home() {
   const [currentView, setCurrentView] = useState<WorscoiView>('explorar');
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [hasVisitedFilmoteca, setHasVisitedFilmoteca] = useState(false);
+
+  // Mantém Filmoteca pré-carregada na memória após primeira visita para transição instantânea
+  useEffect(() => {
+    if (currentView === 'filmoteca') {
+      setHasVisitedFilmoteca(true);
+    }
+  }, [currentView]);
 
   const [canais, setCanais] = useState<Canal[]>(CANAIS_PADRAO);
   const [customChannels, setCustomChannels] = useState<Canal[]>([]);
@@ -573,13 +581,13 @@ export default function Home() {
             currentView === 'explorar' ? 'justify-center' : 'justify-start'
           }`}
         >
-          {/* REPRODUTOR DE TV (PERMANECE MONTADO PARA PiP E CONTINUIDADE AO NAVEGAR) */}
+          {/* REPRODUTOR DE TV (PERMANECE MONTADO PARA PiP E CONTINUIDADE AO NAVEGAR, MAS PAUSA E DESAPARECE NA FILMOTECA) */}
           <div
             className={
               currentView === 'explorar'
-                ? 'w-full max-w-5xl mx-auto py-1 my-auto flex flex-col items-center justify-center'
-                : isMiniPlayerDismissed
-                ? 'pointer-events-none opacity-0 fixed -bottom-96 -right-96 w-1 h-1 overflow-hidden'
+                ? 'w-full max-w-5xl mx-auto py-1 my-auto flex flex-col items-center justify-center transition-all duration-150 ease-out'
+                : isMiniPlayerDismissed || currentView === 'filmoteca'
+                ? 'pointer-events-none opacity-0 fixed -bottom-96 -right-96 w-1 h-1 overflow-hidden select-none'
                 : 'contents'
             }
           >
@@ -611,11 +619,12 @@ export default function Home() {
               onDismissMiniMode={() => setTimeout(() => setIsMiniPlayerDismissed(true), 0)}
               todosCanais={todosCanais}
               onSelectCanal={handleSelectCanal}
+              isPlaybackPaused={currentView === 'filmoteca'}
             />
           </div>
 
-          {/* BOTÃO FLUTUANTE DISCRETO PARA RESTAURAR O MINI-PLAYER SE DISPENSADO */}
-          {currentView !== 'explorar' && isMiniPlayerDismissed && canalAtivo && (
+          {/* BOTÃO FLUTUANTE DISCRETO PARA RESTAURAR O MINI-PLAYER SE DISPENSADO (NÃO EXIBE NA FILMOTECA) */}
+          {currentView !== 'explorar' && currentView !== 'filmoteca' && isMiniPlayerDismissed && canalAtivo && (
             <button
               type="button"
               id="restore-mini-player-pill"
@@ -629,29 +638,41 @@ export default function Home() {
             </button>
           )}
 
-          {/* VISTA 2: PAINEL DE CONTROLE (MÉTRICAS & GESTÃO) */}
+          {/* VISTA 2: PAINEL DE CONTROLE (MÉTRICAS & GESTÃO COM TRANSIÇÃO RÁPIDA) */}
           {currentView === 'painel' && (
-            <WorscoiControlPanel
-              onNavigateToSubscribers={() => setCurrentView('assinantes')}
-              onOpenTokenGenerator={() => setIsSubscribersModalOpen(true)}
-              onSelectPlan={() => setIsPaymentModalOpen(true)}
-            />
+            <div className="w-full animate-in fade-in duration-150 ease-out">
+              <WorscoiControlPanel
+                onNavigateToSubscribers={() => setCurrentView('assinantes')}
+                onOpenTokenGenerator={() => setIsSubscribersModalOpen(true)}
+                onSelectPlan={() => setIsPaymentModalOpen(true)}
+              />
+            </div>
           )}
 
-          {/* VISTA 3: ASSINANTES (CHAVES DE ACESSO & ASSINATURAS) */}
+          {/* VISTA 3: ASSINANTES (CHAVES DE ACESSO & ASSINATURAS COM TRANSIÇÃO RÁPIDA) */}
           {currentView === 'assinantes' && (
-            <WorscoiSubscribersView
-              onBackToControlPanel={() => setCurrentView('painel')}
-              onOpenTokenGenerator={() => setIsSubscribersModalOpen(true)}
-            />
+            <div className="w-full animate-in fade-in duration-150 ease-out">
+              <WorscoiSubscribersView
+                onBackToControlPanel={() => setCurrentView('painel')}
+                onOpenTokenGenerator={() => setIsSubscribersModalOpen(true)}
+              />
+            </div>
           )}
 
-          {/* VISTA 4: FILMOTECA (PÁGINA VAZIA) */}
-          {currentView === 'filmoteca' && (
-            <WorscoiFilmotecaView
-              onBackToTV={() => setCurrentView('explorar')}
-            />
-          )}
+          {/* VISTA 4: FILMOTECA & CINEMA VOD (TRANSIÇÃO INSTANTÂNEA E PERSISTÊNCIA DE ESTADO) */}
+          <div
+            className={`w-full ${
+              currentView === 'filmoteca'
+                ? 'block animate-in fade-in duration-150 ease-out'
+                : 'hidden'
+            }`}
+          >
+            {(hasVisitedFilmoteca || currentView === 'filmoteca') && (
+              <WorscoiFilmotecaView
+                onBackToTV={() => setCurrentView('explorar')}
+              />
+            )}
+          </div>
         </div>
       </div>
 

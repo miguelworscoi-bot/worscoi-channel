@@ -15,6 +15,10 @@
 :root {
   --font-sans: 'TikTok Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   --font-logomark: 'Caveat', 'Dancing Script', cursive;
+  --color-primary: #FF2D55;
+  --color-primary-hover: #e0264a;
+  --color-emerald: #00e676;
+  --color-imdb: #f5c518;
 }
 
 /* Aplica a fonte TikTok Sans em todo o sistema globalmente */
@@ -22,6 +26,11 @@ html,
 body,
 #root {
   font-family: 'TikTok Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  background-color: #070709;
+  color: #f4f4f5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 /* Exceção explícita para preservar a tipografia autêntica da nossa logomarca */
@@ -35,32 +44,99 @@ body,
 @layer utilities {
   /* Minimalist smooth scrollbar */
   .custom-scrollbar::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+    width: 5px;
+    height: 5px;
   }
   .custom-scrollbar::-webkit-scrollbar-track {
-    background: #0a0a0b;
+    background: transparent;
   }
   .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: #27272a;
+    background: rgba(255, 255, 255, 0.12);
     border-radius: 9999px;
   }
   .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: #00e676;
+    background: #FF2D55;
+  }
+
+  /* Glassmorphism surfaces */
+  .glass-dark {
+    background: rgba(10, 10, 14, 0.75);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .glass-card {
+    background: rgba(18, 18, 24, 0.65);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  }
+
+  .glass-panel {
+    background: linear-gradient(135deg, rgba(24, 24, 32, 0.8) 0%, rgba(12, 12, 16, 0.9) 100%);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.09);
+  }
+
+  /* Modern micro-interactions */
+  .hover-lift {
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .hover-lift:hover {
+    transform: translateY(-2px);
   }
 
   /* Subtle glow effects */
+  .glow-crimson {
+    box-shadow: 0 0 30px -5px rgba(255, 45, 85, 0.35);
+  }
+  .glow-crimson-sm {
+    box-shadow: 0 0 14px -2px rgba(255, 45, 85, 0.3);
+  }
   .glow-accent {
     box-shadow: 0 0 25px -4px rgba(0, 230, 118, 0.35);
   }
   .glow-accent-sm {
     box-shadow: 0 0 12px -2px rgba(0, 230, 118, 0.25);
   }
+  .glow-gold-sm {
+    box-shadow: 0 0 14px -2px rgba(245, 197, 24, 0.35);
+  }
   .glow-purple-sm {
     box-shadow: 0 0 12px -2px rgba(168, 85, 247, 0.3);
   }
   .glow-amber-sm {
     box-shadow: 0 0 12px -2px rgba(245, 158, 11, 0.3);
+  }
+
+  /* Ambient backlight for cinema / TV player */
+  .ambient-player-glow {
+    position: relative;
+  }
+  .ambient-player-glow::before {
+    content: '';
+    position: absolute;
+    inset: -12px;
+    background: radial-gradient(circle, rgba(255, 45, 85, 0.15) 0%, rgba(13, 13, 22, 0) 70%);
+    border-radius: 2rem;
+    z-index: -1;
+    filter: blur(20px);
+    pointer-events: none;
+  }
+
+  /* Text gradients */
+  .gradient-text-crimson {
+    background: linear-gradient(135deg, #ffffff 30%, #FF2D55 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .gradient-text-gold {
+    background: linear-gradient(135deg, #ffffff 20%, #f5c518 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
   }
 
   /* Shimmer sweep animation for player transitions */
@@ -75,5 +151,20 @@ body,
 
   .animate-player-shimmer {
     animation: player-shimmer 1.8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  /* Subtle pulsing radar for live status */
+  @keyframes live-pulse {
+    0%, 100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.5;
+      transform: scale(1.15);
+    }
+  }
+  .animate-live-pulse {
+    animation: live-pulse 2s ease-in-out infinite;
   }
 }

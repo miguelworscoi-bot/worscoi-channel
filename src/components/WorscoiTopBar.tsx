@@ -7,6 +7,7 @@ import {
   Shield,
   LogIn,
   Film,
+  Tv,
 } from 'lucide-react';
 import { WorscoiLogo } from './WorscoiLogo';
 import { SubscriptionCountdownBadge } from './SubscriptionCountdownBadge';
@@ -54,7 +55,7 @@ export function WorscoiTopBar({
           : 'border-b border-zinc-900/80 bg-[#050507]/90 backdrop-blur-md sticky top-0'
       }`}
     >
-      {/* LADO ESQUERDO: BOTÃO MENU MOBILE + BOTÃO FILMOTECA + TÍTULO DA VIEW */}
+      {/* LADO ESQUERDO: BOTÃO MENU MOBILE + SWITCHER TV / FILMOTECA + TÍTULO DA VIEW */}
       <div className="flex items-center gap-2 sm:gap-3">
         <button
           type="button"
@@ -69,28 +70,51 @@ export function WorscoiTopBar({
           <WorscoiLogo size="sm" />
         </div>
 
-        {/* BOTÃO FILMOTECA */}
-        <button
-          type="button"
-          id="header-filmoteca-btn"
-          onClick={() => onNavigate?.('filmoteca')}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition cursor-pointer ${
-            currentView === 'filmoteca'
-              ? 'bg-[#FF2D55] text-white font-semibold shadow-sm shadow-[#FF2D55]/30'
-              : 'text-zinc-300 hover:text-white bg-zinc-900/90 hover:bg-zinc-800 border border-zinc-800'
-          }`}
-          title="Filmoteca"
-        >
-          <Film className="w-3.5 h-3.5" />
-          <span>Filmoteca</span>
-        </button>
+        {/* CONTROLE SEGMENTADO MODERNO: TV AO VIVO & FILMOTECA */}
+        <div className="flex items-center p-1 rounded-full bg-zinc-950/80 border border-zinc-800/80 backdrop-blur-md shadow-inner">
+          <button
+            type="button"
+            id="header-tv-btn"
+            onClick={() => onNavigate?.('explorar')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
+              currentView === 'explorar'
+                ? 'bg-zinc-800 text-white shadow-sm ring-1 ring-white/10'
+                : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/60'
+            }`}
+            title="TV ao Vivo & Esportes"
+          >
+            <Tv className={`w-3.5 h-3.5 ${currentView === 'explorar' ? 'text-[#00e676]' : 'text-zinc-400'}`} />
+            <span>TV ao Vivo</span>
+            {currentView === 'explorar' && (
+              <span className="w-1.5 h-1.5 rounded-full bg-[#00e676] animate-pulse" />
+            )}
+          </button>
+
+          <button
+            type="button"
+            id="header-filmoteca-btn"
+            onClick={() => onNavigate?.('filmoteca')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
+              currentView === 'filmoteca'
+                ? 'bg-[#FF2D55] text-white shadow-sm shadow-[#FF2D55]/40 ring-1 ring-[#FF2D55]'
+                : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/60'
+            }`}
+            title="Filmoteca, Filmes, Séries e IMDb"
+          >
+            <Film className="w-3.5 h-3.5" />
+            <span>Filmoteca VOD</span>
+            <span className="text-[9px] px-1 py-0.2 rounded bg-black/40 text-amber-300 font-extrabold border border-amber-400/30">
+              IMDb
+            </span>
+          </button>
+        </div>
 
         {currentView !== 'explorar' && currentView !== 'filmoteca' && (
-          <div className="hidden lg:flex items-center gap-2 text-xs font-semibold text-zinc-400">
-            <span className="capitalize text-zinc-300">
+          <div className="hidden lg:flex items-center gap-2 text-xs font-semibold text-zinc-400 px-2 py-1 rounded-lg bg-zinc-900/60 border border-zinc-800/60">
+            <span className="capitalize text-zinc-300 font-bold">
               {currentView === 'painel'
-                ? 'Painel de Controle'
-                : 'Gestão de Assinantes'}
+                ? 'Painel de Gestão'
+                : 'Assinantes & Chaves'}
             </span>
           </div>
         )}
@@ -101,40 +125,36 @@ export function WorscoiTopBar({
         {/* CRONÔMETRO DE ASSINATURA EM TEMPO REAL */}
         <SubscriptionCountdownBadge onClick={onOpenPlans} />
 
-        {currentView !== 'explorar' && (
-          <>
-            {/* BOTÃO RESGATAR TOKEN */}
-            <button
-              type="button"
-              onClick={onOpenRedeemToken}
-              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white border border-zinc-800 text-xs font-medium transition cursor-pointer"
-            >
-              <KeyRound className="w-3.5 h-3.5 text-[#FF2D55]" />
-              <span>Resgatar Chave</span>
-            </button>
+        {/* BOTÃO RESGATAR TOKEN */}
+        <button
+          type="button"
+          onClick={onOpenRedeemToken}
+          className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-zinc-900/90 hover:bg-zinc-800 text-zinc-300 hover:text-white border border-zinc-800/90 text-xs font-bold transition-all cursor-pointer hover-lift shadow-sm"
+        >
+          <KeyRound className="w-3.5 h-3.5 text-[#FF2D55]" />
+          <span>Resgatar Chave</span>
+        </button>
 
-            {/* BOTÃO PLANOS */}
-            <button
-              type="button"
-              onClick={onOpenPlans}
-              className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white border border-zinc-800 text-xs font-medium transition cursor-pointer"
-            >
-              <Crown className="w-3.5 h-3.5 text-amber-400" />
-              <span>Planos VIP</span>
-            </button>
+        {/* BOTÃO PLANOS */}
+        <button
+          type="button"
+          onClick={onOpenPlans}
+          className="hidden md:flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-gradient-to-r from-amber-500/10 to-amber-600/20 hover:from-amber-500/20 hover:to-amber-600/30 text-amber-300 hover:text-amber-200 border border-amber-500/30 text-xs font-bold transition-all cursor-pointer hover-lift shadow-sm"
+        >
+          <Crown className="w-3.5 h-3.5 text-amber-400 fill-amber-400/20" />
+          <span>Planos VIP</span>
+        </button>
 
-            {/* ADMIN SHORTCUT SE FOR ADMIN */}
-            {isAdmin && onOpenAdminPanel && (
-              <button
-                type="button"
-                onClick={onOpenAdminPanel}
-                className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-rose-500/10 hover:bg-rose-500/20 text-[#FF2D55] border border-[#FF2D55]/30 text-xs font-bold transition cursor-pointer"
-              >
-                <Shield className="w-3.5 h-3.5" />
-                <span>Admin</span>
-              </button>
-            )}
-          </>
+        {/* ADMIN SHORTCUT SE FOR ADMIN */}
+        {isAdmin && onOpenAdminPanel && (
+          <button
+            type="button"
+            onClick={onOpenAdminPanel}
+            className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-rose-500/10 hover:bg-rose-500/20 text-[#FF2D55] border border-[#FF2D55]/30 text-xs font-bold transition cursor-pointer hover-lift"
+          >
+            <Shield className="w-3.5 h-3.5" />
+            <span>Admin</span>
+          </button>
         )}
 
         {/* AVATAR DO USUÁRIO (EXATAMENTE NO CANTO SUPERIOR DIREITO COMO NA REFERÊNCIA) */}

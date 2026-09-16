@@ -220,3 +220,30 @@ export interface FilterOptions {
   onlyHistoricalLow: boolean;
   sortBy: SortOption;
 }
+
+export interface ImdbDetalhes {
+  imdbId: string;
+  titulo: string;
+  tituloOriginal?: string;
+  ano: string;
+  classificacao?: string; // e.g. "PG-13", "TV-MA", "16+"
+  duracao?: string; // e.g. "152 min"
+  genero?: string;
+  diretor?: string;
+  roteirista?: string;
+  elenco: string[]; // Lista de atores individuais
+  elencoTexto: string; // "Christian Bale, Heath Ledger, Aaron Eckhart"
+  sinopse: string;
+  sinopseLocal?: string;
+  notaImdb: string; // e.g. "9.0"
+  votosImdb?: string; // e.g. "2,980,120"
+  metascore?: string;
+  premios?: string;
+  capa?: string;
+  tipo?: 'filme' | 'serie' | 'anime';
+  totalTemporadas?: number;
+  pais?: string;
+  idioma?: string;
+  urlImdb: string;
+  fonte?: 'omdb' | 'imdb_suggestion' | 'catalogo';
+}

@@ -10,9 +10,12 @@ import {
   Loader2,
   X,
   AlertCircle,
+  CreditCard,
+  Zap,
 } from 'lucide-react';
 import { WorscoiCardVisual } from './WorscoiCardVisual';
 import { POSTerminalIllustration } from './POSTerminalIllustration';
+import { StripeCheckoutModal } from './StripeCheckoutModal';
 import { SubscriptionPlanId } from '@/types';
 import {
   createWhatsAppPaymentProofLink,
@@ -132,6 +135,7 @@ export function WorscoiPlanSelectionFlow({
   // Estado para copiar telefone de pagamento
   const [copiedPhone, setCopiedPhone] = useState(false);
   const [isProcessingFree, setIsProcessingFree] = useState(false);
+  const [isStripeModalOpen, setIsStripeModalOpen] = useState(false);
 
   const handlePrevPlan = () => {
     setCurrentPlanIndex((prev) => (prev > 0 ? prev - 1 : FLOW_PLANS.length - 1));
@@ -436,14 +440,24 @@ export function WorscoiPlanSelectionFlow({
               </div>
             </div>
 
-            {/* BASE: BOTÃO COMPRAR VERMELHO PILL (IMAGEM 8) */}
-            <div className="w-full max-w-sm sm:max-w-md mx-auto pt-4">
+            {/* BASE: BOTÕES DE PAGAMENTO (STRIPE CARTÃO INSTANTÂNEO & MCX/WHATSAPP) */}
+            <div className="w-full max-w-sm sm:max-w-md mx-auto pt-3 space-y-2">
+              <button
+                type="button"
+                onClick={() => setIsStripeModalOpen(true)}
+                className="w-full py-4 px-6 rounded-full bg-[#635BFF] hover:bg-[#5349eb] text-white font-extrabold text-sm sm:text-base shadow-xl shadow-[#635BFF]/30 transition active:scale-95 cursor-pointer flex items-center justify-center gap-2"
+              >
+                <CreditCard className="w-5 h-5 text-white" />
+                <span>Pagar com Cartão / Stripe (Instantâneo)</span>
+                <Zap className="w-4 h-4 text-amber-300 fill-amber-300" />
+              </button>
+
               <button
                 type="button"
                 onClick={() => setCurrentScreen('payment')}
-                className="w-full py-4 px-6 rounded-full bg-[#FF2D55] hover:bg-[#ff1744] text-white font-extrabold text-base shadow-xl shadow-[#FF2D55]/30 transition active:scale-95 cursor-pointer flex items-center justify-center gap-2"
+                className="w-full py-3 px-6 rounded-full bg-zinc-900/90 hover:bg-zinc-800 text-zinc-300 hover:text-white border border-zinc-800 font-semibold text-xs sm:text-sm transition cursor-pointer flex items-center justify-center gap-2"
               >
-                <span>Comprar - {selectedPlan.priceNumber.toLocaleString('pt-AO')} kz</span>
+                <span>Pagar via Multicaixa Express / PayPay (WhatsApp)</span>
               </button>
             </div>
           </motion.div>
@@ -556,15 +570,26 @@ export function WorscoiPlanSelectionFlow({
               </div>
             </div>
 
-            {/* BASE: BOTÃO "JÁ TENHO A CHAVE TOKEN" VERMELHO PILL (IMAGEM 9) */}
-            <div className="w-full max-w-sm sm:max-w-md mx-auto pt-3 flex justify-end">
-              <button
-                type="button"
-                onClick={() => setCurrentScreen('validate-token')}
-                className="py-3.5 px-7 rounded-full bg-[#FF2D55] hover:bg-[#ff1744] text-white font-extrabold text-sm shadow-xl shadow-[#FF2D55]/30 transition active:scale-95 cursor-pointer flex items-center gap-2"
-              >
-                <span>Já tenho a chave token</span>
-              </button>
+            {/* BASE: BOTÃO "JÁ TENHO A CHAVE TOKEN" VERMELHO PILL + ATALHO STRIPE */}
+            <div className="w-full max-w-sm sm:max-w-md mx-auto pt-3 space-y-2">
+              <div className="flex items-center justify-between gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsStripeModalOpen(true)}
+                  className="text-xs text-[#8881ff] hover:text-white transition flex items-center gap-1 cursor-pointer font-semibold py-1.5"
+                >
+                  <CreditCard className="w-3.5 h-3.5 text-[#635BFF]" />
+                  <span>Pagar via Cartão / Stripe</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setCurrentScreen('validate-token')}
+                  className="py-3 px-6 rounded-full bg-[#FF2D55] hover:bg-[#ff1744] text-white font-extrabold text-xs sm:text-sm shadow-xl shadow-[#FF2D55]/30 transition active:scale-95 cursor-pointer flex items-center gap-2"
+                >
+                  <span>Já tenho a chave token</span>
+                </button>
+              </div>
             </div>
           </motion.div>
         )}
@@ -672,6 +697,23 @@ export function WorscoiPlanSelectionFlow({
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* MODAL DE CHECKOUT STRIPE */}
+      <StripeCheckoutModal
+        isOpen={isStripeModalOpen}
+        onClose={() => setIsStripeModalOpen(false)}
+        planId={selectedPlan.id}
+        userData={userData}
+        onSuccess={(data) => {
+          setIsStripeModalOpen(false);
+          onTokenValidated({
+            plan: data.plan,
+            planName: data.planName,
+            token: data.token,
+            expiresAt: data.expiresAt,
+          });
+        }}
+      />
     </div>
   );
 }

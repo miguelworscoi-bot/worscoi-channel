@@ -93,6 +93,7 @@ interface PlayerHeroProps {
   onDismissMiniMode?: () => void;
   todosCanais?: Canal[];
   onSelectCanal?: (canal: Canal) => void;
+  isPlaybackPaused?: boolean;
 }
 
 export function PlayerHero({
@@ -126,6 +127,7 @@ export function PlayerHero({
   onDismissMiniMode,
   todosCanais,
   onSelectCanal,
+  isPlaybackPaused = false,
 }: PlayerHeroProps) {
   const { userProfile, isAdmin, countdown, isSubscriptionExpired } = useAuth();
   const isPlanExpired = !isAdmin && (isSubscriptionExpired || countdown.expired || isUserPlanExpired(userProfile));
@@ -207,7 +209,7 @@ export function PlayerHero({
     };
   }, [canalAtivo?.id, canalAtivo?.nome, streamIndex, activeRawStreamUrl, userProfile?.id]);
   // Áudio suavizado durante transição entre componentes para evitar picos
-  const effectiveMuted = isMuted || isAudioTransitionMuted;
+  const effectiveMuted = isMuted || isAudioTransitionMuted || Boolean(isPlaybackPaused);
   const rawStreamToPlay = emergencyOverrideUrl || activeRawStreamUrl;
   const finalStreamUrl = emergencyOverrideUrl
     ? emergencyOverrideUrl
@@ -533,6 +535,25 @@ export function PlayerHero({
     };
   }, [hasFirstFrame, canalAtivo?.id, streamIndex]);
 
+  // Pausa imperativa imediata do elemento de vídeo ao suspender (ex: ao entrar na Filmoteca)
+  // e retoma imediatamente quando o usuário volta para a TV
+  useEffect(() => {
+    try {
+      const videoEl = videoContainerRef.current?.querySelector('video');
+      if (videoEl) {
+        if (isPlaybackPaused) {
+          if (!videoEl.paused) {
+            videoEl.pause();
+          }
+        } else if (videoEl.paused && !isPlanExpired && !isChannelLockedByPlan) {
+          videoEl.play().catch(() => {});
+        }
+      }
+    } catch {
+      // Ignora restrições do navegador
+    }
+  }, [isPlaybackPaused, isPlanExpired, isChannelLockedByPlan]);
+
   const handleToggleLike = async () => {
     if (!canalAtivo) return;
     const videoSlug = getVideoItemSlug(canalAtivo, streamIndex, activeRawStreamUrl);
@@ -702,7 +723,7 @@ export function PlayerHero({
           className={
             isMiniMode
               ? 'group relative aspect-video w-full bg-black overflow-hidden'
-              : 'group relative aspect-video w-full max-w-[860px] bg-black rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl border border-zinc-900/80 ring-1 ring-zinc-800/40'
+              : 'group relative aspect-video w-full max-w-[880px] bg-black rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl shadow-black/90 border border-zinc-800/80 ring-1 ring-white/10 ambient-player-glow'
           }
         >
           {/* REPRODUTOR DE VÍDEO */}
@@ -714,7 +735,7 @@ export function PlayerHero({
                   key: `${canalAtivo.id || canalAtivo.url}-${streamIndex}-${isCurrentlyProxied ? 'proxy' : 'direct'}-${latencyMode}`,
                   url: finalStreamUrl,
                   src: finalStreamUrl,
-                  playing: !isPlanExpired && !isChannelLockedByPlan,
+                  playing: !isPlaybackPaused && !isPlanExpired && !isChannelLockedByPlan,
                   muted: effectiveMuted,
                   controls: false,
                   width: '100%',
@@ -1379,18 +1400,19 @@ export function PlayerHero({
         )}
       </div>
 
-      {/* BARRA INFERIOR DE CONTROLE (EXATAMENTE COMO NA REFERÊNCIA: PÍLULAS À ESQUERDA, SETAS NO CENTRO) */}
+      {/* BARRA INFERIOR DE CONTROLE EM DOCK DE VIDRO ELEGANTE */}
       {!isMiniMode && (
-        <div className="w-full max-w-[860px] flex items-center justify-between mt-4 px-1 select-none flex-wrap gap-y-3">
+        <div className="w-full max-w-[880px] flex items-center justify-between mt-4 p-2 sm:p-2.5 rounded-2xl bg-zinc-950/75 border border-zinc-800/80 backdrop-blur-xl shadow-2xl shadow-black/80 select-none flex-wrap gap-2.5">
           {/* LADO ESQUERDO: PÍLULAS "MODO CINEMA", "VER MAIS VÍDEOS DO CANAL", "MODO ESTÁVEL / BAIXA LATÊNCIA", ETC. */}
           <div className="flex items-center gap-2 flex-wrap">
             <button
               type="button"
               id="player-pill-cinema-mode"
               onClick={onEnterCinemaMode}
-              className="px-4 py-2 rounded-full bg-[#141416] hover:bg-[#202024] text-zinc-200 hover:text-white border border-zinc-800/90 text-xs font-medium transition cursor-pointer shadow-sm"
+              className="px-4 py-2 rounded-full bg-zinc-900/90 hover:bg-zinc-800 text-zinc-100 hover:text-white border border-zinc-700/80 hover:border-zinc-500 text-xs font-semibold transition-all duration-200 cursor-pointer shadow-sm hover:scale-105 active:scale-95 flex items-center gap-1.5"
             >
-              Modo Cinema
+              <Maximize2 className="w-3.5 h-3.5 text-[#FF2D55]" />
+              <span>Modo Cinema</span>
             </button>
 
             {/* BOTÃO VER MAIS VÍDEOS DO CANAL - APENAS SE FOR CANAL DO YOUTUBE */}
@@ -1399,11 +1421,11 @@ export function PlayerHero({
                 type="button"
                 id="player-pill-channel-videos"
                 onClick={() => setIsChannelVideosOpen(true)}
-                className="px-3.5 sm:px-4 py-2 rounded-full border text-xs font-semibold transition cursor-pointer shadow-sm flex items-center gap-1.5 bg-gradient-to-r from-red-600/20 via-zinc-900 to-zinc-900 text-zinc-100 hover:text-white border-red-500/40 hover:border-red-500/70 hover:scale-[1.02] active:scale-95"
+                className="px-3.5 sm:px-4 py-2 rounded-full border text-xs font-semibold transition cursor-pointer shadow-sm flex items-center gap-1.5 bg-gradient-to-r from-red-600/20 via-zinc-900 to-zinc-900 text-zinc-100 hover:text-white border-red-500/40 hover:border-red-500/70 hover:scale-105 active:scale-95"
                 title="Ver mais vídeos do canal (reproduzir diretamente no nosso player)"
               >
                 <Film className="w-3.5 h-3.5 text-red-500 shrink-0" />
-                <span>Ver mais vídeos do canal</span>
+                <span>Ver mais vídeos</span>
                 {streamsDisponiveis.length > 1 && (
                   <span className="px-1.5 py-0.2 rounded-full bg-red-600/30 text-red-300 text-[10px] font-bold border border-red-500/30">
                     {streamsDisponiveis.length}
@@ -1434,10 +1456,9 @@ export function PlayerHero({
               type="button"
               id="player-pill-latency-toggle"
               onClick={() => {
-                // Alterna diretamente entre Modo Estável (buffer prolongado para redes lentas) e Modo Baixa Latência (tempo real)
                 onToggleLatencyMode(latencyMode === 'stable' ? 'low-latency' : 'stable');
               }}
-              className={`px-3.5 sm:px-4 py-2 rounded-full border text-xs font-medium transition cursor-pointer shadow-sm flex items-center gap-1.5 ${
+              className={`px-3.5 sm:px-4 py-2 rounded-full border text-xs font-medium transition cursor-pointer shadow-sm flex items-center gap-1.5 hover:scale-105 active:scale-95 ${
                 latencyMode === 'stable'
                   ? 'bg-cyan-500/15 text-cyan-300 border-cyan-500/40 hover:bg-cyan-500/25'
                   : latencyMode === 'low-latency'
@@ -1475,7 +1496,7 @@ export function PlayerHero({
               type="button"
               id="player-pill-settings-btn"
               onClick={() => setIsSettingsOpen(true)}
-              className="px-3.5 sm:px-4 py-2 rounded-full bg-[#141416] hover:bg-[#202024] text-zinc-200 hover:text-white border border-zinc-800/90 text-xs font-medium transition cursor-pointer shadow-sm flex items-center gap-1.5"
+              className="px-3.5 sm:px-4 py-2 rounded-full bg-zinc-900/90 hover:bg-zinc-800 text-zinc-200 hover:text-white border border-zinc-700/80 hover:border-zinc-500 text-xs font-medium transition cursor-pointer shadow-sm flex items-center gap-1.5 hover:scale-105 active:scale-95"
               title="Abrir configurações de desempenho de rede e latência"
             >
               <Sliders className="w-3.5 h-3.5 text-zinc-400 group-hover:text-white" />
@@ -1486,10 +1507,10 @@ export function PlayerHero({
               type="button"
               id="player-pill-pip"
               onClick={handleTogglePip}
-              className={`px-3.5 sm:px-4 py-2 rounded-full border text-xs font-medium transition cursor-pointer shadow-sm flex items-center gap-1.5 ${
+              className={`px-3.5 sm:px-4 py-2 rounded-full border text-xs font-medium transition cursor-pointer shadow-sm flex items-center gap-1.5 hover:scale-105 active:scale-95 ${
                 isPipActive
                   ? 'bg-[#FF2D55]/20 text-[#FF2D55] border-[#FF2D55]/50'
-                  : 'bg-[#141416] hover:bg-[#202024] text-zinc-200 hover:text-white border border-zinc-800/90'
+                  : 'bg-zinc-900/90 hover:bg-zinc-800 text-zinc-200 hover:text-white border border-zinc-700/80 hover:border-zinc-500'
               }`}
               title={
                 isPipActive
@@ -1509,7 +1530,7 @@ export function PlayerHero({
               type="button"
               id="player-btn-prev-canal"
               onClick={onPrevCanal}
-              className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#141416] hover:bg-[#202024] text-zinc-200 hover:text-white border border-zinc-800/90 flex items-center justify-center transition cursor-pointer shadow-sm active:scale-95"
+              className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-zinc-900/90 hover:bg-zinc-800 text-zinc-200 hover:text-white border border-zinc-700/80 hover:border-zinc-500 flex items-center justify-center transition cursor-pointer shadow-sm hover:scale-105 active:scale-95"
               title="Canal anterior"
             >
               <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -1518,7 +1539,7 @@ export function PlayerHero({
               type="button"
               id="player-btn-next-canal"
               onClick={onNextCanal}
-              className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#141416] hover:bg-[#202024] text-zinc-200 hover:text-white border border-zinc-800/90 flex items-center justify-center transition cursor-pointer shadow-sm active:scale-95"
+              className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-zinc-900/90 hover:bg-zinc-800 text-zinc-200 hover:text-white border border-zinc-700/80 hover:border-zinc-500 flex items-center justify-center transition cursor-pointer shadow-sm hover:scale-105 active:scale-95"
               title="Próximo canal"
             >
               <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -1531,7 +1552,7 @@ export function PlayerHero({
               type="button"
               id="player-btn-audio-mute"
               onClick={onToggleMute}
-              className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#141416] hover:bg-[#202024] text-zinc-300 hover:text-white border border-zinc-800/90 flex items-center justify-center transition cursor-pointer shadow-sm"
+              className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-zinc-900/90 hover:bg-zinc-800 text-zinc-300 hover:text-white border border-zinc-700/80 hover:border-zinc-500 flex items-center justify-center transition cursor-pointer shadow-sm hover:scale-105 active:scale-95"
               title={isMuted ? 'Ativar som (M)' : 'Silenciar áudio (M)'}
             >
               {isMuted ? (
@@ -1544,7 +1565,7 @@ export function PlayerHero({
               type="button"
               id="player-btn-reload-stream"
               onClick={handleReload}
-              className="hidden sm:flex w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#141416] hover:bg-[#202024] text-zinc-400 hover:text-white border border-zinc-800/90 items-center justify-center transition cursor-pointer shadow-sm"
+              className="hidden sm:flex w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-zinc-900/90 hover:bg-zinc-800 text-zinc-400 hover:text-white border border-zinc-700/80 hover:border-zinc-500 items-center justify-center transition cursor-pointer shadow-sm hover:scale-105 active:scale-95"
               title="Recarregar sinal"
             >
               <RefreshCw className="w-3.5 h-3.5" />
