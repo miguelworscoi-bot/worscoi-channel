@@ -24,6 +24,7 @@ import { FreePlanBlockedModal } from '@/components/FreePlanBlockedModal';
 import { CongratulationsNotification } from '@/components/CongratulationsNotification';
 import { LandingScreen } from '@/components/LandingScreen';
 import { useAuth } from '@/context/AuthContext';
+import { autoplayQueueService } from '@/services/autoplayQueueService';
 
 const LOCAL_STORAGE_FAVORITES_KEY = 'playsports_favorites';
 const LOCAL_STORAGE_CUSTOM_KEY = 'playsports_custom_channels';
@@ -295,13 +296,27 @@ export default function Home() {
 
   const handleVideoEnded = useCallback(() => {
     if (!canalAtivo) return;
+    if (autoplayQueueService.isAutoplayEnabled()) {
+      const nextItem = autoplayQueueService.peekNextVideo(canalAtivo, streamIndex, todosCanais);
+      if (nextItem) {
+        if (nextItem.canal.id === canalAtivo.id && typeof nextItem.streamIndex === 'number') {
+          setStreamIndex(nextItem.streamIndex);
+          return;
+        }
+        handleSelectCanal(nextItem.canal);
+        if (typeof nextItem.streamIndex === 'number') {
+          setTimeout(() => setStreamIndex(nextItem.streamIndex), 50);
+        }
+        return;
+      }
+    }
     const streams = [canalAtivo.url, ...(canalAtivo.backupUrls || [])];
     if (streamIndex < streams.length - 1) {
       setStreamIndex(streamIndex + 1);
     } else {
       handleNextCanal();
     }
-  }, [canalAtivo, streamIndex, handleNextCanal]);
+  }, [canalAtivo, streamIndex, todosCanais, handleSelectCanal, handleNextCanal]);
 
   // Alterna o modo de latência e consumo de dados
   const handleToggleLatencyMode = useCallback((forcedMode?: LatencyMode) => {

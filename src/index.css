@@ -15,10 +15,10 @@
 :root {
   --font-sans: 'TikTok Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   --font-logomark: 'Caveat', 'Dancing Script', cursive;
-  --color-primary: #FF2D55;
-  --color-primary-hover: #e0264a;
-  --color-emerald: #00e676;
-  --color-imdb: #f5c518;
+  --color-primary: #e11d48;
+  --color-primary-hover: #be123c;
+  --color-emerald: #10b981;
+  --color-imdb: #f59e0b;
 }
 
 /* Aplica a fonte TikTok Sans em todo o sistema globalmente */
@@ -26,7 +26,7 @@ html,
 body,
 #root {
   font-family: 'TikTok Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  background-color: #070709;
+  background-color: #090a0f;
   color: #f4f4f5;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -55,61 +55,61 @@ body,
     border-radius: 9999px;
   }
   .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: #FF2D55;
+    background: rgba(255, 255, 255, 0.25);
   }
 
-  /* Glassmorphism surfaces */
+  /* Refined subtle dark surfaces */
   .glass-dark {
-    background: rgba(10, 10, 14, 0.75);
+    background: rgba(14, 15, 20, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  .glass-card {
+    background: rgba(18, 20, 26, 0.7);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.5);
+  }
+
+  .glass-panel {
+    background: rgba(18, 19, 26, 0.85);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
     border: 1px solid rgba(255, 255, 255, 0.08);
   }
 
-  .glass-card {
-    background: rgba(18, 18, 24, 0.65);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.07);
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-  }
-
-  .glass-panel {
-    background: linear-gradient(135deg, rgba(24, 24, 32, 0.8) 0%, rgba(12, 12, 16, 0.9) 100%);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.09);
-  }
-
   /* Modern micro-interactions */
   .hover-lift {
-    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   }
   .hover-lift:hover {
     transform: translateY(-2px);
   }
 
-  /* Subtle glow effects */
+  /* Refined, quiet elevations */
   .glow-crimson {
-    box-shadow: 0 0 30px -5px rgba(255, 45, 85, 0.35);
+    box-shadow: 0 4px 24px -4px rgba(225, 29, 72, 0.2);
   }
   .glow-crimson-sm {
-    box-shadow: 0 0 14px -2px rgba(255, 45, 85, 0.3);
+    box-shadow: 0 2px 10px -2px rgba(225, 29, 72, 0.2);
   }
   .glow-accent {
-    box-shadow: 0 0 25px -4px rgba(0, 230, 118, 0.35);
+    box-shadow: 0 4px 20px -4px rgba(16, 185, 129, 0.2);
   }
   .glow-accent-sm {
-    box-shadow: 0 0 12px -2px rgba(0, 230, 118, 0.25);
+    box-shadow: 0 2px 10px -2px rgba(16, 185, 129, 0.2);
   }
   .glow-gold-sm {
-    box-shadow: 0 0 14px -2px rgba(245, 197, 24, 0.35);
+    box-shadow: 0 2px 10px -2px rgba(245, 158, 11, 0.2);
   }
   .glow-purple-sm {
-    box-shadow: 0 0 12px -2px rgba(168, 85, 247, 0.3);
+    box-shadow: 0 2px 10px -2px rgba(147, 51, 234, 0.2);
   }
   .glow-amber-sm {
-    box-shadow: 0 0 12px -2px rgba(245, 158, 11, 0.3);
+    box-shadow: 0 2px 10px -2px rgba(245, 158, 11, 0.2);
   }
 
   /* Ambient backlight for cinema / TV player */
@@ -119,24 +119,20 @@ body,
   .ambient-player-glow::before {
     content: '';
     position: absolute;
-    inset: -12px;
-    background: radial-gradient(circle, rgba(255, 45, 85, 0.15) 0%, rgba(13, 13, 22, 0) 70%);
-    border-radius: 2rem;
+    inset: -6px;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.04) 0%, rgba(13, 13, 22, 0) 70%);
+    border-radius: 1.5rem;
     z-index: -1;
-    filter: blur(20px);
+    filter: blur(16px);
     pointer-events: none;
   }
 
-  /* Text gradients */
+  /* Text accents */
   .gradient-text-crimson {
-    background: linear-gradient(135deg, #ffffff 30%, #FF2D55 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: #f43f5e;
   }
   .gradient-text-gold {
-    background: linear-gradient(135deg, #ffffff 20%, #f5c518 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: #fbbf24;
   }
 
   /* Shimmer sweep animation for player transitions */

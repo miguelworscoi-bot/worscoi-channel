@@ -1,6 +1,6 @@
 'use client';
 import React from 'react';
-import { Play, Maximize2, Star } from 'lucide-react';
+import { Play, Maximize2, Star, Info } from 'lucide-react';
 import { FilmeItem } from '@/app/api/filmes/route';
 
 interface FilmeCardProps {
@@ -25,16 +25,32 @@ export function FilmeCard({
   const isClassico =
     filme.isClassico || (parseInt(filme.ano, 10) && parseInt(filme.ano, 10) < 2000);
 
+  // Determina a etiqueta de formato de maneira elegante e discreta (sem arco-íris de cores)
+  const formatTag = (() => {
+    if (filme.tipo === 'serie') {
+      return filme.temporadas && filme.temporadas > 1
+        ? `Série • ${filme.temporadas}T`
+        : 'Série';
+    }
+    if (filme.tipo === 'anime') return 'Anime';
+    if (isClassico) return 'Clássico';
+    if (filme.plataforma === 'netflix') return 'Netflix';
+    if (filme.plataforma === 'hbo') return 'HBO Max';
+    if (filme.plataforma === 'disney') return 'Disney+';
+    if (filme.plataforma === 'crunchyroll') return 'Crunchyroll';
+    return null;
+  })();
+
   return (
     <div
       onClick={() => onSelect(filme)}
-      className={`group relative flex flex-col bg-[#0c0c11] rounded-2xl overflow-hidden border transition-all duration-300 cursor-pointer shadow-xl hover:shadow-2xl hover:shadow-[#FF2D55]/10 hover:-translate-y-1 select-none ${
+      className={`group relative flex flex-col bg-[#0e1015] rounded-xl overflow-hidden border transition-all duration-200 cursor-pointer shadow-md hover:shadow-xl hover:shadow-black/60 select-none ${
         isAtivo
-          ? 'border-[#FF2D55] ring-2 ring-[#FF2D55]/50 shadow-[#FF2D55]/20'
-          : 'border-zinc-800/80 hover:border-zinc-700/80'
+          ? 'border-zinc-400 ring-1 ring-zinc-400/80 bg-[#12141c]'
+          : 'border-zinc-800/80 hover:border-zinc-700/90'
       } ${className}`}
     >
-      {/* CAPA DO FILME */}
+      {/* CAPA DO FILME COM PROPORÇÃO CINEMATOGRÁFICA 2:3 */}
       <div className="relative aspect-[2/3] w-full bg-zinc-900 overflow-hidden">
         <img
           src={
@@ -44,15 +60,39 @@ export function FilmeCard({
           }
           alt={filme.titulo}
           referrerPolicy="no-referrer"
+          loading="lazy"
           onError={(e) => {
             (e.currentTarget as HTMLImageElement).src =
               'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=500&auto=format&fit=crop&q=80';
           }}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 ease-out"
         />
 
-        {/* OVERLAY COM GRADIENTE E BOTÕES DE AÇÃO */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 p-3">
+        {/* GRADIENTE DE PROFUNDIDADE NA IMAGEM */}
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0e1015] via-transparent to-black/30 pointer-events-none" />
+
+        {/* BADGE DE FORMATO (DISCRETO, PRETO TRANSLÚCIDO) */}
+        {formatTag && (
+          <div className="absolute top-2.5 left-2.5 z-10 pointer-events-none">
+            <span className="px-2 py-0.5 rounded-md bg-black/70 backdrop-blur-md text-zinc-200 text-[10px] font-medium border border-white/10 tracking-wide">
+              {formatTag}
+            </span>
+          </div>
+        )}
+
+        {/* BADGE RATING / ANO (TOP DIREITA) */}
+        <div className="absolute top-2.5 right-2.5 flex items-center gap-1 z-10 pointer-events-none">
+          {filme.rating && (
+            <span className="px-1.5 py-0.5 rounded-md bg-black/75 backdrop-blur-md text-amber-300 text-[10px] font-semibold border border-amber-500/20 shadow flex items-center gap-1">
+              <Star className="w-2.5 h-2.5 fill-amber-400 text-amber-400" />
+              <span>{filme.rating}</span>
+            </span>
+          )}
+        </div>
+
+        {/* OVERLAY ELEGANTE DE AÇÕES AO PASSAR O MOUSE */}
+        <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col items-center justify-center gap-2.5 p-3">
+          {/* BOTÃO PRINCIPAL DE PLAY */}
           <button
             type="button"
             onClick={(e) => {
@@ -63,128 +103,80 @@ export function FilmeCard({
                 onSelect(filme);
               }
             }}
-            className="w-10 h-10 rounded-full bg-[#FF2D55] hover:bg-[#e0264a] text-white flex items-center justify-center shadow-lg shadow-[#FF2D55]/40 transform scale-90 group-hover:scale-100 transition cursor-pointer"
-            title="Assistir diretamente no player principal"
+            className="w-11 h-11 rounded-full bg-white text-black flex items-center justify-center shadow-xl hover:scale-105 transition-transform cursor-pointer"
+            title="Assistir agora"
           >
-            <Play className="w-4 h-4 fill-current ml-0.5" />
+            <Play className="w-4 h-4 fill-black ml-0.5" />
           </button>
-          <button
-            type="button"
-            title="Abrir em Modo Teatro"
-            onClick={(e) => {
-              e.stopPropagation();
-              onOpenTeatro(filme);
-            }}
-            className="w-9 h-9 rounded-full bg-zinc-900/90 hover:bg-zinc-800 text-zinc-200 border border-zinc-700 flex items-center justify-center shadow-lg transform scale-90 group-hover:scale-100 transition cursor-pointer"
-          >
-            <Maximize2 className="w-3.5 h-3.5" />
-          </button>
-          {onOpenImdb && (
+
+          {/* AÇÕES SECUNDÁRIAS DISCRETAS */}
+          <div className="flex items-center gap-2">
             <button
               type="button"
-              title="Ver detalhes, sinopse e elenco no IMDb"
+              title="Abrir em Tela Expandida / Teatro"
               onClick={(e) => {
                 e.stopPropagation();
-                onOpenImdb(filme);
+                onOpenTeatro(filme);
               }}
-              className="w-9 h-9 rounded-full bg-[#f5c518] hover:bg-[#e4b512] text-black font-black text-[10px] flex items-center justify-center shadow-lg transform scale-90 group-hover:scale-100 transition cursor-pointer"
+              className="p-2 rounded-lg bg-zinc-900/90 hover:bg-zinc-800 text-zinc-200 border border-zinc-700/80 transition cursor-pointer"
             >
-              IMDb
+              <Maximize2 className="w-3.5 h-3.5" />
             </button>
-          )}
-        </div>
 
-        {/* BADGES ESQUERDA (TIPO / SÉRIE / ANIME / CLÁSSICO / STREAMING) */}
-        <div className="absolute top-2 left-2 flex flex-col items-start gap-1 z-10 pointer-events-none">
-          {filme.plataforma === 'hbo' && (
-            <span className="px-1.5 py-0.5 rounded bg-purple-700 text-white font-mono font-black text-[9px] shadow-sm tracking-wider">
-              HBO MAX
-            </span>
-          )}
-          {filme.plataforma === 'disney' && (
-            <span className="px-1.5 py-0.5 rounded bg-blue-600 text-white font-mono font-black text-[9px] shadow-sm tracking-wider">
-              DISNEY+
-            </span>
-          )}
-          {filme.plataforma === 'netflix' && (
-            <span className="px-1.5 py-0.5 rounded bg-red-600 text-white font-mono font-black text-[9px] shadow-sm tracking-wider">
-              NETFLIX
-            </span>
-          )}
-          {filme.plataforma === 'crunchyroll' && (
-            <span className="px-1.5 py-0.5 rounded bg-orange-600 text-white font-mono font-black text-[9px] shadow-sm tracking-wider">
-              CRUNCHYROLL
-            </span>
-          )}
-          {filme.tipo === 'serie' && (
-            <span className="px-1.5 py-0.5 rounded bg-indigo-600/90 text-white font-mono font-bold text-[9px] shadow-sm">
-              SÉRIE
-            </span>
-          )}
-          {filme.tipo === 'anime' && (
-            <span className="px-1.5 py-0.5 rounded bg-emerald-600/90 text-white font-mono font-bold text-[9px] shadow-sm">
-              ANIME
-            </span>
-          )}
-          {Boolean(isClassico) && (
-            <span className="px-1.5 py-0.5 rounded bg-amber-500 text-black font-mono font-black text-[9px] shadow-sm">
-              CLÁSSICO
-            </span>
-          )}
-          {Boolean(filme.temporadas && filme.temporadas > 1) && (
-            <span className="px-1.5 py-0.5 rounded bg-black/80 backdrop-blur-md text-zinc-300 font-mono text-[9px] border border-white/10">
-              {filme.temporadas}T
-            </span>
-          )}
-        </div>
-
-        {/* BADGES IMDb / RATING / ANO */}
-        <div className="absolute top-2 right-2 flex flex-col items-end gap-1 z-10 pointer-events-none">
-          {filme.rating && (
-            <span className="px-1.5 py-0.5 rounded bg-amber-400 text-black text-[9px] font-black font-mono shadow flex items-center gap-0.5">
-              <Star className="w-2.5 h-2.5 fill-black" />
-              <span>{filme.rating}</span>
-            </span>
-          )}
-          <span className="px-1.5 py-0.5 rounded bg-black/75 backdrop-blur-md text-[10px] font-mono text-zinc-300 border border-white/10">
-            {filme.ano}
-          </span>
+            {onOpenImdb && (
+              <button
+                type="button"
+                title="Ficha completa no IMDb"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onOpenImdb(filme);
+                }}
+                className="px-2.5 py-1.5 rounded-lg bg-zinc-900/90 hover:bg-zinc-800 text-amber-300 border border-amber-500/30 text-[10px] font-bold transition cursor-pointer flex items-center gap-1"
+              >
+                <span>IMDb</span>
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* INFORMAÇÕES DO FILME */}
-      <div className="p-2.5 flex flex-col flex-1 justify-between bg-zinc-950">
+      {/* METADADOS E INFORMAÇÕES DO FILME */}
+      <div className="p-3 flex flex-col flex-1 justify-between bg-[#0e1015]">
         <div>
-          <h3 className="font-semibold text-xs text-zinc-200 group-hover:text-white line-clamp-1">
+          <h3 className="font-semibold text-xs sm:text-sm text-zinc-200 group-hover:text-white line-clamp-1 tracking-tight">
             {filme.titulo}
           </h3>
-          <p className="text-[11px] text-[#FF2D55] font-mono mt-0.5 font-medium line-clamp-1">
-            {filme.genero}
-          </p>
+
+          <div className="flex items-center gap-1.5 text-[11px] text-zinc-400 mt-1">
+            <span>{filme.ano}</span>
+            <span className="text-zinc-600">•</span>
+            <span className="truncate text-zinc-400">{filme.genero}</span>
+          </div>
         </div>
-        <p className="text-[10px] text-zinc-500 line-clamp-2 mt-1.5 leading-relaxed">
-          {filme.sinopse}
-        </p>
+
+        {filme.sinopse && (
+          <p className="text-[11px] text-zinc-500 line-clamp-2 mt-2 leading-relaxed">
+            {filme.sinopse}
+          </p>
+        )}
 
         {onOpenImdb && (
-          <div className="mt-2 pt-2 border-t border-zinc-900 flex items-center justify-between">
+          <div className="mt-2.5 pt-2 border-t border-zinc-800/80 flex items-center justify-between text-[11px]">
             <button
               type="button"
               onClick={(e) => {
                 e.stopPropagation();
                 onOpenImdb(filme);
               }}
-              className="inline-flex items-center gap-1.5 text-[10px] text-zinc-400 hover:text-[#f5c518] font-medium transition cursor-pointer"
-              title="Ver sinopse completa, nota e elenco no IMDb"
+              className="inline-flex items-center gap-1 text-zinc-400 hover:text-zinc-200 transition cursor-pointer"
             >
-              <span className="px-1 py-0.5 rounded bg-[#f5c518] text-black font-black text-[9px] leading-none">
-                IMDb
-              </span>
-              <span>Ver ficha</span>
+              <Info className="w-3 h-3 text-zinc-500" />
+              <span>Ver detalhes</span>
             </button>
-            {filme.imdbId && (
-              <span className="text-[9px] text-zinc-600 font-mono">
-                {filme.imdbId}
+
+            {filme.rating && (
+              <span className="font-mono text-zinc-500 text-[10px]">
+                Nota {filme.rating}
               </span>
             )}
           </div>

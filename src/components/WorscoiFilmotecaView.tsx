@@ -19,7 +19,6 @@ import {
   Globe2,
   Tv,
   Star,
-  AlertTriangle,
   Flame,
   LayoutGrid,
   Layers,
@@ -82,9 +81,9 @@ export const SECOES_GENERO: SecaoGeneroConfig[] = [
     id: 'imdb-top',
     titulo: 'IMDb Top 250 & Aclamados',
     subtitulo: 'As maiores notas da história do cinema, séries e animações no ranking oficial IMDb',
-    icon: <Star className="w-4 h-4 fill-[#f5c518] text-[#f5c518]" />,
-    corDestaque: 'text-[#f5c518]',
-    badgeBg: 'bg-[#f5c518]/15 text-[#f5c518] border-[#f5c518]/40',
+    icon: <Star className="w-4 h-4 fill-amber-400/80 text-amber-400" />,
+    corDestaque: 'text-zinc-200',
+    badgeBg: 'bg-zinc-800 text-zinc-300 border-zinc-700',
     test: (f) => {
       const r = f.rating ? parseFloat(f.rating) : 0;
       return Boolean(
@@ -98,9 +97,9 @@ export const SECOES_GENERO: SecaoGeneroConfig[] = [
     id: 'lancamentos',
     titulo: 'Novos Lançamentos & Em Alta',
     subtitulo: 'Grandes sucessos recentes do cinema e streaming',
-    icon: <Flame className="w-4 h-4" />,
-    corDestaque: 'text-amber-400',
-    badgeBg: 'bg-amber-500/10 text-amber-300 border-amber-500/30',
+    icon: <Flame className="w-4 h-4 text-zinc-300" />,
+    corDestaque: 'text-zinc-200',
+    badgeBg: 'bg-zinc-800 text-zinc-300 border-zinc-700',
     test: (f) => {
       const anoNum = parseInt(f.ano, 10);
       return Boolean(f.plataforma || (anoNum && anoNum >= 2024));
@@ -110,9 +109,9 @@ export const SECOES_GENERO: SecaoGeneroConfig[] = [
     id: 'acao',
     titulo: 'Ação & Aventura',
     subtitulo: 'Adrenalina, combates eletrizantes e jornadas épicas',
-    icon: <Zap className="w-4 h-4" />,
-    corDestaque: 'text-orange-400',
-    badgeBg: 'bg-orange-500/10 text-orange-300 border-orange-500/30',
+    icon: <Zap className="w-4 h-4 text-zinc-300" />,
+    corDestaque: 'text-zinc-200',
+    badgeBg: 'bg-zinc-800 text-zinc-300 border-zinc-700',
     test: (f) => {
       const g = (f.genero || '').toLowerCase();
       return (
@@ -128,9 +127,9 @@ export const SECOES_GENERO: SecaoGeneroConfig[] = [
     id: 'anime',
     titulo: 'Animes & Animação',
     subtitulo: 'Sagas lendárias, produções Crunchyroll e shonens',
-    icon: <Sparkles className="w-4 h-4" />,
-    corDestaque: 'text-emerald-400',
-    badgeBg: 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30',
+    icon: <Sparkles className="w-4 h-4 text-zinc-300" />,
+    corDestaque: 'text-zinc-200',
+    badgeBg: 'bg-zinc-800 text-zinc-300 border-zinc-700',
     test: (f) => {
       const g = (f.genero || '').toLowerCase();
       return (
@@ -147,9 +146,9 @@ export const SECOES_GENERO: SecaoGeneroConfig[] = [
     id: 'drama',
     titulo: 'Drama & Histórias Profundas',
     subtitulo: 'Roteiros consagrados, biografias e atuações premiadas',
-    icon: <Heart className="w-4 h-4" />,
-    corDestaque: 'text-rose-400',
-    badgeBg: 'bg-rose-500/10 text-rose-300 border-rose-500/30',
+    icon: <Heart className="w-4 h-4 text-zinc-300" />,
+    corDestaque: 'text-zinc-200',
+    badgeBg: 'bg-zinc-800 text-zinc-300 border-zinc-700',
     test: (f) => {
       const g = (f.genero || '').toLowerCase();
       return (
@@ -164,9 +163,9 @@ export const SECOES_GENERO: SecaoGeneroConfig[] = [
     id: 'scifi',
     titulo: 'Ficção Científica & Fantasia',
     subtitulo: 'Futuros distópicos, cosmos, magia e tecnologia',
-    icon: <Rocket className="w-4 h-4" />,
-    corDestaque: 'text-cyan-400',
-    badgeBg: 'bg-cyan-500/10 text-cyan-300 border-cyan-500/30',
+    icon: <Rocket className="w-4 h-4 text-zinc-300" />,
+    corDestaque: 'text-zinc-200',
+    badgeBg: 'bg-zinc-800 text-zinc-300 border-zinc-700',
     test: (f) => {
       const g = (f.genero || '').toLowerCase();
       return (
@@ -182,9 +181,9 @@ export const SECOES_GENERO: SecaoGeneroConfig[] = [
     id: 'comedia',
     titulo: 'Comédia & Diversão',
     subtitulo: 'O melhor humor para relaxar e dar boas risadas',
-    icon: <Laugh className="w-4 h-4" />,
-    corDestaque: 'text-yellow-400',
-    badgeBg: 'bg-yellow-500/10 text-yellow-300 border-yellow-500/30',
+    icon: <Laugh className="w-4 h-4 text-zinc-300" />,
+    corDestaque: 'text-zinc-200',
+    badgeBg: 'bg-zinc-800 text-zinc-300 border-zinc-700',
     test: (f) => {
       const g = (f.genero || '').toLowerCase();
       return g.includes('comedia') || g.includes('comédia') || g.includes('comedy');
@@ -194,9 +193,9 @@ export const SECOES_GENERO: SecaoGeneroConfig[] = [
     id: 'terror',
     titulo: 'Terror, Suspense & Mistério',
     subtitulo: 'Frio na espinha, mistérios sombrios e suspense psicológico',
-    icon: <Ghost className="w-4 h-4" />,
-    corDestaque: 'text-red-400',
-    badgeBg: 'bg-red-500/10 text-red-300 border-red-500/30',
+    icon: <Ghost className="w-4 h-4 text-zinc-300" />,
+    corDestaque: 'text-zinc-200',
+    badgeBg: 'bg-zinc-800 text-zinc-300 border-zinc-700',
     test: (f) => {
       const g = (f.genero || '').toLowerCase();
       return (
@@ -213,9 +212,9 @@ export const SECOES_GENERO: SecaoGeneroConfig[] = [
     id: 'crime',
     titulo: 'Crime & Policial',
     subtitulo: 'Máfia, golpes, tribunais e investigações policiais',
-    icon: <ShieldCheck className="w-4 h-4" />,
-    corDestaque: 'text-blue-400',
-    badgeBg: 'bg-blue-500/10 text-blue-300 border-blue-500/30',
+    icon: <ShieldCheck className="w-4 h-4 text-zinc-300" />,
+    corDestaque: 'text-zinc-200',
+    badgeBg: 'bg-zinc-800 text-zinc-300 border-zinc-700',
     test: (f) => {
       const g = (f.genero || '').toLowerCase();
       return (
@@ -230,9 +229,9 @@ export const SECOES_GENERO: SecaoGeneroConfig[] = [
     id: 'super-herois',
     titulo: 'Heróis, HQs & Universos Épicos',
     subtitulo: 'Homem-Aranha, Batman, Superman, Liga da Justiça, DC & Marvel',
-    icon: <ShieldCheck className="w-4 h-4" />,
-    corDestaque: 'text-sky-400',
-    badgeBg: 'bg-sky-500/10 text-sky-300 border-sky-500/30',
+    icon: <ShieldCheck className="w-4 h-4 text-zinc-300" />,
+    corDestaque: 'text-zinc-200',
+    badgeBg: 'bg-zinc-800 text-zinc-300 border-zinc-700',
     test: (f) => {
       const t = (f.titulo || '').toLowerCase();
       const g = (f.genero || '').toLowerCase();
@@ -268,18 +267,18 @@ export const SECOES_GENERO: SecaoGeneroConfig[] = [
     id: 'series',
     titulo: 'Séries de TV & Temporadas',
     subtitulo: 'Temporadas completas com maratonas imperdíveis',
-    icon: <Tv className="w-4 h-4" />,
-    corDestaque: 'text-indigo-400',
-    badgeBg: 'bg-indigo-500/10 text-indigo-300 border-indigo-500/30',
+    icon: <Tv className="w-4 h-4 text-zinc-300" />,
+    corDestaque: 'text-zinc-200',
+    badgeBg: 'bg-zinc-800 text-zinc-300 border-zinc-700',
     test: (f) => f.tipo === 'serie'
   },
   {
     id: 'classicos',
     titulo: 'Grandes Clássicos do Cinema',
     subtitulo: 'Obras imortais com avaliação máxima no IMDb',
-    icon: <Star className="w-4 h-4" />,
-    corDestaque: 'text-amber-300',
-    badgeBg: 'bg-amber-500/10 text-amber-300 border-amber-500/30',
+    icon: <Star className="w-4 h-4 text-zinc-300" />,
+    corDestaque: 'text-zinc-200',
+    badgeBg: 'bg-zinc-800 text-zinc-300 border-zinc-700',
     test: (f) => {
       const anoNum = parseInt(f.ano, 10);
       return Boolean(f.isClassico || (anoNum && anoNum < 2000));
@@ -289,9 +288,9 @@ export const SECOES_GENERO: SecaoGeneroConfig[] = [
     id: 'animacoes-imdb',
     titulo: 'Animações Lendárias (Disney, Pixar & Ghibli)',
     subtitulo: 'As maiores animações da história consagradas com notas estelares no IMDb',
-    icon: <Sparkles className="w-4 h-4 text-emerald-400" />,
-    corDestaque: 'text-emerald-400',
-    badgeBg: 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30',
+    icon: <Sparkles className="w-4 h-4 text-zinc-300" />,
+    corDestaque: 'text-zinc-200',
+    badgeBg: 'bg-zinc-800 text-zinc-300 border-zinc-700',
     test: (f) => {
       const g = (f.genero || '').toLowerCase();
       const t = (f.titulo || '').toLowerCase();
@@ -366,7 +365,6 @@ export function WorscoiFilmotecaView({ onBackToTV }: WorscoiFilmotecaViewProps) 
   const [episodioAtivo, setEpisodioAtivo] = useState<number>(1);
   const [modalTemporada, setModalTemporada] = useState<number>(1);
   const [modalEpisodio, setModalEpisodio] = useState<number>(1);
-  const [isInsideIframe, setIsInsideIframe] = useState<boolean>(false);
   const playerContainerRef = useRef<HTMLDivElement>(null);
 
   // Estados e controle do Modal de Metadados Dinâmicos do IMDb
@@ -408,16 +406,6 @@ export function WorscoiFilmotecaView({ onBackToTV }: WorscoiFilmotecaViewProps) 
     setGeneroAtivo('todos');
     setTipoFiltro('todos');
     setIsModalImdbAberto(false);
-  }, []);
-
-  useEffect(() => {
-    try {
-      if (typeof window !== 'undefined') {
-        setIsInsideIframe(window.self !== window.top);
-      }
-    } catch {
-      setIsInsideIframe(true);
-    }
   }, []);
 
   const alternarProximoServidor = useCallback(() => {
@@ -717,12 +705,12 @@ export function WorscoiFilmotecaView({ onBackToTV }: WorscoiFilmotecaViewProps) 
         type="button"
         id={`filmoteca-server-${id}`}
         onClick={() => onSelect(id)}
-        className={`px-3 py-1.5 rounded-lg text-xs font-medium transition cursor-pointer flex items-center gap-1.5 shrink-0 ${
+        className={`px-2.5 py-1 rounded-lg text-xs font-medium transition cursor-pointer flex items-center gap-1.5 shrink-0 ${
           isSelected
-            ? 'bg-[#FF2D55] text-white shadow-md shadow-[#FF2D55]/30 ring-1 ring-[#FF2D55]'
+            ? 'bg-zinc-100 text-zinc-950 font-semibold shadow-sm'
             : highlight
-            ? 'bg-zinc-900 hover:bg-zinc-800 text-amber-300 border border-amber-500/30'
-            : 'bg-zinc-900 text-zinc-300 hover:text-white border border-zinc-800 hover:border-zinc-700'
+            ? 'bg-zinc-900 hover:bg-zinc-800 text-zinc-200 border border-zinc-700'
+            : 'bg-zinc-900/80 text-zinc-400 hover:text-zinc-200 border border-zinc-800/80 hover:border-zinc-700'
         }`}
       >
         {icon}
@@ -734,417 +722,155 @@ export function WorscoiFilmotecaView({ onBackToTV }: WorscoiFilmotecaViewProps) 
   return (
     <div className="w-full max-w-7xl mx-auto py-4 sm:py-6 px-3 sm:px-6 flex flex-col min-h-full">
       {/* CABEÇALHO DA FILMOTECA */}
-      <div className="flex flex-col gap-4 pb-6 border-b border-zinc-900/80 mb-6">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div id="filmoteca-header-container" className="flex flex-col gap-3.5 pb-4 border-b border-zinc-800/80 mb-6 select-none">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <button
               type="button"
               id="filmoteca-back-header-btn"
               onClick={onBackToTV}
-              className="p-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white border border-zinc-800 transition cursor-pointer"
+              className="p-2 rounded-xl bg-zinc-900/80 hover:bg-zinc-800 text-zinc-400 hover:text-white border border-zinc-800 transition cursor-pointer"
               title="Voltar para TV ao vivo"
             >
               <ArrowLeft className="w-4 h-4" />
             </button>
 
             <div className="flex items-center gap-2.5">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#FF2D55]/20 to-zinc-900 border border-[#FF2D55]/40 flex items-center justify-center shadow-lg shadow-[#FF2D55]/10">
-                <Film className="w-5 h-5 text-[#FF2D55]" />
+              <div className="w-8 h-8 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-200">
+                <Film className="w-4 h-4" />
               </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <h1 className="text-lg sm:text-xl font-bold text-white tracking-tight">
-                    Filmoteca & Cinema VOD
-                  </h1>
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#FF2D55]/10 text-[#FF2D55] border border-[#FF2D55]/20">
-                    Multi-Provedor VIP
-                  </span>
-                </div>
-                <p className="text-xs text-zinc-400">
-                  Transmissão sob demanda dos verdadeiros filmes em alta definição com múltiplos servidores
-                </p>
-              </div>
+              <h1 className="text-base sm:text-lg font-bold text-white tracking-tight">
+                Filmoteca
+              </h1>
             </div>
           </div>
 
-          {/* BARRA DE PESQUISA PRINCIPAL E BOTÃO DE RECARREGAR */}
-          <div className="w-full md:w-auto flex items-center gap-2">
-            <div className="w-full md:w-96 relative">
-              <div className="relative flex items-center">
-                <Search className="w-4 h-4 text-zinc-500 absolute left-3.5 pointer-events-none" />
-                <input
-                  type="text"
-                  id="filmoteca-search-input"
-                  value={busca}
-                  onChange={(e) => setBusca(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      executarBuscaGlobal(busca);
-                    } else if (e.key === 'Escape') {
-                      setBusca('');
-                    }
-                  }}
-                  placeholder="Pesquisar filme, série, animação ou título no IMDb..."
-                  className="w-full pl-10 pr-20 py-2.5 rounded-xl bg-zinc-900/90 hover:bg-zinc-900 text-zinc-100 text-xs placeholder:text-zinc-500 border border-zinc-800 focus:outline-none focus:border-[#FF2D55]/60 focus:ring-1 focus:ring-[#FF2D55]/30 transition"
-                />
-                <div className="absolute right-2 flex items-center gap-1">
-                  {busca && (
-                    <button
-                      type="button"
-                      id="filmoteca-clear-search-btn"
-                      onClick={() => {
-                        setBusca('');
-                        setMostrarResultadosImdbAoVivo(false);
-                      }}
-                      className="p-1 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition cursor-pointer"
-                      title="Limpar pesquisa"
-                    >
-                      <X className="w-3.5 h-3.5" />
-                    </button>
-                  )}
-                  <button
-                    type="button"
-                    id="filmoteca-do-search-btn"
-                    onClick={() => executarBuscaGlobal(busca)}
-                    disabled={isSearchingRemote || !busca.trim()}
-                    className="p-1.5 rounded-lg bg-[#FF2D55] text-white hover:bg-[#e0264a] transition disabled:opacity-40 disabled:cursor-not-allowed text-[10px] font-bold"
-                    title="Pesquisar catálogo global"
-                  >
-                    {isSearchingRemote ? (
-                      <Loader2 className="w-3 h-3 animate-spin" />
-                    ) : (
-                      'Buscar'
-                    )}
-                  </button>
-                  <button
-                    type="button"
-                    id="filmoteca-do-imdb-search-btn"
-                    onClick={() => executarBuscaImdbAoVivo(busca)}
-                    disabled={buscandoNoImdbAoVivo || !busca.trim()}
-                    className="px-2 py-1.5 rounded-lg bg-[#f5c518] hover:bg-[#e4b512] text-black transition disabled:opacity-40 disabled:cursor-not-allowed text-[10px] font-black flex items-center gap-1 cursor-pointer shadow-sm"
-                    title="Buscar metadados dinâmicos e títulos no IMDb"
-                  >
-                    {buscandoNoImdbAoVivo ? (
-                      <Loader2 className="w-3 h-3 animate-spin" />
-                    ) : (
-                      <span>IMDb</span>
-                    )}
-                  </button>
-                </div>
-              </div>
+          {/* BARRA DE PESQUISA MINIMALISTA & RECARREGAR */}
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <div className="relative flex-1 sm:w-80">
+              <Search className="w-4 h-4 text-zinc-500 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <input
+                type="text"
+                id="filmoteca-search-input"
+                value={busca}
+                onChange={(e) => setBusca(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    executarBuscaGlobal(busca);
+                  } else if (e.key === 'Escape') {
+                    setBusca('');
+                    setMostrarResultadosImdbAoVivo(false);
+                  }
+                }}
+                placeholder="Pesquisar títulos ou gêneros..."
+                className="w-full pl-9 pr-9 py-2 rounded-xl bg-zinc-900/90 text-zinc-100 text-xs placeholder:text-zinc-500 border border-zinc-800 focus:outline-none focus:border-zinc-500 focus:ring-1 focus:ring-zinc-600/30 transition"
+              />
               {busca && (
-                <div className="flex items-center gap-2 mt-1.5 px-1 flex-wrap">
-                  <button
-                    type="button"
-                    id="filmoteca-quick-imdb-search-trigger"
-                    onClick={() => executarBuscaImdbAoVivo(busca)}
-                    className="text-[11px] text-[#f5c518] hover:text-amber-300 transition flex items-center gap-1 font-bold cursor-pointer"
-                  >
-                    <Sparkles className="w-3 h-3" />
-                    <span>Buscar &quot;{busca}&quot; no IMDb ao vivo (sinopse, nota e elenco)</span>
-                  </button>
-                </div>
+                <button
+                  type="button"
+                  id="filmoteca-clear-search-btn"
+                  onClick={() => {
+                    setBusca('');
+                    setMostrarResultadosImdbAoVivo(false);
+                  }}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 text-zinc-400 hover:text-white transition cursor-pointer"
+                  title="Limpar pesquisa"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
               )}
             </div>
-
-            {isInsideIframe && (
-              <button
-                type="button"
-                id="filmoteca-header-open-tab-btn"
-                onClick={() => StreamService.openAppInNewTab()}
-                className="px-3 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-amber-300 hover:text-amber-200 border border-amber-500/30 transition cursor-pointer flex items-center gap-1.5 text-xs font-semibold shrink-0 shadow-sm"
-                title="Executar sem sandbox: Abre o Worscoi Channel em uma aba dedicada sem iframes"
-              >
-                <ExternalLink className="w-3.5 h-3.5 text-amber-400" />
-                <span className="hidden sm:inline">Desativar Sandbox (Nova Aba)</span>
-                <span className="sm:hidden">Nova Aba</span>
-              </button>
-            )}
 
             <button
               type="button"
               id="filmoteca-refresh-btn"
               onClick={() => carregarFilmes(true)}
               disabled={isRefreshing || isLoading}
-              className="p-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white border border-zinc-800 transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
-              title="Recarregar catálogo atualizado"
+              className="p-2 rounded-xl bg-zinc-900/80 hover:bg-zinc-800 text-zinc-400 hover:text-white border border-zinc-800 transition cursor-pointer disabled:opacity-50 shrink-0"
+              title="Recarregar catálogo"
             >
-              <RotateCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin text-[#FF2D55]' : ''}`} />
+              <RotateCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin text-zinc-200' : ''}`} />
             </button>
           </div>
         </div>
 
-        {/* ABAS DE CATEGORIA PRINCIPAL & PLATAFORMAS DE STREAMING */}
+        {/* LINHA INFERIOR: CATEGORIAS ESSENCIAIS + ALTERNADOR SEÇÕES/GRELHA */}
         {!isLoading && filmes.length > 0 && (
-          <div className="flex items-center gap-2 overflow-x-auto custom-scrollbar pt-2 pb-1">
-            <button
-              type="button"
-              id="filter-category-all"
-              onClick={() => setTipoFiltro('todos')}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer shrink-0 flex items-center gap-1.5 ${
-                tipoFiltro === 'todos'
-                  ? 'bg-[#FF2D55] text-white shadow-md shadow-[#FF2D55]/30 ring-1 ring-[#FF2D55]'
-                  : 'bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-zinc-800'
-              }`}
-            >
-              <span>Todos os Títulos</span>
-            </button>
-
-            {/* TOP IMDB */}
-            <button
-              type="button"
-              id="filter-category-imdb"
-              onClick={() => setTipoFiltro('imdb')}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer shrink-0 flex items-center gap-1.5 ${
-                tipoFiltro === 'imdb'
-                  ? 'bg-[#f5c518] text-black shadow-md shadow-[#f5c518]/30 ring-1 ring-[#f5c518]'
-                  : 'bg-zinc-900 hover:bg-zinc-800 text-[#f5c518] border border-[#f5c518]/40'
-              }`}
-            >
-              <span className="font-black px-1 py-0.5 bg-black text-[#f5c518] text-[9px] rounded leading-none">IMDb</span>
-              <span>Top IMDb (Aclamados)</span>
-            </button>
-
-            {/* ANIMAÇÕES */}
-            <button
-              type="button"
-              id="filter-category-animacoes"
-              onClick={() => setTipoFiltro('animacao')}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer shrink-0 flex items-center gap-1.5 ${
-                tipoFiltro === 'animacao'
-                  ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/30 ring-1 ring-emerald-400'
-                  : 'bg-zinc-900 hover:bg-zinc-800 text-emerald-300 border border-emerald-500/30'
-              }`}
-            >
-              <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
-              <span>Animações & Disney</span>
-            </button>
-
-            {/* HBO / MAX */}
-            <button
-              type="button"
-              id="filter-category-hbo"
-              onClick={() => setTipoFiltro('hbo')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer shrink-0 flex items-center gap-1.5 ${
-                tipoFiltro === 'hbo'
-                  ? 'bg-purple-600 text-white shadow-md shadow-purple-600/30 ring-1 ring-purple-400'
-                  : 'bg-zinc-900 hover:bg-zinc-800 text-purple-300 border border-purple-900/50'
-              }`}
-            >
-              <span className="w-2 h-2 rounded-full bg-purple-400" />
-              <span>HBO / Max</span>
-            </button>
-
-            {/* DISNEY+ */}
-            <button
-              type="button"
-              id="filter-category-disney"
-              onClick={() => setTipoFiltro('disney')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer shrink-0 flex items-center gap-1.5 ${
-                tipoFiltro === 'disney'
-                  ? 'bg-blue-600 text-white shadow-md shadow-blue-600/30 ring-1 ring-blue-400'
-                  : 'bg-zinc-900 hover:bg-zinc-800 text-blue-300 border border-blue-900/50'
-              }`}
-            >
-              <span className="w-2 h-2 rounded-full bg-blue-400" />
-              <span>Disney+</span>
-            </button>
-
-            {/* NETFLIX */}
-            <button
-              type="button"
-              id="filter-category-netflix"
-              onClick={() => setTipoFiltro('netflix')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer shrink-0 flex items-center gap-1.5 ${
-                tipoFiltro === 'netflix'
-                  ? 'bg-red-600 text-white shadow-md shadow-red-600/30 ring-1 ring-red-400'
-                  : 'bg-zinc-900 hover:bg-zinc-800 text-red-400 border border-red-900/50'
-              }`}
-            >
-              <span className="w-2 h-2 rounded-full bg-red-500" />
-              <span>Netflix</span>
-            </button>
-
-            {/* CRUNCHYROLL */}
-            <button
-              type="button"
-              id="filter-category-crunchyroll"
-              onClick={() => setTipoFiltro('crunchyroll')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer shrink-0 flex items-center gap-1.5 ${
-                tipoFiltro === 'crunchyroll'
-                  ? 'bg-orange-500 text-white shadow-md shadow-orange-500/30 ring-1 ring-orange-300'
-                  : 'bg-zinc-900 hover:bg-zinc-800 text-orange-400 border border-orange-900/50'
-              }`}
-            >
-              <span className="w-2 h-2 rounded-full bg-orange-400" />
-              <span>Crunchyroll</span>
-            </button>
-
-            <button
-              type="button"
-              id="filter-category-filmes"
-              onClick={() => setTipoFiltro('filme')}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer shrink-0 flex items-center gap-1.5 ${
-                tipoFiltro === 'filme'
-                  ? 'bg-[#FF2D55] text-white shadow-md shadow-[#FF2D55]/30 ring-1 ring-[#FF2D55]'
-                  : 'bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-zinc-800'
-              }`}
-            >
-              <Film className="w-3.5 h-3.5 text-cyan-400" />
-              <span>Filmes Modernos</span>
-            </button>
-
-            <button
-              type="button"
-              id="filter-category-classicos"
-              onClick={() => setTipoFiltro('classico')}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer shrink-0 flex items-center gap-1.5 ${
-                tipoFiltro === 'classico'
-                  ? 'bg-[#FF2D55] text-white shadow-md shadow-[#FF2D55]/30 ring-1 ring-[#FF2D55]'
-                  : 'bg-zinc-900 hover:bg-zinc-800 text-amber-400 border border-amber-500/30'
-              }`}
-            >
-              <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-              <span>Clássicos Antigos (IMDb)</span>
-            </button>
-
-            <button
-              type="button"
-              id="filter-category-series"
-              onClick={() => setTipoFiltro('serie')}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer shrink-0 flex items-center gap-1.5 ${
-                tipoFiltro === 'serie'
-                  ? 'bg-[#FF2D55] text-white shadow-md shadow-[#FF2D55]/30 ring-1 ring-[#FF2D55]'
-                  : 'bg-zinc-900 hover:bg-zinc-800 text-indigo-300 border border-indigo-500/30'
-              }`}
-            >
-              <Tv className="w-3.5 h-3.5 text-indigo-400" />
-              <span>Séries de TV</span>
-            </button>
-
-            <button
-              type="button"
-              id="filter-category-animes"
-              onClick={() => setTipoFiltro('anime')}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer shrink-0 flex items-center gap-1.5 ${
-                tipoFiltro === 'anime'
-                  ? 'bg-[#FF2D55] text-white shadow-md shadow-[#FF2D55]/30 ring-1 ring-[#FF2D55]'
-                  : 'bg-zinc-900 hover:bg-zinc-800 text-emerald-300 border border-emerald-500/30'
-              }`}
-            >
-              <Play className="w-3.5 h-3.5 text-emerald-400 fill-current" />
-              <span>Animes</span>
-            </button>
-          </div>
-        )}
-
-        {/* SISTEMA DE ABAS DE GÊNERO & ALTERNADOR DE MODO (SEÇÕES vs GRELHA) */}
-        {!isLoading && filmes.length > 0 && (
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 pb-1 border-t border-zinc-900">
-            {/* ABAS DE NAVEGAÇÃO DE GÊNERO */}
-            <div className="flex items-center gap-1.5 overflow-x-auto custom-scrollbar py-1 max-w-full">
-              <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider font-mono flex items-center gap-1 mr-1 shrink-0">
-                <SlidersHorizontal className="w-3.5 h-3.5 text-[#FF2D55]" />
-                <span>Gêneros:</span>
-              </span>
-
-              {/* ABA TODOS OS GÊNEROS */}
-              <button
-                type="button"
-                id="filter-genre-all"
-                onClick={() => setGeneroAtivo('todos')}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer shrink-0 flex items-center gap-1.5 ${
-                  generoAtivo === 'todos'
-                    ? 'bg-[#FF2D55] text-white shadow-md shadow-[#FF2D55]/30 ring-1 ring-[#FF2D55]'
-                    : 'bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-zinc-800'
-                }`}
-              >
-                <Layers className="w-3.5 h-3.5" />
-                <span>Todos</span>
-              </button>
-
-              {/* ABAS DEFINIDAS EM SECOES_GENERO */}
-              {SECOES_GENERO.map((sec) => {
-                const totalSec = filmesBase.filter((f) => sec.test(f)).length;
-                if (totalSec === 0) return null;
-                const isSelected = generoAtivo === sec.id;
-
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pt-1">
+            {/* FILTROS PRINCIPAIS EM LINHA ÚNICA */}
+            <div className="flex items-center gap-1.5 overflow-x-auto custom-scrollbar py-0.5 max-w-full">
+              {(
+                [
+                  { id: 'todos', label: 'Todos' },
+                  { id: 'filme', label: 'Filmes' },
+                  { id: 'serie', label: 'Séries' },
+                  { id: 'animacao', label: 'Animações' },
+                  { id: 'imdb', label: 'Top IMDb' },
+                  { id: 'hbo', label: 'HBO / Max' },
+                  { id: 'netflix', label: 'Netflix' },
+                  { id: 'disney', label: 'Disney+' },
+                ] as const
+              ).map((cat) => {
+                const isSelected = tipoFiltro === cat.id;
                 return (
                   <button
-                    key={sec.id}
+                    key={cat.id}
                     type="button"
-                    id={`filter-genre-tab-${sec.id}`}
-                    onClick={() => setGeneroAtivo(isSelected ? 'todos' : sec.id)}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer shrink-0 flex items-center gap-1.5 ${
+                    id={`filter-category-${cat.id}`}
+                    onClick={() => {
+                      setTipoFiltro(cat.id);
+                      setGeneroAtivo('todos');
+                    }}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition cursor-pointer shrink-0 ${
                       isSelected
-                        ? 'bg-[#FF2D55] text-white shadow-md shadow-[#FF2D55]/30 ring-1 ring-[#FF2D55]'
-                        : 'bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-zinc-800'
+                        ? 'bg-zinc-100 text-zinc-950 font-semibold shadow-sm'
+                        : 'bg-zinc-900/80 hover:bg-zinc-800 text-zinc-400 hover:text-zinc-200 border border-zinc-800/80'
                     }`}
                   >
-                    <span className={isSelected ? 'text-white' : sec.corDestaque}>
-                      {sec.icon}
-                    </span>
-                    <span>{sec.titulo.split('&')[0].trim()}</span>
-                    <span
-                      className={`text-[10px] font-mono px-1.5 py-0.5 rounded-full ${
-                        isSelected ? 'bg-black/30 text-white font-bold' : 'bg-zinc-800 text-zinc-400'
-                      }`}
-                    >
-                      {totalSec}
-                    </span>
+                    {cat.label}
                   </button>
                 );
               })}
             </div>
 
-            {/* CONTROLES DO LADO DIREITO: ALTERNADOR SEÇÕES / GRELHA & CONTADOR */}
+            {/* CONTROLES: SEÇÕES / GRELHA + CONTAGEM */}
             <div className="flex items-center gap-3 shrink-0 self-end sm:self-center">
-              {/* TOGGLE MODO SEÇÕES / GRELHA (ATIVO QUANDO EM 'TODOS') */}
-              {generoAtivo === 'todos' && !busca && (
-                <div className="flex items-center p-0.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs">
+              {!busca && (
+                <div className="flex items-center p-0.5 rounded-lg bg-zinc-900 border border-zinc-800 text-xs">
                   <button
                     type="button"
                     id="filmoteca-view-sections-btn"
                     onClick={() => setModoVisualizacao('secoes')}
-                    className={`px-2.5 py-1 rounded-lg font-semibold flex items-center gap-1.5 transition cursor-pointer ${
+                    className={`px-2.5 py-1 rounded-md font-medium flex items-center gap-1.5 transition cursor-pointer ${
                       modoVisualizacao === 'secoes'
                         ? 'bg-zinc-800 text-white shadow-sm'
                         : 'text-zinc-400 hover:text-zinc-200'
                     }`}
-                    title="Exibir catálogo agrupado por seções / carrosséis de gênero"
+                    title="Exibir por seções"
                   >
-                    <Layers className="w-3.5 h-3.5 text-[#FF2D55]" />
-                    <span className="hidden md:inline">Por Seções</span>
+                    <Layers className="w-3.5 h-3.5" />
+                    <span className="hidden md:inline">Seções</span>
                   </button>
                   <button
                     type="button"
                     id="filmoteca-view-grid-btn"
                     onClick={() => setModoVisualizacao('grelha')}
-                    className={`px-2.5 py-1 rounded-lg font-semibold flex items-center gap-1.5 transition cursor-pointer ${
+                    className={`px-2.5 py-1 rounded-md font-medium flex items-center gap-1.5 transition cursor-pointer ${
                       modoVisualizacao === 'grelha'
                         ? 'bg-zinc-800 text-white shadow-sm'
                         : 'text-zinc-400 hover:text-zinc-200'
                     }`}
-                    title="Exibir em grelha contínua"
+                    title="Exibir em grelha"
                   >
-                    <LayoutGrid className="w-3.5 h-3.5 text-cyan-400" />
+                    <LayoutGrid className="w-3.5 h-3.5" />
                     <span className="hidden md:inline">Grelha</span>
                   </button>
                 </div>
               )}
 
-              <div className="text-xs text-zinc-500 font-mono shrink-0">
-                {filmesFiltrados.length === filmes.length ? (
-                  <span>{filmes.length} títulos disponíveis</span>
-                ) : (
-                  <span className="text-zinc-400">
-                    <span className="text-[#FF2D55] font-semibold">
-                      {filmesFiltrados.length}
-                    </span>{' '}
-                    de {filmes.length} títulos
-                  </span>
-                )}
-              </div>
+              <span className="text-xs text-zinc-500 font-mono">
+                {filmesFiltrados.length} {filmesFiltrados.length === 1 ? 'título' : 'títulos'}
+              </span>
             </div>
           </div>
         )}
@@ -1154,19 +880,18 @@ export function WorscoiFilmotecaView({ onBackToTV }: WorscoiFilmotecaViewProps) 
       {!isLoading && (
         <div ref={playerContainerRef} className="w-full max-w-full mb-8 flex flex-col gap-3">
           {filmeAtivo && (
-            <div className="w-full max-w-full flex flex-col gap-2">
-              {/* BARRA DE SELEÇÃO DE PROVEDORES E FONTES */}
-              <div className="flex flex-wrap items-center justify-between gap-2 px-3.5 py-2.5 bg-zinc-950/95 rounded-xl border border-zinc-800/90 text-xs shadow-xl">
-                <div className="flex items-center gap-1.5 flex-wrap">
-                  <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider font-mono mr-1 flex items-center gap-1">
-                    <Zap className="w-3.5 h-3.5 text-[#FF2D55]" />
-                    <span>Fontes:</span>
+            <div id="filmoteca-active-player-controls" className="w-full max-w-full flex flex-col gap-2 select-none">
+              {/* BARRA DE FONTES & AÇÕES RÁPIDAS */}
+              <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 bg-zinc-900/80 rounded-xl border border-zinc-800 text-xs shadow-sm">
+                <div className="flex items-center gap-1.5 overflow-x-auto custom-scrollbar py-0.5 max-w-full">
+                  <span className="text-[11px] font-mono text-zinc-400 font-medium mr-1 shrink-0">
+                    Servidor:
                   </span>
 
                   {filmeAtivo.directStreamUrl &&
                     renderServerPill(
                       'direct',
-                      'Nativo (HTML5 Sem Bloqueios)',
+                      'Nativo',
                       <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />,
                       servidorAtivo,
                       setServidorAtivo,
@@ -1175,40 +900,40 @@ export function WorscoiFilmotecaView({ onBackToTV }: WorscoiFilmotecaViewProps) 
 
                   {renderServerPill(
                     'videasy',
-                    'Fonte 1: Videasy VIP (Recomendada)',
-                    <Film className="w-3 h-3 text-cyan-400" />,
+                    'Videasy',
+                    <Film className="w-3 h-3 text-zinc-300" />,
                     servidorAtivo,
                     setServidorAtivo
                   )}
 
                   {renderServerPill(
                     'vidsrc',
-                    'Fonte 2: VidSrc Ultra',
-                    <Tv className="w-3 h-3 text-amber-400" />,
+                    'VidSrc',
+                    <Tv className="w-3 h-3 text-zinc-300" />,
                     servidorAtivo,
                     setServidorAtivo
                   )}
 
                   {renderServerPill(
                     'vidsrcin',
-                    'Fonte 3: VidSrc In',
-                    <Sparkles className="w-3 h-3 text-emerald-400" />,
+                    'VidSrc 2',
+                    <Sparkles className="w-3 h-3 text-zinc-300" />,
                     servidorAtivo,
                     setServidorAtivo
                   )}
 
                   {renderServerPill(
                     'vidlink',
-                    'Fonte 4: VidLink Pro (Ultra HD)',
-                    <Play className="w-3 h-3 fill-current text-white" />,
+                    'VidLink',
+                    <Play className="w-3 h-3 fill-current text-zinc-300" />,
                     servidorAtivo,
                     setServidorAtivo
                   )}
 
                   {renderServerPill(
                     'autoembed',
-                    'Fonte 5: AutoEmbed VIP',
-                    <Globe2 className="w-3 h-3 text-indigo-400" />,
+                    'AutoEmbed',
+                    <Globe2 className="w-3 h-3 text-zinc-300" />,
                     servidorAtivo,
                     setServidorAtivo
                   )}
@@ -1216,14 +941,14 @@ export function WorscoiFilmotecaView({ onBackToTV }: WorscoiFilmotecaViewProps) 
                   {filmeAtivo.trailerUrl &&
                     renderServerPill(
                       'trailer',
-                      'Trailer Oficial',
+                      'Trailer',
                       <Sparkles className="w-3 h-3 text-amber-300" />,
                       servidorAtivo,
                       setServidorAtivo
                     )}
                 </div>
 
-                <div className="flex items-center gap-2 shrink-0">
+                <div className="flex items-center gap-1.5 shrink-0 ml-auto">
                   <button
                     type="button"
                     id="filmoteca-open-external-safe"
@@ -1231,32 +956,26 @@ export function WorscoiFilmotecaView({ onBackToTV }: WorscoiFilmotecaViewProps) 
                       const url = obterUrlFilme(filmeAtivo, servidorAtivo, temporadaAtiva, episodioAtivo);
                       if (url) StreamService.openSafeExternal(url);
                     }}
-                    className="px-3 py-1.5 rounded-lg text-xs font-medium text-white bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 transition cursor-pointer flex items-center gap-1.5 shadow-sm"
-                    title="Abre o player numa aba dedicada sem restrições de sandbox ou navegador"
+                    className="px-2.5 py-1.5 rounded-lg text-xs font-medium text-zinc-300 hover:text-white bg-zinc-800/80 hover:bg-zinc-800 border border-zinc-700/80 transition cursor-pointer flex items-center gap-1.5"
+                    title="Abre o player em nova aba sem restrições"
                   >
-                    <ExternalLink className="w-3.5 h-3.5 text-zinc-300" />
-                    <span>Ecrã Externo Seguro</span>
+                    <ExternalLink className="w-3.5 h-3.5" />
+                    <span className="hidden sm:inline">Nova Aba</span>
                   </button>
                 </div>
               </div>
 
               {/* SELETOR DE TEMPORADAS E EPISÓDIOS (PARA SÉRIES E ANIMES) */}
               {(filmeAtivo.tipo === 'serie' || filmeAtivo.tipo === 'anime') && (
-                <div className="flex flex-col gap-2.5 p-3.5 rounded-xl bg-zinc-950/95 border border-zinc-800 text-xs shadow-lg">
+                <div className="flex flex-col gap-2 px-3 py-2 rounded-xl bg-zinc-900/60 border border-zinc-800 text-xs">
                   <div className="flex items-center justify-between gap-2 flex-wrap">
-                    <div className="flex items-center gap-2">
-                      <span className="px-2 py-0.5 rounded font-mono text-[10px] font-bold bg-[#FF2D55]/20 text-[#FF2D55] border border-[#FF2D55]/30">
-                        {filmeAtivo.tipo === 'anime' ? 'ANIME' : 'SÉRIE'}
-                      </span>
-                      <span className="text-zinc-200 font-semibold">
-                        Assistindo: Temporada {temporadaAtiva} • Episódio {episodioAtivo}
-                      </span>
-                    </div>
+                    <span className="text-[11px] font-mono text-zinc-400">
+                      Temporada {temporadaAtiva} • Episódio {episodioAtivo}
+                    </span>
 
                     {/* Seleção de Temporada */}
                     {filmeAtivo.temporadas && filmeAtivo.temporadas > 1 && (
-                      <div className="flex items-center gap-1.5 flex-wrap">
-                        <span className="text-zinc-400 text-[11px] font-mono">Temporadas:</span>
+                      <div className="flex items-center gap-1 flex-wrap">
                         {Array.from({ length: Math.min(filmeAtivo.temporadas, 15) }, (_, i) => i + 1).map((s) => (
                           <button
                             key={`temp-${s}`}
@@ -1266,10 +985,10 @@ export function WorscoiFilmotecaView({ onBackToTV }: WorscoiFilmotecaViewProps) 
                               setEpisodioAtivo(1);
                               setReloadKey((k) => k + 1);
                             }}
-                            className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition cursor-pointer ${
+                            className={`px-2 py-0.5 rounded-md text-xs font-medium transition cursor-pointer ${
                               temporadaAtiva === s
-                                ? 'bg-[#FF2D55] text-white shadow-sm ring-1 ring-[#FF2D55]'
-                                : 'bg-zinc-900 text-zinc-400 hover:text-white hover:bg-zinc-800 border border-zinc-800'
+                                ? 'bg-zinc-100 text-zinc-950 font-semibold shadow-sm'
+                                : 'bg-zinc-800/70 text-zinc-400 hover:text-white hover:bg-zinc-800'
                             }`}
                           >
                             T{s}
@@ -1280,91 +999,28 @@ export function WorscoiFilmotecaView({ onBackToTV }: WorscoiFilmotecaViewProps) 
                   </div>
 
                   {/* Seleção de Episódios */}
-                  <div className="flex flex-col gap-1.5 pt-2 border-t border-zinc-800/80">
-                    <div className="flex items-center justify-between text-[11px] text-zinc-400">
-                      <span>Escolha o episódio da Temporada {temporadaAtiva}:</span>
-                      <span className="font-mono text-zinc-500">
-                        Episódio {episodioAtivo} de {filmeAtivo.episodiosPorTemporada || 12}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-1.5 overflow-x-auto custom-scrollbar py-1 max-w-full">
-                      {Array.from(
-                        { length: Math.min(filmeAtivo.episodiosPorTemporada || 12, 40) },
-                        (_, i) => i + 1
-                      ).map((ep) => (
-                        <button
-                          key={`ep-${ep}`}
-                          type="button"
-                          onClick={() => {
-                            setEpisodioAtivo(ep);
-                            setReloadKey((k) => k + 1);
-                          }}
-                          className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold transition cursor-pointer shrink-0 ${
-                            episodioAtivo === ep
-                              ? 'bg-gradient-to-r from-[#FF2D55] to-[#e0264a] text-white shadow-md shadow-[#FF2D55]/30 ring-1 ring-[#FF2D55]'
-                              : 'bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white border border-zinc-800'
-                          }`}
-                          title={`Reproduzir Episódio ${ep}`}
-                        >
-                          EP {ep}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* AVISO DE QUALIDADE E DICA DE CONTORNAR POLÍTICAS DE SANDBOX */}
-              <div className="px-3.5 py-1.5 rounded-lg bg-zinc-900/60 border border-zinc-800/60 text-[11px] text-zinc-400 flex items-center justify-between gap-2">
-                <span className="flex items-center gap-1.5">
-                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                  <span>
-                    Reprodução do título sob demanda. Se uma fonte demorar ou ficar escura no seu navegador, selecione outra fonte acima ou use o <strong>Ecrã Externo</strong>.
-                  </span>
-                </span>
-                <span className="text-zinc-500 font-mono text-[10px] hidden sm:inline">
-                  IMDb: {filmeAtivo.imdbId || 'HD'} {filmeAtivo.tmdbId ? `• TMDB: ${filmeAtivo.tmdbId}` : ''}
-                </span>
-              </div>
-
-              {/* BANNER DE DESATIVAÇÃO DE SANDBOX HERDADO (AI STUDIO IFRAME) */}
-              {isInsideIframe && (
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 rounded-xl bg-gradient-to-r from-amber-950/40 via-zinc-900/90 to-zinc-950 border border-amber-500/40 text-xs shadow-lg">
-                  <div className="flex items-start sm:items-center gap-2.5">
-                    <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5 sm:mt-0" />
-                    <div>
-                      <p className="font-semibold text-amber-200">
-                        Aviso de Restrição de Sandbox (Visualizador Embutido)
-                      </p>
-                      <p className="text-[11px] text-zinc-400">
-                        Se o player apresentar &quot;Playback blocked / restricted (sandboxed) frame&quot;, clique ao lado para assistir sem qualquer restrição de sandbox herdada pelo navegador:
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 shrink-0 flex-wrap">
-                    <button
-                      type="button"
-                      id="filmoteca-unconstrained-player-btn"
-                      onClick={() => {
-                        const url = obterUrlFilme(filmeAtivo, servidorAtivo, temporadaAtiva, episodioAtivo);
-                        if (url) StreamService.openSafeExternal(url);
-                      }}
-                      className="px-3 py-1.5 rounded-lg bg-[#FF2D55] hover:bg-[#e0264a] text-white font-semibold text-[11px] flex items-center gap-1.5 transition shadow-sm cursor-pointer"
-                      title="Abre o player em uma janela/aba dedicada sem qualquer restrição de sandbox"
-                    >
-                      <Play className="w-3.5 h-3.5 fill-current" />
-                      <span>Ecrã Livre (Sem Sandbox)</span>
-                    </button>
-                    <button
-                      type="button"
-                      id="filmoteca-open-app-newtab-btn"
-                      onClick={() => StreamService.openAppInNewTab()}
-                      className="px-3 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 text-[11px] flex items-center gap-1.5 transition cursor-pointer"
-                      title="Abre toda a aplicação numa nova aba do navegador, removendo 100% dos iframes do editor"
-                    >
-                      <ExternalLink className="w-3.5 h-3.5" />
-                      <span>Abrir App em Nova Aba</span>
-                    </button>
+                  <div className="flex items-center gap-1 overflow-x-auto custom-scrollbar py-0.5 max-w-full">
+                    {Array.from(
+                      { length: Math.min(filmeAtivo.episodiosPorTemporada || 12, 40) },
+                      (_, i) => i + 1
+                    ).map((ep) => (
+                      <button
+                        key={`ep-${ep}`}
+                        type="button"
+                        onClick={() => {
+                          setEpisodioAtivo(ep);
+                          setReloadKey((k) => k + 1);
+                        }}
+                        className={`px-2.5 py-1 rounded-md text-xs font-mono font-medium transition cursor-pointer shrink-0 ${
+                          episodioAtivo === ep
+                            ? 'bg-zinc-100 text-zinc-950 font-bold shadow-sm'
+                            : 'bg-zinc-800/60 hover:bg-zinc-800 text-zinc-400 hover:text-white'
+                        }`}
+                        title={`Episódio ${ep}`}
+                      >
+                        EP {ep}
+                      </button>
+                    ))}
                   </div>
                 </div>
               )}

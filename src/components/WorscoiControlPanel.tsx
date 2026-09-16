@@ -1,6 +1,6 @@
 'use client';
 import React, { useState } from 'react';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, KeyRound, Check } from 'lucide-react';
 import {
   AreaChart,
   Area,
@@ -103,39 +103,47 @@ export function WorscoiControlPanel({
     <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 py-6 space-y-8 select-none">
       {/* TÍTULO CENTRAL: PAINEL DE CONTROLE */}
       <div className="text-center">
-        <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
-          Painel de controle
+        <h1 className="text-lg sm:text-xl font-bold text-white tracking-tight">
+          Painel de Controle
         </h1>
+        <p className="text-xs text-zinc-400 mt-1">
+          Visão geral de assinaturas, planos ativos e geração de tokens
+        </p>
       </div>
 
       {/* SEÇÃO SUPERIOR: GERAR CHAVE TOKEN (ESQUERDA) + ESCOLHA O SEU PLANO (DIREITA) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* LADO ESQUERDO: CARD COM BORDA TRACEJADA "GERAR CHAVE TOKEN" */}
+        {/* LADO ESQUERDO: CARD REFINADO "GERAR CHAVE TOKEN" */}
         <div className="lg:col-span-3 flex flex-col">
-          <div
+          <button
+            type="button"
             onClick={onOpenTokenGenerator}
-            className="w-full h-44 rounded-2xl border-2 border-dashed border-[#FF2D55]/70 hover:border-[#FF2D55] bg-zinc-950/50 hover:bg-[#FF2D55]/5 transition cursor-pointer flex flex-col items-center justify-center p-4 text-center group"
+            className="w-full h-44 rounded-2xl border border-zinc-800 hover:border-zinc-700 bg-zinc-900/40 hover:bg-zinc-800/40 transition-all cursor-pointer flex flex-col items-center justify-center p-5 text-center group shadow-sm"
           >
-            <span className="text-base sm:text-lg font-bold text-[#FF2D55] group-hover:scale-105 transition tracking-tight">
-              Gerar Chave token
+            <div className="w-10 h-10 rounded-full bg-zinc-800/80 border border-zinc-700 flex items-center justify-center text-zinc-200 group-hover:scale-105 transition mb-2">
+              <KeyRound className="w-5 h-5 text-zinc-300" />
+            </div>
+            <span className="text-sm font-semibold text-zinc-100 group-hover:text-white transition tracking-tight">
+              Gerar Chave Token
             </span>
-            <p className="text-[11px] text-zinc-500 mt-1">
+            <p className="text-[11px] text-zinc-400 mt-1">
               Criar tokens de 5 dígitos para novos assinantes
             </p>
-          </div>
+          </button>
         </div>
 
         {/* LADO DIREITO: ESCOLHA O SEU PLANO */}
         <div className="lg:col-span-9 space-y-3">
           <div className="text-center lg:text-left">
-            <h2 className="text-base sm:text-lg font-bold text-white tracking-tight">
-              Escolha o seu Plano
+            <h2 className="text-sm font-semibold text-zinc-200 tracking-tight">
+              Planos de Assinatura
             </h2>
           </div>
 
-          {/* GRID DOS 5 PLANOS COM BORDAS TRACEJADAS VERMELHAS / PINK */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {/* GRID DOS PLANOS */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
             {planCards.map((plan) => {
+              const isSelected = selectedPlanPreview === plan.id;
               return (
                 <div
                   key={plan.id}
@@ -143,26 +151,28 @@ export function WorscoiControlPanel({
                     setSelectedPlanPreview(plan.id);
                     if (onSelectPlan) onSelectPlan(plan.id);
                   }}
-                  className={`rounded-2xl border border-zinc-800/80 hover:border-[#FF2D55]/60 bg-gradient-to-b from-[#0e0e14] to-[#08080c] p-5 transition-all duration-300 flex flex-col justify-between space-y-3 cursor-pointer group hover-lift shadow-xl ${
-                    selectedPlanPreview === plan.id ? 'ring-2 ring-[#FF2D55] border-transparent shadow-[#FF2D55]/20' : ''
+                  className={`rounded-2xl border p-4 transition-all duration-200 flex flex-col justify-between space-y-3 cursor-pointer group shadow-sm ${
+                    isSelected
+                      ? 'border-zinc-400 bg-zinc-850/90'
+                      : 'border-zinc-800/80 bg-zinc-900/40 hover:bg-zinc-850/60 hover:border-zinc-700'
                   }`}
                 >
-                  <div className="space-y-1.5">
-                    <h3 className="text-xs sm:text-sm font-bold text-white tracking-tight group-hover:text-[#FF2D55] transition">
+                  <div className="space-y-1">
+                    <h3 className="text-xs sm:text-sm font-semibold text-zinc-100 tracking-tight group-hover:text-white transition">
                       {plan.name}
                     </h3>
                     <div className="text-xs font-semibold text-zinc-300">
                       {plan.price}
                     </div>
-                    <p className="text-[11px] text-zinc-400 leading-relaxed">
+                    <p className="text-[11px] text-zinc-400 leading-relaxed pt-0.5">
                       {plan.description}
                     </p>
                   </div>
 
-                  <div className="pt-2 border-t border-zinc-900/80 space-y-1">
+                  <div className="pt-2 border-t border-zinc-800/60 space-y-1">
                     {plan.features.map((feat, idx) => (
-                      <div key={idx} className="text-[10px] text-zinc-300 flex items-start gap-1">
-                        <span className="text-[#FF2D55]">•</span>
+                      <div key={idx} className="text-[10px] text-zinc-400 flex items-start gap-1.5">
+                        <Check className="w-3 h-3 text-zinc-400 shrink-0 mt-0.5" />
                         <span>{feat}</span>
                       </div>
                     ))}
@@ -175,53 +185,53 @@ export function WorscoiControlPanel({
       </div>
 
       {/* SEÇÃO DO MEIO: CRESCIMENTO DE ASSINANTES */}
-      <div className="space-y-4 pt-4 border-t border-zinc-900/60">
+      <div className="space-y-4 pt-4 border-t border-zinc-900/80">
         <div className="text-center">
-          <h2 className="text-base sm:text-lg font-bold text-white tracking-tight">
-            Crescimento de Assinantes
+          <h2 className="text-sm font-semibold text-zinc-200 tracking-tight">
+            Métricas de Assinantes & Receita
           </h2>
         </div>
 
-        {/* 4 CARDS DE MÉTRICA COM DESIGN REFINADO */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <div className="rounded-2xl border border-zinc-800/80 bg-gradient-to-b from-zinc-900/60 to-zinc-950/80 p-4 text-center hover-lift shadow-lg">
-            <span className="text-xs font-semibold text-zinc-400 block">Total</span>
-            <span className="text-xl sm:text-2xl font-black text-white mt-1 block tracking-tight">
+        {/* 4 CARDS DE MÉTRICA COM DESIGN SÓBRIO */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
+          <div className="rounded-2xl border border-zinc-800/80 bg-zinc-900/40 p-4 text-center shadow-sm">
+            <span className="text-[11px] font-medium text-zinc-400 block">Total</span>
+            <span className="text-xl font-bold text-white mt-1 block tracking-tight">
               1.428
             </span>
           </div>
 
-          <div className="rounded-2xl border border-zinc-800/80 bg-gradient-to-b from-zinc-900/60 to-zinc-950/80 p-4 text-center hover-lift shadow-lg">
-            <span className="text-xs font-semibold text-zinc-400 block">Novos</span>
-            <span className="text-xl sm:text-2xl font-black text-emerald-400 mt-1 block tracking-tight">
+          <div className="rounded-2xl border border-zinc-800/80 bg-zinc-900/40 p-4 text-center shadow-sm">
+            <span className="text-[11px] font-medium text-zinc-400 block">Novos</span>
+            <span className="text-xl font-bold text-emerald-400 mt-1 block tracking-tight">
               +94
             </span>
           </div>
 
-          <div className="rounded-2xl border border-zinc-800/80 bg-gradient-to-b from-zinc-900/60 to-zinc-950/80 p-4 text-center hover-lift shadow-lg">
-            <span className="text-xs font-semibold text-zinc-400 block">Assinantes pagos</span>
-            <span className="text-xl sm:text-2xl font-black text-white mt-1 block tracking-tight">
+          <div className="rounded-2xl border border-zinc-800/80 bg-zinc-900/40 p-4 text-center shadow-sm">
+            <span className="text-[11px] font-medium text-zinc-400 block">Assinantes Pagos</span>
+            <span className="text-xl font-bold text-white mt-1 block tracking-tight">
               1.120
             </span>
           </div>
 
-          <div className="rounded-2xl border border-zinc-800/80 bg-gradient-to-b from-zinc-900/60 to-zinc-950/80 p-4 text-center hover-lift shadow-lg">
-            <span className="text-xs font-semibold text-zinc-400 block">Conversão Paga</span>
-            <span className="text-xl sm:text-2xl font-black text-[#FF2D55] mt-1 block tracking-tight">
+          <div className="rounded-2xl border border-zinc-800/80 bg-zinc-900/40 p-4 text-center shadow-sm">
+            <span className="text-[11px] font-medium text-zinc-400 block">Taxa de Conversão</span>
+            <span className="text-xl font-bold text-zinc-200 mt-1 block tracking-tight">
               78.4%
             </span>
           </div>
         </div>
 
         {/* GRÁFICO DE CRESCIMENTO DE ASSINANTES / RECEITA */}
-        <div className="w-full max-w-2xl mx-auto rounded-3xl bg-transparent p-4 sm:p-6">
-          <div className="h-64 sm:h-72 w-full">
+        <div className="w-full max-w-2xl mx-auto rounded-2xl bg-zinc-950/40 border border-zinc-800/60 p-4 sm:p-5">
+          <div className="h-56 sm:h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={REVENUE_DATA} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
                 <defs>
                   <linearGradient id="curveFill" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#00E5FF" stopOpacity={0.6} />
-                    <stop offset="95%" stopColor="#00E5FF" stopOpacity={0.05} />
+                    <stop offset="5%" stopColor="#71717a" stopOpacity={0.4} />
+                    <stop offset="95%" stopColor="#71717a" stopOpacity={0.0} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#27272a" />
@@ -229,23 +239,23 @@ export function WorscoiControlPanel({
                   dataKey="hora"
                   axisLine={false}
                   tickLine={false}
-                  tick={{ fill: '#a1a1aa', fontSize: 11, fontWeight: 600 }}
+                  tick={{ fill: '#71717a', fontSize: 11, fontWeight: 500 }}
                 />
                 <YAxis
                   domain={[0, 6000]}
                   ticks={[0, 2000, 4000, 6000]}
                   axisLine={false}
                   tickLine={false}
-                  tickFormatter={(val) => `R$ ${val.toLocaleString('pt-BR')},00`}
-                  tick={{ fill: '#a1a1aa', fontSize: 10, fontWeight: 600 }}
+                  tickFormatter={(val) => `R$ ${val.toLocaleString('pt-BR')}`}
+                  tick={{ fill: '#71717a', fontSize: 10, fontWeight: 500 }}
                 />
                 <Tooltip
                   formatter={(val: number) => [`R$ ${val.toLocaleString('pt-BR')},00`, 'Receita']}
                   labelFormatter={(label) => `Horário: ${label}`}
                   contentStyle={{
-                    backgroundColor: '#09090b',
+                    backgroundColor: '#18181b',
                     borderColor: '#27272a',
-                    borderRadius: '12px',
+                    borderRadius: '8px',
                     color: '#fff',
                     fontSize: '11px',
                   }}
@@ -253,8 +263,8 @@ export function WorscoiControlPanel({
                 <Area
                   type="monotone"
                   dataKey="valor"
-                  stroke="#00E5FF"
-                  strokeWidth={4}
+                  stroke="#d4d4d8"
+                  strokeWidth={2}
                   fillOpacity={1}
                   fill="url(#curveFill)"
                 />
@@ -265,14 +275,14 @@ export function WorscoiControlPanel({
       </div>
 
       {/* SEÇÃO INFERIOR: BOTÃO VER ASSINANTES */}
-      <div className="flex justify-end pt-4">
+      <div className="flex justify-end pt-2">
         <button
           type="button"
           onClick={onNavigateToSubscribers}
-          className="px-8 py-3 rounded-full bg-[#FF2D55] hover:bg-[#FF2D55]/90 text-white font-bold text-sm shadow-lg shadow-[#FF2D55]/30 transition cursor-pointer flex items-center gap-2 active:scale-95"
+          className="px-5 py-2.5 rounded-full bg-zinc-100 hover:bg-white text-zinc-950 font-semibold text-xs transition cursor-pointer flex items-center gap-1.5 active:scale-95 shadow-sm"
         >
-          <span>Ver assinantes</span>
-          <ArrowRight className="w-4 h-4" />
+          <span>Ver Assinantes</span>
+          <ArrowRight className="w-3.5 h-3.5" />
         </button>
       </div>
     </div>

@@ -20,7 +20,6 @@ import {
   PictureInPicture2,
   Maximize2,
   Sliders,
-  ShieldCheck,
   Zap,
   SkipForward,
   Sparkles,
@@ -33,6 +32,7 @@ import {
   SignalLow,
   Film,
   Trash2,
+  ListVideo,
 } from 'lucide-react';
 import { Canal, LatencyMode } from '@/types';
 import { motion, AnimatePresence } from 'motion/react';
@@ -49,6 +49,9 @@ import { PlayerTransitionSkeleton } from './PlayerTransitionSkeleton';
 import { PlayerSettingsModal } from './PlayerSettingsModal';
 import { getChannelLogo, getChannelFallbackLogo } from '@/utils/channelLogoUtils';
 import { ChannelVideosModal, extractYouTubeId } from './ChannelVideosModal';
+import { NextVideosQueueDrawer } from './NextVideosQueueDrawer';
+import { NextVideoAutoplayOverlay } from './NextVideoAutoplayOverlay';
+import { autoplayQueueService, QueueItem } from '@/services/autoplayQueueService';
 import {
   getVideoItemSlug,
   subscribeChannelStats,
@@ -169,6 +172,12 @@ export function PlayerHero({
   const [commentsList, setCommentsList] = useState<ChannelComment[]>([]);
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
 
+  // Estados da Fila de Próximos Vídeos e Reprodução Contínua (Autoplay)
+  const [isQueueDrawerOpen, setIsQueueDrawerOpen] = useState(false);
+  const [queueItems, setQueueItems] = useState<QueueItem[]>([]);
+  const [autoplayTarget, setAutoplayTarget] = useState<QueueItem | null>(null);
+  const [isAutoplayCountdownActive, setIsAutoplayCountdownActive] = useState(false);
+
   const streamsDisponiveis = canalAtivo
     ? [canalAtivo.url, ...(canalAtivo.backupUrls || [])]
     : [];
@@ -176,6 +185,58 @@ export function PlayerHero({
     canalAtivo && streamsDisponiveis[streamIndex]
       ? streamsDisponiveis[streamIndex]
       : canalAtivo?.url || '';
+
+  // Atualiza a fila de reprodução inteligente e grava no histórico do usuário
+  useEffect(() => {
+    if (!canalAtivo) return;
+    const items = autoplayQueueService.buildQueue(
+      canalAtivo,
+      streamIndex,
+      todosCanais || []
+    );
+    setQueueItems(items);
+    autoplayQueueService.addToWatchHistory(canalAtivo, streamIndex, activeRawStreamUrl);
+  }, [canalAtivo, streamIndex, todosCanais, activeRawStreamUrl]);
+
+  const handlePlaybackFinished = () => {
+    if (autoplayQueueService.isAutoplayEnabled()) {
+      const nextItem = autoplayQueueService.peekNextVideo(
+        canalAtivo,
+        streamIndex,
+        todosCanais || []
+      );
+      if (nextItem) {
+        setAutoplayTarget(nextItem);
+        setIsAutoplayCountdownActive(true);
+        return;
+      }
+    }
+    onVideoEnded?.();
+  };
+
+  const handlePlayNextItem = (item: QueueItem) => {
+    setIsAutoplayCountdownActive(false);
+    setAutoplayTarget(null);
+
+    if (canalAtivo && item.canal.id === canalAtivo.id && typeof item.streamIndex === 'number') {
+      onStreamChange(item.streamIndex);
+      return;
+    }
+
+    if (onSelectCanal) {
+      onSelectCanal(item.canal);
+      if (typeof item.streamIndex === 'number') {
+        setTimeout(() => onStreamChange(item.streamIndex), 80);
+      }
+    } else {
+      onNextCanal?.();
+    }
+  };
+
+  const handleCancelAutoplay = () => {
+    setIsAutoplayCountdownActive(false);
+    setAutoplayTarget(null);
+  };
 
   // Sincronização em tempo real de Adoros e Comentários reais com Firestore para o vídeo selecionado
   useEffect(() => {
@@ -785,7 +846,7 @@ export function PlayerHero({
                   },
                   onEnded: () => {
                     setTimeout(() => {
-                      onVideoEnded?.();
+                      handlePlaybackFinished();
                     }, 0);
                   },
                   onError: (err: unknown) => {
@@ -1291,7 +1352,19 @@ export function PlayerHero({
             </div>
           )}
 
-          {/* LINHA DE PROGRESSO VERMELHA EXATAMENTE COMO NA REFERÊNCIA */}
+          {/* OVERLAY DE CONTAGEM REGRESSIVA DO AUTOPLAY INTELIGENTE */}
+          <NextVideoAutoplayOverlay
+            isOpen={isAutoplayCountdownActive}
+            nextItem={autoplayTarget}
+            onPlayNow={handlePlayNextItem}
+            onCancel={handleCancelAutoplay}
+            onOpenQueue={() => {
+              handleCancelAutoplay();
+              setIsQueueDrawerOpen(true);
+            }}
+          />
+
+          {/* LINHA DE PROGRESSO ELEGANTE */}
           <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-zinc-900/80 z-20 overflow-hidden pointer-events-none">
             <div
               className="h-full bg-red-600 shadow-[0_0_8px_rgba(239,68,68,0.8)] transition-all duration-300"
@@ -1300,12 +1373,12 @@ export function PlayerHero({
           </div>
         </div>
 
-        {/* BARRA LATERAL VERTICAL DE AÇÕES (EXATAMENTE COMO NA REFERÊNCIA: AVATAR, CORAÇÃO, COMENTÁRIO, SALVAR) */}
+        {/* BARRA LATERAL VERTICAL DE AÇÕES (AVATAR, CORAÇÃO, COMENTÁRIO, SALVAR) */}
         {!isMiniMode && (
           <div className="flex flex-col items-center gap-4 sm:gap-5 pb-2 select-none shrink-0">
-            {/* AVATAR DO CANAL COM ANEL NEON PINK */}
+            {/* AVATAR DO CANAL COM MOLDURA ELEGANTE */}
             <div
-              className="relative p-[2px] rounded-full bg-gradient-to-tr from-[#FF2D55] via-pink-500 to-rose-600 shadow-lg cursor-pointer hover:scale-105 transition-transform"
+              className="relative p-[2px] rounded-full bg-zinc-800 border border-zinc-700/80 shadow-md cursor-pointer hover:scale-105 transition-transform"
               title={canalAtivo.nome}
             >
               <img
@@ -1328,16 +1401,16 @@ export function PlayerHero({
             >
               <div
                 className={`p-1.5 rounded-full transition-transform group-hover:scale-110 active:scale-90 ${
-                  isLiked ? 'text-[#FF2D55]' : 'text-white group-hover:text-rose-400'
+                  isLiked ? 'text-rose-500' : 'text-zinc-200 group-hover:text-rose-400'
                 }`}
               >
                 <Heart
                   className={`w-6 h-6 sm:w-7 sm:h-7 transition-colors ${
-                    isLiked ? 'fill-[#FF2D55] text-[#FF2D55]' : 'text-white'
+                    isLiked ? 'fill-rose-500 text-rose-500' : 'text-zinc-200'
                   }`}
                 />
               </div>
-              <span className="text-[11px] sm:text-xs font-bold text-white tracking-tight">
+              <span className="text-[11px] sm:text-xs font-bold text-zinc-200 tracking-tight">
                 {formatInteractionCount(adorosCount)}
               </span>
             </button>
@@ -1402,173 +1475,135 @@ export function PlayerHero({
 
       {/* BARRA INFERIOR DE CONTROLE EM DOCK DE VIDRO ELEGANTE */}
       {!isMiniMode && (
-        <div className="w-full max-w-[880px] flex items-center justify-between mt-4 p-2 sm:p-2.5 rounded-2xl bg-zinc-950/75 border border-zinc-800/80 backdrop-blur-xl shadow-2xl shadow-black/80 select-none flex-wrap gap-2.5">
-          {/* LADO ESQUERDO: PÍLULAS "MODO CINEMA", "VER MAIS VÍDEOS DO CANAL", "MODO ESTÁVEL / BAIXA LATÊNCIA", ETC. */}
-          <div className="flex items-center gap-2 flex-wrap">
+        <div className="w-full max-w-[880px] flex items-center justify-between mt-3 px-3 py-2 rounded-xl bg-zinc-950/80 border border-zinc-800/80 backdrop-blur-xl shadow-xl select-none gap-2">
+          {/* LADO ESQUERDO: MODOS DE VISUALIZAÇÃO & STATUS */}
+          <div className="flex items-center gap-1.5 overflow-x-auto custom-scrollbar py-0.5">
+            {/* MODO CINEMA */}
             <button
               type="button"
               id="player-pill-cinema-mode"
               onClick={onEnterCinemaMode}
-              className="px-4 py-2 rounded-full bg-zinc-900/90 hover:bg-zinc-800 text-zinc-100 hover:text-white border border-zinc-700/80 hover:border-zinc-500 text-xs font-semibold transition-all duration-200 cursor-pointer shadow-sm hover:scale-105 active:scale-95 flex items-center gap-1.5"
+              className="px-3 py-1.5 rounded-lg bg-zinc-900/90 hover:bg-zinc-800 text-zinc-200 hover:text-white border border-zinc-800 hover:border-zinc-700 text-xs font-medium transition cursor-pointer flex items-center gap-1.5 shrink-0"
+              title="Modo Cinema"
             >
-              <Maximize2 className="w-3.5 h-3.5 text-[#FF2D55]" />
-              <span>Modo Cinema</span>
+              <Maximize2 className="w-3.5 h-3.5 text-zinc-300" />
+              <span>Cinema</span>
             </button>
 
-            {/* BOTÃO VER MAIS VÍDEOS DO CANAL - APENAS SE FOR CANAL DO YOUTUBE */}
-            {isYouTubeChannel && (
-              <button
-                type="button"
-                id="player-pill-channel-videos"
-                onClick={() => setIsChannelVideosOpen(true)}
-                className="px-3.5 sm:px-4 py-2 rounded-full border text-xs font-semibold transition cursor-pointer shadow-sm flex items-center gap-1.5 bg-gradient-to-r from-red-600/20 via-zinc-900 to-zinc-900 text-zinc-100 hover:text-white border-red-500/40 hover:border-red-500/70 hover:scale-105 active:scale-95"
-                title="Ver mais vídeos do canal (reproduzir diretamente no nosso player)"
-              >
-                <Film className="w-3.5 h-3.5 text-red-500 shrink-0" />
-                <span>Ver mais vídeos</span>
-                {streamsDisponiveis.length > 1 && (
-                  <span className="px-1.5 py-0.2 rounded-full bg-red-600/30 text-red-300 text-[10px] font-bold border border-red-500/30">
-                    {streamsDisponiveis.length}
-                  </span>
-                )}
-              </button>
-            )}
+            {/* BOTÃO DA FILA DE PRÓXIMOS VÍDEOS */}
+            <button
+              type="button"
+              id="player-pill-queue-btn"
+              onClick={() => setIsQueueDrawerOpen(true)}
+              className="px-3 py-1.5 rounded-lg bg-zinc-900/90 hover:bg-zinc-800 text-zinc-200 hover:text-white border border-zinc-800 hover:border-zinc-700 text-xs font-medium transition cursor-pointer flex items-center gap-1.5 shrink-0"
+              title="Fila de Próximos Vídeos e Histórico"
+            >
+              <ListVideo className="w-3.5 h-3.5 text-zinc-300" />
+              <span>Próximos</span>
+              {queueItems.length > 0 && (
+                <span className="px-1.5 py-0.2 rounded-md bg-zinc-800 text-zinc-300 text-[10px] font-mono font-bold border border-zinc-700">
+                  {queueItems.length}
+                </span>
+              )}
+            </button>
 
             {/* PÍLULA DE QUALIDADE DO SINAL & LATÊNCIA REAL */}
             <div
               id="player-pill-signal-indicator"
-              className={`px-3 py-2 rounded-full border text-xs font-medium transition flex items-center gap-1.5 shadow-sm select-none ${
+              className={`px-2.5 py-1.5 rounded-lg border text-xs font-medium transition flex items-center gap-1.5 select-none shrink-0 ${
                 signalQuality.tier === 'green'
                   ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
                   : signalQuality.tier === 'yellow'
                   ? 'bg-amber-500/10 border-amber-500/30 text-amber-300'
                   : 'bg-rose-500/10 border-rose-500/30 text-rose-400'
               }`}
-              title={`Qualidade da Conexão: ${signalQuality.label} • Latência detectada: ${signalQuality.latencyMs}ms`}
+              title={`Qualidade da Conexão: ${signalQuality.label} • Latência: ${signalQuality.latencyMs}ms`}
             >
-              <signalQuality.icon className={`w-3.5 h-3.5 ${signalQuality.colorClass}`} />
-              <span className="font-mono font-bold text-[11px]">{signalQuality.latencyMs}ms</span>
-              <span className="hidden md:inline text-[10px] text-zinc-300 font-semibold">• {signalQuality.label}</span>
+              <signalQuality.icon className={`w-3 h-3 ${signalQuality.colorClass}`} />
+              <span className="font-mono text-[11px] font-semibold">{signalQuality.latencyMs}ms</span>
             </div>
 
-            {/* BOTÃO RÁPIDO: ALTERNAR ENTRE MODO ESTÁVEL E MODO BAIXA LATÊNCIA (AJUDA EM REDES LENTAS) */}
-            <button
-              type="button"
-              id="player-pill-latency-toggle"
-              onClick={() => {
-                onToggleLatencyMode(latencyMode === 'stable' ? 'low-latency' : 'stable');
-              }}
-              className={`px-3.5 sm:px-4 py-2 rounded-full border text-xs font-medium transition cursor-pointer shadow-sm flex items-center gap-1.5 hover:scale-105 active:scale-95 ${
-                latencyMode === 'stable'
-                  ? 'bg-cyan-500/15 text-cyan-300 border-cyan-500/40 hover:bg-cyan-500/25'
-                  : latencyMode === 'low-latency'
-                  ? 'bg-amber-500/15 text-amber-300 border-amber-500/40 hover:bg-amber-500/25'
-                  : 'bg-emerald-500/15 text-emerald-300 border-emerald-500/40'
-              }`}
-              title={
-                latencyMode === 'stable'
-                  ? 'Modo Estável ativado (buffer 14s p/ redes mais lentas). Clique para alternar para Baixa Latência.'
-                  : latencyMode === 'low-latency'
-                  ? 'Modo Baixa Latência ativado (tempo real 2s). Clique para alternar para Modo Estável.'
-                  : 'Clique para alternar para Modo Estável'
-              }
-            >
-              {latencyMode === 'stable' ? (
-                <>
-                  <ShieldCheck className="w-3.5 h-3.5 text-cyan-400" />
-                  <span>Modo Estável</span>
-                </>
-              ) : latencyMode === 'low-latency' ? (
-                <>
-                  <Zap className="w-3.5 h-3.5 text-amber-400" />
-                  <span>Baixa Latência</span>
-                </>
-              ) : (
-                <>
-                  <Sliders className="w-3.5 h-3.5 text-emerald-400" />
-                  <span>Poupar Dados</span>
-                </>
-              )}
-            </button>
-
-            {/* BOTÃO PARA ABRIR AS CONFIGURAÇÕES COMPLETAS DO REPRODUTOR */}
+            {/* CONFIGURAÇÕES DO REPRODUTOR */}
             <button
               type="button"
               id="player-pill-settings-btn"
               onClick={() => setIsSettingsOpen(true)}
-              className="px-3.5 sm:px-4 py-2 rounded-full bg-zinc-900/90 hover:bg-zinc-800 text-zinc-200 hover:text-white border border-zinc-700/80 hover:border-zinc-500 text-xs font-medium transition cursor-pointer shadow-sm flex items-center gap-1.5 hover:scale-105 active:scale-95"
-              title="Abrir configurações de desempenho de rede e latência"
+              className="p-1.5 sm:px-2.5 sm:py-1.5 rounded-lg bg-zinc-900/90 hover:bg-zinc-800 text-zinc-400 hover:text-white border border-zinc-800 hover:border-zinc-700 text-xs font-medium transition cursor-pointer flex items-center gap-1.5 shrink-0"
+              title="Configurações de fluxo e latência"
             >
-              <Sliders className="w-3.5 h-3.5 text-zinc-400 group-hover:text-white" />
-              <span className="hidden sm:inline">Configurações</span>
+              <Sliders className="w-3.5 h-3.5 text-zinc-400" />
+              <span className="hidden sm:inline">Ajustes</span>
             </button>
 
+            {/* PICTURE-IN-PICTURE */}
             <button
               type="button"
               id="player-pill-pip"
               onClick={handleTogglePip}
-              className={`px-3.5 sm:px-4 py-2 rounded-full border text-xs font-medium transition cursor-pointer shadow-sm flex items-center gap-1.5 hover:scale-105 active:scale-95 ${
+              className={`p-1.5 sm:px-2.5 sm:py-1.5 rounded-lg border text-xs font-medium transition cursor-pointer flex items-center gap-1.5 shrink-0 ${
                 isPipActive
-                  ? 'bg-[#FF2D55]/20 text-[#FF2D55] border-[#FF2D55]/50'
-                  : 'bg-zinc-900/90 hover:bg-zinc-800 text-zinc-200 hover:text-white border border-zinc-700/80 hover:border-zinc-500'
+                  ? 'bg-zinc-100 text-zinc-950 border-white font-semibold'
+                  : 'bg-zinc-900/90 hover:bg-zinc-800 text-zinc-400 hover:text-white border-zinc-800 hover:border-zinc-700'
               }`}
-              title={
-                isPipActive
-                  ? 'Sair do Picture-in-Picture'
-                  : 'Assistir em Picture-in-Picture nativo (Atalho P)'
-              }
+              title={isPipActive ? 'Sair do PiP' : 'Picture-in-Picture (P)'}
             >
-              <PictureInPicture2 className="w-3.5 h-3.5 text-[#FF2D55]" />
-              <span className="hidden sm:inline">Picture-in-Picture</span>
-              <span className="sm:hidden">PiP</span>
+              <PictureInPicture2 className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">PiP</span>
             </button>
           </div>
 
-          {/* CENTRO: SETAS CIRCULARES DE NAVEGAÇÃO DE CANAL < > */}
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              id="player-btn-prev-canal"
-              onClick={onPrevCanal}
-              className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-zinc-900/90 hover:bg-zinc-800 text-zinc-200 hover:text-white border border-zinc-700/80 hover:border-zinc-500 flex items-center justify-center transition cursor-pointer shadow-sm hover:scale-105 active:scale-95"
-              title="Canal anterior"
-            >
-              <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
-            </button>
-            <button
-              type="button"
-              id="player-btn-next-canal"
-              onClick={onNextCanal}
-              className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-zinc-900/90 hover:bg-zinc-800 text-zinc-200 hover:text-white border border-zinc-700/80 hover:border-zinc-500 flex items-center justify-center transition cursor-pointer shadow-sm hover:scale-105 active:scale-95"
-              title="Próximo canal"
-            >
-              <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
-            </button>
-          </div>
+          {/* LADO DIREITO: NAVEGAÇÃO DE CANAL E CONTROLES DE ÁUDIO/SINAL */}
+          <div className="flex items-center gap-1.5 shrink-0 ml-auto">
+            {/* NAVEGAÇÃO ENTRE CANAIS */}
+            <div className="flex items-center gap-0.5 bg-zinc-900/60 p-0.5 rounded-lg border border-zinc-800/80">
+              <button
+                type="button"
+                id="player-btn-prev-canal"
+                onClick={onPrevCanal}
+                className="p-1.5 rounded-md text-zinc-400 hover:text-white hover:bg-zinc-800 transition cursor-pointer"
+                title="Canal anterior"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <button
+                type="button"
+                id="player-btn-next-canal"
+                onClick={onNextCanal}
+                className="p-1.5 rounded-md text-zinc-400 hover:text-white hover:bg-zinc-800 transition cursor-pointer"
+                title="Próximo canal"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
 
-          {/* LADO DIREITO: CONTROLE DE ÁUDIO DISCRETO */}
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              id="player-btn-audio-mute"
-              onClick={onToggleMute}
-              className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-zinc-900/90 hover:bg-zinc-800 text-zinc-300 hover:text-white border border-zinc-700/80 hover:border-zinc-500 flex items-center justify-center transition cursor-pointer shadow-sm hover:scale-105 active:scale-95"
-              title={isMuted ? 'Ativar som (M)' : 'Silenciar áudio (M)'}
-            >
-              {isMuted ? (
-                <VolumeX className="w-4 h-4 text-amber-400" />
-              ) : (
-                <Volume2 className="w-4 h-4 text-[#00E676]" />
-              )}
-            </button>
+            {/* RECARREGAR */}
             <button
               type="button"
               id="player-btn-reload-stream"
               onClick={handleReload}
-              className="hidden sm:flex w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-zinc-900/90 hover:bg-zinc-800 text-zinc-400 hover:text-white border border-zinc-700/80 hover:border-zinc-500 items-center justify-center transition cursor-pointer shadow-sm hover:scale-105 active:scale-95"
+              className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-900 border border-zinc-800/80 transition cursor-pointer"
               title="Recarregar sinal"
             >
               <RefreshCw className="w-3.5 h-3.5" />
+            </button>
+
+            {/* ÁUDIO */}
+            <button
+              type="button"
+              id="player-btn-audio-mute"
+              onClick={onToggleMute}
+              className={`p-1.5 rounded-lg border transition cursor-pointer ${
+                isMuted
+                  ? 'bg-amber-500/15 border-amber-500/30 text-amber-400'
+                  : 'bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white border-zinc-800'
+              }`}
+              title={isMuted ? 'Ativar som (M)' : 'Silenciar áudio (M)'}
+            >
+              {isMuted ? (
+                <VolumeX className="w-4 h-4" />
+              ) : (
+                <Volume2 className="w-4 h-4" />
+              )}
             </button>
           </div>
         </div>
@@ -1769,6 +1804,27 @@ export function PlayerHero({
           setHasYouTubeEmbedError(false);
         }}
         onAddStreamUrl={onAddStreamUrl}
+      />
+
+      {/* GAVETA LATERAL DE FILA DE PRÓXIMOS VÍDEOS E HISTÓRICO */}
+      <NextVideosQueueDrawer
+        isOpen={isQueueDrawerOpen}
+        onClose={() => setIsQueueDrawerOpen(false)}
+        queueItems={queueItems}
+        currentCanal={canalAtivo}
+        currentStreamIndex={streamIndex}
+        onSelectQueueItem={(item) => {
+          handlePlayNextItem(item);
+          setIsQueueDrawerOpen(false);
+        }}
+        onClearHistory={() => {
+          autoplayQueueService.clearHistory();
+          if (canalAtivo) {
+            setQueueItems(
+              autoplayQueueService.buildQueue(canalAtivo, streamIndex, todosCanais || [])
+            );
+          }
+        }}
       />
     </div>
   );
