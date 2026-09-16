@@ -207,7 +207,7 @@ export function UserProfileModal({
 
               {/* REGRA: MESMO COM LOGOUT O RELÓGIO CONTINUA A CONTAR */}
               <div className="text-[11px] text-zinc-400 leading-snug flex items-center gap-1.5 mt-2 bg-zinc-900/40 p-2 rounded-lg border border-zinc-850">
-                <span className="text-amber-400 shrink-0">⏱️</span>
+                <Clock className="w-3.5 h-3.5 text-amber-400 shrink-0" />
                 <span>
                   O cronômetro sincroniza em tempo real contínuo: mesmo se você fechar a aba ou fizer logout, a contagem de tempo segue correndo ininterruptamente.
                 </span>

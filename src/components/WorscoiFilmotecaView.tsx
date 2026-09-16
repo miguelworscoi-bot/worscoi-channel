@@ -1,5 +1,6 @@
 'use client';
 import React, { useEffect, useState, useMemo, useCallback, useRef } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import {
   Film,
   ArrowLeft,
@@ -1526,21 +1527,31 @@ export function WorscoiFilmotecaView({ onBackToTV }: WorscoiFilmotecaViewProps) 
         </div>
       )}
 
-      {/* MODAL DO REPRODUTOR DE FILME SELECIONADO (MODO TEATRO) */}
-      {filmeSelecionado && (() => {
-        const urlAtiva = obterUrlFilme(filmeSelecionado, modoPlayer, modalTemporada, modalEpisodio);
-        const isDirectVideo = modoPlayer === 'direct' && Boolean(filmeSelecionado.directStreamUrl);
+      {/* MODAL DO REPRODUTOR DE FILME SELECIONADO (MODO TEATRO COM TRANSIÇÃO SUAVE) */}
+      <AnimatePresence>
+        {filmeSelecionado && (() => {
+          const urlAtiva = obterUrlFilme(filmeSelecionado, modoPlayer, modalTemporada, modalEpisodio);
+          const isDirectVideo = modoPlayer === 'direct' && Boolean(filmeSelecionado.directStreamUrl);
 
-        return (
-          <div
-            className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-2 sm:p-6"
-            onClick={() => setFilmeSelecionado(null)}
-          >
-            <div
-              className="relative w-full max-w-4xl bg-zinc-950 border border-zinc-800 rounded-2xl overflow-hidden shadow-2xl flex flex-col"
-              onClick={(e) => e.stopPropagation()}
+          return (
+            <motion.div
+              key={`theater-modal-overlay-${filmeSelecionado.id}`}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.22, ease: 'easeOut' }}
+              className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-2 sm:p-6"
+              onClick={() => setFilmeSelecionado(null)}
             >
-              {/* BARRA SUPERIOR DO MODAL */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.96, y: 12 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.96, y: 12 }}
+                transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }}
+                className="relative w-full max-w-4xl bg-zinc-950 border border-zinc-800 rounded-2xl overflow-hidden shadow-2xl flex flex-col"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {/* BARRA SUPERIOR DO MODAL */}
               <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-800 bg-zinc-900/90">
                 <div className="flex items-center gap-2 min-w-0">
                   <Clapperboard className="w-4 h-4 text-[#FF2D55] shrink-0" />
@@ -1861,10 +1872,11 @@ export function WorscoiFilmotecaView({ onBackToTV }: WorscoiFilmotecaViewProps) 
                   </button>
                 </div>
               </div>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         );
       })()}
+    </AnimatePresence>
 
       {/* MODAL DE METADADOS DINÂMICOS DO IMDB (SINOPSE, NOTA, ELENCO E STREAMING) */}
       <FilmotecaImdbModal

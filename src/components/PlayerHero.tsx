@@ -1184,7 +1184,6 @@ export function PlayerHero({
                       >
                         <div className="flex items-center justify-between mb-1.5">
                           <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-zinc-800/90 text-amber-300 text-[10px] sm:text-[11px] font-bold border border-amber-400/20">
-                            <span>{SPORTS_TRIVIA[triviaIndex].icon}</span>
                             <span>{SPORTS_TRIVIA[triviaIndex].tag}</span>
                           </div>
                           <span className="text-[10px] text-zinc-400 group-hover:text-zinc-200 flex items-center gap-1 transition">
@@ -1475,7 +1474,7 @@ export function PlayerHero({
 
       {/* BARRA INFERIOR DE CONTROLE EM DOCK DE VIDRO ELEGANTE */}
       {!isMiniMode && (
-        <div className="w-full max-w-[880px] flex items-center justify-between mt-3 px-3 py-2 rounded-xl bg-zinc-950/80 border border-zinc-800/80 backdrop-blur-xl shadow-xl select-none gap-2">
+        <div className="w-full max-w-[880px] flex items-center justify-between mt-3 pt-[6px] pb-[3px] pl-[12px] pr-[67px] mr-[18px] rounded-xl bg-zinc-950/80 border border-zinc-800/80 backdrop-blur-xl shadow-xl select-none gap-2">
           {/* LADO ESQUERDO: MODOS DE VISUALIZAÇÃO & STATUS */}
           <div className="flex items-center gap-1.5 overflow-x-auto custom-scrollbar py-0.5">
             {/* MODO CINEMA */}

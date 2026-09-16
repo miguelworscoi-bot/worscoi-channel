@@ -6,7 +6,7 @@ function getPlutoUrl(id: string): string {
 }
 
 export const CANAIS_BONECOS: Canal[] = [
-  // 🧸 DESENHOS INFANTIS & ANIMAÇÕES (100% SINAIS VERIFICADOS E ATIVOS)
+  // DESENHOS INFANTIS & ANIMAÇÕES (100% SINAIS VERIFICADOS E ATIVOS)
   {
     id: 'turma-da-monica-24h',
     nome: 'Turma da Mônica (24h Oficial)',
@@ -200,7 +200,7 @@ export const CANAIS_BONECOS: Canal[] = [
     competicoes: ['Portugal', 'Desenhos Infantis'],
   },
 
-  // ⚔️ ANIMES (100% VERIFICADOS, ULTRA RÁPIDOS E SEM FILMES MISTURADOS)
+  // ANIMES (100% VERIFICADOS, ULTRA RÁPIDOS E SEM FILMES MISTURADOS)
   {
     id: 'naruto-oficial-24h',
     nome: 'Naruto (24h Dublado Oficial)',

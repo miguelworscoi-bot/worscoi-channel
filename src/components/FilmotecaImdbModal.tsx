@@ -1,5 +1,6 @@
 'use client';
 import React, { useEffect, useState } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import {
   X,
   Star,
@@ -86,32 +87,41 @@ export function FilmotecaImdbModal({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose]);
 
-  if (!isOpen || !filme) return null;
-
   const handleShare = () => {
     if (typeof window === 'undefined') return;
-    const url = detalhes?.urlImdb || `https://www.imdb.com/title/${filme.imdbId || ''}/`;
+    const url = detalhes?.urlImdb || `https://www.imdb.com/title/${filme?.imdbId || ''}/`;
     navigator.clipboard.writeText(url).then(() => {
       setCopiedLink(true);
       setTimeout(() => setCopiedLink(false), 2200);
     });
   };
 
-  const totalSeasons = detalhes?.totalTemporadas || (typeof filme.temporadas === 'number' ? filme.temporadas : 1);
-  const totalEpisodesInSeason = typeof filme.episodiosPorTemporada === 'number' ? filme.episodiosPorTemporada : 10;
+  const totalSeasons = detalhes?.totalTemporadas || (typeof filme?.temporadas === 'number' ? filme.temporadas : 1);
+  const totalEpisodesInSeason = typeof filme?.episodiosPorTemporada === 'number' ? filme.episodiosPorTemporada : 10;
 
   return (
-    <div
-      id="imdb-details-backdrop"
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/85 backdrop-blur-md overflow-y-auto animate-fadeIn"
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose();
-      }}
-    >
-      <div
-        id="imdb-details-container"
-        className="relative w-full max-w-4xl max-h-[92vh] flex flex-col bg-[#0b0b10] border border-zinc-800/80 rounded-3xl shadow-2xl shadow-black/90 overflow-hidden text-zinc-100 ring-1 ring-white/10"
-      >
+    <AnimatePresence>
+      {isOpen && filme && (
+        <motion.div
+          id="imdb-details-backdrop"
+          key={`imdb-modal-backdrop-${filme.id}`}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.22, ease: 'easeOut' }}
+          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/85 backdrop-blur-md overflow-y-auto"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) onClose();
+          }}
+        >
+          <motion.div
+            id="imdb-details-container"
+            initial={{ opacity: 0, scale: 0.96, y: 12 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.96, y: 12 }}
+            transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }}
+            className="relative w-full max-w-4xl max-h-[92vh] flex flex-col bg-[#0b0b10] border border-zinc-800/80 rounded-3xl shadow-2xl shadow-black/90 overflow-hidden text-zinc-100 ring-1 ring-white/10"
+          >
         {/* Header Superior com Badge IMDb e Fechar */}
         <div className="flex items-center justify-between px-5 py-3.5 border-b border-zinc-800/80 bg-zinc-900/70 z-10">
           <div className="flex items-center gap-2.5">
@@ -474,7 +484,9 @@ export function FilmotecaImdbModal({
             </button>
           </div>
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
+  )}
+</AnimatePresence>
   );
 }

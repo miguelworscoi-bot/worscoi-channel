@@ -73,7 +73,7 @@ export function NowPlayingRail({
 
   return (
     <div id="now-playing-context-rail" className="w-full space-y-6 pt-2">
-      {/* 🚀 CARD DESTACADO "AGORA NO AR" + SINTONIZADOR RÁPIDO */}
+      {/* CARD DESTACADO "AGORA NO AR" + SINTONIZADOR RÁPIDO */}
       {canalAtivo && (
         <div className="bg-gradient-to-r from-[#121214] via-[#151518] to-[#121214] border border-zinc-800/90 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-xl relative overflow-hidden">
           {/* Subtle glow background */}
@@ -149,7 +149,7 @@ export function NowPlayingRail({
         </div>
       )}
 
-      {/* 🌟 RAIL 1: SEUS FAVORITOS RÁPIDOS (SE HOUVER) */}
+      {/* RAIL 1: SEUS FAVORITOS RÁPIDOS (SE HOUVER) */}
       {favoritedChannels.length > 0 && (
         <div className="space-y-3">
           <div className="flex items-center justify-between">
@@ -227,7 +227,7 @@ export function NowPlayingRail({
         </div>
       )}
 
-      {/* ⚽ RAIL 2: CANAIS RELACIONADOS / SUGERIDOS */}
+      {/* RAIL 2: CANAIS RELACIONADOS / SUGERIDOS */}
       {relatedChannels.length > 0 && (
         <div className="space-y-3">
           <div className="flex items-center justify-between">

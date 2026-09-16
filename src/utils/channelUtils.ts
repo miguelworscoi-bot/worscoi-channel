@@ -74,7 +74,7 @@ export function getChannelCategoryInfo(canal: Canal): ChannelCategoryBadge {
       categoria: 'Bonecos',
       filtro: 'Bonecos',
       label: 'Bonecos & Animes',
-      icon: '🧸',
+      icon: '',
       badgeBg: 'bg-amber-500/15 hover:bg-amber-500/25',
       textColor: 'text-amber-300',
       borderColor: 'border-amber-500/30',
@@ -101,7 +101,7 @@ export function getChannelCategoryInfo(canal: Canal): ChannelCategoryBadge {
       categoria: 'Novelas',
       filtro: 'Novelas',
       label: 'Novelas',
-      icon: '🎭',
+      icon: '',
       badgeBg: 'bg-rose-500/15 hover:bg-rose-500/25',
       textColor: 'text-rose-300',
       borderColor: 'border-rose-500/30',
@@ -131,7 +131,7 @@ export function getChannelCategoryInfo(canal: Canal): ChannelCategoryBadge {
       categoria: 'Músicas',
       filtro: 'Músicas',
       label: 'Músicas',
-      icon: '🎵',
+      icon: '',
       badgeBg: 'bg-pink-500/15 hover:bg-pink-500/25',
       textColor: 'text-pink-300',
       borderColor: 'border-pink-500/30',
@@ -169,7 +169,7 @@ export function getChannelCategoryInfo(canal: Canal): ChannelCategoryBadge {
       categoria: 'Notícias',
       filtro: 'Notícias',
       label: 'Notícias',
-      icon: '📰',
+      icon: '',
       badgeBg: 'bg-blue-500/15 hover:bg-blue-500/25',
       textColor: 'text-blue-300',
       borderColor: 'border-blue-500/30',
@@ -206,7 +206,7 @@ export function getChannelCategoryInfo(canal: Canal): ChannelCategoryBadge {
       categoria: 'Filmes',
       filtro: 'Filmes',
       label: 'Filmes & Séries',
-      icon: '🍿',
+      icon: '',
       badgeBg: 'bg-purple-500/15 hover:bg-purple-500/25',
       textColor: 'text-purple-300',
       borderColor: 'border-purple-500/30',
@@ -221,7 +221,7 @@ export function getChannelCategoryInfo(canal: Canal): ChannelCategoryBadge {
     subTag = {
       label: 'Libertadores',
       filtro: 'Libertadores',
-      icon: '🏆',
+      icon: '',
       badgeBg: 'bg-amber-500/15 hover:bg-amber-500/25',
       textColor: 'text-amber-400',
       borderColor: 'border-amber-500/40',
@@ -230,7 +230,7 @@ export function getChannelCategoryInfo(canal: Canal): ChannelCategoryBadge {
     subTag = {
       label: 'Champions',
       filtro: 'Champions League',
-      icon: '⭐',
+      icon: '',
       badgeBg: 'bg-sky-500/15 hover:bg-sky-500/25',
       textColor: 'text-sky-400',
       borderColor: 'border-sky-500/40',
@@ -239,7 +239,7 @@ export function getChannelCategoryInfo(canal: Canal): ChannelCategoryBadge {
     subTag = {
       label: 'TNT Sports',
       filtro: 'TNT Sports',
-      icon: '⚡',
+      icon: '',
       badgeBg: 'bg-yellow-500/15 hover:bg-yellow-500/25',
       textColor: 'text-yellow-400',
       borderColor: 'border-yellow-500/40',
@@ -248,7 +248,7 @@ export function getChannelCategoryInfo(canal: Canal): ChannelCategoryBadge {
     subTag = {
       label: 'LaLiga',
       filtro: 'LaLiga',
-      icon: '🇪🇸',
+      icon: '',
       badgeBg: 'bg-rose-500/15 hover:bg-rose-500/25',
       textColor: 'text-rose-400',
       borderColor: 'border-rose-500/40',
@@ -257,7 +257,7 @@ export function getChannelCategoryInfo(canal: Canal): ChannelCategoryBadge {
     subTag = {
       label: 'NBA',
       filtro: 'NBA',
-      icon: '🏀',
+      icon: '',
       badgeBg: 'bg-indigo-500/15 hover:bg-indigo-500/25',
       textColor: 'text-indigo-400',
       borderColor: 'border-indigo-500/40',
@@ -266,7 +266,7 @@ export function getChannelCategoryInfo(canal: Canal): ChannelCategoryBadge {
     subTag = {
       label: 'MLS',
       filtro: 'MLS',
-      icon: '🇺🇸',
+      icon: '',
       badgeBg: 'bg-teal-500/15 hover:bg-teal-500/25',
       textColor: 'text-teal-400',
       borderColor: 'border-teal-500/40',
@@ -283,7 +283,7 @@ export function getChannelCategoryInfo(canal: Canal): ChannelCategoryBadge {
     subTag = {
       label: 'Futebol',
       filtro: 'Futebol',
-      icon: '⚽',
+      icon: '',
       badgeBg: 'bg-emerald-500/15 hover:bg-emerald-500/25',
       textColor: 'text-emerald-400',
       borderColor: 'border-emerald-500/40',
@@ -294,7 +294,7 @@ export function getChannelCategoryInfo(canal: Canal): ChannelCategoryBadge {
     categoria: 'Esportes',
     filtro: 'Esportes',
     label: 'Esportes',
-    icon: '⚽',
+    icon: '',
     badgeBg: 'bg-emerald-500/15 hover:bg-emerald-500/25',
     textColor: 'text-emerald-400',
     borderColor: 'border-emerald-500/30',
@@ -359,7 +359,7 @@ export function getNetworkBadge(canal: Canal): {
       badgeBg: 'bg-emerald-500/10',
       textColor: 'text-emerald-400',
       borderColor: 'border-emerald-500/30',
-      iconText: '📡',
+      iconText: '',
     };
   }
 
@@ -369,7 +369,7 @@ export function getNetworkBadge(canal: Canal): {
       badgeBg: 'bg-amber-500/15',
       textColor: 'text-amber-400',
       borderColor: 'border-amber-500/40',
-      iconText: '🏆',
+      iconText: '',
     };
   }
 
@@ -379,7 +379,7 @@ export function getNetworkBadge(canal: Canal): {
       badgeBg: 'bg-sky-500/15',
       textColor: 'text-sky-400',
       borderColor: 'border-sky-500/40',
-      iconText: '⭐',
+      iconText: '',
     };
   }
 
@@ -389,7 +389,7 @@ export function getNetworkBadge(canal: Canal): {
       badgeBg: 'bg-yellow-500/15',
       textColor: 'text-yellow-400',
       borderColor: 'border-yellow-500/40',
-      iconText: '⚡',
+      iconText: '',
     };
   }
 
@@ -399,7 +399,7 @@ export function getNetworkBadge(canal: Canal): {
       badgeBg: 'bg-rose-500/15',
       textColor: 'text-rose-400',
       borderColor: 'border-rose-500/40',
-      iconText: '🇪🇸',
+      iconText: '',
     };
   }
 
@@ -409,7 +409,7 @@ export function getNetworkBadge(canal: Canal): {
       badgeBg: 'bg-red-500/15',
       textColor: 'text-red-400',
       borderColor: 'border-red-500/40',
-      iconText: '🔴',
+      iconText: '',
     };
   }
 
@@ -419,7 +419,7 @@ export function getNetworkBadge(canal: Canal): {
       badgeBg: 'bg-zinc-800',
       textColor: 'text-zinc-200',
       borderColor: 'border-zinc-700',
-      iconText: '🥊',
+      iconText: '',
     };
   }
 
@@ -429,7 +429,7 @@ export function getNetworkBadge(canal: Canal): {
       badgeBg: 'bg-blue-500/15',
       textColor: 'text-blue-400',
       borderColor: 'border-blue-500/30',
-      iconText: '⚽',
+      iconText: '',
     };
   }
 
@@ -439,7 +439,7 @@ export function getNetworkBadge(canal: Canal): {
       badgeBg: 'bg-orange-500/15',
       textColor: 'text-orange-400',
       borderColor: 'border-orange-500/30',
-      iconText: '🇦🇴',
+      iconText: '',
     };
   }
 
@@ -449,7 +449,7 @@ export function getNetworkBadge(canal: Canal): {
       badgeBg: 'bg-emerald-500/15',
       textColor: 'text-emerald-400',
       borderColor: 'border-emerald-500/30',
-      iconText: '🇵🇹',
+      iconText: '',
     };
   }
 
@@ -459,7 +459,7 @@ export function getNetworkBadge(canal: Canal): {
       badgeBg: 'bg-yellow-500/15',
       textColor: 'text-yellow-400',
       borderColor: 'border-yellow-500/30',
-      iconText: '🇧🇷',
+      iconText: '',
     };
   }
 
@@ -468,7 +468,7 @@ export function getNetworkBadge(canal: Canal): {
     badgeBg: 'bg-zinc-800/60',
     textColor: 'text-zinc-300',
     borderColor: 'border-zinc-700/60',
-    iconText: '📺',
+    iconText: '',
   };
 }
 

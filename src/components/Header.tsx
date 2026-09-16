@@ -143,7 +143,7 @@ export function Header({
           </div>
         </div>
 
-        {/* 🔍 BUSCA GLOBAL CENTRALIZADA COM DROPDOWN INTELIGENTE */}
+        {/* BUSCA GLOBAL CENTRALIZADA COM DROPDOWN INTELIGENTE */}
         <div
           ref={searchContainerRef}
           className="relative flex-1 max-w-xl mx-2 sm:mx-6 hidden md:block"

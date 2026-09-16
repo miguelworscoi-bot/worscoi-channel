@@ -13,7 +13,7 @@ import {
   CreditCard,
   Zap,
 } from 'lucide-react';
-import { WorscoiCardVisual } from './WorscoiCardVisual';
+import { WorscoiCardVisual, PLAN_CARD_THEMES } from './WorscoiCardVisual';
 import { POSTerminalIllustration } from './POSTerminalIllustration';
 import { StripeCheckoutModal } from './StripeCheckoutModal';
 import { SubscriptionPlanId } from '@/types';
@@ -272,15 +272,23 @@ export function WorscoiPlanSelectionFlow({
                   {selectedPlan.priceFormatted}
                 </p>
                 {selectedPlan.channelCountLabel && (
-                  <span className="inline-block mt-1 px-3 py-0.5 rounded-full text-[11px] font-bold bg-[#00E676]/15 text-[#00E676] border border-[#00E676]/30">
+                  <span
+                    className={`inline-block mt-1 px-3 py-0.5 rounded-full text-[11px] font-bold border transition-colors ${
+                      PLAN_CARD_THEMES[selectedPlan.id]?.accentBg || 'bg-[#00E676]/15'
+                    } ${
+                      PLAN_CARD_THEMES[selectedPlan.id]?.accentText || 'text-[#00E676]'
+                    } ${
+                      PLAN_CARD_THEMES[selectedPlan.id]?.accentBorder || 'border-[#00E676]/30'
+                    }`}
+                  >
                     {selectedPlan.channelCountLabel}
                   </span>
                 )}
               </div>
 
-              {/* Cartão Worscoi Vertical (Imagem 7) */}
+              {/* Cartão Worscoi Vertical com Cor Dinâmica do Plano */}
               <div className="relative">
-                <WorscoiCardVisual variant="vertical" />
+                <WorscoiCardVisual variant="vertical" planId={selectedPlan.id} />
               </div>
 
               {/* Prévia dos Canais Oferecidos pelo Plano */}
@@ -297,34 +305,57 @@ export function WorscoiPlanSelectionFlow({
               )}
             </div>
 
-            {/* BASE: NAVEGAÇÃO DO CARROSSEL (< >) + BOTÃO "ESCOLHER" */}
-            <div className="flex items-center justify-between w-full max-w-sm sm:max-w-md mx-auto pt-4 border-t border-zinc-900/80">
-              {/* Botões < e > */}
+            {/* BASE: NAVEGAÇÃO DO CARROSSEL (< > + BOLINHAS DE CORES) + BOTÃO "ESCOLHER" */}
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 w-full max-w-sm sm:max-w-md mx-auto pt-4 border-t border-zinc-900/80">
+              {/* Botões < e > com Bolinhas Coloridas de Todos os Planos */}
               <div className="flex items-center gap-2">
                 <button
                   type="button"
                   onClick={handlePrevPlan}
-                  className="w-11 h-11 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center text-white hover:bg-zinc-800 hover:border-zinc-700 transition cursor-pointer"
+                  className="w-10 h-10 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center text-white hover:bg-zinc-800 hover:border-zinc-700 transition cursor-pointer"
                   title="Plano anterior"
                 >
-                  <ChevronLeft className="w-5 h-5" />
+                  <ChevronLeft className="w-4 h-4" />
                 </button>
+
+                {/* Bolinhas / Pílulas Coloridas de Cada Plano */}
+                <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-full bg-zinc-950/80 border border-zinc-800/80">
+                  {FLOW_PLANS.map((plan, idx) => {
+                    const theme = PLAN_CARD_THEMES[plan.id];
+                    const isCurrent = idx === currentPlanIndex;
+                    return (
+                      <button
+                        key={plan.id}
+                        type="button"
+                        onClick={() => setCurrentPlanIndex(idx)}
+                        className={`transition-all duration-300 rounded-full cursor-pointer ${
+                          isCurrent
+                            ? 'w-5 h-2.5 ring-2 ring-white/60 scale-110 shadow-sm'
+                            : 'w-2 h-2 opacity-50 hover:opacity-100 hover:scale-125'
+                        }`}
+                        style={{ backgroundColor: theme?.dotColor || '#FF2D55' }}
+                        title={`${plan.name} (${plan.priceFormatted})`}
+                      />
+                    );
+                  })}
+                </div>
+
                 <button
                   type="button"
                   onClick={handleNextPlan}
-                  className="w-11 h-11 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center text-white hover:bg-zinc-800 hover:border-zinc-700 transition cursor-pointer"
+                  className="w-10 h-10 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center text-white hover:bg-zinc-800 hover:border-zinc-700 transition cursor-pointer"
                   title="Próximo plano"
                 >
-                  <ChevronRight className="w-5 h-5" />
+                  <ChevronRight className="w-4 h-4" />
                 </button>
               </div>
 
-              {/* Botão Escolher Branco Pill (Imagem 7) */}
+              {/* Botão Escolher Branco Pill */}
               <button
                 type="button"
                 onClick={handleSelectPlan}
                 disabled={isProcessingFree}
-                className="px-9 py-3 rounded-full bg-white text-black font-extrabold text-sm sm:text-base hover:bg-zinc-200 transition shadow-xl active:scale-95 disabled:opacity-50 cursor-pointer flex items-center gap-2"
+                className="px-8 py-2.5 rounded-full bg-white text-black font-extrabold text-sm sm:text-base hover:bg-zinc-200 transition shadow-xl active:scale-95 disabled:opacity-50 cursor-pointer flex items-center gap-2"
               >
                 {isProcessingFree ? (
                   <>
@@ -389,16 +420,22 @@ export function WorscoiPlanSelectionFlow({
                 {selectedPlan.name}
               </h2>
 
-              {/* Cartão Worscoi Horizontal (Imagem 8) */}
+              {/* Cartão Worscoi Horizontal com Cor Dinâmica do Plano (Imagem 8) */}
               <div className="w-full flex justify-center">
-                <WorscoiCardVisual variant="horizontal" />
+                <WorscoiCardVisual variant="horizontal" planId={selectedPlan.id} />
               </div>
 
               {/* Lista em Pills Brancos (Imagem 8) */}
               <div className="w-full space-y-2.5 pt-2">
-                {/* Linha 1: Card */}
+                {/* Linha 1: Card com indicador de cor */}
                 <div className="w-full bg-white text-black px-6 py-3.5 rounded-full flex justify-between items-center text-sm font-semibold shadow-md">
-                  <span className="text-zinc-700">Card</span>
+                  <div className="flex items-center gap-2">
+                    <span
+                      className="w-3 h-3 rounded-full shrink-0 shadow-sm"
+                      style={{ backgroundColor: PLAN_CARD_THEMES[selectedPlan.id]?.dotColor || '#FF2D55' }}
+                    />
+                    <span className="text-zinc-700">Card</span>
+                  </div>
                   <span className="font-extrabold text-black text-right truncate ml-2">
                     {selectedPlan.name}
                   </span>

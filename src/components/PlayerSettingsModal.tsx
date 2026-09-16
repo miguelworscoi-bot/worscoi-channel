@@ -96,10 +96,10 @@ export function PlayerSettingsModal({
               </label>
               <span className="text-[10px] px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-300 border border-zinc-700">
                 {latencyMode === 'stable'
-                  ? '🛡️ Modo Estável'
+                  ? 'Modo Estável'
                   : latencyMode === 'low-latency'
-                  ? '⚡ Baixa Latência'
-                  : '🌿 Poupança de Dados'}
+                  ? 'Baixa Latência'
+                  : 'Poupança de Dados'}
               </span>
             </div>
 

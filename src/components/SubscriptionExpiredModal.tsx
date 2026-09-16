@@ -108,7 +108,7 @@ export const SubscriptionExpiredModal: React.FC<SubscriptionExpiredModalProps> =
             </div>
             {deviceTrial?.hasClaimed && (
               <div className="pt-2 border-t border-zinc-800/80 text-[11px] text-amber-300/90 leading-relaxed">
-                💡 <strong>Aviso anti-abuso:</strong> Cada aparelho físico tem direito a 1 único teste gratuito de 24 horas. Para continuar assistindo, escolha um de nossos planos ou ative um código.
+                <strong>Aviso anti-abuso:</strong> Cada aparelho físico tem direito a 1 único teste gratuito de 24 horas. Para continuar assistindo, escolha um de nossos planos ou ative um código.
               </div>
             )}
           </div>

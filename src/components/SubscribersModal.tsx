@@ -832,9 +832,9 @@ export function SubscribersModal({ isOpen, onClose }: SubscribersModalProps) {
                     className="w-full sm:w-auto bg-zinc-900 border border-zinc-800 rounded-xl text-xs text-zinc-300 py-2 px-3 focus:outline-none focus:border-amber-400 cursor-pointer"
                   >
                     <option value="all">Todos os Status</option>
-                    <option value="active">🟢 Disponíveis (Válidos)</option>
-                    <option value="used">🔵 Resgatados / Utilizados</option>
-                    <option value="revoked">🔴 Revogados</option>
+                    <option value="active">Disponíveis (Válidos)</option>
+                    <option value="used">Resgatados / Utilizados</option>
+                    <option value="revoked">Revogados</option>
                   </select>
                 </div>
               </div>

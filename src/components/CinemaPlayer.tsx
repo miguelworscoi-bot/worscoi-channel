@@ -351,7 +351,7 @@ export function CinemaPlayer({
       transition={{ duration: 0.25, ease: 'easeInOut' }}
       className="fixed inset-0 z-50 bg-black flex flex-col items-center justify-center overflow-hidden"
     >
-      {/* 🎬 SKELETON / FADE DE TRANSIÇÃO SUAVE ENTRE PLAYERS */}
+      {/* SKELETON / FADE DE TRANSIÇÃO SUAVE ENTRE PLAYERS */}
       <AnimatePresence>
         {isTransitioning && (
           <motion.div
@@ -685,7 +685,7 @@ export function CinemaPlayer({
               >
                 <div className="flex items-center justify-between mb-1">
                   <span className="px-2 py-0.5 rounded-full bg-zinc-800 text-amber-300 text-[10px] font-bold border border-amber-400/20">
-                    {SPORTS_TRIVIA[triviaIndex].icon} {SPORTS_TRIVIA[triviaIndex].tag}
+                    {SPORTS_TRIVIA[triviaIndex].tag}
                   </span>
                   <span className="text-[10px] text-zinc-500 group-hover:text-zinc-300 transition">Toque p/ trocar</span>
                 </div>

@@ -1,6 +1,6 @@
 'use client';
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
-import { AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { Canal, LatencyMode, WorscoiView, FiltroAtivo } from '@/types';
 import { Tv } from 'lucide-react';
 import { LOCAL_STORAGE_LATENCY_KEY } from '@/utils/streamUtils';
@@ -25,6 +25,13 @@ import { CongratulationsNotification } from '@/components/CongratulationsNotific
 import { LandingScreen } from '@/components/LandingScreen';
 import { useAuth } from '@/context/AuthContext';
 import { autoplayQueueService } from '@/services/autoplayQueueService';
+import {
+  getStoredRecentChannels,
+  addChannelToRecents,
+  removeChannelFromRecents,
+  clearStoredRecentChannels,
+  CanalRecente,
+} from '@/utils/recentChannelsUtils';
 
 const LOCAL_STORAGE_FAVORITES_KEY = 'playsports_favorites';
 const LOCAL_STORAGE_CUSTOM_KEY = 'playsports_custom_channels';
@@ -43,17 +50,10 @@ export default function Home() {
   const [currentView, setCurrentView] = useState<WorscoiView>('explorar');
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [hasVisitedFilmoteca, setHasVisitedFilmoteca] = useState(false);
-
-  // Mantém Filmoteca pré-carregada na memória após primeira visita para transição instantânea
-  useEffect(() => {
-    if (currentView === 'filmoteca') {
-      setHasVisitedFilmoteca(true);
-    }
-  }, [currentView]);
 
   const [canais, setCanais] = useState<Canal[]>(CANAIS_PADRAO);
   const [customChannels, setCustomChannels] = useState<Canal[]>([]);
+  const [recentChannels, setRecentChannels] = useState<CanalRecente[]>([]);
   const [canalAtivo, setCanalAtivo] = useState<Canal | null>(CANAIS_PADRAO[0] || null);
   const [streamIndex, setStreamIndex] = useState(0);
   const [filtroAtivo, setFiltroAtivo] = useState<FiltroAtivo>('Todos');
@@ -103,6 +103,9 @@ export default function Home() {
         const parsedCustom = JSON.parse(storedCustom);
         if (Array.isArray(parsedCustom)) setCustomChannels(parsedCustom);
       }
+
+      const storedRecents = getStoredRecentChannels();
+      if (Array.isArray(storedRecents)) setRecentChannels(storedRecents);
 
       const storedLatency =
         localStorage.getItem(LOCAL_STORAGE_LATENCY_KEY) ||
@@ -221,8 +224,34 @@ export default function Home() {
       setFailoverNotice(null);
       setIsMobileMenuOpen(false);
       setIsMiniPlayerDismissed(false);
+
+      // Salva no localStorage como canal recente
+      const updated = addChannelToRecents(canal);
+      setRecentChannels(updated);
     }, 0);
   }, []);
+
+  // Sincroniza canais recentes sempre que o canal ativo mudar
+  useEffect(() => {
+    if (canalAtivo && (canalAtivo.id || canalAtivo.url)) {
+      const updated = addChannelToRecents(canalAtivo);
+      setRecentChannels(updated);
+    }
+  }, [canalAtivo]);
+
+  const handleClearRecentChannels = useCallback(() => {
+    clearStoredRecentChannels();
+    setRecentChannels([]);
+  }, []);
+
+  const handleRemoveRecentChannel = useCallback(
+    (channelIdentifier: string, e?: React.MouseEvent) => {
+      if (e) e.stopPropagation();
+      const updated = removeChannelFromRecents(channelIdentifier);
+      setRecentChannels(updated);
+    },
+    []
+  );
 
   // Navegação de canais (Zapping Anterior / Próximo)
   const currentCanalIndex = todosCanais.findIndex(
@@ -534,6 +563,9 @@ export default function Home() {
           onToggleFavorite={toggleFavorite}
           filtroAtivo={filtroAtivo}
           onSelectFiltro={setFiltroAtivo}
+          recentChannels={recentChannels}
+          onClearRecentChannels={handleClearRecentChannels}
+          onRemoveRecentChannel={handleRemoveRecentChannel}
           customChannels={customChannels}
           onDeleteCustomChannel={handleDeleteCustomChannel}
           isAdmin={isAdmin}
@@ -567,6 +599,9 @@ export default function Home() {
               onToggleFavorite={toggleFavorite}
               filtroAtivo={filtroAtivo}
               onSelectFiltro={setFiltroAtivo}
+              recentChannels={recentChannels}
+              onClearRecentChannels={handleClearRecentChannels}
+              onRemoveRecentChannel={handleRemoveRecentChannel}
               customChannels={customChannels}
               onDeleteCustomChannel={handleDeleteCustomChannel}
               isAdmin={isAdmin}
@@ -592,102 +627,174 @@ export default function Home() {
 
         {/* CORPO CENTRAL DINÂMICO BASEADO NA ABA ATIVA */}
         <div
-          className={`flex-1 w-full p-3 sm:p-6 flex flex-col items-center overflow-y-auto custom-scrollbar ${
-            currentView === 'explorar' ? 'justify-center' : 'justify-start'
-          }`}
+          className="flex-1 w-full p-3 sm:p-6 flex flex-col items-center overflow-y-auto custom-scrollbar"
         >
-          {/* REPRODUTOR DE TV (PERMANECE MONTADO PARA PiP E CONTINUIDADE AO NAVEGAR, MAS PAUSA E DESAPARECE NA FILMOTECA) */}
-          <div
-            className={
-              currentView === 'explorar'
-                ? 'w-full max-w-5xl mx-auto py-1 my-auto flex flex-col items-center justify-center transition-all duration-150 ease-out'
-                : isMiniPlayerDismissed || currentView === 'filmoteca'
-                ? 'pointer-events-none opacity-0 fixed -bottom-96 -right-96 w-1 h-1 overflow-hidden select-none'
-                : 'contents'
-            }
-          >
-            <PlayerHero
-              canalAtivo={canalAtivo}
-              streamIndex={streamIndex}
-              onStreamChange={handleStreamChange}
-              onAddStreamUrl={handleAddStreamToCanal}
-              isMuted={isMuted}
-              onToggleMute={handleToggleMute}
-              useProxy={useProxy}
-              onToggleProxy={handleToggleProxy}
-              latencyMode={latencyMode}
-              onToggleLatencyMode={handleToggleLatencyMode}
-              isCinemaMode={isCinemaMode}
-              onEnterCinemaMode={() => setTimeout(() => setIsCinemaMode(true), 0)}
-              isFavorited={isCanalFavorited(canalAtivo)}
-              onToggleFavorite={() => canalAtivo && toggleFavorite(canalAtivo)}
-              failoverNotice={failoverNotice}
-              onClearFailoverNotice={handleClearFailoverNotice}
-              onPlayerError={handlePlayerError}
-              onNextCanal={handleNextCanal}
-              onPrevCanal={handlePrevCanal}
-              onOpenPaymentPlans={() => setTimeout(() => setIsPaymentModalOpen(true), 0)}
-              onOpenRedeemToken={() => setTimeout(() => setIsRedeemModalOpen(true), 0)}
-              onVideoEnded={handleVideoEnded}
-              isMiniMode={currentView !== 'explorar'}
-              onRestoreFromMiniMode={() => setTimeout(() => setCurrentView('explorar'), 0)}
-              onDismissMiniMode={() => setTimeout(() => setIsMiniPlayerDismissed(true), 0)}
-              todosCanais={todosCanais}
-              onSelectCanal={handleSelectCanal}
-              isPlaybackPaused={currentView === 'filmoteca'}
-            />
-          </div>
-
-          {/* BOTÃO FLUTUANTE DISCRETO PARA RESTAURAR O MINI-PLAYER SE DISPENSADO (NÃO EXIBE NA FILMOTECA) */}
-          {currentView !== 'explorar' && currentView !== 'filmoteca' && isMiniPlayerDismissed && canalAtivo && (
-            <button
-              type="button"
-              id="restore-mini-player-pill"
-              onClick={() => setIsMiniPlayerDismissed(false)}
-              className="fixed bottom-5 right-5 z-40 flex items-center gap-2 px-3 py-2 rounded-full bg-zinc-900/95 hover:bg-zinc-800 text-zinc-200 hover:text-white border border-zinc-700 shadow-xl backdrop-blur-md transition cursor-pointer text-xs group ring-1 ring-zinc-700/50"
-              title="Restaurar reprodutor flutuante"
-            >
-              <span className="w-2 h-2 rounded-full bg-[#FF2D55] animate-pulse" />
-              <span className="font-semibold max-w-[120px] truncate">{canalAtivo.nome}</span>
-              <Tv className="w-3.5 h-3.5 text-zinc-400 group-hover:text-[#FF2D55] transition-colors" />
-            </button>
-          )}
-
-          {/* VISTA 2: PAINEL DE CONTROLE (MÉTRICAS & GESTÃO COM TRANSIÇÃO RÁPIDA) */}
-          {currentView === 'painel' && (
-            <div className="w-full animate-in fade-in duration-150 ease-out">
-              <WorscoiControlPanel
-                onNavigateToSubscribers={() => setCurrentView('assinantes')}
-                onOpenTokenGenerator={() => setIsSubscribersModalOpen(true)}
-                onSelectPlan={() => setIsPaymentModalOpen(true)}
-              />
-            </div>
-          )}
-
-          {/* VISTA 3: ASSINANTES (CHAVES DE ACESSO & ASSINATURAS COM TRANSIÇÃO RÁPIDA) */}
-          {currentView === 'assinantes' && (
-            <div className="w-full animate-in fade-in duration-150 ease-out">
-              <WorscoiSubscribersView
-                onBackToControlPanel={() => setCurrentView('painel')}
-                onOpenTokenGenerator={() => setIsSubscribersModalOpen(true)}
-              />
-            </div>
-          )}
-
-          {/* VISTA 4: FILMOTECA & CINEMA VOD (TRANSIÇÃO INSTANTÂNEA E PERSISTÊNCIA DE ESTADO) */}
-          <div
-            className={`w-full ${
-              currentView === 'filmoteca'
-                ? 'block animate-in fade-in duration-150 ease-out'
-                : 'hidden'
-            }`}
-          >
-            {(hasVisitedFilmoteca || currentView === 'filmoteca') && (
-              <WorscoiFilmotecaView
-                onBackToTV={() => setCurrentView('explorar')}
-              />
+          {/* TRANSIÇÃO ULTRA SUAVE ENTRE TELAS DO APLICATIVO */}
+          <AnimatePresence mode="wait" initial={false}>
+            {/* VISTA 1: TRANSMISSÃO DE TV AO VIVO (EXPLORAR) */}
+            {currentView === 'explorar' && (
+              <motion.div
+                key="screen-view-explorar"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -6 }}
+                transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
+                className="w-full max-w-5xl mx-auto py-1 my-auto flex flex-col items-center justify-center"
+                style={{ willChange: 'opacity, transform' }}
+              >
+                <PlayerHero
+                  canalAtivo={canalAtivo}
+                  streamIndex={streamIndex}
+                  onStreamChange={handleStreamChange}
+                  onAddStreamUrl={handleAddStreamToCanal}
+                  isMuted={isMuted}
+                  onToggleMute={handleToggleMute}
+                  useProxy={useProxy}
+                  onToggleProxy={handleToggleProxy}
+                  latencyMode={latencyMode}
+                  onToggleLatencyMode={handleToggleLatencyMode}
+                  isCinemaMode={isCinemaMode}
+                  onEnterCinemaMode={() => setTimeout(() => setIsCinemaMode(true), 0)}
+                  isFavorited={isCanalFavorited(canalAtivo)}
+                  onToggleFavorite={() => canalAtivo && toggleFavorite(canalAtivo)}
+                  failoverNotice={failoverNotice}
+                  onClearFailoverNotice={handleClearFailoverNotice}
+                  onPlayerError={handlePlayerError}
+                  onNextCanal={handleNextCanal}
+                  onPrevCanal={handlePrevCanal}
+                  onOpenPaymentPlans={() => setTimeout(() => setIsPaymentModalOpen(true), 0)}
+                  onOpenRedeemToken={() => setTimeout(() => setIsRedeemModalOpen(true), 0)}
+                  onVideoEnded={handleVideoEnded}
+                  isMiniMode={false}
+                  onRestoreFromMiniMode={() => setTimeout(() => setCurrentView('explorar'), 0)}
+                  onDismissMiniMode={() => setTimeout(() => setIsMiniPlayerDismissed(true), 0)}
+                  todosCanais={todosCanais}
+                  onSelectCanal={handleSelectCanal}
+                  isPlaybackPaused={false}
+                />
+              </motion.div>
             )}
-          </div>
+
+            {/* VISTA 2: PAINEL DE CONTROLE (MÉTRICAS & GESTÃO) */}
+            {currentView === 'painel' && (
+              <motion.div
+                key="screen-view-painel"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -6 }}
+                transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
+                className="w-full"
+                style={{ willChange: 'opacity, transform' }}
+              >
+                <WorscoiControlPanel
+                  onNavigateToSubscribers={() => setCurrentView('assinantes')}
+                  onOpenTokenGenerator={() => setIsSubscribersModalOpen(true)}
+                  onSelectPlan={() => setIsPaymentModalOpen(true)}
+                />
+              </motion.div>
+            )}
+
+            {/* VISTA 3: ASSINANTES (CHAVES DE ACESSO & ASSINATURAS) */}
+            {currentView === 'assinantes' && (
+              <motion.div
+                key="screen-view-assinantes"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -6 }}
+                transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
+                className="w-full"
+                style={{ willChange: 'opacity, transform' }}
+              >
+                <WorscoiSubscribersView
+                  onBackToControlPanel={() => setCurrentView('painel')}
+                  onOpenTokenGenerator={() => setIsSubscribersModalOpen(true)}
+                />
+              </motion.div>
+            )}
+
+            {/* VISTA 4: FILMOTECA & CINEMA VOD */}
+            {currentView === 'filmoteca' && (
+              <motion.div
+                key="screen-view-filmoteca"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -6 }}
+                transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+                className="w-full"
+                style={{ willChange: 'opacity, transform' }}
+              >
+                <WorscoiFilmotecaView
+                  onBackToTV={() => setCurrentView('explorar')}
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* REPRODUTOR FLUTUANTE EM MINI-MODO (AO VISITAR O PAINEL OU ASSINANTES) */}
+          <AnimatePresence>
+            {(currentView === 'painel' || currentView === 'assinantes') && !isMiniPlayerDismissed && canalAtivo && (
+              <motion.div
+                key="floating-mini-player-container"
+                initial={{ opacity: 0, scale: 0.9, y: 16 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9, y: 16 }}
+                transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+              >
+                <PlayerHero
+                  canalAtivo={canalAtivo}
+                  streamIndex={streamIndex}
+                  onStreamChange={handleStreamChange}
+                  onAddStreamUrl={handleAddStreamToCanal}
+                  isMuted={isMuted}
+                  onToggleMute={handleToggleMute}
+                  useProxy={useProxy}
+                  onToggleProxy={handleToggleProxy}
+                  latencyMode={latencyMode}
+                  onToggleLatencyMode={handleToggleLatencyMode}
+                  isCinemaMode={isCinemaMode}
+                  onEnterCinemaMode={() => setTimeout(() => setIsCinemaMode(true), 0)}
+                  isFavorited={isCanalFavorited(canalAtivo)}
+                  onToggleFavorite={() => canalAtivo && toggleFavorite(canalAtivo)}
+                  failoverNotice={failoverNotice}
+                  onClearFailoverNotice={handleClearFailoverNotice}
+                  onPlayerError={handlePlayerError}
+                  onNextCanal={handleNextCanal}
+                  onPrevCanal={handlePrevCanal}
+                  onOpenPaymentPlans={() => setTimeout(() => setIsPaymentModalOpen(true), 0)}
+                  onOpenRedeemToken={() => setTimeout(() => setIsRedeemModalOpen(true), 0)}
+                  onVideoEnded={handleVideoEnded}
+                  isMiniMode={true}
+                  onRestoreFromMiniMode={() => setTimeout(() => setCurrentView('explorar'), 0)}
+                  onDismissMiniMode={() => setTimeout(() => setIsMiniPlayerDismissed(true), 0)}
+                  todosCanais={todosCanais}
+                  onSelectCanal={handleSelectCanal}
+                  isPlaybackPaused={false}
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* BOTÃO FLUTUANTE DISCRETO PARA RESTAURAR O MINI-PLAYER SE DISPENSADO */}
+          <AnimatePresence>
+            {(currentView === 'painel' || currentView === 'assinantes') && isMiniPlayerDismissed && canalAtivo && (
+              <motion.button
+                key="floating-restore-pill"
+                initial={{ opacity: 0, scale: 0.9, y: 10 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9, y: 10 }}
+                transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+                type="button"
+                id="restore-mini-player-pill"
+                onClick={() => setIsMiniPlayerDismissed(false)}
+                className="fixed bottom-5 right-5 z-40 flex items-center gap-2 px-3 py-2 rounded-full bg-zinc-900/95 hover:bg-zinc-800 text-zinc-200 hover:text-white border border-zinc-700 shadow-xl backdrop-blur-md transition cursor-pointer text-xs group ring-1 ring-zinc-700/50"
+                title="Restaurar reprodutor flutuante"
+              >
+                <span className="w-2 h-2 rounded-full bg-[#FF2D55] animate-pulse" />
+                <span className="font-semibold max-w-[120px] truncate">{canalAtivo.nome}</span>
+                <Tv className="w-3.5 h-3.5 text-zinc-400 group-hover:text-[#FF2D55] transition-colors" />
+              </motion.button>
+            )}
+          </AnimatePresence>
         </div>
       </div>
 

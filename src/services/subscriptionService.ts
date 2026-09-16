@@ -44,54 +44,38 @@ export const PLANS: Record<SubscriptionPlanId, PlanInfo> = {
     durationDays: 1, // Exatamente 1 dia (24 horas)
     priceFormatted: 'Grátis (1 Dia)',
     priceAOA: 0,
-    description: 'Degustação aberta por 1 dia (24 horas). Inclui canais abertos, YouTube e canais de entrada.',
+    description: 'Degustação aberta por 1 dia (24 horas) com acesso completo a todos os canais do sistema.',
     features: [
-      'Degustação por 1 Dia (24 Horas)',
-      'Canais Públicos & Comunitários (TPA 1, TPA 2, TPA Notícias, Miramar)',
-      'Canais YouTube & Criadores Populares',
-      'Transmissão padrão com limitação de catálogo',
+      '24 Horas de Acesso Ilimitado',
+      'Todos os Canais Liberados Sem Restrições',
+      'Transmissão HD 1080p Estável',
+      'Grade Completa de Esportes, ZAP, Filmes e Desenhos',
     ],
-    channelCountLabel: '15+ Canais Abertos & YouTube',
+    channelCountLabel: 'Todos os Canais Liberados',
     channelsOffered: [
-      'TPA 1',
-      'TPA 2',
-      'TPA Notícias',
-      'Miramar',
-      'TV Girassol',
-      'Euro News',
-      'RTP Internacional',
-      'Daystar',
-      'Canais YouTube (CazéTV, Desimpedidos, MrBeast)',
+      'Todos os Canais do Sistema Sem Nenhuma Exceção',
     ],
   },
   diario: {
     id: 'diario',
     name: 'Passe Fim de Semana (3 Dias)',
-    badge: '3 DIAS ⚽',
+    badge: '3 DIAS',
     badgeBg: 'bg-emerald-500/15',
     badgeText: 'text-emerald-300',
     badgeBorder: 'border-emerald-500/40',
     durationDays: 3,
     priceFormatted: '1.500 Kz / 3 dias',
     priceAOA: 1500,
-    description: 'Acesso de fim de semana aos clássicos esportivos nacionais e internacionais essenciais.',
+    description: 'Passe de 3 dias com acesso completo e irrestrito a todos os canais do sistema.',
     features: [
-      '3 Dias de Acesso (Sexta a Domingo)',
-      'Tudo do Plano Grátis + Esportes Essenciais',
-      'TNT Sports Brasil HD & Champions League Live',
-      'Transmissão Full HD 1080p sem anúncios',
+      '3 Dias de Acesso Ilimitado',
+      'Todos os Canais Liberados Sem Restrições',
+      'Transmissão Full HD 1080p',
+      'Esportes ao Vivo, Filmes, Séries e ZAP',
     ],
-    channelCountLabel: '35+ Canais Essenciais',
+    channelCountLabel: 'Todos os Canais Liberados',
     channelsOffered: [
-      'Tudo do Plano Grátis',
-      'TNT Sports Brasil HD',
-      'Champions League Live HD',
-      'Real Madrid TV HD',
-      'RTP África HD',
-      'Afro Music Pop',
-      'Sol Música',
-      'Brava Clássica',
-      'KIX Ação',
+      'Todos os Canais do Sistema Sem Nenhuma Exceção',
     ],
   },
   basico: {
@@ -104,30 +88,22 @@ export const PLANS: Record<SubscriptionPlanId, PlanInfo> = {
     durationDays: 30,
     priceFormatted: '2.500 Kz / 30 dias',
     priceAOA: 2500,
-    description: 'Acesso completo de 30 dias à grade de esportes, novelas e filmes populares.',
+    description: '30 dias de acesso completo e estável a todos os canais do sistema.',
     features: [
-      'Grade Completa de 30 Dias',
-      'Tudo do Passe Fim de Semana + Novelas & Filmes',
-      'ESPN Brasil HD, beIN Sports & LaLiga',
-      'SIC Mulher, Telemundo & Novelas Globais',
+      '30 Dias de Acesso Ilimitado',
+      'Todos os Canais Liberados Sem Restrições',
+      'Transmissão Full HD Estável',
+      'Grade Completa de Esportes, ZAP e Cinema',
     ],
-    channelCountLabel: '60+ Canais HD',
+    channelCountLabel: 'Todos os Canais Liberados',
     channelsOffered: [
-      'Tudo do Passe Fim de Semana',
-      'ESPN Brasil HD (Libertadores, LaLiga & NBA)',
-      'beIN SPORTS XTRA HD & Español',
-      'Telemundo Novelas',
-      'SIC Mulher',
-      'M4 Movies HD',
-      'JimJam Kids',
-      'BET Network',
-      'Universal TV',
+      'Todos os Canais do Sistema Sem Nenhuma Exceção',
     ],
   },
   vip: {
     id: 'vip',
     name: 'VIP Esportes, ZAP & Filmes HD (30 Dias)',
-    badge: 'MAIS POPULAR ⭐',
+    badge: 'MAIS POPULAR',
     badgeBg: 'bg-amber-500/15',
     badgeText: 'text-amber-300',
     badgeBorder: 'border-amber-500/40',
@@ -135,76 +111,60 @@ export const PLANS: Record<SubscriptionPlanId, PlanInfo> = {
     popular: true,
     priceFormatted: '4.000 Kz / 30 dias',
     priceAOA: 4000,
-    description: 'O plano mais vendido! Grade VIP total com ZAP Viva, canais infantis premium e filmes exclusivos.',
+    description: '30 dias de acesso com servidores prioritários de alta velocidade para todos os canais.',
     features: [
-      'Acesso Total Liberado (ZAP, Disney & SuperSport)',
-      'Tudo dos planos Grátis, Diário e Básico',
-      'ZAP Viva, Kwenda Magic, DStv Pipoca & Biggs',
-      'Canal Panda, Panda Kids, BabyFirst TV & SIC K',
+      '30 Dias de Acesso Total com Servidores Prioritários',
+      'Todos os Canais Liberados Sem Restrições',
+      'Transmissão em Alta Definição',
+      'Zero Anúncios e Suporte Ágil',
     ],
-    channelCountLabel: '90+ Canais VIP Completos',
+    channelCountLabel: 'Todos os Canais Liberados',
     channelsOffered: [
-      'Tudo do Plano Básico',
-      'ZAP Viva HD',
-      'Kwenda Magic Angola',
-      'DStv Pipoca',
-      'Canal Panda HD & Panda Kids',
-      'Biggs HD & SIC K',
-      'Trace Toca HD',
-      'MTV & MTV Base',
-      'BabyFirst TV & KidsCo',
-      'Odisseia Documentários',
+      'Todos os Canais do Sistema Sem Nenhuma Exceção',
     ],
   },
   premium: {
     id: 'premium',
     name: 'Premium Ultra 4K (90 Dias)',
-    badge: 'PREMIUM 4K 🔥',
+    badge: 'PREMIUM 4K',
     badgeBg: 'bg-purple-500/15',
     badgeText: 'text-purple-300',
     badgeBorder: 'border-purple-500/40',
     durationDays: 90,
     priceFormatted: '9.500 Kz / 90 dias',
     priceAOA: 9500,
-    description: '3 meses com prioridade máxima de servidor Ultra HD 4K, servidores espelho e catálogo irrestrito.',
+    description: '90 dias de transmissão contínua em Ultra HD 4K com servidores dedicados para todos os canais.',
     features: [
-      '90 Dias de Acesso Ultra HD 4K',
-      'Catálogo 100% Desbloqueado com Prioridade',
-      'SuperSport 1 a 7 & Sport TV Portugal',
-      'Servidores Espelho Dedicados de Baixa Latência',
+      '90 Dias de Acesso Ilimitado',
+      'Todos os Canais Liberados Sem Restrições',
+      'Servidores Dedicados Ultra HD 4K',
+      'Maior Economia para Períodos Longos',
     ],
-    channelCountLabel: 'Catálogo Total 100% Desbloqueado (Ultra 4K)',
+    channelCountLabel: 'Todos os Canais Liberados',
     channelsOffered: [
-      'Tudo do Plano VIP',
-      'SuperSport Premier League, LaLiga, Serie A & Champions',
-      'Sport TV 1, 2, 3, 4, 5 & 6 HD',
-      'DAZN 1 & 2 HD',
-      'Sky Sports Main Event HD',
-      'Todos os Canais Internacionais & 4K',
+      'Todos os Canais do Sistema Sem Nenhuma Exceção',
     ],
   },
   anual: {
     id: 'anual',
     name: 'Passe Anual Campeão 365 (1 Ano)',
-    badge: 'ANUAL 👑',
+    badge: 'ANUAL',
     badgeBg: 'bg-gradient-to-r from-amber-500/20 to-yellow-500/20',
     badgeText: 'text-yellow-300',
     badgeBorder: 'border-yellow-500/50',
     durationDays: 365,
     priceFormatted: '30.000 Kz / 365 dias',
     priceAOA: 30000,
-    description: '1 ano completo sem interrupções. Acesso vitalício ao maior catálogo do aplicativo com suporte exclusivo.',
+    description: '1 ano completo sem interrupções com acesso total e irrestrito a todos os canais do sistema.',
     features: [
       '365 Dias de Acesso Total e Irrestrito',
-      'Acesso Permanente a Absolutamente Todos os Canais',
-      '2 Tokens Bônus de Cortesia de 30 Dias para Amigos',
-      'Suporte VIP Dedicado via WhatsApp e Linha Direta',
+      'Todos os Canais do Sistema Sem Nenhuma Exceção',
+      '2 Tokens Bônus de Cortesia para Convidados',
+      'Suporte Dedicado 24 Horas',
     ],
-    channelCountLabel: 'Acesso VIP Absoluto Sem Restrições',
+    channelCountLabel: 'Todos os Canais Liberados',
     channelsOffered: [
       'Todos os Canais do Sistema Sem Nenhuma Exceção',
-      'Eventos Especiais Pay-Per-View & Transmissões 4K',
-      'Tokens Bônus para Compartilhar',
     ],
   },
 };
@@ -261,20 +221,20 @@ export function createWhatsAppPaymentProofLink(params: {
 }): string {
   const { planName, priceFormatted, userName, contact, paymentMethod } = params;
   const lines: string[] = [
-    `⚽ *INSCRIÇÃO & COMPROVATIVO DE PAGAMENTO - PLAYSPORTS TV*`,
+    `*INSCRIÇÃO & COMPROVATIVO DE PAGAMENTO - PLAYSPORTS TV*`,
     ``,
     `Olá equipe PLAYSPORTS TV! Estou a realizar a minha inscrição no site.`,
-    `📋 *Plano Selecionado:* ${planName} (${priceFormatted})`,
+    `*Plano Selecionado:* ${planName} (${priceFormatted})`,
   ];
 
   if (userName?.trim()) {
-    lines.push(`👤 *Nome do Assinante:* ${userName.trim()}`);
+    lines.push(`*Nome do Assinante:* ${userName.trim()}`);
   }
   if (contact?.trim()) {
-    lines.push(`📱 *Contacto / Telemóvel:* ${contact.trim()}`);
+    lines.push(`*Contacto / Telemóvel:* ${contact.trim()}`);
   }
   if (paymentMethod) {
-    lines.push(`💳 *Forma de Pagamento:* ${paymentMethod}`);
+    lines.push(`*Forma de Pagamento:* ${paymentMethod}`);
   }
 
   lines.push(
@@ -328,26 +288,25 @@ export function getPlanLevel(plan?: SubscriptionPlanId | string | null): number 
 }
 
 /**
- * Verifica se um plano de usuário tem acesso a um nível mínimo requerido:
- * Regra do usuário: "nunca alguém que está num plano mais baixo vai ter acesso aos canais de um plano mais alto"
+ * Verifica se um plano de usuário tem acesso a um nível mínimo:
+ * Nova lógica do sistema: Todos os tipos de plano dão acesso a todos os canais do sistema.
  */
 export function hasPlanAccess(
   userPlan?: SubscriptionPlanId | string | null,
-  requiredPlan?: SubscriptionPlanId | string | null,
+  _requiredPlan?: SubscriptionPlanId | string | null,
   isAdmin: boolean = false
 ): boolean {
   if (isAdmin) return true;
-  const userLevel = getPlanLevel(userPlan);
-  const requiredLevel = getPlanLevel(requiredPlan);
-  return userLevel >= requiredLevel;
+  // Nova lógica: Todos os tipos de plano ativos dão acesso a todos os canais do sistema
+  if (!userPlan) return false;
+  return true;
 }
 
 /**
  * Determina o plano mínimo obrigatório para um canal.
- * Se o canal já possuir canal.minPlan explicitado, respeita o valor.
- * Caso contrário, deduz a partir da categoria, rede ou nome do canal.
+ * Nova regra: Todos os tipos de plano dão acesso a todos os canais do sistema.
  */
-export function getRequiredPlanForChannel(canal?: {
+export function getRequiredPlanForChannel(_canal?: {
   minPlan?: SubscriptionPlanId;
   nome?: string;
   categoria?: string;
@@ -355,97 +314,14 @@ export function getRequiredPlanForChannel(canal?: {
   grupo?: string;
   url?: string;
 } | null): SubscriptionPlanId {
-  if (!canal) return 'free';
-
-  // 1. Se o canal já tiver minPlan explicitado, utiliza diretamente
-  if (canal.minPlan) {
-    return canal.minPlan;
-  }
-
-  const name = (canal.nome || '').toLowerCase();
-  const cat = (canal.categoria || '').toLowerCase();
-  const rede = (canal.rede || '').toLowerCase();
-  const _grupo = (canal.grupo || '').toLowerCase();
-
-  // 2. Canais Premium Ultra 4K (SuperSport, Sport TV Portugal, DAZN, Sky Sports, 4K)
-  if (
-    rede.includes('supersport') ||
-    rede.includes('sport tv') ||
-    rede.includes('dazn') ||
-    rede.includes('sky sports') ||
-    name.includes('supersport') ||
-    name.includes('sport tv') ||
-    name.includes('dazn') ||
-    name.includes('sky sports') ||
-    name.includes('4k') ||
-    name.includes('ultra hd')
-  ) {
-    return 'premium';
-  }
-
-  // 3. Canais VIP (ZAP Viva, Kwenda Magic, Disney, Panda, Biggs, SIC K, Trace Toca, MTV, etc.)
-  if (
-    rede.includes('zap') ||
-    rede.includes('disney') ||
-    rede.includes('cartoon') ||
-    rede.includes('telecine') ||
-    name.includes('zap') ||
-    name.includes('kwenda magic') ||
-    name.includes('dstv pipoca') ||
-    name.includes('canal panda') ||
-    name.includes('panda kids') ||
-    name.includes('biggs') ||
-    name.includes('sic k') ||
-    name.includes('trace toca') ||
-    name.includes('mtv') ||
-    name.includes('babyfirst') ||
-    name.includes('kidsco') ||
-    name.includes('odisseia')
-  ) {
-    return 'vip';
-  }
-
-  // 4. Canais Básico (ESPN Brasil, beIN Sports, Telemundo, Novelas, Filmes)
-  if (
-    rede.includes('espn') ||
-    rede.includes('bein') ||
-    name.includes('espn') ||
-    name.includes('bein') ||
-    name.includes('telemundo') ||
-    name.includes('sic mulher') ||
-    name.includes('m4 movies') ||
-    name.includes('jimjam') ||
-    name.includes('bet network') ||
-    name.includes('universal') ||
-    cat.includes('novela') ||
-    cat.includes('filme')
-  ) {
-    return 'basico';
-  }
-
-  // 5. Canais Diário / Fim de Semana (TNT Sports, Champions League, Real Madrid TV, Lazer)
-  if (
-    rede.includes('tnt') ||
-    name.includes('tnt sports') ||
-    name.includes('champions league') ||
-    name.includes('real madrid') ||
-    name.includes('rtp áfrica') ||
-    name.includes('afro music') ||
-    name.includes('sol música') ||
-    name.includes('brava') ||
-    name.includes('kix') ||
-    cat.includes('esportes')
-  ) {
-    return 'diario';
-  }
-
-  // 6. Canais Livres / Degustação 24h (TPA, Miramar, Girassol, YouTube, Notícias abertas, etc.)
+  // Nova regra: Todo e qualquer canal está acessível para qualquer plano ativo
   return 'free';
 }
 
 /**
  * Validação completa de acesso ao canal pelo usuário:
- * Checa se o usuário é admin, se o plano está expirado e se tem nível suficiente.
+ * Nova regra: Todos os tipos de plano dão acesso a todos os canais do sistema.
+ * Checa se o usuário é admin ou se o plano está expirado.
  */
 export function canUserWatchChannel(
   canal: {
@@ -465,7 +341,7 @@ export function canUserWatchChannel(
 ): { allowed: boolean; reason?: 'expired' | 'plan_too_low'; requiredPlan: SubscriptionPlanId; userPlan: SubscriptionPlanId } {
   const isAdmin = profile?.role === 'admin';
   const userPlan = (profile?.plan || 'free') as SubscriptionPlanId;
-  const requiredPlan = getRequiredPlanForChannel(canal);
+  const requiredPlan = 'free';
 
   if (isAdmin) {
     return { allowed: true, requiredPlan, userPlan };
@@ -476,12 +352,7 @@ export function canUserWatchChannel(
     return { allowed: false, reason: 'expired', requiredPlan, userPlan };
   }
 
-  // 2. Checa hierarquia estrita: nunca alguém que está num plano mais baixo acessa canal de plano mais alto
-  const hasAccess = hasPlanAccess(userPlan, requiredPlan, isAdmin);
-  if (!hasAccess) {
-    return { allowed: false, reason: 'plan_too_low', requiredPlan, userPlan };
-  }
-
+  // 2. Nova lógica: Todos os tipos de plano dão acesso a todos os canais do sistema
   return { allowed: true, requiredPlan, userPlan };
 }
 

@@ -52,6 +52,7 @@ export interface SubscriberUser {
 
 export type FiltroAtivo =
   | 'Todos'
+  | 'Recentes'
   | 'Favoritos'
   | 'Bonecos'
   | 'Esportes'

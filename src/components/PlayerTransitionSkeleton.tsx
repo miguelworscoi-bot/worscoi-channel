@@ -27,13 +27,13 @@ export function PlayerTransitionSkeleton({
         variant === 'cinema' ? 'p-6 sm:p-10' : 'p-4 sm:p-6'
       }`}
     >
-      {/* 🌟 VARREDURA DE SHIMMER ULTRA-SUAVE */}
+      {/* VARREDURA DE SHIMMER ULTRA-SUAVE */}
       <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/[0.05] to-transparent animate-player-shimmer pointer-events-none" />
 
-      {/* 🌟 BRILHO RADIAL DE FUNDO */}
+      {/* BRILHO RADIAL DE FUNDO */}
       <div className="absolute inset-0 bg-radial from-[#00E676]/5 via-transparent to-black pointer-events-none" />
 
-      {/* 🔝 CABEÇALHO SUPERIOR SKELETON */}
+      {/* CABEÇALHO SUPERIOR SKELETON */}
       <div className="relative z-10 flex items-center justify-between gap-4 w-full">
         <div className="flex items-center gap-3">
           {/* LOGO MINI SKELETON */}
@@ -81,7 +81,7 @@ export function PlayerTransitionSkeleton({
         </div>
       </div>
 
-      {/* 🎯 NÚCLEO CENTRAL DE TRANSIÇÃO VISUAL COM ANIMAÇÃO */}
+      {/* NÚCLEO CENTRAL DE TRANSIÇÃO VISUAL COM ANIMAÇÃO */}
       <div className="relative z-10 flex flex-col items-center justify-center text-center my-auto py-4">
         {/* LOGO CENTRALIZADO COM PULSO RADIAL */}
         <div className="relative mb-4">
@@ -150,7 +150,7 @@ export function PlayerTransitionSkeleton({
         </div>
       </div>
 
-      {/* 🔽 RODAPÉ INFERIOR SKELETON (CONTROLES SIMULADOS) */}
+      {/* RODAPÉ INFERIOR SKELETON (CONTROLES SIMULADOS) */}
       <div className="relative z-10 flex items-center justify-between gap-3 w-full pt-3 border-t border-zinc-800/50">
         <div className="flex items-center gap-2">
           {/* PLAY CIRCLE SKELETON */}

@@ -9,6 +9,17 @@ import {
   ChevronDown,
   ChevronsUpDown,
   Layers,
+  Zap,
+  Trophy,
+  Smile,
+  Play,
+  Film,
+  Sparkles,
+  Newspaper,
+  Music,
+  Globe,
+  Radio,
+  Tv,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Canal, FiltroAtivo } from '@/types';
@@ -36,33 +47,63 @@ interface ChannelSidebarProps {
   onBuscaChange?: (busca: string) => void;
 }
 
-const FILTROS_CONFIG: Array<{ id: FiltroAtivo; label: string; icon: string }> = [
-  { id: 'Todos', label: 'Todos', icon: '⚡' },
-  { id: 'Esportes', label: 'Esportes', icon: '⚽' },
-  { id: 'Bonecos', label: 'Bonecos & Animes', icon: '🧸' },
-  { id: 'YouTube', label: 'YouTube', icon: '▶️' },
-  { id: 'Filmes', label: 'Filmes & Séries', icon: '🍿' },
-  { id: 'Novelas', label: 'Novelas', icon: '🎭' },
-  { id: 'Notícias', label: 'Notícias', icon: '📰' },
-  { id: 'Músicas', label: 'Músicas & Shows', icon: '🎵' },
-  { id: 'Libertadores', label: 'Libertadores', icon: '🏆' },
-  { id: 'Champions League', label: 'Champions League', icon: '⭐' },
-  { id: 'TNT Sports', label: 'TNT Sports', icon: '⚡' },
-  { id: 'LaLiga', label: 'LaLiga', icon: '🇪🇸' },
-  { id: 'Favoritos', label: 'Favoritos', icon: '⭐' },
-  { id: 'Portugal', label: 'Portugal', icon: '🇵🇹' },
-  { id: 'ZAP Angola', label: 'ZAP Angola', icon: '🇦🇴' },
-  { id: 'Brasil', label: 'Brasil', icon: '🇧🇷' },
-  { id: 'NBA', label: 'NBA', icon: '🏀' },
-  { id: 'MLS', label: 'MLS', icon: '🇺🇸' },
-  { id: 'SuperSport', label: 'SuperSport', icon: '🏆' },
-  { id: 'Meus Canais', label: 'Meus Canais', icon: '📡' },
+function renderSidebarIcon(key: string, className = "w-3 h-3 shrink-0") {
+  switch (key) {
+    case 'Zap':
+      return <Zap className={className} />;
+    case 'Trophy':
+      return <Trophy className={className} />;
+    case 'Smile':
+      return <Smile className={className} />;
+    case 'Play':
+      return <Play className={className} />;
+    case 'Film':
+      return <Film className={className} />;
+    case 'Sparkles':
+      return <Sparkles className={className} />;
+    case 'Newspaper':
+      return <Newspaper className={className} />;
+    case 'Music':
+      return <Music className={className} />;
+    case 'Star':
+      return <Star className={className} />;
+    case 'Globe':
+      return <Globe className={className} />;
+    case 'Radio':
+      return <Radio className={className} />;
+    case 'Tv':
+    default:
+      return <Tv className={className} />;
+  }
+}
+
+const FILTROS_CONFIG: Array<{ id: FiltroAtivo; label: string; iconKey: string }> = [
+  { id: 'Todos', label: 'Todos', iconKey: 'Zap' },
+  { id: 'Esportes', label: 'Esportes', iconKey: 'Trophy' },
+  { id: 'Bonecos', label: 'Bonecos & Animes', iconKey: 'Smile' },
+  { id: 'YouTube', label: 'YouTube', iconKey: 'Play' },
+  { id: 'Filmes', label: 'Filmes & Séries', iconKey: 'Film' },
+  { id: 'Novelas', label: 'Novelas', iconKey: 'Sparkles' },
+  { id: 'Notícias', label: 'Notícias', iconKey: 'Newspaper' },
+  { id: 'Músicas', label: 'Músicas & Shows', iconKey: 'Music' },
+  { id: 'Libertadores', label: 'Libertadores', iconKey: 'Trophy' },
+  { id: 'Champions League', label: 'Champions League', iconKey: 'Star' },
+  { id: 'TNT Sports', label: 'TNT Sports', iconKey: 'Zap' },
+  { id: 'LaLiga', label: 'LaLiga', iconKey: 'Trophy' },
+  { id: 'Favoritos', label: 'Favoritos', iconKey: 'Star' },
+  { id: 'Portugal', label: 'Portugal', iconKey: 'Globe' },
+  { id: 'ZAP Angola', label: 'ZAP Angola', iconKey: 'Tv' },
+  { id: 'Brasil', label: 'Brasil', iconKey: 'Globe' },
+  { id: 'NBA', label: 'NBA', iconKey: 'Trophy' },
+  { id: 'MLS', label: 'MLS', iconKey: 'Trophy' },
+  { id: 'SuperSport', label: 'SuperSport', iconKey: 'Trophy' },
+  { id: 'Meus Canais', label: 'Meus Canais', iconKey: 'Radio' },
 ];
 
 interface CategoryGroupMeta {
   key: string;
   label: string;
-  icon: string;
+  iconKey: string;
   order: number;
   colorClass: string;
   badgeBg: string;
@@ -74,7 +115,7 @@ function getChannelCategoryGroup(canal: Canal): CategoryGroupMeta {
     return {
       key: 'Personalizados',
       label: 'Canais Personalizados',
-      icon: '📡',
+      iconKey: 'Radio',
       order: 7,
       colorClass: 'text-cyan-400',
       badgeBg: 'bg-cyan-500/10 hover:bg-cyan-500/20',
@@ -94,7 +135,7 @@ function getChannelCategoryGroup(canal: Canal): CategoryGroupMeta {
     return {
       key: 'YouTube',
       label: 'YouTube & Criadores',
-      icon: '▶️',
+      iconKey: 'Play',
       order: 3.5,
       colorClass: 'text-red-400',
       badgeBg: 'bg-red-500/10 hover:bg-red-500/20',
@@ -106,7 +147,7 @@ function getChannelCategoryGroup(canal: Canal): CategoryGroupMeta {
     return {
       key: 'Esportes',
       label: 'Esportes & Campeonatos',
-      icon: '⚽',
+      iconKey: 'Trophy',
       order: 1,
       colorClass: 'text-[#00E676]',
       badgeBg: 'bg-[#00E676]/10 hover:bg-[#00E676]/20',
@@ -118,7 +159,7 @@ function getChannelCategoryGroup(canal: Canal): CategoryGroupMeta {
     return {
       key: 'Filmes',
       label: 'Filmes & Séries',
-      icon: '🍿',
+      iconKey: 'Film',
       order: 2,
       colorClass: 'text-purple-400',
       badgeBg: 'bg-purple-500/10 hover:bg-purple-500/20',
@@ -130,7 +171,7 @@ function getChannelCategoryGroup(canal: Canal): CategoryGroupMeta {
     return {
       key: 'Bonecos',
       label: 'Bonecos, Infantis & Animes',
-      icon: '🧸',
+      iconKey: 'Smile',
       order: 3,
       colorClass: 'text-amber-400',
       badgeBg: 'bg-amber-500/10 hover:bg-amber-500/20',
@@ -142,7 +183,7 @@ function getChannelCategoryGroup(canal: Canal): CategoryGroupMeta {
     return {
       key: 'Novelas',
       label: 'Novelas & Dramas',
-      icon: '🎭',
+      iconKey: 'Sparkles',
       order: 4,
       colorClass: 'text-rose-400',
       badgeBg: 'bg-rose-500/10 hover:bg-rose-500/20',
@@ -154,7 +195,7 @@ function getChannelCategoryGroup(canal: Canal): CategoryGroupMeta {
     return {
       key: 'Notícias',
       label: 'Notícias & Atualidades',
-      icon: '📰',
+      iconKey: 'Newspaper',
       order: 5,
       colorClass: 'text-blue-400',
       badgeBg: 'bg-blue-500/10 hover:bg-blue-500/20',
@@ -166,7 +207,7 @@ function getChannelCategoryGroup(canal: Canal): CategoryGroupMeta {
     return {
       key: 'Músicas',
       label: 'Músicas & Shows',
-      icon: '🎵',
+      iconKey: 'Music',
       order: 6,
       colorClass: 'text-pink-400',
       badgeBg: 'bg-pink-500/10 hover:bg-pink-500/20',
@@ -177,7 +218,7 @@ function getChannelCategoryGroup(canal: Canal): CategoryGroupMeta {
   return {
     key: 'Outros',
     label: 'Variedades & Outros',
-    icon: '📺',
+    iconKey: 'Tv',
     order: 8,
     colorClass: 'text-zinc-400',
     badgeBg: 'bg-zinc-800/40 hover:bg-zinc-800/60',
@@ -635,7 +676,7 @@ export function ChannelSidebar({
                   : 'text-zinc-400 hover:text-zinc-100 hover:bg-zinc-900'
               }`}
             >
-              <span className="text-[11px]">{filtro.icon}</span>
+              {renderSidebarIcon(filtro.iconKey, "w-3 h-3")}
               <span>{filtro.label}</span>
               <span
                 className={`text-[10px] px-1.5 py-0.2 rounded-full leading-none font-bold ${
@@ -707,8 +748,8 @@ export function ChannelSidebar({
                   }`}
                 >
                   <div className="flex items-center gap-2.5 min-w-0">
-                    <span className="text-base shrink-0 p-1 rounded-lg bg-zinc-900 border border-zinc-800/80 shadow-inner">
-                      {group.meta.icon}
+                    <span className="shrink-0 p-1.5 rounded-lg bg-zinc-900 border border-zinc-800/80 text-zinc-300">
+                      {renderSidebarIcon(group.meta.iconKey, "w-3.5 h-3.5")}
                     </span>
 
                     <div className="min-w-0">
@@ -869,9 +910,6 @@ export function ChannelSidebar({
                                               catInfo.subTag.borderColor
                                         }`}
                                       >
-                                        <span className="text-[9px] leading-none">
-                                          {catInfo.subTag.icon}
-                                        </span>
                                         <span className="leading-none">{catInfo.subTag.label}</span>
                                       </button>
                                     )}
@@ -923,7 +961,7 @@ export function ChannelSidebar({
           })
         ) : (
           <div className="text-center text-zinc-500 text-xs py-16 flex flex-col items-center justify-center gap-3">
-            <span className="text-3xl">📡</span>
+            <Radio className="w-8 h-8 text-zinc-600" />
             <p>Nenhum canal encontrado com os filtros atuais.</p>
             <button
               type="button"
