@@ -22,6 +22,11 @@ export interface ChannelComment {
   userPlan?: string | null;
   text: string;
   createdAt: string; // ISO string
+  parentId?: string | null; // ID do comentário pai se for resposta
+  replyToUserName?: string | null; // Nome do usuário a quem está respondendo
+  replyToUserId?: string | null;
+  adorosCount?: number; // Quantidade de reações 'Adoro' no comentário
+  adorosBy?: string[]; // IDs dos usuários que deram adoro neste comentário
 }
 
 export interface ChannelStats {
@@ -418,6 +423,16 @@ export function subscribeChannelComments(
           userPlan: d.userPlan || null,
           text: d.text || '',
           createdAt: d.createdAt || new Date().toISOString(),
+          parentId: d.parentId || null,
+          replyToUserName: d.replyToUserName || null,
+          replyToUserId: d.replyToUserId || null,
+          adorosCount:
+            typeof d.adorosCount === 'number'
+              ? d.adorosCount
+              : Array.isArray(d.adorosBy)
+              ? d.adorosBy.length
+              : 0,
+          adorosBy: Array.isArray(d.adorosBy) ? d.adorosBy : [],
         });
       });
 
@@ -438,7 +453,7 @@ export function subscribeChannelComments(
 }
 
 /**
- * Envia um novo comentário real para o canal
+ * Envia um novo comentário real para o canal (com suporte opcional a respostas em tópicos)
  */
 export async function addChannelComment(params: {
   channelSlug: string;
@@ -448,6 +463,9 @@ export async function addChannelComment(params: {
   userPhoto?: string | null;
   userPlan?: string | null;
   text: string;
+  parentId?: string | null;
+  replyToUserName?: string | null;
+  replyToUserId?: string | null;
 }): Promise<ChannelComment> {
   const commentId =
     'cm_' + Math.random().toString(36).substring(2, 10) + Date.now().toString(36);
@@ -463,6 +481,11 @@ export async function addChannelComment(params: {
     userPlan: params.userPlan || null,
     text: params.text.trim(),
     createdAt,
+    parentId: params.parentId || null,
+    replyToUserName: params.replyToUserName || null,
+    replyToUserId: params.replyToUserId || null,
+    adorosCount: 0,
+    adorosBy: [],
   };
 
   // Atualização otimista local
@@ -503,34 +526,101 @@ export async function addChannelComment(params: {
 }
 
 /**
- * Remove um comentário (autor ou administrador)
+ * Alterna a reação 'Adoro' (coração) em um comentário específico entre usuários
+ */
+export async function toggleCommentAdoro(
+  commentId: string,
+  channelSlug: string,
+  userId: string
+): Promise<{ userHasAdorado: boolean; adorosCount: number }> {
+  const currentComments = getLocalComments(channelSlug);
+  const targetIndex = currentComments.findIndex((c) => c.id === commentId);
+
+  let willAdorar = true;
+  let newAdorosCount = 1;
+  let updatedAdorosBy: string[] = [userId];
+
+  if (targetIndex !== -1) {
+    const comment = currentComments[targetIndex];
+    const adorosBy = Array.isArray(comment.adorosBy) ? [...comment.adorosBy] : [];
+    const userIndex = adorosBy.indexOf(userId);
+
+    if (userIndex >= 0) {
+      // Já havia adorado: desmarca
+      adorosBy.splice(userIndex, 1);
+      willAdorar = false;
+    } else {
+      // Adiciona o adoro
+      adorosBy.push(userId);
+      willAdorar = true;
+    }
+
+    newAdorosCount = adorosBy.length;
+    updatedAdorosBy = adorosBy;
+
+    const updatedComments = [...currentComments];
+    updatedComments[targetIndex] = {
+      ...comment,
+      adorosCount: newAdorosCount,
+      adorosBy: updatedAdorosBy,
+    };
+    saveLocalComments(channelSlug, updatedComments);
+  }
+
+  // Persiste no Firestore de forma assíncrona
+  await safeFirestoreCall(
+    async () => {
+      const commentDocRef = doc(db, 'channel_comments', commentId);
+      await setDoc(
+        commentDocRef,
+        {
+          adorosCount: newAdorosCount,
+          adorosBy: updatedAdorosBy,
+        },
+        { merge: true }
+      );
+    },
+    null,
+    4000
+  );
+
+  return { userHasAdorado: willAdorar, adorosCount: newAdorosCount };
+}
+
+/**
+ * Remove um comentário (e quaisquer respostas vinculadas)
  */
 export async function deleteChannelComment(
   commentId: string,
   channelSlug: string
 ): Promise<void> {
-  // Remove do cache local
   const currentComments = getLocalComments(channelSlug);
-  const updatedComments = currentComments.filter((c) => c.id !== commentId);
+  const idsToDelete = [
+    commentId,
+    ...currentComments.filter((c) => c.parentId === commentId).map((c) => c.id),
+  ];
+
+  const updatedComments = currentComments.filter((c) => !idsToDelete.includes(c.id));
   saveLocalComments(channelSlug, updatedComments);
 
   const prevStats = getLocalStats(channelSlug);
   saveLocalStats(channelSlug, {
     adorosCount: prevStats.adorosCount,
-    commentsCount: Math.max(0, prevStats.commentsCount - 1),
+    commentsCount: Math.max(0, prevStats.commentsCount - idsToDelete.length),
   });
 
   await safeFirestoreCall(
     async () => {
-      const commentDocRef = doc(db, 'channel_comments', commentId);
       const statsDocRef = doc(db, 'channel_stats', channelSlug);
-
-      await deleteDoc(commentDocRef);
+      for (const id of idsToDelete) {
+        const commentDocRef = doc(db, 'channel_comments', id);
+        await deleteDoc(commentDocRef);
+      }
       await setDoc(
         statsDocRef,
         {
           channelId: channelSlug,
-          commentsCount: increment(-1),
+          commentsCount: increment(-idsToDelete.length),
           updatedAt: new Date().toISOString(),
         },
         { merge: true }

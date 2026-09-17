@@ -99,7 +99,16 @@
         "userPhoto": { "type": "string" },
         "userPlan": { "type": "string" },
         "text": { "type": "string" },
-        "createdAt": { "type": "string", "format": "date-time" }
+        "createdAt": { "type": "string", "format": "date-time" },
+        "parentId": { "type": "string", "description": "Parent comment ID for threaded replies" },
+        "replyToUserName": { "type": "string", "description": "Name of user being replied to" },
+        "replyToUserId": { "type": "string", "description": "ID of user being replied to" },
+        "adorosCount": { "type": "number", "description": "Number of adoro reactions on this comment" },
+        "adorosBy": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "User IDs who liked/adoraram this comment"
+        }
       },
       "required": ["channelId", "userId", "userName", "text", "createdAt"]
     },

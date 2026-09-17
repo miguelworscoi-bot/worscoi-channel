@@ -16,6 +16,7 @@ import {
   Send,
   X,
   Trash2,
+  CornerDownRight,
 } from 'lucide-react';
 import { Canal, LatencyMode } from '@/types';
 import { getChannelHandle, isChannelVerified } from '@/utils/channelUtils';
@@ -26,6 +27,7 @@ import {
   getVideoItemSlug,
   subscribeChannelStats,
   toggleChannelAdoro,
+  toggleCommentAdoro,
   subscribeChannelComments,
   addChannelComment,
   deleteChannelComment,
@@ -82,6 +84,12 @@ export function WorscoiPlayerCard({
   const [commentInput, setCommentInput] = useState('');
   const [commentsList, setCommentsList] = useState<ChannelComment[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [replyingTo, setReplyingTo] = useState<{
+    commentId: string;
+    userName: string;
+    rootParentId: string;
+  } | null>(null);
+  const [animatingHeartId, setAnimatingHeartId] = useState<string | null>(null);
 
   const streams = [canalAtivo?.url || '', ...(canalAtivo?.backupUrls || [])].filter(Boolean);
   const currentStreamUrl = streams[streamIndex] || canalAtivo?.url || '';
@@ -156,7 +164,11 @@ export function WorscoiPlayerCard({
     const effectiveUserPlan = userProfile?.planName || userProfile?.plan || null;
 
     const text = commentInput.trim();
+    const parentId = replyingTo?.rootParentId || null;
+    const replyToUserName = replyingTo?.userName || null;
+
     setCommentInput('');
+    setReplyingTo(null);
     setIsSubmitting(true);
 
     try {
@@ -168,11 +180,26 @@ export function WorscoiPlayerCard({
         userPhoto: effectiveUserPhoto,
         userPlan: effectiveUserPlan,
         text,
+        parentId,
+        replyToUserName,
       });
     } catch (err) {
       console.error('Erro ao enviar comentário:', err);
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleToggleCommentAdoro = async (commentId: string) => {
+    if (!canalAtivo) return;
+    const videoSlug = getVideoItemSlug(canalAtivo, streamIndex, currentStreamUrl);
+    const effectiveUserId = getEffectiveVisitorId(userProfile?.id);
+    try {
+      setAnimatingHeartId(commentId);
+      setTimeout(() => setAnimatingHeartId((prev) => (prev === commentId ? null : prev)), 450);
+      await toggleCommentAdoro(commentId, videoSlug, effectiveUserId);
+    } catch (err) {
+      console.error('Erro ao alternar adoro no comentário:', err);
     }
   };
 
@@ -369,7 +396,7 @@ export function WorscoiPlayerCard({
 
         {/* DRAWER / MODAL LATERAL DE COMENTÁRIOS REAIS */}
         {isCommentsOpen && (
-          <div className="absolute inset-y-0 right-0 w-80 max-w-full bg-[#0E0E12]/95 backdrop-blur-xl border-l border-zinc-800 z-30 flex flex-col p-4 animate-in slide-in-from-right duration-200">
+          <div className="absolute inset-y-0 right-0 w-80 sm:w-96 max-w-full bg-[#0E0E12]/95 backdrop-blur-xl border-l border-zinc-800 z-30 flex flex-col p-4 animate-in slide-in-from-right duration-200">
             <div className="flex items-center justify-between pb-3 border-b border-zinc-800">
               <div className="flex items-center gap-2">
                 <MessageCircle className="w-4 h-4 text-[#FF2D55]" />
@@ -379,7 +406,11 @@ export function WorscoiPlayerCard({
               </div>
               <button
                 type="button"
-                onClick={() => setIsCommentsOpen(false)}
+                id="worscoi-comments-close-btn"
+                onClick={() => {
+                  setIsCommentsOpen(false);
+                  setReplyingTo(null);
+                }}
                 className="w-7 h-7 rounded-full flex items-center justify-center text-zinc-400 hover:text-white hover:bg-zinc-800 transition-all duration-200 hover:scale-120 hover:rotate-90 active:scale-90 cursor-pointer"
                 title="Fechar comentários"
               >
@@ -401,59 +432,226 @@ export function WorscoiPlayerCard({
                   </p>
                 </div>
               ) : (
-                commentsList.map((c) => {
+                (() => {
                   const effectiveUserId = getEffectiveVisitorId(userProfile?.id);
-                  const isAuthor = c.userId === effectiveUserId || isAdmin;
+                  const roots = commentsList.filter((c) => !c.parentId);
+                  const repliesMap = commentsList.reduce<Record<string, ChannelComment[]>>((acc, c) => {
+                    if (c.parentId) {
+                      if (!acc[c.parentId]) acc[c.parentId] = [];
+                      acc[c.parentId].push(c);
+                    }
+                    return acc;
+                  }, {});
 
-                  return (
-                    <div key={c.id} className="text-xs bg-zinc-900/60 p-2.5 rounded-xl border border-zinc-850 group hover:border-zinc-700 transition">
-                      <div className="flex items-center justify-between mb-1">
-                        <div className="flex items-center gap-1.5">
-                          {c.userPhoto ? (
-                            <img
-                              src={c.userPhoto}
-                              alt={c.userName}
-                              className="w-5 h-5 rounded-full object-cover border border-zinc-700 transition-transform duration-200 group-hover:scale-110"
-                            />
-                          ) : (
-                            <div className="w-5 h-5 rounded-full bg-gradient-to-tr from-[#FF2D55] to-purple-600 text-white font-bold text-[9px] flex items-center justify-center transition-transform duration-200 group-hover:scale-110">
-                              {c.userName.charAt(0).toUpperCase()}
+                  for (const c of commentsList) {
+                    if (c.parentId && !roots.some((r) => r.id === c.parentId)) {
+                      roots.push(c);
+                    }
+                  }
+
+                  return roots.map((c) => {
+                    const isAuthor = c.userId === effectiveUserId || isAdmin;
+                    const hasAdorado = Boolean(c.adorosBy?.includes(effectiveUserId));
+                    const adoros = c.adorosCount || c.adorosBy?.length || 0;
+                    const threadReplies = repliesMap[c.id] || [];
+
+                    return (
+                      <div key={c.id} className="space-y-1.5">
+                        <div className="text-xs bg-zinc-900/60 p-2.5 rounded-xl border border-zinc-850 group hover:border-zinc-700 transition">
+                          <div className="flex items-center justify-between mb-1">
+                            <div className="flex items-center gap-1.5">
+                              {c.userPhoto ? (
+                                <img
+                                  src={c.userPhoto}
+                                  alt={c.userName}
+                                  className="w-5 h-5 rounded-full object-cover border border-zinc-700 transition-transform duration-200 group-hover:scale-110"
+                                />
+                              ) : (
+                                <div className="w-5 h-5 rounded-full bg-gradient-to-tr from-[#FF2D55] to-purple-600 text-white font-bold text-[9px] flex items-center justify-center transition-transform duration-200 group-hover:scale-110">
+                                  {c.userName.charAt(0).toUpperCase()}
+                                </div>
+                              )}
+                              <span className="font-semibold text-zinc-200 text-[11px]">{c.userName}</span>
+                              {c.userPlan && (
+                                <span className="text-[8px] px-1.5 py-0.2 rounded-full bg-[#FF2D55]/15 text-[#FF2D55] border border-[#FF2D55]/30 font-bold">
+                                  {c.userPlan}
+                                </span>
+                              )}
                             </div>
-                          )}
-                          <span className="font-semibold text-zinc-200 text-[11px]">{c.userName}</span>
-                          {c.userPlan && (
-                            <span className="text-[8px] px-1.5 py-0.2 rounded-full bg-[#FF2D55]/15 text-[#FF2D55] border border-[#FF2D55]/30 font-bold">
-                              {c.userPlan}
-                            </span>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <span className="text-[10px] text-zinc-500">{formatRelativeTime(c.createdAt)}</span>
-                          {isAuthor && (
+                            <div className="flex items-center gap-1">
+                              <span className="text-[10px] text-zinc-500">{formatRelativeTime(c.createdAt)}</span>
+                              {isAuthor && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeleteComment(c.id)}
+                                  className="opacity-0 group-hover:opacity-100 p-1 text-zinc-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-full transition-all duration-200 hover:scale-125 active:scale-90 cursor-pointer"
+                                  title="Excluir comentário"
+                                >
+                                  <Trash2 className="w-3 h-3" />
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                          <p className="text-zinc-300 text-xs pl-6 break-words">{c.text}</p>
+
+                          {/* Ações: Adoro & Responder */}
+                          <div className="mt-2 pl-6 flex items-center gap-2">
                             <button
                               type="button"
-                              onClick={() => handleDeleteComment(c.id)}
-                              className="opacity-0 group-hover:opacity-100 p-1 text-zinc-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-full transition-all duration-200 hover:scale-125 active:scale-90 cursor-pointer"
-                              title="Excluir comentário"
+                              onClick={() => handleToggleCommentAdoro(c.id)}
+                              className={`px-2 py-0.5 rounded text-[10px] font-medium flex items-center gap-1 transition cursor-pointer border ${
+                                hasAdorado
+                                  ? 'bg-[#FF2D55]/20 text-rose-300 border-[#FF2D55]/40'
+                                  : 'bg-zinc-800/40 text-zinc-400 border-zinc-700/50 hover:text-rose-400'
+                              }`}
+                              title={hasAdorado ? 'Remover adoro' : 'Adorar comentário'}
                             >
-                              <Trash2 className="w-3 h-3" />
+                              <Heart
+                                className={`w-3 h-3 ${hasAdorado ? 'fill-[#FF2D55] text-[#FF2D55]' : ''} ${
+                                  animatingHeartId === c.id ? 'scale-125' : 'scale-100'
+                                }`}
+                              />
+                              <span>{adoros > 0 ? formatInteractionCount(adoros) : 'Adoro'}</span>
                             </button>
-                          )}
+
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const rootId = c.parentId || c.id;
+                                setReplyingTo({
+                                  commentId: c.id,
+                                  userName: c.userName,
+                                  rootParentId: rootId,
+                                });
+                              }}
+                              className="px-2 py-0.5 rounded text-[10px] font-medium flex items-center gap-1 text-zinc-400 bg-zinc-800/40 border border-zinc-700/50 hover:text-white transition cursor-pointer"
+                              title={`Responder a ${c.userName}`}
+                            >
+                              <CornerDownRight className="w-3 h-3 text-zinc-400" />
+                              <span>Responder</span>
+                            </button>
+                          </div>
                         </div>
+
+                        {/* Thread de respostas */}
+                        {threadReplies.length > 0 && (
+                          <div className="ml-4 pl-3 border-l-2 border-[#FF2D55]/30 space-y-1.5 pt-0.5">
+                            {threadReplies.map((reply) => {
+                              const isReplyAuthor = reply.userId === effectiveUserId || isAdmin;
+                              const hasReplyAdorado = Boolean(reply.adorosBy?.includes(effectiveUserId));
+                              const replyAdoros = reply.adorosCount || reply.adorosBy?.length || 0;
+
+                              return (
+                                <div
+                                  key={reply.id}
+                                  className="text-xs bg-zinc-900/40 p-2 rounded-xl border border-zinc-850 group"
+                                >
+                                  <div className="flex items-center justify-between mb-1">
+                                    <div className="flex items-center gap-1.5">
+                                      <span className="font-semibold text-zinc-200 text-[11px]">
+                                        {reply.userName}
+                                      </span>
+                                      {reply.userPlan && (
+                                        <span className="text-[7px] px-1 rounded bg-[#FF2D55]/15 text-[#FF2D55]">
+                                          {reply.userPlan}
+                                        </span>
+                                      )}
+                                    </div>
+                                    <div className="flex items-center gap-1">
+                                      <span className="text-[9px] text-zinc-500">
+                                        {formatRelativeTime(reply.createdAt)}
+                                      </span>
+                                      {isReplyAuthor && (
+                                        <button
+                                          type="button"
+                                          onClick={() => handleDeleteComment(reply.id)}
+                                          className="opacity-0 group-hover:opacity-100 p-0.5 text-zinc-500 hover:text-rose-400 cursor-pointer"
+                                        >
+                                          <Trash2 className="w-3 h-3" />
+                                        </button>
+                                      )}
+                                    </div>
+                                  </div>
+                                  <p className="text-zinc-300 text-xs pl-2 break-words">
+                                    {reply.replyToUserName && (
+                                      <span className="text-rose-400 font-semibold mr-1 select-none">
+                                        @{reply.replyToUserName}
+                                      </span>
+                                    )}
+                                    {reply.text}
+                                  </p>
+                                  <div className="mt-1 pl-2 flex items-center gap-2">
+                                    <button
+                                      type="button"
+                                      onClick={() => handleToggleCommentAdoro(reply.id)}
+                                      className={`px-1.5 py-0.5 rounded text-[9px] font-medium flex items-center gap-1 cursor-pointer border ${
+                                        hasReplyAdorado
+                                          ? 'bg-[#FF2D55]/20 text-rose-300 border-[#FF2D55]/40'
+                                          : 'bg-zinc-800/40 text-zinc-400 border-zinc-700/50 hover:text-rose-400'
+                                      }`}
+                                    >
+                                      <Heart
+                                        className={`w-2.5 h-2.5 ${
+                                          hasReplyAdorado ? 'fill-[#FF2D55] text-[#FF2D55]' : ''
+                                        }`}
+                                      />
+                                      <span>{replyAdoros > 0 ? formatInteractionCount(replyAdoros) : 'Adoro'}</span>
+                                    </button>
+
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setReplyingTo({
+                                          commentId: reply.id,
+                                          userName: reply.userName,
+                                          rootParentId: c.id,
+                                        });
+                                      }}
+                                      className="px-1.5 py-0.5 rounded text-[9px] font-medium flex items-center gap-1 text-zinc-400 bg-zinc-800/40 border border-zinc-700/50 hover:text-white cursor-pointer"
+                                    >
+                                      <CornerDownRight className="w-2.5 h-2.5" />
+                                      <span>Responder</span>
+                                    </button>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
                       </div>
-                      <p className="text-zinc-300 text-xs pl-6 break-words">{c.text}</p>
-                    </div>
-                  );
-                })
+                    );
+                  });
+                })()
               )}
             </div>
+
+            {/* Banner de Resposta */}
+            {replyingTo && (
+              <div className="mb-2 px-2.5 py-1.5 rounded-lg bg-[#FF2D55]/10 border border-[#FF2D55]/30 flex items-center justify-between text-xs">
+                <span className="text-zinc-300 truncate">
+                  Respondendo a <strong className="text-rose-400">@{replyingTo.userName}</strong>
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setReplyingTo(null)}
+                  className="p-0.5 text-zinc-400 hover:text-white cursor-pointer"
+                  title="Cancelar resposta"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </div>
+            )}
 
             <form onSubmit={handleSendComment} className="pt-2 flex items-center gap-2">
               <input
                 type="text"
                 value={commentInput}
                 onChange={(e) => setCommentInput(e.target.value)}
-                placeholder="Adicione um comentário..."
+                placeholder={
+                  replyingTo
+                    ? `Responder a @${replyingTo.userName}...`
+                    : 'Adicione um comentário...'
+                }
                 maxLength={400}
                 className="flex-1 bg-zinc-900 text-xs text-zinc-200 placeholder-zinc-500 rounded-full px-3.5 py-2 border border-zinc-800 focus:outline-none focus:border-[#FF2D55] focus:ring-1 focus:ring-[#FF2D55]/30 transition"
               />
@@ -461,7 +659,7 @@ export function WorscoiPlayerCard({
                 type="submit"
                 disabled={!commentInput.trim() || isSubmitting}
                 className="w-8 h-8 rounded-full bg-[#FF2D55] text-white hover:bg-rose-600 disabled:opacity-40 transition-all duration-200 hover:scale-115 active:scale-90 cursor-pointer shrink-0 flex items-center justify-center shadow-md"
-                title="Enviar comentário"
+                title={replyingTo ? 'Enviar resposta' : 'Enviar comentário'}
               >
                 <Send className="w-3.5 h-3.5 transition-transform duration-200 group-hover:scale-110" />
               </button>

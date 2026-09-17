@@ -1,4 +1,10 @@
 import { NextResponse } from 'next/server';
+import { globalRateLimiter, createRateLimitExceededResponse } from '@/lib/rateLimiter';
+
+// Permite conexões com certificados auto-assinados ou expirados comuns em emissoras de IPTV e streams legados
+if (typeof process !== 'undefined' && process.env) {
+  process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+}
 
 export async function OPTIONS() {
   return new NextResponse(null, {
@@ -30,10 +36,19 @@ export async function HEAD(request?: Request) {
   try {
     const response = await fetch(targetUrl, {
       method: 'HEAD',
-      signal: AbortSignal.timeout(3500),
+      signal: AbortSignal.timeout(5000),
+      headers: {
+        'User-Agent':
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+        Accept: '*/*',
+      },
     });
+
+    // Se o servidor remoto não aceitar HEAD (405 / 501), responde status 200 para não quebrar testes de ping
+    const statusToReturn = response.status === 405 || response.status === 501 ? 200 : response.status;
+
     return new NextResponse(null, {
-      status: response.status,
+      status: statusToReturn,
       headers: {
         'Access-Control-Allow-Origin': '*',
         'Cache-Control': 'no-cache',
@@ -49,7 +64,7 @@ export async function HEAD(request?: Request) {
 
 function resolveAndProxy(uri: string, baseUrl: string): string {
   try {
-    const trimmed = uri.trim();
+    const trimmed = uri.trim().replace(/^["']|["']$/g, '');
     if (!trimmed) return trimmed;
     // Se já está roteado pelo proxy, preserva
     if (trimmed.startsWith('/api/proxy')) return trimmed;
@@ -61,17 +76,23 @@ function resolveAndProxy(uri: string, baseUrl: string): string {
 }
 
 function rewriteM3U8(content: string, baseUrl: string): string {
-  const lines = content.split('\n');
+  // Normaliza quebras de linha independentemente de CRLF ou LF
+  const normalized = content.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+  const lines = normalized.split('\n');
+
   return lines
     .map((line) => {
       const trimmed = line.trim();
-      if (!trimmed) return line;
+      if (!trimmed) return '';
 
-      // Linhas com tags M3U8: reescreve atributos URI="..." (como em #EXT-X-MEDIA, #EXT-X-MAP, #EXT-X-KEY)
+      // Linhas com tags M3U8: reescreve atributos URI="..." ou URI=...
       if (trimmed.startsWith('#')) {
-        return line.replace(
-          /URI=(["'])(.*?)(["'])/g,
-          (_match, q1, uri, q2) => `URI=${q1}${resolveAndProxy(uri, baseUrl)}${q2}`
+        return trimmed.replace(
+          /URI=(["']?)([^"',\s>]+)(["']?)/g,
+          (_match, q1, uri, q2) => {
+            const quote = q1 || q2 || '"';
+            return `URI=${quote}${resolveAndProxy(uri, baseUrl)}${quote}`;
+          }
         );
       }
 
@@ -84,6 +105,17 @@ function rewriteM3U8(content: string, baseUrl: string): string {
 export async function GET(request?: Request) {
   if (!request?.url) {
     return NextResponse.json({ error: 'URL is required' }, { status: 400 });
+  }
+
+  // Ativação do limite de requisições (Limits of Requests) para o proxy
+  const rateLimitResult = globalRateLimiter.check(request, {
+    routeKey: 'proxy-stream',
+    maxRequests: 240, // 240 requisições/min por IP: amplo para HLS regular, bloqueia abusos e scrapers
+    windowSeconds: 60,
+  });
+
+  if (!rateLimitResult.allowed) {
+    return createRateLimitExceededResponse(rateLimitResult);
   }
 
   const urlObj = new URL(request.url);
@@ -113,7 +145,6 @@ export async function GET(request?: Request) {
 
     if (origin) {
       headers['Referer'] = `${origin}/`;
-      headers['Origin'] = origin;
     }
 
     // Encaminha cabeçalho de Range caso exista (essencial para streaming e seek)
@@ -122,14 +153,18 @@ export async function GET(request?: Request) {
       headers['Range'] = rangeHeader;
     }
 
+    // Timeout otimizado: 8s para playlists .m3u8 (failover rápido se servidor estiver fora), 12s para segmentos
+    const isPlaylistRequest = targetUrl.includes('.m3u8');
+    const timeoutMs = isPlaylistRequest ? 8000 : 12000;
+
     const response = await fetch(targetUrl, {
-      signal: AbortSignal.timeout(4500),
+      signal: AbortSignal.timeout(timeoutMs),
       headers,
       redirect: 'follow',
     });
 
     const finalUrl = response.url || targetUrl;
-    const rawContentType = response.headers.get('content-type') || '';
+    const rawContentType = (response.headers.get('content-type') || '').toLowerCase();
     const isM3U8Url =
       targetUrl.toLowerCase().includes('.m3u8') ||
       finalUrl.toLowerCase().includes('.m3u8');
@@ -145,19 +180,19 @@ export async function GET(request?: Request) {
       if (text.includes('#EXTM3U') || text.includes('#EXT-X-')) {
         const rewritten = rewriteM3U8(text, finalUrl);
         return new NextResponse(rewritten, {
-          status: response.status,
+          status: response.status >= 200 && response.status < 300 ? 200 : response.status,
           headers: {
             'Content-Type': 'application/vnd.apple.mpegurl; charset=utf-8',
             'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Methods': 'GET, HEAD, OPTIONS',
             'Access-Control-Allow-Headers': '*',
-            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Cache-Control': 'public, max-age=2, must-revalidate',
           },
         });
       }
     }
 
-    // Fluxo binário (segmentos .ts, .fmp4, áudio .aac, chaves)
+    // Fluxo binário (segmentos .ts, .fmp4, .m4s, áudio .aac, chaves)
     const data = await response.arrayBuffer();
     const responseHeaders: Record<string, string> = {
       'Content-Type': rawContentType || 'video/mp2t',
@@ -180,10 +215,21 @@ export async function GET(request?: Request) {
       status: response.status,
       headers: responseHeaders,
     });
-  } catch {
+  } catch (err: unknown) {
+    const errorMsg = err instanceof Error ? err.message : String(err);
+    console.warn(`[Proxy Warning] Falha na transmissão de ${targetUrl}:`, errorMsg);
     return NextResponse.json(
-      { error: 'Failed to fetch stream through proxy' },
-      { status: 502 }
+      { error: 'Falha ao transmitir stream pelo proxy', details: errorMsg },
+      {
+        status: 502,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'GET, HEAD, OPTIONS',
+          'Access-Control-Allow-Headers': '*',
+          'Cache-Control': 'no-store, no-cache, must-revalidate',
+        },
+      }
     );
   }
 }
+

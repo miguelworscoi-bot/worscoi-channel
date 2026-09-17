@@ -48,6 +48,7 @@ import {
   subscribeChannelStats,
   subscribeChannelComments,
   toggleChannelAdoro,
+  toggleCommentAdoro,
   addChannelComment,
   deleteChannelComment,
   getVideoItemSlug,
@@ -139,9 +140,6 @@ export function PlayerHero({
   const [isChannelVideosOpen, setIsChannelVideosOpen] = useState(false);
 
   // Estados de recuperação inteligente de streaming
-  const [isRescueActive, setIsRescueActive] = useState(false);
-  const [rescueCountdown, setRescueCountdown] = useState(6);
-  const [isRescuePaused, setIsRescuePaused] = useState(false);
   const [emergencyOverrideUrl, setEmergencyOverrideUrl] = useState<string | null>(null);
 
   // Monitor de latência e qualidade da transmissão em tempo real
@@ -285,7 +283,11 @@ export function PlayerHero({
     setAdorosCount(res.adorosCount);
   };
 
-  const handleSendComment = async (text: string) => {
+  const handleSendComment = async (
+    text: string,
+    parentId?: string | null,
+    replyToUserName?: string | null
+  ) => {
     if (!canalAtivo || !text.trim() || isSubmittingComment) return;
     const rawUrl = emergencyOverrideUrl || streamsDisponiveis[streamIndex] || canalAtivo.url || '';
     const videoSlug = getVideoItemSlug(canalAtivo, streamIndex, rawUrl);
@@ -306,11 +308,25 @@ export function PlayerHero({
         userPhoto: effectiveUserPhoto,
         userPlan: effectiveUserPlan,
         text,
+        parentId,
+        replyToUserName,
       });
     } catch (err) {
       console.error('Erro ao enviar comentário:', err);
     } finally {
       setIsSubmittingComment(false);
+    }
+  };
+
+  const handleToggleCommentAdoro = async (commentId: string) => {
+    if (!canalAtivo) return;
+    const rawUrl = emergencyOverrideUrl || streamsDisponiveis[streamIndex] || canalAtivo.url || '';
+    const videoSlug = getVideoItemSlug(canalAtivo, streamIndex, rawUrl);
+    const effectiveUserId = getEffectiveVisitorId(userProfile?.id);
+    try {
+      await toggleCommentAdoro(commentId, videoSlug, effectiveUserId);
+    } catch (err) {
+      console.error('Erro ao alternar adoro do comentário:', err);
     }
   };
 
@@ -405,9 +421,6 @@ export function PlayerHero({
     setHasFirstFrame(false);
     setHasYouTubeEmbedError(false);
     setLoadSeconds(0);
-    setIsRescueActive(false);
-    setRescueCountdown(6);
-    setIsRescuePaused(false);
     setEmergencyOverrideUrl(null);
     // Reseta a latência base para o novo canal
     setStreamLatency(latencyMode === 'low-latency' ? 120 : latencyMode === 'economy' ? 260 : 180);
@@ -578,12 +591,10 @@ export function PlayerHero({
       seconds += 1;
       setLoadSeconds(seconds);
 
-      // Aos 3.5s: tenta servidor alternativo ou ativa proxy
-      if (seconds === 4 && !hasFirstFrame) {
+      // Aos 6s: se o sinal direto ainda não abriu e não é YouTube, tenta via proxy seguro (corrige bloqueios de CORS/SSL da emissora)
+      if (seconds === 6 && !hasFirstFrame) {
         setTimeout(() => {
-          if (streamsCount > 1 && streamIndex < streamsCount - 1) {
-            onStreamChangeRef.current?.(streamIndex + 1);
-          } else if (
+          if (
             !useProxy &&
             !activeRawStreamUrl.includes('youtube.com') &&
             !activeRawStreamUrl.includes('youtu.be')
@@ -593,12 +604,25 @@ export function PlayerHero({
         }, 0);
       }
 
-      // Aos 6s: se ainda não abriu, aciona a central de resgate para não intediar o espectador
-      if (seconds >= 6 && !hasFirstFrame) {
-        setIsRescueActive(true);
+      // Aos 10s: tenta servidor alternativo da lista se houver
+      if (seconds === 10 && !hasFirstFrame) {
+        setTimeout(() => {
+          if (streamsCount > 1 && streamIndex < streamsCount - 1) {
+            onStreamChangeRef.current?.(streamIndex + 1);
+          }
+        }, 0);
       }
 
-      if (seconds === 8 && !hasFirstFrame) {
+      // Aos 15s: se ainda não abriu, aciona o sinal de contingência da categoria para garantir que a tela não fique preta
+      if (seconds === 15 && !hasFirstFrame) {
+        const emergencyStream = getEmergencyFallbackStream(canalAtivo.categoria);
+        if (emergencyStream && emergencyStream !== activeRawStreamUrl) {
+          setEmergencyOverrideUrl(emergencyStream);
+        }
+      }
+
+      // Aos 22s: se persistir sem sinal após todas as tentativas, notifica o erro
+      if (seconds === 22 && !hasFirstFrame) {
         setTimeout(() => {
           onPlayerErrorRef.current?.(new Error('Tempo limite de conexão'));
         }, 0);
@@ -606,32 +630,7 @@ export function PlayerHero({
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [hasFirstFrame, canalAtivo?.id, streamsCount, streamIndex, useProxy, activeRawStreamUrl, isCinemaMode]);
-
-  // Contagem regressiva de auto-resgate para nunca travar o usuário
-  useEffect(() => {
-    if (!isRescueActive || hasFirstFrame || isRescuePaused || isCinemaMode) return;
-
-    let countdown = rescueCountdown;
-    const timer = setInterval(() => {
-      countdown -= 1;
-      if (countdown <= 0) {
-        clearInterval(timer);
-        setRescueCountdown(0);
-        setTimeout(() => {
-          if (onNextCanalRef.current) {
-            onNextCanalRef.current();
-          } else {
-            setEmergencyOverrideUrl(getEmergencyFallbackStream(canalAtivo?.categoria));
-          }
-        }, 0);
-      } else {
-        setRescueCountdown(countdown);
-      }
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, [isRescueActive, hasFirstFrame, isRescuePaused, isCinemaMode, canalAtivo?.categoria]);
+  }, [hasFirstFrame, canalAtivo?.id, canalAtivo?.categoria, streamsCount, streamIndex, useProxy, activeRawStreamUrl, isCinemaMode]);
 
   // Atalhos de teclado úteis
   useEffect(() => {
@@ -936,14 +935,47 @@ export function PlayerHero({
                       handlePlaybackFinished();
                     }, 0);
                   },
-                  onError: (err: unknown) => {
+                  onError: (err: unknown, data?: unknown) => {
                     setTimeout(() => {
+                      // Se o navegador rejeitou autoplay com áudio, muta para permitir reprodução visual contínua
+                      if (err instanceof Error) {
+                        if (
+                          err.name === 'NotAllowedError' ||
+                          err.message?.includes('play() failed') ||
+                          err.message?.includes("user didn't interact")
+                        ) {
+                          if (!isMuted) {
+                            onToggleMute();
+                          }
+                          return;
+                        }
+                        if (err.name === 'AbortError' || err.message?.includes('interrupted by a call to pause')) {
+                          return;
+                        }
+                      }
+
+                      // Se o Hls.js disparou erro não-fatal, permite que ele tente re-sincronizar
+                      if (data && typeof data === 'object' && 'fatal' in data && !(data as { fatal: boolean }).fatal) {
+                        return;
+                      }
+
                       if (
                         activeRawStreamUrl.includes('youtube.com') ||
                         activeRawStreamUrl.includes('youtu.be')
                       ) {
                         setHasYouTubeEmbedError(true);
                       }
+
+                      // Se a conexão direta falhou por CORS ou SSL da emissora, ativa automaticamente o proxy antes de descartar o canal
+                      if (
+                        !isCurrentlyProxied &&
+                        !activeRawStreamUrl.includes('youtube.com') &&
+                        !activeRawStreamUrl.includes('youtu.be')
+                      ) {
+                        onToggleProxyRef.current?.();
+                        return;
+                      }
+
                       onPlayerError(err);
                     }, 0);
                   },
@@ -1100,7 +1132,13 @@ export function PlayerHero({
                       ? 'Vídeo com restrição de incorporação'
                       : loadSeconds < 4
                       ? 'Conectando transmissão ao vivo...'
-                      : 'Sincronizando sinal HD...'}
+                      : loadSeconds < 9
+                      ? 'Sintonizando fluxo e sincronizando buffer HD...'
+                      : loadSeconds < 16
+                      ? 'Otimizando sinal com servidor da emissora...'
+                      : loadSeconds < 24
+                      ? 'Ajustando transmissão para máxima estabilidade...'
+                      : 'Conectando sinal reserva...'}
                   </span>
                 </div>
 
@@ -1108,16 +1146,24 @@ export function PlayerHero({
                 <div className="w-full h-1 bg-zinc-800 rounded-full overflow-hidden mt-2.5">
                   <motion.div
                     className="h-full bg-gradient-to-r from-red-500 to-[#FF2D55]"
-                    initial={{ width: '20%' }}
-                    animate={{ width: `${Math.min(95, Math.max(30, (loadSeconds + 1) * 20))}%` }}
-                    transition={{ duration: 0.4 }}
+                    initial={{ width: '18%' }}
+                    animate={{ width: `${Math.min(94, Math.max(18, Math.round(18 + (loadSeconds / 24) * 76)))}%` }}
+                    transition={{ duration: 0.5 }}
                   />
                 </div>
               </div>
 
               {/* Alternativas se demorar a carregar */}
-              {(loadSeconds >= 5 || hasYouTubeEmbedError) && (
+              {(loadSeconds >= 6 || hasYouTubeEmbedError) && (
                 <div className="mt-4 flex items-center gap-2 flex-wrap justify-center">
+                  <button
+                    type="button"
+                    onClick={handleReload}
+                    className="px-3 py-1.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-semibold border border-zinc-700 flex items-center gap-1.5 cursor-pointer transition shadow-sm"
+                  >
+                    <RefreshCw className="w-3.5 h-3.5 text-zinc-300" />
+                    <span>Recarregar Sinal</span>
+                  </button>
                   {streamsDisponiveis.length > 1 && (
                     <button
                       type="button"
@@ -1588,6 +1634,7 @@ export function PlayerHero({
         canalNome={canalAtivo?.nome || 'Canal'}
         comments={commentsList}
         onSendComment={handleSendComment}
+        onToggleCommentAdoro={handleToggleCommentAdoro}
         onDeleteComment={handleDeleteComment}
         isSubmitting={isSubmittingComment}
         currentUserId={getEffectiveVisitorId(userProfile?.id)}

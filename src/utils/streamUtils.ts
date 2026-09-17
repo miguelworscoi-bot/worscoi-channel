@@ -18,10 +18,10 @@ export function getSafeStreamUrl(rawUrl: string, forceProxy = false): string {
   }
 
   const isHttpsPage =
-    typeof window !== 'undefined' && window.location.protocol === 'https:';
+    typeof window === 'undefined' || window.location.protocol === 'https:';
   const isInsecureHttp = trimmed.startsWith('http://');
 
-  // Bloqueio de Mixed Content do navegador: Qualquer URL http:// em página https:// deve passar pelo proxy seguro
+  // Bloqueio de Mixed Content e CORS do navegador: Qualquer URL http:// ou quando forçado deve passar pelo proxy seguro
   if (forceProxy || (isHttpsPage && isInsecureHttp)) {
     return `/api/proxy?url=${encodeURIComponent(trimmed)}`;
   }
@@ -36,7 +36,7 @@ export function isStreamAutoProxied(rawUrl: string, forceProxy = false): boolean
     return false;
   }
   const isHttpsPage =
-    typeof window !== 'undefined' && window.location.protocol === 'https:';
+    typeof window === 'undefined' || window.location.protocol === 'https:';
   return forceProxy || (isHttpsPage && trimmed.startsWith('http://'));
 }
 
@@ -56,20 +56,23 @@ export function getHlsOptionsForLatencyMode(mode: LatencyMode): Record<string, u
       capLevelToPlayerSize: true,
       startLevel: 0,
       backBufferLength: 0,
-      maxBufferLength: 4,
-      maxMaxBufferLength: 6,
-      maxBufferSize: 4 * 1024 * 1024, // 4MB de buffer ultra-leve
-      liveSyncDurationCount: 2,
-      liveMaxLatencyDurationCount: 4,
-      manifestLoadingTimeOut: 3500,
-      manifestLoadingMaxRetry: 1,
-      manifestLoadingRetryDelay: 400,
-      levelLoadingTimeOut: 3500,
-      levelLoadingMaxRetry: 1,
-      levelLoadingRetryDelay: 400,
-      fragLoadingTimeOut: 4000,
-      fragLoadingMaxRetry: 1,
-      fragLoadingRetryDelay: 400,
+      maxBufferLength: 8,
+      maxMaxBufferLength: 14,
+      maxBufferSize: 6 * 1024 * 1024, // 6MB
+      liveSyncDurationCount: 3,
+      liveMaxLatencyDurationCount: 6,
+      manifestLoadingTimeOut: 12000,
+      manifestLoadingMaxRetry: 3,
+      manifestLoadingRetryDelay: 800,
+      levelLoadingTimeOut: 12000,
+      levelLoadingMaxRetry: 3,
+      levelLoadingRetryDelay: 800,
+      fragLoadingTimeOut: 15000,
+      fragLoadingMaxRetry: 4,
+      fragLoadingRetryDelay: 800,
+      nudgeOffset: 0.1,
+      nudgeMaxRetry: 5,
+      maxBufferHole: 0.5,
       startFragPrefetch: true,
       progressive: true,
       testBandwidth: false,
@@ -81,21 +84,24 @@ export function getHlsOptionsForLatencyMode(mode: LatencyMode): Record<string, u
       enableWorker: true,
       lowLatencyMode: false,
       capLevelToPlayerSize: true,
-      backBufferLength: 10,
-      maxBufferLength: 8,
-      maxMaxBufferLength: 15,
-      maxBufferSize: 12 * 1024 * 1024, // 12MB equilibrado
-      liveSyncDurationCount: 2,
-      liveMaxLatencyDurationCount: 5,
-      manifestLoadingTimeOut: 4000,
-      manifestLoadingMaxRetry: 1,
-      manifestLoadingRetryDelay: 500,
-      levelLoadingTimeOut: 4000,
-      levelLoadingMaxRetry: 1,
-      levelLoadingRetryDelay: 500,
-      fragLoadingTimeOut: 4500,
-      fragLoadingMaxRetry: 1,
-      fragLoadingRetryDelay: 500,
+      backBufferLength: 15,
+      maxBufferLength: 20,
+      maxMaxBufferLength: 40,
+      maxBufferSize: 24 * 1024 * 1024, // 24MB buffer robusto para evitar travamentos
+      liveSyncDurationCount: 3,
+      liveMaxLatencyDurationCount: 7,
+      manifestLoadingTimeOut: 15000,
+      manifestLoadingMaxRetry: 4,
+      manifestLoadingRetryDelay: 1000,
+      levelLoadingTimeOut: 15000,
+      levelLoadingMaxRetry: 4,
+      levelLoadingRetryDelay: 1000,
+      fragLoadingTimeOut: 20000,
+      fragLoadingMaxRetry: 5,
+      fragLoadingRetryDelay: 1000,
+      nudgeOffset: 0.1,
+      nudgeMaxRetry: 5,
+      maxBufferHole: 0.5,
       startFragPrefetch: true,
       progressive: true,
       testBandwidth: false,
@@ -107,21 +113,24 @@ export function getHlsOptionsForLatencyMode(mode: LatencyMode): Record<string, u
   return {
     enableWorker: true,
     lowLatencyMode: true,
-    backBufferLength: 4,
-    maxBufferLength: 3,
-    maxMaxBufferLength: 6,
-    maxBufferSize: 8 * 1024 * 1024,
+    backBufferLength: 6,
+    maxBufferLength: 6,
+    maxMaxBufferLength: 12,
+    maxBufferSize: 12 * 1024 * 1024,
     liveSyncDurationCount: 2,
-    liveMaxLatencyDurationCount: 3,
-    manifestLoadingTimeOut: 3000,
-    manifestLoadingMaxRetry: 1,
-    manifestLoadingRetryDelay: 300,
-    levelLoadingTimeOut: 3000,
-    levelLoadingMaxRetry: 1,
-    levelLoadingRetryDelay: 300,
-    fragLoadingTimeOut: 3500,
-    fragLoadingMaxRetry: 1,
-    fragLoadingRetryDelay: 300,
+    liveMaxLatencyDurationCount: 4,
+    manifestLoadingTimeOut: 10000,
+    manifestLoadingMaxRetry: 3,
+    manifestLoadingRetryDelay: 600,
+    levelLoadingTimeOut: 10000,
+    levelLoadingMaxRetry: 3,
+    levelLoadingRetryDelay: 600,
+    fragLoadingTimeOut: 12000,
+    fragLoadingMaxRetry: 4,
+    fragLoadingRetryDelay: 600,
+    nudgeOffset: 0.1,
+    nudgeMaxRetry: 4,
+    maxBufferHole: 0.5,
     startFragPrefetch: true,
     progressive: true,
     testBandwidth: false,
@@ -260,11 +269,11 @@ export const SPORTS_TRIVIA: SportsTriviaItem[] = [
 
 export const EMERGENCY_FALLBACK_STREAMS: Record<string, string> = {
   Esportes: 'https://rmtv.akamaized.net/hls/live/2043153/rmtv-es-web/master.m3u8',
-  Notícias: 'https://euronews-euronews-portuguese-1-pt.samsung.wurl.tv/playlist.m3u8',
-  Bonecos: 'https://rakuten-kidstvpocoyo-1-pt.samsung.wurl.tv/playlist.m3u8',
+  Notícias: 'https://dwamdstream102.akamaized.net/hls/live/2015525/dwstream102/index.m3u8',
+  Bonecos: 'https://cdn.freevisiontv.co.za/sttv/smil:1kzn.stream.smil/playlist.m3u8',
   Filmes: 'https://rbmn-live.akamaized.net/hls/live/590964/BoRB-AT/master.m3u8',
-  Lazer: 'https://tvzimbo.ao/live/tvzimbo/playlist.m3u8',
-  Novelas: 'https://tvzimbo.ao/live/tvzimbo/playlist.m3u8',
+  Lazer: 'https://5eaccbab48461.streamlock.net:1936/8264/8264/playlist.m3u8',
+  Novelas: 'https://vivo.canaloncelive.tv/secureoncedos/oncedigital/playlist.m3u8',
   Músicas: 'https://rbmn-live.akamaized.net/hls/live/590964/BoRB-AT/master.m3u8',
   Default: 'https://rmtv.akamaized.net/hls/live/2043153/rmtv-es-web/master.m3u8',
 };

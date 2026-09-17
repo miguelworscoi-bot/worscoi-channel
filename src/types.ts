@@ -182,6 +182,9 @@ export interface Canal {
   hashtags?: string[];
   soundtrack?: string;
   minPlan?: SubscriptionPlanId;
+  idioma?: string;
+  qualidade?: string;
+  descricao?: string;
 }
 
 export type WorscoiView = 'explorar' | 'painel' | 'assinantes' | 'filmoteca';

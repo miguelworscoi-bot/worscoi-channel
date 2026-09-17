@@ -3,7 +3,7 @@ import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Canal, LatencyMode, WorscoiView, FiltroAtivo } from '@/types';
 import { Tv } from 'lucide-react';
-import { LOCAL_STORAGE_LATENCY_KEY } from '@/utils/streamUtils';
+import { LOCAL_STORAGE_LATENCY_KEY, getEmergencyFallbackStream } from '@/utils/streamUtils';
 import { CANAIS_PADRAO } from '@/app/api/canais/route';
 import { WorscoiSidebar } from '@/components/WorscoiSidebar';
 import { WorscoiTopBar } from '@/components/WorscoiTopBar';
@@ -225,6 +225,7 @@ export default function Home() {
       });
       setStreamIndex(0);
       setFailoverNotice(null);
+      setUseProxy(false);
       setIsMobileMenuOpen(false);
       setIsMiniPlayerDismissed(false);
 
@@ -324,14 +325,27 @@ export default function Home() {
         setStreamIndex(nextIndex);
         setTimeout(() => setFailoverNotice(null), 4000);
       } else {
-        setFailoverNotice('Sintonizando próximo canal...');
-        setTimeout(() => {
-          setFailoverNotice(null);
-          handleNextCanal();
-        }, 1500);
+        // Se todas as fontes falharem, aciona imediatamente o sinal de contingência da categoria para garantir que a tela não fique preta
+        const emergencyFallback = getEmergencyFallbackStream(canalAtivo.categoria);
+        if (emergencyFallback && !streams.includes(emergencyFallback)) {
+          setFailoverNotice('Conectando ao sinal de contingência da categoria...');
+          const currentBackups = canalAtivo.backupUrls || [];
+          const updatedCanal: Canal = {
+            ...canalAtivo,
+            backupUrls: [...currentBackups, emergencyFallback],
+          };
+          setCanalAtivo(updatedCanal);
+          setStreamIndex(updatedCanal.backupUrls.length);
+          setTimeout(() => setFailoverNotice(null), 4000);
+        } else {
+          setFailoverNotice('Sinal temporariamente instável na emissora. Tentando reconexão...');
+          setTimeout(() => {
+            setFailoverNotice(null);
+          }, 4000);
+        }
       }
     }, 0);
-  }, [canalAtivo, streamIndex, useProxy, handleNextCanal]);
+  }, [canalAtivo, streamIndex, useProxy]);
 
   const handleVideoEnded = useCallback(() => {
     if (!canalAtivo) return;
