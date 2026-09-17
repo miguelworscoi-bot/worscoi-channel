@@ -249,14 +249,14 @@ export function SubscribersModal({ isOpen, onClose }: SubscribersModalProps) {
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-lg sm:text-xl font-black text-white tracking-tight">
+                <h2 className="text-lg sm:text-xl font-bold text-white tracking-tight">
                   Central de Assinantes & Tokens
                 </h2>
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-400/20 text-amber-300 border border-amber-400/30">
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-amber-400/20 text-amber-300 border border-amber-400/30">
                   Painel Admin
                 </span>
               </div>
-              <p className="text-xs text-zinc-400 mt-0.5">
+              <p className="text-xs text-zinc-400 font-normal mt-0.5">
                 Gerenciamento de usuários, geração de tokens com 5 dígitos e histórico de validações.
               </p>
             </div>
@@ -496,7 +496,7 @@ export function SubscribersModal({ isOpen, onClose }: SubscribersModalProps) {
                                 </div>
                                 <div>
                                   <div className="font-bold text-white">{sub.displayName}</div>
-                                  <div className="text-[11px] text-zinc-400 font-mono">
+                                  <div className="text-[11px] text-zinc-400 font-normal">
                                     {sub.email}
                                   </div>
                                 </div>
@@ -532,7 +532,7 @@ export function SubscribersModal({ isOpen, onClose }: SubscribersModalProps) {
                             </td>
 
                             {/* VALIDADE */}
-                            <td className="py-3 px-4 text-zinc-400 font-mono text-[11px]">
+                            <td className="py-3 px-4 text-zinc-400 font-normal text-[11px]">
                               {sub.planExpiresAt ? (
                                 <div className="flex items-center gap-1">
                                   <Clock className="w-3 h-3 text-emerald-400" />
@@ -546,9 +546,9 @@ export function SubscribersModal({ isOpen, onClose }: SubscribersModalProps) {
                             </td>
 
                             {/* TOKEN ATIVADO */}
-                            <td className="py-3 px-4 font-mono text-zinc-300">
+                            <td className="py-3 px-4 text-zinc-300 font-normal">
                               {sub.activatedToken ? (
-                                <span className="px-2 py-0.5 rounded bg-zinc-800 text-amber-300 font-bold border border-zinc-700">
+                                <span className="px-2 py-0.5 rounded bg-zinc-800 text-amber-300 font-bold border border-zinc-700 tracking-wider">
                                   {sub.activatedToken}
                                 </span>
                               ) : (
@@ -754,7 +754,7 @@ export function SubscribersModal({ isOpen, onClose }: SubscribersModalProps) {
                         >
                           <div>
                             <div className="flex items-center gap-2">
-                              <span className="font-mono text-lg font-black tracking-widest text-[#00E676]">
+                              <span className="text-lg font-bold tracking-widest text-[#00E676]">
                                 {tok.code}
                               </span>
                               <span
@@ -763,7 +763,7 @@ export function SubscribersModal({ isOpen, onClose }: SubscribersModalProps) {
                                 {p.name}
                               </span>
                             </div>
-                            <div className="text-[10px] text-zinc-400 mt-1">
+                            <div className="text-[10px] text-zinc-400 font-normal mt-1">
                               Validade: {tok.durationDays} dias • {tok.notes}
                             </div>
                           </div>
@@ -876,7 +876,7 @@ export function SubscribersModal({ isOpen, onClose }: SubscribersModalProps) {
                             {/* CÓDIGO */}
                             <td className="py-3 px-4">
                               <div className="flex items-center gap-2">
-                                <span className="font-mono text-sm font-black tracking-widest text-[#00E676] bg-zinc-950 px-2 py-0.5 rounded border border-zinc-800">
+                                <span className="text-sm font-bold tracking-widest text-[#00E676] bg-zinc-950 px-2 py-0.5 rounded border border-zinc-800">
                                   {tok.code}
                                 </span>
                                 <button
@@ -904,7 +904,7 @@ export function SubscribersModal({ isOpen, onClose }: SubscribersModalProps) {
                             </td>
 
                             {/* DURAÇÃO */}
-                            <td className="py-3 px-4 font-mono text-zinc-400 text-[11px]">
+                            <td className="py-3 px-4 text-zinc-400 font-normal text-[11px]">
                               {tok.durationDays} dias
                             </td>
 
@@ -928,23 +928,23 @@ export function SubscribersModal({ isOpen, onClose }: SubscribersModalProps) {
                             </td>
 
                             {/* RESGATADO POR */}
-                            <td className="py-3 px-4 text-[11px] font-mono">
+                            <td className="py-3 px-4 text-[11px]">
                               {tok.status === 'used' ? (
                                 <div>
                                   <div className="text-zinc-200 font-bold">{tok.usedByEmail}</div>
-                                  <div className="text-[10px] text-zinc-500">
+                                  <div className="text-[10px] text-zinc-400 font-normal">
                                     {tok.usedAt
                                       ? new Date(tok.usedAt).toLocaleString('pt-BR')
                                       : 'Recentemente'}
                                   </div>
                                 </div>
                               ) : (
-                                <span className="text-zinc-600">—</span>
+                                <span className="text-zinc-600 font-normal">—</span>
                               )}
                             </td>
 
                             {/* DATA DE CRIAÇÃO */}
-                            <td className="py-3 px-4 text-zinc-400 font-mono text-[11px]">
+                            <td className="py-3 px-4 text-zinc-400 font-normal text-[11px]">
                               {tok.createdAt
                                 ? new Date(tok.createdAt).toLocaleDateString('pt-BR')
                                 : '—'}
@@ -1084,33 +1084,33 @@ export function SubscribersModal({ isOpen, onClose }: SubscribersModalProps) {
 
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-2.5">
                   <div className="p-3 rounded-xl bg-zinc-900 border border-zinc-800">
-                    <div className="text-[10px] font-mono text-amber-400 font-bold">Nível 1 · 0ms</div>
+                    <div className="text-[10px] text-amber-400 font-bold">Nível 1 · 0ms</div>
                     <div className="text-xs font-bold text-white mt-0.5">Sanitização Regex</div>
-                    <div className="text-[10px] text-zinc-400 mt-1">
+                    <div className="text-[10px] text-zinc-400 font-normal mt-1">
                       Rejeita caracteres fora da base Base32 e tamanhos inválidos instantaneamente.
                     </div>
                   </div>
 
                   <div className="p-3 rounded-xl bg-zinc-900 border border-zinc-800">
-                    <div className="text-[10px] font-mono text-blue-400 font-bold">Nível 2 · &lt; 1ms</div>
+                    <div className="text-[10px] text-blue-400 font-bold">Nível 2 · &lt; 1ms</div>
                     <div className="text-xs font-bold text-white mt-0.5">Cache em Memória L1</div>
-                    <div className="text-[10px] text-zinc-400 mt-1">
+                    <div className="text-[10px] text-zinc-400 font-normal mt-1">
                       Estrutura Map com expiração TTL de 2 minutos para resolução imediata de tokens ativos.
                     </div>
                   </div>
 
                   <div className="p-3 rounded-xl bg-zinc-900 border border-zinc-800">
-                    <div className="text-[10px] font-mono text-emerald-400 font-bold">Nível 3 · &lt; 2ms</div>
+                    <div className="text-[10px] text-emerald-400 font-bold">Nível 3 · &lt; 2ms</div>
                     <div className="text-xs font-bold text-white mt-0.5">Cache Local L2</div>
-                    <div className="text-[10px] text-zinc-400 mt-1">
+                    <div className="text-[10px] text-zinc-400 font-normal mt-1">
                       Armazenamento local criptografado para persistência offline e revalidação transparente.
                     </div>
                   </div>
 
                   <div className="p-3 rounded-xl bg-zinc-900 border border-zinc-800">
-                    <div className="text-[10px] font-mono text-purple-400 font-bold">Nível 4 · O(1) RTT</div>
+                    <div className="text-[10px] text-purple-400 font-bold">Nível 4 · O(1) RTT</div>
                     <div className="text-xs font-bold text-white mt-0.5">Documento Direto L3</div>
-                    <div className="text-[10px] text-zinc-400 mt-1">
+                    <div className="text-[10px] text-zinc-400 font-normal mt-1">
                       Consulta direta por ID único sem realizar varredura de coleções completas.
                     </div>
                   </div>
@@ -1147,7 +1147,7 @@ export function SubscribersModal({ isOpen, onClose }: SubscribersModalProps) {
                     value={testTokenCode}
                     onChange={(e) => setTestTokenCode(e.target.value.toUpperCase())}
                     placeholder="Digite 5 caracteres (Ex: 7X9K2)..."
-                    className="flex-1 px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-xl text-xs font-mono uppercase tracking-widest text-white placeholder:text-zinc-600 focus:outline-none focus:border-amber-400"
+                    className="flex-1 px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-xl text-xs uppercase tracking-widest text-white placeholder:text-zinc-600 focus:outline-none focus:border-amber-400 font-bold"
                   />
                   <button
                     type="button"
@@ -1175,24 +1175,24 @@ export function SubscribersModal({ isOpen, onClose }: SubscribersModalProps) {
                 </div>
 
                 {benchResult && (
-                  <div className="p-3 rounded-xl bg-zinc-950 border border-zinc-800 text-xs font-mono space-y-1">
+                  <div className="p-3 rounded-xl bg-zinc-950 border border-zinc-800 text-xs space-y-1">
                     <div className="flex items-center justify-between">
-                      <span className="text-zinc-400">Token Analisado:</span>
+                      <span className="text-zinc-400 font-normal">Token Analisado:</span>
                       <span className="text-white font-bold">{benchResult.code}</span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-zinc-400">Status:</span>
+                      <span className="text-zinc-400 font-normal">Status:</span>
                       <span className={benchResult.found ? 'text-emerald-400 font-bold' : 'text-red-400 font-bold'}>
                         {benchResult.found ? `Encontrado (${benchResult.planName})` : 'Não Encontrado'}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-zinc-400">Origem da Resolução:</span>
+                      <span className="text-zinc-400 font-normal">Origem da Resolução:</span>
                       <span className="text-amber-400 font-bold">{benchResult.source}</span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-zinc-400">Latência de Resolução:</span>
-                      <span className="text-emerald-300 font-black">{benchResult.latencyMs} ms</span>
+                      <span className="text-zinc-400 font-normal">Latência de Resolução:</span>
+                      <span className="text-emerald-300 font-bold">{benchResult.latencyMs} ms</span>
                     </div>
                   </div>
                 )}
@@ -1213,8 +1213,8 @@ export function SubscribersModal({ isOpen, onClose }: SubscribersModalProps) {
             >
               <div className="flex items-center justify-between pb-3 border-b border-zinc-850">
                 <div>
-                  <h3 className="text-sm font-black text-white">Alterar Plano do Assinante</h3>
-                  <p className="text-xs text-zinc-400 font-mono mt-0.5">
+                  <h3 className="text-sm font-bold text-white tracking-tight">Alterar Plano do Assinante</h3>
+                  <p className="text-xs text-zinc-400 font-normal mt-0.5">
                     {editingSubscriber.email}
                   </p>
                 </div>

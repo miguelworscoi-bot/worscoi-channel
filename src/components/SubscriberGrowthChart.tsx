@@ -351,25 +351,25 @@ export function SubscriberGrowthChart({
                       <div className="p-3 bg-zinc-900/95 border border-zinc-700 rounded-xl shadow-2xl backdrop-blur-md text-xs space-y-1.5 min-w-[170px]">
                         <div className="font-bold text-white border-b border-zinc-800 pb-1 flex items-center justify-between">
                           <span>{data.fullDate}</span>
-                          <span className="text-[10px] text-zinc-400 font-mono">D-{chartData.length - chartData.indexOf(data)}</span>
+                          <span className="text-[10px] text-zinc-400 font-normal">D-{chartData.length - chartData.indexOf(data)}</span>
                         </div>
                         <div className="flex items-center justify-between text-zinc-300">
                           <span className="flex items-center gap-1.5">
                             <span className="w-2 h-2 rounded-full bg-[#00E676]"></span>
                             Total Acumulado:
                           </span>
-                          <strong className="text-white font-mono">{data.acumulado}</strong>
+                          <strong className="text-white font-bold">{data.acumulado}</strong>
                         </div>
                         <div className="flex items-center justify-between text-zinc-300">
                           <span className="flex items-center gap-1.5">
                             <span className="w-2 h-2 rounded-full bg-amber-400"></span>
                             Assinantes Pagos:
                           </span>
-                          <strong className="text-amber-300 font-mono">{data.pagos}</strong>
+                          <strong className="text-amber-300 font-bold">{data.pagos}</strong>
                         </div>
-                        <div className="flex items-center justify-between text-zinc-400 text-[11px] pt-1 border-t border-zinc-800/80">
+                        <div className="flex items-center justify-between text-zinc-400 font-normal text-[11px] pt-1 border-t border-zinc-800/80">
                           <span>Novos no Dia:</span>
-                          <span className="text-emerald-400 font-bold font-mono">+{data.novos}</span>
+                          <span className="text-emerald-400 font-bold">+{data.novos}</span>
                         </div>
                       </div>
                     );
@@ -432,11 +432,11 @@ export function SubscriberGrowthChart({
                             <span className="w-2 h-2 rounded-full bg-cyan-400"></span>
                             Novas Inscrições:
                           </span>
-                          <strong className="text-white font-mono text-sm">+{data.novos}</strong>
+                          <strong className="text-white font-bold text-sm">+{data.novos}</strong>
                         </div>
-                        <div className="flex items-center justify-between text-[11px] text-zinc-400 pt-1">
+                        <div className="flex items-center justify-between text-[11px] text-zinc-400 font-normal pt-1">
                           <span>Total até este dia:</span>
-                          <span className="text-zinc-200 font-mono">{data.acumulado}</span>
+                          <span className="text-zinc-200 font-bold">{data.acumulado}</span>
                         </div>
                       </div>
                     );
@@ -492,14 +492,14 @@ export function SubscriberGrowthChart({
                             <span className="w-2 h-2 rounded-full bg-amber-400"></span>
                             Planos Pagos:
                           </span>
-                          <strong className="font-mono">{data.pagos}</strong>
+                          <strong className="font-bold">{data.pagos}</strong>
                         </div>
-                        <div className="flex items-center justify-between text-zinc-400">
+                        <div className="flex items-center justify-between text-zinc-400 font-normal">
                           <span className="flex items-center gap-1.5">
                             <span className="w-2 h-2 rounded-full bg-zinc-500"></span>
                             Teste Grátis (24h):
                           </span>
-                          <strong className="font-mono text-zinc-300">{data.gratuitos}</strong>
+                          <strong className="font-bold text-zinc-300">{data.gratuitos}</strong>
                         </div>
                       </div>
                     );

@@ -101,22 +101,22 @@ export const FreePlanBlockedModal: React.FC<FreePlanBlockedModalProps> = ({
 
           {/* Cartão de Verificação Única de Hardware e E-mail */}
           <div className="bg-zinc-900/80 border border-zinc-800/90 rounded-2xl p-4 text-left text-xs space-y-2.5 mb-5 shadow-inner">
-            <div className="flex items-center justify-between text-zinc-400 pb-2 border-b border-zinc-800">
+            <div className="flex items-center justify-between text-zinc-400 font-normal pb-2 border-b border-zinc-800">
               <span className="flex items-center gap-1.5 font-medium">
                 <Smartphone className="w-3.5 h-3.5 text-amber-400" />
                 Dispositivo Verificado:
               </span>
-              <span className="font-mono text-zinc-200 text-[11px] bg-zinc-950 px-2 py-0.5 rounded border border-zinc-800">
+              <span className="font-normal text-zinc-200 text-[11px] bg-zinc-950 px-2 py-0.5 rounded border border-zinc-800">
                 {maskedDeviceId}
               </span>
             </div>
 
-            <div className="flex items-center justify-between text-zinc-400 pb-2 border-b border-zinc-800">
+            <div className="flex items-center justify-between text-zinc-400 font-normal pb-2 border-b border-zinc-800">
               <span className="flex items-center gap-1.5 font-medium">
                 <Mail className="w-3.5 h-3.5 text-amber-400" />
                 Conta / E-mail:
               </span>
-              <span className="font-mono text-zinc-200 text-[11px] truncate max-w-[200px]">
+              <span className="font-normal text-zinc-200 text-[11px] truncate max-w-[200px]">
                 {userEmail}
               </span>
             </div>

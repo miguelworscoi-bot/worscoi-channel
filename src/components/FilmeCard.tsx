@@ -144,11 +144,11 @@ function FilmeCardComponent({
       {/* METADADOS E INFORMAÇÕES DO FILME */}
       <div className="p-3 flex flex-col flex-1 justify-between bg-[#0e1015]">
         <div>
-          <h3 className="font-semibold text-xs sm:text-sm text-zinc-200 group-hover:text-white line-clamp-1 tracking-tight">
+          <h3 className="font-bold text-xs sm:text-sm text-zinc-100 group-hover:text-white line-clamp-1 tracking-tight">
             {filme.titulo}
           </h3>
 
-          <div className="flex items-center gap-1.5 text-[11px] text-zinc-400 mt-1">
+          <div className="flex items-center gap-1.5 text-[11px] font-normal text-zinc-400 mt-1">
             <span>{filme.ano}</span>
             <span className="text-zinc-600">•</span>
             <span className="truncate text-zinc-400">{filme.genero}</span>
@@ -156,7 +156,7 @@ function FilmeCardComponent({
         </div>
 
         {filme.sinopse && (
-          <p className="text-[11px] text-zinc-500 line-clamp-2 mt-2 leading-relaxed">
+          <p className="text-[11px] font-normal text-zinc-400 line-clamp-2 mt-2 leading-relaxed">
             {filme.sinopse}
           </p>
         )}
@@ -169,14 +169,14 @@ function FilmeCardComponent({
                 e.stopPropagation();
                 onOpenImdb(filme);
               }}
-              className="inline-flex items-center gap-1 text-zinc-400 hover:text-zinc-200 transition cursor-pointer"
+              className="inline-flex items-center gap-1 text-zinc-400 hover:text-zinc-200 transition cursor-pointer font-normal"
             >
               <Info className="w-3 h-3 text-zinc-500" />
               <span>Ver detalhes</span>
             </button>
 
             {filme.rating && (
-              <span className="font-mono text-zinc-500 text-[10px]">
+              <span className="text-zinc-400 text-[10px] font-normal">
                 Nota {filme.rating}
               </span>
             )}

@@ -871,7 +871,7 @@ export function WorscoiFilmotecaView({ onBackToTV }: WorscoiFilmotecaViewProps) 
                 </div>
               )}
 
-              <span className="text-xs text-zinc-500 font-mono">
+              <span className="text-xs text-zinc-400 font-normal">
                 {filmesFiltrados.length} {filmesFiltrados.length === 1 ? 'título' : 'títulos'}
               </span>
             </div>
@@ -887,7 +887,7 @@ export function WorscoiFilmotecaView({ onBackToTV }: WorscoiFilmotecaViewProps) 
               {/* BARRA DE FONTES & AÇÕES RÁPIDAS */}
               <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 bg-zinc-900/80 rounded-xl border border-zinc-800 text-xs shadow-sm">
                 <div className="flex items-center gap-1.5 overflow-x-auto custom-scrollbar py-0.5 max-w-full">
-                  <span className="text-[11px] font-mono text-zinc-400 font-medium mr-1 shrink-0">
+                  <span className="text-[11px] text-zinc-400 font-normal mr-1 shrink-0">
                     Servidor:
                   </span>
 
@@ -972,7 +972,7 @@ export function WorscoiFilmotecaView({ onBackToTV }: WorscoiFilmotecaViewProps) 
               {(filmeAtivo.tipo === 'serie' || filmeAtivo.tipo === 'anime') && (
                 <div className="flex flex-col gap-2 px-3 py-2 rounded-xl bg-zinc-900/60 border border-zinc-800 text-xs">
                   <div className="flex items-center justify-between gap-2 flex-wrap">
-                    <span className="text-[11px] font-mono text-zinc-400">
+                    <span className="text-[11px] text-zinc-400 font-normal">
                       Temporada {temporadaAtiva} • Episódio {episodioAtivo}
                     </span>
 
@@ -1014,7 +1014,7 @@ export function WorscoiFilmotecaView({ onBackToTV }: WorscoiFilmotecaViewProps) 
                           setEpisodioAtivo(ep);
                           setReloadKey((k) => k + 1);
                         }}
-                        className={`px-2.5 py-1 rounded-md text-xs font-mono font-medium transition cursor-pointer shrink-0 ${
+                        className={`px-2.5 py-1 rounded-md text-xs font-bold transition cursor-pointer shrink-0 ${
                           episodioAtivo === ep
                             ? 'bg-zinc-100 text-zinc-950 font-bold shadow-sm'
                             : 'bg-zinc-800/60 hover:bg-zinc-800 text-zinc-400 hover:text-white'
@@ -1094,7 +1094,7 @@ export function WorscoiFilmotecaView({ onBackToTV }: WorscoiFilmotecaViewProps) 
               <div className="flex items-center gap-2 text-zinc-300">
                 <span className="flex h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
                 <span className="text-[11px] text-zinc-300">
-                  Fonte ativa: <strong className="text-white uppercase font-mono">{servidorAtivo}</strong>
+                  Fonte ativa: <strong className="text-white uppercase font-bold">{servidorAtivo}</strong>
                 </span>
               </div>
 
@@ -1147,44 +1147,44 @@ export function WorscoiFilmotecaView({ onBackToTV }: WorscoiFilmotecaViewProps) 
                     {filmeAtivo.titulo}
                   </h2>
                   {filmeAtivo.plataforma === 'hbo' && (
-                    <span className="px-1.5 py-0.5 rounded bg-purple-700 text-white font-mono font-black text-[9px]">
+                    <span className="px-1.5 py-0.5 rounded bg-purple-700 text-white font-black text-[9px]">
                       HBO MAX
                     </span>
                   )}
                   {filmeAtivo.plataforma === 'disney' && (
-                    <span className="px-1.5 py-0.5 rounded bg-blue-600 text-white font-mono font-black text-[9px]">
+                    <span className="px-1.5 py-0.5 rounded bg-blue-600 text-white font-black text-[9px]">
                       DISNEY+
                     </span>
                   )}
                   {filmeAtivo.plataforma === 'netflix' && (
-                    <span className="px-1.5 py-0.5 rounded bg-red-600 text-white font-mono font-black text-[9px]">
+                    <span className="px-1.5 py-0.5 rounded bg-red-600 text-white font-black text-[9px]">
                       NETFLIX
                     </span>
                   )}
                   {filmeAtivo.plataforma === 'crunchyroll' && (
-                    <span className="px-1.5 py-0.5 rounded bg-orange-600 text-white font-mono font-black text-[9px]">
+                    <span className="px-1.5 py-0.5 rounded bg-orange-600 text-white font-black text-[9px]">
                       CRUNCHYROLL
                     </span>
                   )}
                   {filmeAtivo.rating && (
-                    <span className="px-1.5 py-0.5 rounded bg-amber-400 text-black text-[9px] font-black font-mono shadow flex items-center gap-0.5">
+                    <span className="px-1.5 py-0.5 rounded bg-amber-400 text-black text-[9px] font-black shadow flex items-center gap-0.5">
                       <Star className="w-2.5 h-2.5 fill-black" />
                       <span>{filmeAtivo.rating}</span>
                     </span>
                   )}
                   {filmeAtivo.imdbId && (
-                    <span className="px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 text-[9px] font-mono font-bold border border-amber-500/30">
+                    <span className="px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 text-[9px] font-bold border border-amber-500/30">
                       {filmeAtivo.imdbId}
                     </span>
                   )}
-                  <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-zinc-900 text-zinc-300 border border-zinc-800">
+                  <span className="px-2 py-0.5 rounded text-[10px] bg-zinc-900 text-zinc-300 border border-zinc-800 font-normal">
                     {filmeAtivo.ano}
                   </span>
                   <span className="text-xs text-[#FF2D55] font-semibold">
                     {filmeAtivo.genero}
                   </span>
                 </div>
-                <p className="text-xs text-zinc-400 line-clamp-2 leading-relaxed">
+                <p className="text-xs text-zinc-400 font-normal line-clamp-2 leading-relaxed">
                   {filmeAtivo.sinopse}
                 </p>
               </div>
@@ -1213,7 +1213,7 @@ export function WorscoiFilmotecaView({ onBackToTV }: WorscoiFilmotecaViewProps) 
                   <Maximize2 className="w-3.5 h-3.5 text-zinc-300" />
                   <span>Modo Teatro</span>
                 </button>
-                <div className="text-[11px] text-emerald-400/90 font-mono bg-emerald-950/40 border border-emerald-900/60 px-2.5 py-1 rounded-lg flex items-center gap-1.5">
+                <div className="text-[11px] text-emerald-400/90 font-normal bg-emerald-950/40 border border-emerald-900/60 px-2.5 py-1 rounded-lg flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
                   <span>Filme Completo</span>
                 </div>
@@ -1227,10 +1227,10 @@ export function WorscoiFilmotecaView({ onBackToTV }: WorscoiFilmotecaViewProps) 
       {isLoading && (
         <div className="flex-1 flex flex-col items-center justify-center py-24 text-center">
           <Loader2 className="w-8 h-8 text-[#FF2D55] animate-spin mb-4" />
-          <p className="text-sm font-medium text-zinc-300">
+          <p className="text-sm font-normal text-zinc-300">
             Carregando repositório de filmes em alta resolução...
           </p>
-          <p className="text-xs text-zinc-500 font-mono mt-1">
+          <p className="text-xs text-zinc-400 font-normal mt-1">
             Conectando fontes VidLink, Videasy, VidSrc e streams diretos
           </p>
         </div>
@@ -1245,10 +1245,10 @@ export function WorscoiFilmotecaView({ onBackToTV }: WorscoiFilmotecaViewProps) 
               <div className="flex items-center justify-between p-3 rounded-xl bg-zinc-900/80 border border-zinc-800">
                 <div className="flex items-center gap-2">
                   <Search className="w-4 h-4 text-[#FF2D55]" />
-                  <span className="text-sm font-semibold text-zinc-200">
+                  <span className="text-sm font-bold text-zinc-200 tracking-tight">
                     Resultados para &quot;<span className="text-white">{busca}</span>&quot;
                   </span>
-                  <span className="text-xs font-mono px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-300">
+                  <span className="text-xs font-normal px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-400">
                     {filmesFiltrados.length} encontrados
                   </span>
                 </div>
@@ -1296,7 +1296,7 @@ export function WorscoiFilmotecaView({ onBackToTV }: WorscoiFilmotecaViewProps) 
                         Resultados encontrados no IMDb com sinopse, nota e elenco
                       </h3>
                     </div>
-                    <span className="text-xs text-zinc-400 font-mono">
+                    <span className="text-xs text-zinc-400 font-normal">
                       {resultadosImdbAoVivo.length} títulos
                     </span>
                   </div>
@@ -1341,12 +1341,12 @@ export function WorscoiFilmotecaView({ onBackToTV }: WorscoiFilmotecaViewProps) 
                       <h2 className="text-base sm:text-lg font-bold text-white tracking-tight">
                         {secaoAtiva?.titulo || generoAtivo}
                       </h2>
-                      <span className="text-xs font-mono font-medium px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-300 border border-zinc-700">
+                      <span className="text-xs font-normal px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-400 border border-zinc-700">
                         {filmesFiltrados.length} títulos
                       </span>
                     </div>
                     {secaoAtiva?.subtitulo && (
-                      <p className="text-xs text-zinc-400 mt-0.5">
+                      <p className="text-xs text-zinc-400 font-normal mt-0.5">
                         {secaoAtiva.subtitulo}
                       </p>
                     )}
@@ -1446,7 +1446,7 @@ export function WorscoiFilmotecaView({ onBackToTV }: WorscoiFilmotecaViewProps) 
                   >
                     Carregar Mais Filmes (+36 títulos)
                   </button>
-                  <span className="text-[11px] text-zinc-500 font-mono">
+                  <span className="text-[11px] text-zinc-400 font-normal">
                     Exibindo {Math.min(limiteGrelha, filmesFiltrados.length)} de {filmesFiltrados.length} filmes
                   </span>
                 </div>
@@ -1519,7 +1519,7 @@ export function WorscoiFilmotecaView({ onBackToTV }: WorscoiFilmotecaViewProps) 
                     Títulos encontrados no IMDb com sinopse, nota e elenco
                   </h3>
                 </div>
-                <span className="text-xs text-zinc-400 font-mono">
+                <span className="text-xs text-zinc-400 font-normal">
                   {resultadosImdbAoVivo.length} títulos
                 </span>
               </div>
@@ -1578,47 +1578,47 @@ export function WorscoiFilmotecaView({ onBackToTV }: WorscoiFilmotecaViewProps) 
                     {filmeSelecionado.titulo}
                   </span>
                   {filmeSelecionado.plataforma === 'hbo' && (
-                    <span className="px-1.5 py-0.5 rounded bg-purple-700 text-white font-mono font-black text-[9px] shrink-0">
+                    <span className="px-1.5 py-0.5 rounded bg-purple-700 text-white font-black text-[9px] shrink-0">
                       HBO MAX
                     </span>
                   )}
                   {filmeSelecionado.plataforma === 'disney' && (
-                    <span className="px-1.5 py-0.5 rounded bg-blue-600 text-white font-mono font-black text-[9px] shrink-0">
+                    <span className="px-1.5 py-0.5 rounded bg-blue-600 text-white font-black text-[9px] shrink-0">
                       DISNEY+
                     </span>
                   )}
                   {filmeSelecionado.plataforma === 'netflix' && (
-                    <span className="px-1.5 py-0.5 rounded bg-red-600 text-white font-mono font-black text-[9px] shrink-0">
+                    <span className="px-1.5 py-0.5 rounded bg-red-600 text-white font-black text-[9px] shrink-0">
                       NETFLIX
                     </span>
                   )}
                   {filmeSelecionado.plataforma === 'crunchyroll' && (
-                    <span className="px-1.5 py-0.5 rounded bg-orange-600 text-white font-mono font-black text-[9px] shrink-0">
+                    <span className="px-1.5 py-0.5 rounded bg-orange-600 text-white font-black text-[9px] shrink-0">
                       CRUNCHYROLL
                     </span>
                   )}
                   {filmeSelecionado.tipo === 'serie' && (
-                    <span className="px-1.5 py-0.5 rounded bg-indigo-600/90 text-white font-mono font-bold text-[9px]">
+                    <span className="px-1.5 py-0.5 rounded bg-indigo-600/90 text-white font-bold text-[9px]">
                       SÉRIE
                     </span>
                   )}
                   {filmeSelecionado.tipo === 'anime' && (
-                    <span className="px-1.5 py-0.5 rounded bg-emerald-600/90 text-white font-mono font-bold text-[9px]">
+                    <span className="px-1.5 py-0.5 rounded bg-emerald-600/90 text-white font-bold text-[9px]">
                       ANIME
                     </span>
                   )}
                   {filmeSelecionado.rating && (
-                    <span className="px-1.5 py-0.5 rounded bg-amber-400 text-black text-[9px] font-black font-mono shrink-0 flex items-center gap-0.5">
+                    <span className="px-1.5 py-0.5 rounded bg-amber-400 text-black text-[9px] font-black shrink-0 flex items-center gap-0.5">
                       <Star className="w-2.5 h-2.5 fill-black" />
                       <span>{filmeSelecionado.rating}</span>
                     </span>
                   )}
                   {filmeSelecionado.imdbId && (
-                    <span className="px-1.5 py-0.5 rounded bg-zinc-800 text-amber-400 border border-amber-400/30 text-[9px] font-mono font-bold shrink-0">
+                    <span className="px-1.5 py-0.5 rounded bg-zinc-800 text-amber-400 border border-amber-400/30 text-[9px] font-bold shrink-0">
                       {filmeSelecionado.imdbId}
                     </span>
                   )}
-                  <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-zinc-800 text-zinc-300 shrink-0">
+                  <span className="px-2 py-0.5 rounded text-[10px] bg-zinc-800 text-zinc-300 font-normal shrink-0">
                     {filmeSelecionado.ano}
                   </span>
                 </div>
@@ -1754,7 +1754,7 @@ export function WorscoiFilmotecaView({ onBackToTV }: WorscoiFilmotecaViewProps) 
                           setModalEpisodio(ep);
                           setReloadKey((k) => k + 1);
                         }}
-                        className={`px-2 py-1 rounded text-[11px] font-mono font-bold shrink-0 ${
+                        className={`px-2 py-1 rounded text-[11px] font-bold shrink-0 ${
                           modalEpisodio === ep
                             ? 'bg-[#FF2D55] text-white'
                             : 'bg-zinc-800 hover:bg-zinc-700 text-zinc-300'
@@ -1858,7 +1858,7 @@ export function WorscoiFilmotecaView({ onBackToTV }: WorscoiFilmotecaViewProps) 
               <div className="p-4 bg-zinc-950 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="text-zinc-400 font-mono">Gênero:</span>
+                    <span className="text-zinc-400 font-normal">Gênero:</span>
                     <span className="text-[#FF2D55] font-semibold">
                       {filmeSelecionado.genero}
                     </span>
@@ -1909,3 +1909,6 @@ export function WorscoiFilmotecaView({ onBackToTV }: WorscoiFilmotecaViewProps) 
     </div>
   );
 }
+
+export default WorscoiFilmotecaView;
+

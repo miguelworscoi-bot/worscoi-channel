@@ -1,5 +1,5 @@
 'use client';
-import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import React, { useEffect, useState, useCallback, useMemo, Suspense } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Canal, LatencyMode, WorscoiView, FiltroAtivo } from '@/types';
 import { Tv } from 'lucide-react';
@@ -8,9 +8,13 @@ import { CANAIS_PADRAO } from '@/app/api/canais/route';
 import { WorscoiSidebar } from '@/components/WorscoiSidebar';
 import { WorscoiTopBar } from '@/components/WorscoiTopBar';
 import { PlayerHero } from '@/components/PlayerHero';
-import { WorscoiControlPanel } from '@/components/WorscoiControlPanel';
-import { WorscoiSubscribersView } from '@/components/WorscoiSubscribersView';
-import { WorscoiFilmotecaView } from '@/components/WorscoiFilmotecaView';
+import { WorscoiViewSkeleton } from '@/components/WorscoiViewSkeleton';
+
+// Views dinâmicas carregadas sob demanda via React.lazy e Suspense para máxima performance do bundle
+const WorscoiControlPanel = React.lazy(() => import('@/components/WorscoiControlPanel'));
+const WorscoiSubscribersView = React.lazy(() => import('@/components/WorscoiSubscribersView'));
+const WorscoiFilmotecaView = React.lazy(() => import('@/components/WorscoiFilmotecaView'));
+
 import { WorscoiLoginModal } from '@/components/WorscoiLoginModal';
 import { CinemaPlayer } from '@/components/CinemaPlayer';
 import { AddChannelModal } from '@/components/AddChannelModal';
@@ -687,11 +691,13 @@ export default function Home() {
                 className="w-full"
                 style={{ willChange: 'opacity, transform' }}
               >
-                <WorscoiControlPanel
-                  onNavigateToSubscribers={() => setCurrentView('assinantes')}
-                  onOpenTokenGenerator={() => setIsSubscribersModalOpen(true)}
-                  onSelectPlan={() => setIsPaymentModalOpen(true)}
-                />
+                <Suspense fallback={<WorscoiViewSkeleton view="painel" />}>
+                  <WorscoiControlPanel
+                    onNavigateToSubscribers={() => setCurrentView('assinantes')}
+                    onOpenTokenGenerator={() => setIsSubscribersModalOpen(true)}
+                    onSelectPlan={() => setIsPaymentModalOpen(true)}
+                  />
+                </Suspense>
               </motion.div>
             )}
 
@@ -706,10 +712,12 @@ export default function Home() {
                 className="w-full"
                 style={{ willChange: 'opacity, transform' }}
               >
-                <WorscoiSubscribersView
-                  onBackToControlPanel={() => setCurrentView('painel')}
-                  onOpenTokenGenerator={() => setIsSubscribersModalOpen(true)}
-                />
+                <Suspense fallback={<WorscoiViewSkeleton view="assinantes" />}>
+                  <WorscoiSubscribersView
+                    onBackToControlPanel={() => setCurrentView('painel')}
+                    onOpenTokenGenerator={() => setIsSubscribersModalOpen(true)}
+                  />
+                </Suspense>
               </motion.div>
             )}
 
@@ -724,9 +732,11 @@ export default function Home() {
                 className="w-full"
                 style={{ willChange: 'opacity, transform' }}
               >
-                <WorscoiFilmotecaView
-                  onBackToTV={() => setCurrentView('explorar')}
-                />
+                <Suspense fallback={<WorscoiViewSkeleton view="filmoteca" />}>
+                  <WorscoiFilmotecaView
+                    onBackToTV={() => setCurrentView('explorar')}
+                  />
+                </Suspense>
               </motion.div>
             )}
           </AnimatePresence>

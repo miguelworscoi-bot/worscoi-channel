@@ -22,6 +22,7 @@ import {
   checkDeviceAndEmailFreePlanInFirestore,
   getOrCreateDeviceId,
 } from '@/services/subscriptionService';
+import { notifyPlanActivation } from '@/services/notificationService';
 
 export type UserRole = 'user' | 'admin';
 
@@ -44,6 +45,7 @@ export interface UserProfile {
   plan?: SubscriptionPlanId;
   planName?: string;
   planExpiresAt?: string | null;
+  planActivatedAt?: string | null;
   activatedToken?: string | null;
 }
 
@@ -892,20 +894,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       firebaseUid ||
       (finalRole === 'admin' ? 'admin_miguelworscoi' : 'usr_' + Math.random().toString(36).substring(2, 10));
 
+    const nowIso = new Date().toISOString();
     const profileData: UserProfile = {
       id: userId,
       email: cleanEmail,
       displayName: finalName,
       role: finalRole,
-      createdAt: new Date().toISOString(),
+      createdAt: nowIso,
       plan: assignedPlan,
       planName: planName || (assignedPlan === 'free' ? 'Plano Gratuito (Teste 24h)' : undefined),
       planExpiresAt: resolvedExpiresAt ?? null,
+      planActivatedAt: nowIso,
       activatedToken: tokenCode || null,
     };
 
     saveInRegistry({ ...profileData, password: passClean });
     saveSession(profileData);
+
+    if (assignedPlan) {
+      notifyPlanActivation({
+        userId,
+        userEmail: cleanEmail,
+        planName: profileData.planName || 'Plano',
+        activatedAt: nowIso,
+        expiresAt: resolvedExpiresAt,
+        tokenCode,
+      }).catch(() => {});
+    }
 
     try {
       await safeFirestoreCall(
@@ -1030,19 +1045,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
     refreshDeviceTrial();
 
+    const guestNowIso = new Date().toISOString();
     const profile: UserProfile = {
       id: 'guest_' + Math.random().toString(36).substring(2, 9),
       email: 'espectador@playsports.tv',
       displayName: 'Espectador Esportivo',
       photoURL: '',
       role: 'user', // NUNCA aceita admin aqui
-      createdAt: new Date().toISOString(),
+      createdAt: guestNowIso,
       plan: assignedPlan,
       planName: 'Plano Gratuito (Teste 24h)',
       planExpiresAt: resolvedExpiresAt,
+      planActivatedAt: guestNowIso,
     };
     saveInRegistry({ ...profile, password: 'guest' });
     saveSession(profile);
+
+    notifyPlanActivation({
+      userId: profile.id,
+      userEmail: profile.email,
+      planName: profile.planName || 'Plano Gratuito (Teste 24h)',
+      activatedAt: guestNowIso,
+      expiresAt: resolvedExpiresAt,
+    }).catch(() => {});
   };
 
   const switchRole = async (newRole: UserRole) => {
@@ -1074,15 +1099,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     tokenCode?: string | null
   ) => {
     if (!userProfile) return;
+    const activatedAt = new Date().toISOString();
+    const resolvedExpiresAt = expiresAt ?? userProfile.planExpiresAt;
     const updated: UserProfile = {
       ...userProfile,
       plan,
       planName,
-      planExpiresAt: expiresAt ?? userProfile.planExpiresAt,
+      planExpiresAt: resolvedExpiresAt,
+      planActivatedAt: activatedAt,
       activatedToken: tokenCode ?? userProfile.activatedToken,
     };
     saveSession(updated);
     setIsAccountClosedDueToExpiration(false);
+
+    // Dispara a notificação de ativação registrando formalmente a data/hora para o usuário
+    notifyPlanActivation({
+      userId: userProfile.id,
+      userEmail: userProfile.email,
+      planName,
+      activatedAt,
+      expiresAt: resolvedExpiresAt,
+      tokenCode,
+    }).catch(() => {});
   };
 
   const signOut = async () => {

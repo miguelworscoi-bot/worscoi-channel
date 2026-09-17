@@ -32,7 +32,7 @@ export const SubscriptionCountdownBadge: React.FC<SubscriptionCountdownBadgeProp
       >
         <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
         <span className="font-semibold text-zinc-300">Admin</span>
-        {!compact && <span className="text-zinc-500 font-mono text-[11px]">• Ilimitado</span>}
+        {!compact && <span className="text-zinc-400 font-normal text-[11px]">• Ilimitado</span>}
       </div>
     );
   }
@@ -60,7 +60,7 @@ export const SubscriptionCountdownBadge: React.FC<SubscriptionCountdownBadgeProp
       type="button"
       id="subscription-countdown-badge"
       onClick={onClick}
-      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-xs font-mono font-bold transition-all select-none shadow-sm ${colorClasses} ${
+      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-xs font-bold transition-all select-none shadow-sm ${colorClasses} ${
         onClick ? 'cursor-pointer hover:brightness-110 active:scale-95' : 'cursor-default'
       } ${className}`}
       title={`Plano: ${userProfile.planName || planBadgeText} • Restam ${countdown.formattedClock} • Clique para gerenciar`}
@@ -73,11 +73,11 @@ export const SubscriptionCountdownBadge: React.FC<SubscriptionCountdownBadgeProp
         )
       )}
       {!compact && (
-        <span className="font-sans text-[11px] font-semibold text-zinc-400 hidden sm:inline">
+        <span className="text-[11px] font-semibold text-zinc-400 hidden sm:inline">
           {planBadgeText}:
         </span>
       )}
-      <span className="tracking-wider">
+      <span className="tracking-tight">
         {countdown.formattedClock}
       </span>
     </button>

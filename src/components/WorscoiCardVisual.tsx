@@ -163,7 +163,7 @@ export function WorscoiCardVisual({
   return (
     <div
       id="worscoi-card-vertical"
-      className={`relative w-60 h-[380px] sm:w-64 sm:h-[410px] md:w-72 md:h-[450px] rounded-[32px] ${theme.cardBg} text-white p-6 flex flex-col justify-between ${theme.shadowClass} ${theme.ringClass} select-none overflow-hidden transition-all duration-500 ${className}`}
+      className={`relative w-52 h-[330px] sm:w-56 sm:h-[355px] md:w-60 md:h-[375px] rounded-[28px] sm:rounded-[32px] ${theme.cardBg} text-white p-5 sm:p-6 flex flex-col justify-between ${theme.shadowClass} ${theme.ringClass} select-none overflow-hidden transition-all duration-300 ${className}`}
     >
       {/* Reflexo suave no cartão */}
       <div className="absolute inset-0 bg-gradient-to-br from-white/15 via-transparent to-black/15 pointer-events-none" />

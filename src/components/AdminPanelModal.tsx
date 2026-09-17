@@ -271,7 +271,7 @@ export function AdminPanelModal({
                       <div className="flex items-center gap-2.5">
                         <div className="w-2 h-2 rounded-full bg-emerald-400" />
                         <span className="font-semibold text-white">{c.nome}</span>
-                        <span className="text-[10px] text-zinc-400 font-mono">
+                        <span className="text-[10px] text-zinc-400 font-normal">
                           {c.categoria || 'Geral'}
                         </span>
                       </div>
@@ -352,7 +352,7 @@ export function AdminPanelModal({
             <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
             <span>Sistema Operacional</span>
           </div>
-          <span className="text-zinc-400 font-mono">Worscoi Channel</span>
+          <span className="text-zinc-400 font-normal">Worscoi Channel</span>
         </div>
       </div>
     </div>

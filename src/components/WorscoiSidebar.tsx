@@ -446,7 +446,7 @@ export function WorscoiSidebar({
                     <span>{f.label}</span>
                     {typeof count === 'number' && count > 0 && (
                       <span
-                        className={`text-[9px] font-mono px-1.5 py-0.2 rounded-full transition-colors ${
+                        className={`text-[9px] font-normal px-1.5 py-0.2 rounded-full transition-colors ${
                           isSelected
                             ? 'bg-zinc-950 text-white font-bold'
                             : 'bg-zinc-800 text-zinc-400 group-hover:bg-zinc-700 group-hover:text-zinc-200'
@@ -510,7 +510,7 @@ export function WorscoiSidebar({
                             Limpar
                           </span>
                         )}
-                        <span className="text-[10px] text-zinc-500 font-mono">
+                        <span className="text-[10px] text-zinc-400 font-normal">
                           {group.channels.length}
                         </span>
                         <ChevronDown

@@ -115,7 +115,7 @@ export function WeeklyMostWatchedChannelsBarChart({
           </div>
           <div>
             <div className="flex items-center gap-2 flex-wrap">
-              <h2 className="text-sm sm:text-base font-black text-white tracking-tight">
+              <h2 className="text-sm sm:text-base font-bold text-white tracking-tight">
                 Canais Mais Assistidos da Semana
               </h2>
               <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/15 text-[#00E676] border border-emerald-500/30 flex items-center gap-1">
@@ -123,7 +123,7 @@ export function WeeklyMostWatchedChannelsBarChart({
                 Logs dos Usuários
               </span>
             </div>
-            <p className="text-xs text-zinc-400 mt-0.5">
+            <p className="text-xs text-zinc-400 font-normal mt-0.5">
               Frequência de cliques e seleções na grade de canais ({channelStats.startDate} a {channelStats.endDate}).
             </p>
           </div>
@@ -253,7 +253,7 @@ export function WeeklyMostWatchedChannelsBarChart({
             <span className="text-zinc-300 font-semibold">
               Ranking dos canais com mais reproduções iniciadas
             </span>
-            <span className="text-[11px] text-zinc-400 font-mono">
+            <span className="text-[11px] text-zinc-400 font-normal">
               Base: {channelStats.totalWeeklySelections} seleções
             </span>
           </div>
@@ -264,7 +264,8 @@ export function WeeklyMostWatchedChannelsBarChart({
                 layout="vertical"
                 data={channelsChartData}
                 margin={{ top: 10, right: 35, left: 10, bottom: 5 }}
-                onMouseMove={(state) => {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                onMouseMove={(state: any) => {
                   if (state && state.activePayload && state.activePayload.length) {
                     const activeData = state.activePayload[0].payload as ChannelWeeklyStats;
                     setActiveChannelHover(activeData.channelName);
@@ -317,19 +318,19 @@ export function WeeklyMostWatchedChannelsBarChart({
                           </div>
                           <div className="flex items-center justify-between text-zinc-300">
                             <span>Seleções no Player:</span>
-                            <strong className="text-[#00E676] font-mono text-sm">
+                            <strong className="text-[#00E676] font-bold text-sm">
                               {data.selections} vezes
                             </strong>
                           </div>
                           <div className="flex items-center justify-between text-zinc-300">
                             <span>Participação Semanal:</span>
-                            <strong className="text-white font-mono">
+                            <strong className="text-white font-bold">
                               {data.percentage}%
                             </strong>
                           </div>
-                          <div className="flex items-center justify-between text-zinc-400 text-[11px] pt-1 border-t border-zinc-800">
+                          <div className="flex items-center justify-between text-zinc-400 text-[11px] pt-1 border-t border-zinc-800 font-normal">
                             <span>Audiência Estimada:</span>
-                            <span className="font-mono text-blue-400 font-bold">
+                            <span className="text-blue-400 font-bold">
                               ~{data.estimatedHours} horas
                             </span>
                           </div>
@@ -369,7 +370,7 @@ export function WeeklyMostWatchedChannelsBarChart({
             <span className="text-zinc-300 font-semibold">
               Volume diário de seleções de canais pelos usuários (Segunda a Domingo)
             </span>
-            <span className="text-[11px] text-zinc-400 font-mono">
+            <span className="text-[11px] text-zinc-400 font-normal">
               Pico nos fins de semana e noites de jogos
             </span>
           </div>
@@ -411,13 +412,13 @@ export function WeeklyMostWatchedChannelsBarChart({
                           </div>
                           <div className="flex items-center justify-between text-zinc-300">
                             <span>Total Selecionado:</span>
-                            <strong className="text-[#00E676] font-mono text-sm">
+                            <strong className="text-[#00E676] font-bold text-sm">
                               {data.selections} canais
                             </strong>
                           </div>
-                          <div className="flex items-center justify-between text-zinc-400 text-[11px] pt-1 border-t border-zinc-800">
+                          <div className="flex items-center justify-between text-zinc-400 text-[11px] pt-1 border-t border-zinc-800 font-normal">
                             <span>Canal Mais Visto:</span>
-                            <span className="font-medium text-white truncate max-w-[120px]">
+                            <span className="font-normal text-white truncate max-w-[120px]">
                               {data.topChannel}
                             </span>
                           </div>
@@ -464,16 +465,16 @@ export function WeeklyMostWatchedChannelsBarChart({
                   <span className="text-xs font-bold text-white truncate block">
                     {ch.channelName}
                   </span>
-                  <span className="text-[10px] text-zinc-400 font-mono">
+                  <span className="text-[10px] text-zinc-400 font-normal">
                     {ch.category}
                   </span>
                 </div>
               </div>
               <div className="text-right shrink-0">
-                <span className="text-xs font-black text-emerald-400 font-mono block">
+                <span className="text-xs font-bold text-emerald-400 block">
                   {ch.selections}
                 </span>
-                <span className="text-[10px] text-zinc-400 font-mono">
+                <span className="text-[10px] text-zinc-400 font-normal">
                   {ch.percentage}%
                 </span>
               </div>

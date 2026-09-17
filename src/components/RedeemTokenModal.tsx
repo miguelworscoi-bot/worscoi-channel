@@ -105,7 +105,7 @@ export function RedeemTokenModal({
               <h2 className="text-base font-bold text-white tracking-tight">
                 Ativar Código
               </h2>
-              <p className="text-xs text-zinc-400">
+              <p className="text-xs text-zinc-400 font-normal">
                 Digite seu token de 5 dígitos para liberar o acesso.
               </p>
             </div>
@@ -169,9 +169,9 @@ export function RedeemTokenModal({
                   onChange={handleInputChange}
                   placeholder="DIGITE O CÓDIGO"
                   autoFocus
-                  className="w-full text-center tracking-[0.35em] font-mono text-xl font-black px-4 py-3 rounded-xl bg-zinc-900/90 border border-zinc-700/80 focus:border-emerald-500 text-white placeholder:text-zinc-600 focus:outline-none transition-all"
+                  className="w-full text-center tracking-[0.35em] text-xl font-bold px-4 py-3 rounded-xl bg-zinc-900/90 border border-zinc-700/80 focus:border-emerald-500 text-white placeholder:text-zinc-600 focus:outline-none transition-all"
                 />
-                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-mono font-bold text-zinc-500">
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-normal text-zinc-400">
                   {tokenCode.length}/5
                 </div>
               </div>

@@ -187,3 +187,6 @@ export function WorscoiControlPanel({
     </div>
   );
 }
+
+export default WorscoiControlPanel;
+

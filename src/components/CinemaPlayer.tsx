@@ -812,11 +812,11 @@ export function CinemaPlayer({
             <div className="w-16 h-16 rounded-2xl bg-red-500/15 border border-red-500/30 flex items-center justify-center text-red-400 shadow-xl mb-3">
               <Lock className="w-8 h-8 text-red-400" />
             </div>
-            <h3 className="text-xl font-black text-white max-w-md">Tempo de Acesso Expirado</h3>
-            <div className="font-mono text-3xl font-black text-rose-500 tracking-wider my-2 bg-black/60 px-5 py-1.5 rounded-xl border border-rose-500/30 shadow-inner">
+            <h3 className="text-xl font-bold tracking-tight text-white max-w-md">Tempo de Acesso Expirado</h3>
+            <div className="text-3xl font-bold text-rose-500 tracking-tight my-2 bg-black/60 px-5 py-1.5 rounded-xl border border-rose-500/30 shadow-inner">
               00:00:00
             </div>
-            <p className="text-xs text-zinc-400 max-w-md mt-1 leading-relaxed">
+            <p className="text-xs text-zinc-400 font-normal max-w-md mt-1 leading-relaxed">
               O tempo de acesso contratado para esta conta chegou ao fim. As transmissões foram pausadas.
             </p>
             <div className="mt-5 flex flex-wrap items-center justify-center gap-2.5">

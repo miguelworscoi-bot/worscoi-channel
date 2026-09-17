@@ -29,10 +29,10 @@ export function SportsSchedule({ jogos, onSintonizarJogo, canalAtivo }: SportsSc
             <Trophy className="w-4 h-4" />
           </div>
           <div>
-            <h3 className="font-extrabold text-sm sm:text-base text-white tracking-tight flex items-center gap-2">
+            <h3 className="font-bold text-sm sm:text-base text-white tracking-tight flex items-center gap-2">
               <span>Agenda de Jogos de Hoje</span>
             </h3>
-            <p className="text-[11px] text-zinc-400">
+            <p className="text-[11px] text-zinc-400 font-normal">
               Clique em uma partida para ver onde assistir e filtrar os canais correspondentes
             </p>
           </div>
@@ -43,7 +43,7 @@ export function SportsSchedule({ jogos, onSintonizarJogo, canalAtivo }: SportsSc
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
             <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
           </span>
-          <span className="font-mono uppercase tracking-wider">Ao Vivo</span>
+          <span className="font-bold uppercase tracking-wider">Ao Vivo</span>
         </div>
       </div>
 
@@ -67,11 +67,11 @@ export function SportsSchedule({ jogos, onSintonizarJogo, canalAtivo }: SportsSc
             >
               {/* Top: Campeonato & Horário */}
               <div className="flex items-center justify-between gap-2 mb-2.5">
-                <span className="text-[10px] font-black uppercase tracking-wider text-zinc-400 bg-zinc-900/80 border border-zinc-800 px-2 py-0.5 rounded-md truncate max-w-[130px]">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 bg-zinc-900/80 border border-zinc-800 px-2 py-0.5 rounded-md truncate max-w-[130px]">
                   {jogo.campeonato}
                 </span>
 
-                <div className="flex items-center gap-1 text-[11px] font-mono text-emerald-400 bg-zinc-900/90 border border-zinc-800 px-2 py-0.5 rounded-md shrink-0">
+                <div className="flex items-center gap-1 text-[11px] font-bold text-emerald-400 bg-zinc-900/90 border border-zinc-800 px-2 py-0.5 rounded-md shrink-0">
                   <Clock className="w-3 h-3 text-emerald-400" />
                   <span>{jogo.hora}</span>
                 </div>

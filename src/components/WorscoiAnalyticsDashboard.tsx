@@ -410,14 +410,14 @@ export function WorscoiAnalyticsDashboard({
           </div>
           <div>
             <div className="flex items-center gap-2 flex-wrap">
-              <h2 className="text-base sm:text-lg font-black text-white tracking-tight">
+              <h2 className="text-base sm:text-lg font-bold text-white tracking-tight">
                 Métricas da Plataforma & Inteligência de Negócio
               </h2>
               <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#00E676]/15 text-[#00E676] border border-[#00E676]/30">
                 Ao Vivo • AOA (Kz)
               </span>
             </div>
-            <p className="text-xs text-zinc-400 mt-0.5">
+            <p className="text-xs text-zinc-400 font-normal mt-0.5">
               Controle avançado de subscrições, faturamento por plano, retenção de audiência e engajamento.
             </p>
           </div>
@@ -698,7 +698,7 @@ export function WorscoiAnalyticsDashboard({
                                   <span className="w-2 h-2 rounded-full bg-[#00E676]"></span>
                                   Receita:
                                 </span>
-                                <strong className="text-emerald-400 font-mono">
+                                <strong className="text-emerald-400 font-bold">
                                   {formatKz(data.receitaKz)}
                                 </strong>
                               </div>
@@ -707,11 +707,11 @@ export function WorscoiAnalyticsDashboard({
                                   <span className="w-2 h-2 rounded-full bg-blue-400"></span>
                                   Novos Inscritos:
                                 </span>
-                                <strong className="text-white font-mono">+{data.novos}</strong>
+                                <strong className="text-white font-bold">+{data.novos}</strong>
                               </div>
-                              <div className="flex items-center justify-between text-zinc-400 text-[11px] pt-1 border-t border-zinc-800">
+                              <div className="flex items-center justify-between text-zinc-400 text-[11px] pt-1 border-t border-zinc-800 font-normal">
                                 <span>Total Assinantes:</span>
-                                <span className="font-mono text-zinc-200">{data.totalAssinantes}</span>
+                                <span className="text-zinc-200 font-bold">{data.totalAssinantes}</span>
                               </div>
                             </div>
                           );
@@ -788,9 +788,9 @@ export function WorscoiAnalyticsDashboard({
                                 <span>{data.name}</span>
                               </div>
                               <div className="text-zinc-300">
-                                Assinantes: <strong className="text-white font-mono">{data.subscribers}</strong> ({data.percentage}%)
+                                Assinantes: <strong className="text-white font-bold">{data.subscribers}</strong> ({data.percentage}%)
                               </div>
-                              <div className="text-emerald-400 font-mono text-[11px]">
+                              <div className="text-emerald-400 font-bold text-[11px]">
                                 Arrecadação: {formatKz(data.revenueKz)}
                               </div>
                             </div>
@@ -803,8 +803,8 @@ export function WorscoiAnalyticsDashboard({
                 </ResponsiveContainer>
                 {/* Texto Central do Donut */}
                 <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                  <span className="text-xs text-zinc-400 font-medium">VIP + Prem.</span>
-                  <span className="text-lg font-black text-white">62.3%</span>
+                  <span className="text-xs text-zinc-400 font-normal">VIP + Prem.</span>
+                  <span className="text-lg font-bold text-white">62.3%</span>
                 </div>
               </div>
 
@@ -814,12 +814,12 @@ export function WorscoiAnalyticsDashboard({
                   <div key={plan.id} className="flex items-center justify-between text-xs">
                     <div className="flex items-center gap-2">
                       <span className="w-2 h-2 rounded-full" style={{ backgroundColor: plan.color }} />
-                      <span className="text-zinc-300 font-medium truncate max-w-[130px]">
+                      <span className="text-zinc-300 font-normal truncate max-w-[130px]">
                         {plan.name}
                       </span>
                     </div>
-                    <div className="flex items-center gap-2 font-mono">
-                      <span className="text-zinc-400">{plan.subscribers}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-zinc-400 font-normal">{plan.subscribers}</span>
                       <span className="text-zinc-200 font-bold">{plan.percentage}%</span>
                     </div>
                   </div>
@@ -863,10 +863,10 @@ export function WorscoiAnalyticsDashboard({
                       </div>
                     </div>
                     <div className="text-right shrink-0">
-                      <div className="text-xs font-black text-emerald-400 font-mono">
+                      <div className="text-xs font-bold text-emerald-400">
                         {ch.horasAssistidas.toLocaleString('pt-BR')}h
                       </div>
-                      <div className="text-[10px] text-zinc-400 font-mono">
+                      <div className="text-[10px] text-zinc-400 font-normal">
                         {ch.espectadores} telespectadores
                       </div>
                     </div>
@@ -902,8 +902,8 @@ export function WorscoiAnalyticsDashboard({
                 {RETENTION_COHORT_DATA.slice(0, 4).map((cohort) => (
                   <div key={cohort.dia} className="space-y-1">
                     <div className="flex items-center justify-between text-xs">
-                      <span className="text-zinc-300 font-medium">{cohort.dia} ({cohort.label})</span>
-                      <span className="font-mono font-bold text-emerald-400">{cohort.retencao}% ativo</span>
+                      <span className="text-zinc-300 font-normal">{cohort.dia} ({cohort.label})</span>
+                      <span className="font-bold text-emerald-400">{cohort.retencao}% ativo</span>
                     </div>
                     <div className="w-full h-2 rounded-full bg-zinc-800 overflow-hidden">
                       <div
@@ -1005,15 +1005,15 @@ export function WorscoiAnalyticsDashboard({
                             </div>
                             <div className="flex justify-between text-zinc-300">
                               <span>Preço Unitário:</span>
-                              <strong className="text-white font-mono">{formatKz(data.priceKz)}</strong>
+                              <strong className="text-white font-bold">{formatKz(data.priceKz)}</strong>
                             </div>
                             <div className="flex justify-between text-zinc-300">
                               <span>Assinantes Ativos:</span>
-                              <strong className="text-white font-mono">{data.subscribers}</strong>
+                              <strong className="text-white font-bold">{data.subscribers}</strong>
                             </div>
                             <div className="flex justify-between text-emerald-400 font-bold pt-1 border-t border-zinc-800">
                               <span>Faturamento Total:</span>
-                              <strong className="font-mono">{formatKz(data.revenueKz)}</strong>
+                              <strong>{formatKz(data.revenueKz)}</strong>
                             </div>
                           </div>
                         );
@@ -1116,16 +1116,16 @@ export function WorscoiAnalyticsDashboard({
                           <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: plan.color }} />
                           <span>{plan.name}</span>
                         </td>
-                        <td className="py-2.5 text-zinc-300 font-mono">
+                        <td className="py-2.5 text-zinc-300 font-normal">
                           {plan.priceKz > 0 ? formatKz(plan.priceKz) : 'Grátis (24h)'}
                         </td>
-                        <td className="py-2.5 text-center font-bold text-white font-mono">
+                        <td className="py-2.5 text-center font-bold text-white">
                           {plan.subscribers}
                         </td>
-                        <td className="py-2.5 text-center text-zinc-300 font-mono">
+                        <td className="py-2.5 text-center text-zinc-300 font-normal">
                           {plan.percentage}%
                         </td>
-                        <td className="py-2.5 text-right font-bold text-emerald-400 font-mono">
+                        <td className="py-2.5 text-right font-bold text-emerald-400">
                           {formatKz(plan.revenueKz)}
                         </td>
                       </tr>
@@ -1190,10 +1190,10 @@ export function WorscoiAnalyticsDashboard({
                           <div className="p-3 bg-zinc-900 border border-zinc-700 rounded-xl shadow-xl text-xs space-y-1">
                             <div className="font-bold text-white">{data.fullDate}</div>
                             <div className="text-zinc-300">
-                              Total Acumulado: <strong className="text-emerald-400 font-mono">{data.totalAssinantes}</strong>
+                              Total Acumulado: <strong className="text-emerald-400 font-bold">{data.totalAssinantes}</strong>
                             </div>
-                            <div className="text-zinc-400 text-[11px]">
-                              Novos neste dia: <strong className="text-white font-mono">+{data.novos}</strong>
+                            <div className="text-zinc-400 text-[11px] font-normal">
+                              Novos neste dia: <strong className="text-white font-bold">+{data.novos}</strong>
                             </div>
                           </div>
                         );
@@ -1278,16 +1278,16 @@ export function WorscoiAnalyticsDashboard({
 
               <div className="grid grid-cols-3 gap-2 pt-3 border-t border-zinc-800 text-center text-xs">
                 <div className="p-2 rounded-lg bg-zinc-950/60 border border-zinc-850">
-                  <span className="text-[10px] text-zinc-400 uppercase block">Dia 1</span>
-                  <strong className="text-white font-mono text-sm">96%</strong>
+                  <span className="text-[10px] text-zinc-400 font-normal uppercase block">Dia 1</span>
+                  <strong className="text-white font-bold text-sm">96%</strong>
                 </div>
                 <div className="p-2 rounded-lg bg-zinc-950/60 border border-zinc-850">
-                  <span className="text-[10px] text-zinc-400 uppercase block">Dia 7</span>
-                  <strong className="text-emerald-400 font-mono text-sm">84%</strong>
+                  <span className="text-[10px] text-zinc-400 font-normal uppercase block">Dia 7</span>
+                  <strong className="text-emerald-400 font-bold text-sm">84%</strong>
                 </div>
                 <div className="p-2 rounded-lg bg-zinc-950/60 border border-zinc-850">
-                  <span className="text-[10px] text-zinc-400 uppercase block">Dia 30</span>
-                  <strong className="text-amber-400 font-mono text-sm">68%</strong>
+                  <span className="text-[10px] text-zinc-400 font-normal uppercase block">Dia 30</span>
+                  <strong className="text-amber-400 font-bold text-sm">68%</strong>
                 </div>
               </div>
             </div>
@@ -1469,10 +1469,10 @@ export function WorscoiAnalyticsDashboard({
                       </div>
                     </div>
                     <div className="text-right shrink-0">
-                      <div className="text-xs font-bold text-emerald-400 font-mono">
+                      <div className="text-xs font-bold text-emerald-400">
                         {ch.horasAssistidas.toLocaleString('pt-BR')}h
                       </div>
-                      <div className="text-[10px] text-zinc-400 font-mono">
+                      <div className="text-[10px] text-zinc-400 font-normal">
                         {ch.espectadores} telespectadores
                       </div>
                     </div>
@@ -1553,10 +1553,10 @@ export function WorscoiAnalyticsDashboard({
                       </div>
                     </div>
                     <div className="text-right shrink-0">
-                      <div className="text-xs font-bold text-blue-400 font-mono">
+                      <div className="text-xs font-bold text-blue-400">
                         {movie.conclusaoRate}% concluído
                       </div>
-                      <div className="text-[10px] text-zinc-400 font-mono">
+                      <div className="text-[10px] text-zinc-400 font-normal">
                         {movie.horasTotais.toLocaleString('pt-BR')}h totais
                       </div>
                     </div>
@@ -1633,14 +1633,14 @@ export function WorscoiAnalyticsDashboard({
                                   <Heart className="w-3.5 h-3.5 text-[#FF2D55]" />
                                   Adoros:
                                 </span>
-                                <strong className="font-mono">{data.adoros}</strong>
+                                <strong className="font-bold">{data.adoros}</strong>
                               </div>
                               <div className="flex items-center justify-between text-cyan-300">
                                 <span className="flex items-center gap-1.5">
                                   <MessageSquare className="w-3.5 h-3.5 text-cyan-400" />
                                   Comentários:
                                 </span>
-                                <strong className="font-mono">{data.comentarios}</strong>
+                                <strong className="font-bold">{data.comentarios}</strong>
                               </div>
                             </div>
                           );
@@ -1672,17 +1672,17 @@ export function WorscoiAnalyticsDashboard({
                       </span>
                       <div className="min-w-0">
                         <div className="text-xs font-bold text-white truncate">{ch.name}</div>
-                        <div className="text-[10px] text-zinc-400">
+                        <div className="text-[10px] text-zinc-400 font-normal">
                           {((ch.adoros + ch.comentarios) / 10).toFixed(0)} interações/hora
                         </div>
                       </div>
                     </div>
                     <div className="flex items-center gap-3 shrink-0">
-                      <div className="flex items-center gap-1 text-xs font-bold text-[#FF2D55] font-mono">
+                      <div className="flex items-center gap-1 text-xs font-bold text-[#FF2D55]">
                         <Heart className="w-3.5 h-3.5 fill-[#FF2D55]" />
                         <span>{ch.adoros}</span>
                       </div>
-                      <div className="flex items-center gap-1 text-xs font-bold text-cyan-400 font-mono">
+                      <div className="flex items-center gap-1 text-xs font-bold text-cyan-400">
                         <MessageSquare className="w-3.5 h-3.5" />
                         <span>{ch.comentarios}</span>
                       </div>

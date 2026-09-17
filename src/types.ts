@@ -45,9 +45,35 @@ export interface SubscriberUser {
   plan: SubscriptionPlanId;
   planName: string;
   planExpiresAt?: string | null;
+  planActivatedAt?: string | null;
   activatedToken?: string | null;
   createdAt: string;
   lastActive?: string;
+}
+
+export type NotificationType =
+  | 'activation'
+  | 'plan_warning'
+  | 'plan_expired'
+  | 'bonus'
+  | 'system';
+
+export interface UserNotification {
+  id: string;
+  userId: string;
+  userEmail?: string;
+  type: NotificationType;
+  title: string;
+  message: string;
+  read: boolean;
+  createdAt: string;
+  activatedAt?: string;
+  expiresAt?: string;
+  planName?: string;
+  bonusCode?: string;
+  bonusDays?: number;
+  actionUrl?: string;
+  actionLabel?: string;
 }
 
 export type FiltroAtivo =

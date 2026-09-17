@@ -41,6 +41,7 @@ export function FilmotecaGenreRowComponent({
   const pauseTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Estados para arrastar com mouse (drag-to-scroll)
+  const isPointerDownRef = useRef<boolean>(false);
   const dragStartXRef = useRef<number>(0);
   const dragStartScrollLeftRef = useRef<number>(0);
   const hasMovedRef = useRef<boolean>(false);
@@ -189,24 +190,32 @@ export function FilmotecaGenreRowComponent({
   // HANDLERS PARA ARRASTAR COM O MOUSE (DRAG TO SCROLL)
   const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!scrollRef.current) return;
-    setIsDragging(true);
+    isPointerDownRef.current = true;
     hasMovedRef.current = false;
-    dragStartXRef.current = e.pageX - scrollRef.current.offsetLeft;
+    dragStartXRef.current = e.clientX;
     dragStartScrollLeftRef.current = scrollRef.current.scrollLeft;
   };
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!isDragging || !scrollRef.current) return;
-    e.preventDefault();
-    const x = e.pageX - scrollRef.current.offsetLeft;
-    const walk = (x - dragStartXRef.current) * 1.3;
-    if (Math.abs(walk) > 5) {
-      hasMovedRef.current = true;
+    if (!isPointerDownRef.current || !scrollRef.current) return;
+    if (e.buttons !== 1) {
+      isPointerDownRef.current = false;
+      if (isDragging) setIsDragging(false);
+      return;
     }
-    scrollRef.current.scrollLeft = dragStartScrollLeftRef.current - walk;
+    const deltaX = e.clientX - dragStartXRef.current;
+    if (Math.abs(deltaX) > 6) {
+      if (!isDragging) setIsDragging(true);
+      hasMovedRef.current = true;
+      e.preventDefault();
+      scrollRef.current.scrollLeft = dragStartScrollLeftRef.current - deltaX;
+    }
   };
 
   const handleMouseUpOrLeave = () => {
+    if (isPointerDownRef.current) {
+      isPointerDownRef.current = false;
+    }
     if (isDragging) {
       setIsDragging(false);
       pausarTemporariamente(2500);
@@ -227,9 +236,9 @@ export function FilmotecaGenreRowComponent({
       <div className="flex items-center justify-between px-1">
         <div className="flex items-center gap-2.5">
           {icon && <span className={`${corDestaque} shrink-0`}>{icon}</span>}
-          <h2 className="text-sm sm:text-base font-semibold text-zinc-100 tracking-tight flex items-center gap-2">
+          <h2 className="text-sm sm:text-base font-bold text-white tracking-tight flex items-center gap-2">
             <span>{titulo}</span>
-            <span className="text-[11px] font-mono font-medium px-2 py-0.5 rounded-full bg-zinc-900 border border-zinc-800 text-zinc-400">
+            <span className="text-[11px] font-normal px-2 py-0.5 rounded-full bg-zinc-900 border border-zinc-800 text-zinc-400">
               {filmes.length}
             </span>
           </h2>

@@ -95,11 +95,11 @@ export function NextVideosQueueDrawer({
             <div>
               <h3 className="text-sm font-bold text-white tracking-tight flex items-center gap-2">
                 <span>Fila de Reprodução</span>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-300 border border-zinc-700">
+                <span className="text-[10px] font-normal px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-300 border border-zinc-700">
                   {activeQueue.length} a seguir
                 </span>
               </h3>
-              <p className="text-[11px] text-zinc-400">
+              <p className="text-[11px] text-zinc-400 font-normal">
                 Próximos vídeos selecionados pelo criador e seu histórico
               </p>
             </div>
@@ -196,7 +196,7 @@ export function NextVideosQueueDrawer({
                   }}
                   className="group flex items-center gap-3 p-2 rounded-xl bg-zinc-900/40 hover:bg-zinc-800/70 border border-zinc-800/60 hover:border-zinc-700 transition cursor-pointer select-none"
                 >
-                  <span className="text-xs font-mono font-medium text-zinc-500 w-4 text-center shrink-0">
+                  <span className="text-xs font-normal text-zinc-400 w-4 text-center shrink-0">
                     {idx + 1}
                   </span>
 
@@ -260,7 +260,7 @@ export function NextVideosQueueDrawer({
                       {hist.creatorName}
                     </p>
                   </div>
-                  <span className="text-[10px] font-mono text-zinc-500 shrink-0">
+                  <span className="text-[10px] text-zinc-400 font-normal shrink-0">
                     {new Date(hist.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </span>
                 </div>

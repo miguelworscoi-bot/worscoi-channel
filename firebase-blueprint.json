@@ -102,12 +102,41 @@
         "createdAt": { "type": "string", "format": "date-time" }
       },
       "required": ["channelId", "userId", "userName", "text", "createdAt"]
+    },
+    "notifications": {
+      "title": "User Notifications",
+      "description": "System and admin notifications sent to users (bonus, activation, plan warnings, expiration)",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string", "description": "Target user ID, or 'all' for broadcast" },
+        "userEmail": { "type": "string" },
+        "type": {
+          "type": "string",
+          "enum": ["activation", "plan_warning", "plan_expired", "bonus", "system"]
+        },
+        "title": { "type": "string" },
+        "message": { "type": "string" },
+        "read": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "activatedAt": { "type": "string", "description": "Date and time when plan was activated" },
+        "expiresAt": { "type": "string", "description": "Date when plan expires" },
+        "planName": { "type": "string" },
+        "bonusCode": { "type": "string" },
+        "bonusDays": { "type": "number" },
+        "actionUrl": { "type": "string" }
+      },
+      "required": ["userId", "type", "title", "message", "createdAt"]
     }
   },
   "rules": {
     "users": {
       "read": "auth != null",
       "write": "auth != null && auth.uid == resource.id"
+    },
+    "notifications": {
+      "read": "true",
+      "write": "true"
     },
     "device_trials": {
       "read": "true",

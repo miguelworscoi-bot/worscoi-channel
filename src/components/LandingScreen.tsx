@@ -28,9 +28,9 @@ export function LandingScreen({
 
   return (
     <main
-      className="relative isolate flex flex-col min-h-[100dvh] overflow-hidden bg-[#070708] text-white select-none"
+      className="relative isolate flex flex-col min-h-[100dvh] overflow-hidden bg-[#070708] text-white select-none font-sans"
       style={{
-        fontFamily: "'Satoshi', ui-sans-serif, system-ui, sans-serif",
+        fontFamily: "'TikTok Sans', ui-sans-serif, system-ui, sans-serif",
         WebkitFontSmoothing: 'antialiased',
       }}
     >
@@ -140,7 +140,7 @@ export function LandingScreen({
 
       {/* BARRA SUPERIOR DISCRETA DE ACESSO À PLATAFORMA */}
       <header className="relative z-20 flex items-center justify-end px-6 py-4 sm:px-12 sm:py-6">
-        <div className="flex items-center gap-3 sm:gap-4 font-mono text-xs">
+        <div className="flex items-center gap-3 sm:gap-4 text-xs">
           <button
             type="button"
             onClick={() => onOpenLogin()}
@@ -155,7 +155,7 @@ export function LandingScreen({
       <section className="relative z-10 flex-1 flex flex-col items-center justify-center px-6 text-center">
         {/* Question heading */}
         <h2
-          className="reveal text-2xl sm:text-3xl font-medium text-white/70"
+          className="reveal text-2xl sm:text-3xl font-bold tracking-tight text-white/80"
           style={{ '--reveal-delay': '0.1s' } as React.CSSProperties}
         >
           Tv ao vivo só na
@@ -165,11 +165,12 @@ export function LandingScreen({
         <a
           href="#login"
           id="cursor-trail-cta-link"
+          data-logomark="true"
           onClick={(e) => {
             e.preventDefault();
             onOpenLogin();
           }}
-          className="reveal cta-group inline-block mt-4 max-w-full [overflow-wrap:break-word] text-[clamp(2.8rem,9vw,7.5rem)] leading-[1.05] text-[#ed3c5c] hover:text-[#ed3c5c]/85 transition-colors cursor-pointer"
+          className="reveal cta-group font-logomark inline-block mt-4 max-w-full [overflow-wrap:break-word] text-[clamp(2.8rem,9vw,7.5rem)] leading-[1.05] text-[#ed3c5c] hover:text-[#ed3c5c]/85 transition-colors cursor-pointer"
           style={
             {
               '--reveal-delay': '0.25s',
@@ -194,7 +195,7 @@ export function LandingScreen({
           <button
             type="button"
             onClick={() => onOpenRegister()}
-            className="text-xs text-zinc-400 hover:text-white underline underline-offset-4 cursor-pointer transition font-mono"
+            className="text-xs text-zinc-400 hover:text-white underline underline-offset-4 cursor-pointer transition font-normal"
           >
             Começar teste grátis de 24h →
           </button>
@@ -203,11 +204,10 @@ export function LandingScreen({
 
       {/* FOOTER */}
       <footer
-        className="reveal relative z-10 flex flex-wrap items-center justify-end gap-4 px-6 pb-9 sm:px-12 sm:pb-9 text-xs tracking-[0.18em] uppercase text-white/40"
+        className="reveal relative z-10 flex flex-wrap items-center justify-end gap-4 px-6 pb-9 sm:px-12 sm:pb-9 text-xs tracking-tight text-zinc-400 font-normal"
         style={
           {
             '--reveal-delay': '0.45s',
-            fontFamily: "'Geist Mono', ui-monospace, monospace",
           } as React.CSSProperties
         }
       >

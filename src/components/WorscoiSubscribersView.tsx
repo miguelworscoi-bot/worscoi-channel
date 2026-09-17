@@ -270,3 +270,6 @@ export function WorscoiSubscribersView({
     </div>
   );
 }
+
+export default WorscoiSubscribersView;
+

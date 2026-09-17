@@ -1,5 +1,5 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   ChevronLeft,
@@ -89,44 +89,6 @@ const FLOW_PLANS: PlanItemOption[] = [
   },
 ];
 
-const planSlideVariants = {
-  enter: (dir: number) => ({
-    x: dir > 0 ? 80 : dir < 0 ? -80 : 0,
-    opacity: 0,
-    scale: 0.88,
-    rotateY: dir > 0 ? 16 : dir < 0 ? -16 : 0,
-    filter: 'blur(3px)',
-  }),
-  center: {
-    x: 0,
-    opacity: 1,
-    scale: 1,
-    rotateY: 0,
-    filter: 'blur(0px)',
-    transition: {
-      x: { type: 'spring', stiffness: 340, damping: 28 },
-      opacity: { duration: 0.22 },
-      scale: { type: 'spring', stiffness: 340, damping: 26 },
-      rotateY: { duration: 0.26 },
-      filter: { duration: 0.2 },
-    },
-  },
-  exit: (dir: number) => ({
-    x: dir > 0 ? -80 : dir < 0 ? 80 : 0,
-    opacity: 0,
-    scale: 0.88,
-    rotateY: dir > 0 ? -16 : dir < 0 ? 16 : 0,
-    filter: 'blur(3px)',
-    transition: {
-      x: { type: 'spring', stiffness: 340, damping: 28 },
-      opacity: { duration: 0.18 },
-      scale: { duration: 0.18 },
-      rotateY: { duration: 0.18 },
-      filter: { duration: 0.15 },
-    },
-  }),
-};
-
 export interface WorscoiPlanSelectionFlowProps {
   onClose: () => void;
   onBackToPreviousStep?: () => void; // Para voltar à etapa de cadastro anterior
@@ -160,7 +122,6 @@ export function WorscoiPlanSelectionFlow({
 
   // Índice do carrossel de planos (default no Passe Fim de Semana - 3 Dias, correspondendo à imagem do usuário)
   const [currentPlanIndex, setCurrentPlanIndex] = useState<number>(1);
-  const [slideDirection, setSlideDirection] = useState<number>(1);
   const selectedPlan = FLOW_PLANS[currentPlanIndex] || FLOW_PLANS[1];
 
   // Estado para inserção do token
@@ -173,20 +134,33 @@ export function WorscoiPlanSelectionFlow({
   const [isProcessingFree, setIsProcessingFree] = useState(false);
 
   const handlePrevPlan = () => {
-    setSlideDirection(-1);
     setCurrentPlanIndex((prev) => (prev > 0 ? prev - 1 : FLOW_PLANS.length - 1));
   };
 
   const handleNextPlan = () => {
-    setSlideDirection(1);
     setCurrentPlanIndex((prev) => (prev < FLOW_PLANS.length - 1 ? prev + 1 : 0));
   };
 
   const handleSelectPlanByIndex = (idx: number) => {
     if (idx === currentPlanIndex) return;
-    setSlideDirection(idx > currentPlanIndex ? 1 : -1);
     setCurrentPlanIndex(idx);
   };
+
+  // Suporte a teclas de seta esquerda/direita no teclado
+  useEffect(() => {
+    if (currentScreen !== 'plans') return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        handlePrevPlan();
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        handleNextPlan();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [currentScreen]);
 
   const handleCopyPhone = () => {
     navigator.clipboard.writeText('942472983');
@@ -305,79 +279,150 @@ export function WorscoiPlanSelectionFlow({
               </button>
             </div>
 
-            {/* CENTRO: NOME DO PLANO + PREÇO + CARTÃO VERTICAL COM ANIMAÇÃO DE ENTRADA E TRANSIÇÃO */}
-            <div className="flex-1 flex flex-col items-center justify-center my-2 w-full overflow-hidden [perspective:1200px]">
-              <AnimatePresence mode="wait" custom={slideDirection}>
+            {/* CABEÇALHO DO PLANO ATIVO (TÍTULO, PREÇO E ETIQUETA COM TRANSIÇÃO SUAVE) */}
+            <div className="text-center min-h-[68px] flex flex-col items-center justify-center mb-1">
+              <AnimatePresence mode="wait">
                 <motion.div
                   key={selectedPlan.id}
-                  custom={slideDirection}
-                  variants={planSlideVariants}
-                  initial="enter"
-                  animate="center"
-                  exit="exit"
-                  drag="x"
-                  dragConstraints={{ left: 0, right: 0 }}
-                  dragElastic={0.25}
-                  onDragEnd={(_e, info) => {
-                    if (info.offset.x < -40) {
-                      handleNextPlan();
-                    } else if (info.offset.x > 40) {
-                      handlePrevPlan();
-                    }
-                  }}
-                  className="flex flex-col items-center justify-center w-full touch-pan-y cursor-grab active:cursor-grabbing"
+                  initial={{ opacity: 0, y: -4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 4 }}
+                  transition={{ duration: 0.16 }}
+                  className="flex flex-col items-center"
                 >
-                  <div className="text-center mb-3">
-                    <h2 className="text-base sm:text-lg font-bold text-white tracking-wide">
-                      {selectedPlan.name}
-                    </h2>
-                    <p className="text-sm font-medium text-zinc-300 mt-0.5">
-                      {selectedPlan.priceFormatted}
-                    </p>
-                    {selectedPlan.channelCountLabel && (
-                      <span
-                        className={`inline-block mt-1 px-3 py-0.5 rounded-full text-[11px] font-bold border transition-colors ${
-                          PLAN_CARD_THEMES[selectedPlan.id]?.accentBg || 'bg-[#00E676]/15'
-                        } ${
-                          PLAN_CARD_THEMES[selectedPlan.id]?.accentText || 'text-[#00E676]'
-                        } ${
-                          PLAN_CARD_THEMES[selectedPlan.id]?.accentBorder || 'border-[#00E676]/30'
-                        }`}
-                      >
-                        {selectedPlan.channelCountLabel}
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Cartão Worscoi Vertical com Efeito de Destaque e Micro-Interação */}
-                  <motion.div
-                    whileHover={{ scale: 1.03, rotateY: 5 }}
-                    whileTap={{ scale: 0.98 }}
-                    transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-                    className="relative cursor-pointer"
-                    onClick={handleSelectPlan}
-                  >
-                    <WorscoiCardVisual variant="vertical" planId={selectedPlan.id} />
-                  </motion.div>
-
-                  {/* Prévia dos Canais Oferecidos pelo Plano */}
-                  {selectedPlan.channelsOffered && selectedPlan.channelsOffered.length > 0 && (
-                    <div className="w-full max-w-sm mt-3 px-3 py-2 rounded-xl bg-zinc-900/80 border border-zinc-800 text-center">
-                      <p className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1">
-                        Canais Liberados neste Plano
-                      </p>
-                      <p className="text-xs text-zinc-200 line-clamp-2 leading-relaxed">
-                        {selectedPlan.channelsOffered.slice(0, 5).join(' • ')}
-                        {selectedPlan.channelsOffered.length > 5 ? ' e mais...' : ''}
-                      </p>
-                    </div>
+                  <h2 className="text-base sm:text-lg font-bold text-white tracking-tight">
+                    {selectedPlan.name}
+                  </h2>
+                  <p className="text-sm font-normal text-zinc-400 mt-0.5">
+                    {selectedPlan.priceFormatted}
+                  </p>
+                  {selectedPlan.channelCountLabel && (
+                    <span
+                      className={`inline-block mt-1 px-3 py-0.5 rounded-full text-[11px] font-bold border transition-colors ${
+                        PLAN_CARD_THEMES[selectedPlan.id]?.accentBg || 'bg-[#00E676]/15'
+                      } ${
+                        PLAN_CARD_THEMES[selectedPlan.id]?.accentText || 'text-[#00E676]'
+                      } ${
+                        PLAN_CARD_THEMES[selectedPlan.id]?.accentBorder || 'border-[#00E676]/30'
+                      }`}
+                    >
+                      {selectedPlan.channelCountLabel}
+                    </span>
                   )}
                 </motion.div>
               </AnimatePresence>
             </div>
 
+            {/* PALCO DO CARROSSEL 3D DE CARDS COM VISÃO MULTI-CARD E DRAG FLUIDO */}
+            <div
+              className="relative w-full h-[350px] sm:h-[375px] flex items-center justify-center overflow-hidden my-auto select-none [perspective:1200px]"
+            >
+              {FLOW_PLANS.map((plan, idx) => {
+                const distance = idx - currentPlanIndex;
+                const isCenter = distance === 0;
+                const isVisible = Math.abs(distance) <= 2;
+
+                if (!isVisible) return null;
+
+                const xOffset =
+                  distance === 0
+                    ? 0
+                    : distance < 0
+                      ? distance === -1
+                        ? -145
+                        : -260
+                      : distance === 1
+                        ? 145
+                        : 260;
+
+                const rotateYVal =
+                  distance === 0 ? 0 : distance < 0 ? 22 : -22;
+
+                const scaleVal =
+                  distance === 0
+                    ? 1
+                    : distance === -1 || distance === 1
+                      ? 0.84
+                      : 0.7;
+
+                const opacityVal =
+                  distance === 0
+                    ? 1
+                    : distance === -1 || distance === 1
+                      ? 0.45
+                      : 0.15;
+
+                const zIndexVal = 30 - Math.abs(distance) * 10;
+
+                return (
+                  <motion.div
+                    key={plan.id}
+                    onClick={() => {
+                      if (!isCenter) {
+                        handleSelectPlanByIndex(idx);
+                      } else {
+                        handleSelectPlan();
+                      }
+                    }}
+                    initial={false}
+                    animate={{
+                      x: xOffset,
+                      scale: scaleVal,
+                      rotateY: rotateYVal,
+                      opacity: opacityVal,
+                      zIndex: zIndexVal,
+                      filter: isCenter ? 'blur(0px)' : 'blur(0.8px)',
+                    }}
+                    transition={{
+                      type: 'spring',
+                      stiffness: 340,
+                      damping: 29,
+                      mass: 0.8,
+                    }}
+                    drag={isCenter ? 'x' : false}
+                    dragConstraints={{ left: 0, right: 0 }}
+                    dragElastic={0.25}
+                    onDragEnd={(_e, info) => {
+                      if (info.offset.x < -35 || info.velocity.x < -280) {
+                        handleNextPlan();
+                      } else if (info.offset.x > 35 || info.velocity.x > 280) {
+                        handlePrevPlan();
+                      }
+                    }}
+                    className={`absolute flex flex-col items-center justify-center touch-pan-y ${
+                      isCenter
+                        ? 'cursor-grab active:cursor-grabbing'
+                        : 'cursor-pointer hover:opacity-75 transition-opacity'
+                    }`}
+                    style={{
+                      transformStyle: 'preserve-3d',
+                    }}
+                  >
+                    <WorscoiCardVisual
+                      variant="vertical"
+                      planId={plan.id}
+                      className={isCenter ? 'shadow-2xl ring-2 ring-white/20' : 'shadow-lg'}
+                    />
+                  </motion.div>
+                );
+              })}
+            </div>
+
+            {/* PRÉVIA DOS CANAIS DO PLANO SELECIONADO */}
+            <div className="w-full max-w-sm mx-auto mt-2 px-3 py-1.5 rounded-xl bg-zinc-900/70 border border-zinc-800/80 text-center">
+              <p className="text-[10px] font-semibold text-zinc-400 uppercase tracking-wider mb-0.5">
+                Canais Liberados neste Plano
+              </p>
+              <p className="text-xs text-zinc-200 line-clamp-1 leading-normal">
+                {selectedPlan.channelsOffered && selectedPlan.channelsOffered.length > 0
+                  ? selectedPlan.channelsOffered.slice(0, 5).join(' • ') +
+                    (selectedPlan.channelsOffered.length > 5 ? ' e mais...' : '')
+                  : 'Acesso total a todos os canais ao vivo'}
+              </p>
+            </div>
+
             {/* BASE: NAVEGAÇÃO DO CARROSSEL (< > + BOLINHAS DE CORES) + BOTÃO "ESCOLHER" */}
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 w-full max-w-sm sm:max-w-md mx-auto pt-4 border-t border-zinc-900/80">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 w-full max-w-sm sm:max-w-md mx-auto pt-3 border-t border-zinc-900/80">
               {/* Botões < e > com Bolinhas Coloridas de Todos os Planos */}
               <div className="flex items-center gap-2">
                 <button
@@ -390,7 +435,7 @@ export function WorscoiPlanSelectionFlow({
                 </button>
 
                 {/* Bolinhas / Pílulas Coloridas de Cada Plano */}
-                <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-full bg-zinc-950/80 border border-zinc-800/80">
+                <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-zinc-950/90 border border-zinc-800/80 shadow-inner">
                   {FLOW_PLANS.map((plan, idx) => {
                     const theme = PLAN_CARD_THEMES[plan.id];
                     const isCurrent = idx === currentPlanIndex;
@@ -401,8 +446,8 @@ export function WorscoiPlanSelectionFlow({
                         onClick={() => handleSelectPlanByIndex(idx)}
                         className={`transition-all duration-300 rounded-full cursor-pointer ${
                           isCurrent
-                            ? 'w-5 h-2.5 ring-2 ring-white/60 scale-110 shadow-sm'
-                            : 'w-2 h-2 opacity-50 hover:opacity-100 hover:scale-125'
+                            ? 'w-6 h-2.5 ring-2 ring-white/70 scale-110 shadow-sm'
+                            : 'w-2 h-2 opacity-40 hover:opacity-90 hover:scale-125'
                         }`}
                         style={{ backgroundColor: theme?.dotColor || '#FF2D55' }}
                         title={`${plan.name} (${plan.priceFormatted})`}
@@ -426,7 +471,7 @@ export function WorscoiPlanSelectionFlow({
                 type="button"
                 onClick={handleSelectPlan}
                 disabled={isProcessingFree}
-                className="px-8 py-2.5 rounded-full bg-white text-black font-extrabold text-sm sm:text-base hover:bg-zinc-200 transition shadow-xl active:scale-95 disabled:opacity-50 cursor-pointer flex items-center gap-2"
+                className="w-full sm:w-auto px-8 py-2.5 rounded-full bg-white text-black font-extrabold text-sm sm:text-base hover:bg-zinc-200 transition shadow-xl active:scale-95 disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2"
               >
                 {isProcessingFree ? (
                   <>
@@ -487,7 +532,7 @@ export function WorscoiPlanSelectionFlow({
 
             {/* CENTRO: TÍTULO + CARTÃO HORIZONTAL + PILHAS BRANCAS */}
             <div className="flex-1 flex flex-col items-center justify-center max-w-sm sm:max-w-md w-full mx-auto space-y-4">
-              <h2 className="text-base sm:text-lg font-bold text-white text-center">
+              <h2 className="text-base sm:text-lg font-bold text-white text-center tracking-tight">
                 {selectedPlan.name}
               </h2>
 
@@ -628,11 +673,11 @@ export function WorscoiPlanSelectionFlow({
               </div>
 
               {/* Texto de Instrução Exato da Imagem 9 */}
-              <div className="text-center px-2 space-y-1 text-xs sm:text-sm text-zinc-300 font-medium">
+              <div className="text-center px-2 space-y-1 text-xs sm:text-sm text-zinc-400 font-normal">
                 <p>
                   Faça o pagamento via <span className="font-bold text-white">express</span> ou{' '}
                   <span className="font-bold text-white">pay pay</span> no nº{' '}
-                  <span className="font-extrabold text-white underline decoration-[#FF2D55] decoration-2">
+                  <span className="font-bold text-white underline decoration-[#FF2D55] decoration-2">
                     942472983
                   </span>
                   .
@@ -728,7 +773,7 @@ export function WorscoiPlanSelectionFlow({
               className="flex-1 flex flex-col items-center justify-center max-w-sm sm:max-w-md w-full mx-auto space-y-6"
             >
               {/* Título Vermelho da Imagem 10 */}
-              <h2 className="text-xl sm:text-2xl font-black text-[#FF2D55] text-center tracking-wide">
+              <h2 className="text-xl sm:text-2xl font-bold text-[#FF2D55] text-center tracking-tight">
                 Insira a chave token
               </h2>
 

@@ -129,14 +129,14 @@ export function Header({
             </div>
             <div className="flex flex-col">
               <div className="flex items-center gap-2">
-                <span className="text-xl font-extrabold tracking-tight text-white">
+                <span className="text-xl font-bold tracking-tight text-white">
                   PLAY<span className="text-[#00E676] drop-shadow-[0_0_12px_rgba(0,230,118,0.4)]">SPORTS</span>
                 </span>
                 <span className="inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded bg-[#00E676]/10 text-[#00E676] border border-[#00E676]/30">
                   PRO
                 </span>
               </div>
-              <p className="text-[10px] text-zinc-400 font-medium hidden sm:block">
+              <p className="text-[10px] text-zinc-400 font-normal hidden sm:block">
                 TV e Esportes Ao Vivo
               </p>
             </div>
@@ -178,7 +178,7 @@ export function Header({
                   <X className="w-3.5 h-3.5" />
                 </button>
               ) : (
-                <kbd className="hidden lg:inline-flex items-center px-1.5 py-0.5 text-[10px] font-mono text-zinc-500 bg-zinc-900 border border-zinc-800 rounded">
+                <kbd className="hidden lg:inline-flex items-center px-1.5 py-0.5 text-[10px] font-normal text-zinc-400 bg-zinc-900 border border-zinc-800 rounded">
                   ⌘K
                 </kbd>
               )}
@@ -219,13 +219,13 @@ export function Header({
                             }}
                           />
                           <div className="truncate">
-                            <p className="text-sm font-semibold text-zinc-100 group-hover:text-[#00E676] truncate transition-colors">
+                            <p className="text-sm font-bold text-zinc-100 group-hover:text-[#00E676] truncate transition-colors tracking-tight">
                               {c.nome}
                             </p>
-                            <div className="flex items-center gap-1.5 text-[11px] text-zinc-400">
+                            <div className="flex items-center gap-1.5 text-[11px] font-normal text-zinc-400">
                               <span className="text-zinc-300">{badge.label}</span>
                               <span>•</span>
-                              <span className="text-zinc-500">{sport}</span>
+                              <span className="text-zinc-400">{sport}</span>
                             </div>
                           </div>
                         </div>

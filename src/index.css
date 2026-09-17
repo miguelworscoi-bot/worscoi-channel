@@ -9,12 +9,12 @@
 @theme {
   --font-sans: 'TikTok Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   --font-tiktok: 'TikTok Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  --font-logomark: 'Caveat', 'Dancing Script', cursive;
+  --font-logomark: 'Brittany Signature', 'Caveat', 'Dancing Script', cursive;
 }
 
 :root {
   --font-sans: 'TikTok Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  --font-logomark: 'Caveat', 'Dancing Script', cursive;
+  --font-logomark: 'Brittany Signature', 'Caveat', 'Dancing Script', cursive;
   --color-primary: #e11d48;
   --color-primary-hover: #be123c;
   --color-emerald: #10b981;
@@ -33,12 +33,33 @@ body,
   text-rendering: optimizeLegibility;
 }
 
-/* Exceção explícita para preservar a tipografia autêntica da nossa logomarca */
+/* ========================================================================= */
+/* HIERARQUIA TIPOGRÁFICA CONSISTENTE TIKTOK SANS                            */
+/* - Títulos em Bold com Tracking Reduzido                                   */
+/* - Textos Secundários em text-zinc-400 com Weight Normal                   */
+/* ========================================================================= */
+h1, h2, h3, h4, h5, h6,
+.title-bold {
+  font-family: 'TikTok Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.025em; /* Tracking reduzido para legibilidade moderna */
+}
+
+/* Textos secundários, subtítulos e legendas padronizados */
+.text-secondary,
+.subtitle-secondary,
+p.text-secondary,
+span.text-secondary {
+  font-weight: 400 !important;
+  color: #a1a1aa !important; /* text-zinc-400 */
+}
+
+/* Exceção explícita e única: Logomarca Worscoi com seu estilo cursivo original preservado */
 .font-logomark,
 .logomark-font,
 [data-logomark="true"],
 [data-logomark="true"] * {
-  font-family: 'Caveat', 'Dancing Script', cursive !important;
+  font-family: 'Brittany Signature', 'Caveat', 'Dancing Script', cursive !important;
 }
 
 @layer utilities {

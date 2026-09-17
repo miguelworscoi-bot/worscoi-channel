@@ -57,7 +57,7 @@ export function NextVideoAutoplayOverlay({
       <div className="max-w-md w-full bg-[#0e0f15] border border-zinc-800 rounded-2xl p-6 shadow-2xl text-center flex flex-col items-center">
         {/* CABEÇALHO */}
         <div className="flex items-center justify-between w-full mb-4">
-          <div className="flex items-center gap-1.5 text-zinc-400 text-xs font-semibold">
+          <div className="flex items-center gap-1.5 text-zinc-400 font-normal text-xs">
             <span>Próximo vídeo automático</span>
           </div>
           <button
@@ -85,14 +85,14 @@ export function NextVideoAutoplayOverlay({
               <p className="text-xs font-bold text-white line-clamp-1">
                 {target.title}
               </p>
-              <p className="text-[11px] text-zinc-400">
+              <p className="text-[11px] text-zinc-400 font-normal">
                 {target.creatorName}
               </p>
             </div>
           </div>
 
           {/* BADGE DE CONTAGEM */}
-          <div className="absolute top-3 right-3 w-9 h-9 rounded-full bg-black/80 backdrop-blur-md border border-white/20 flex items-center justify-center text-xs font-mono font-bold text-white shadow-lg">
+          <div className="absolute top-3 right-3 w-9 h-9 rounded-full bg-black/80 backdrop-blur-md border border-white/20 flex items-center justify-center text-xs font-bold text-white shadow-lg">
             {secondsLeft}s
           </div>
         </div>

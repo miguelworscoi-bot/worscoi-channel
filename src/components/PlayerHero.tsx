@@ -674,7 +674,7 @@ export function PlayerHero({
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
               <span>Transmissão Pronta</span>
             </div>
-            <span className="text-xs text-zinc-500 font-mono hidden sm:inline-block">
+            <span className="text-xs text-zinc-400 font-normal hidden sm:inline-block">
               {todosCanais?.length || 0} canais disponíveis
             </span>
           </div>
@@ -761,7 +761,7 @@ export function PlayerHero({
               title={`Qualidade do Sinal: ${signalQuality.label} (${signalQuality.latencyMs}ms)`}
             >
               <signalQuality.icon className="w-2.5 h-2.5" />
-              <span className="font-mono">{signalQuality.latencyMs}ms</span>
+              <span className="font-bold">{signalQuality.latencyMs}ms</span>
             </div>
 
             <span className="text-xs font-bold text-zinc-200 truncate">
@@ -933,11 +933,11 @@ export function PlayerHero({
               <div className="w-16 h-16 rounded-2xl bg-red-500/15 border border-red-500/30 flex items-center justify-center text-red-400 shadow-xl mb-3">
                 <Lock className="w-8 h-8 text-red-400" />
               </div>
-              <h3 className="text-lg font-black text-white max-w-md">Tempo de Acesso Expirado</h3>
-              <div className="font-mono text-2xl font-black text-rose-500 tracking-wider my-1 bg-black/60 px-4 py-1 rounded-xl border border-rose-500/30">
+              <h3 className="text-lg font-bold tracking-tight text-white max-w-md">Tempo de Acesso Expirado</h3>
+              <div className="text-2xl font-bold text-rose-500 tracking-tight my-1 bg-black/60 px-4 py-1 rounded-xl border border-rose-500/30">
                 00:00:00
               </div>
-              <p className="text-xs text-zinc-400 max-w-md mt-1 leading-relaxed">
+              <p className="text-xs text-zinc-400 font-normal max-w-md mt-1 leading-relaxed">
                 O cronômetro da assinatura chegou ao fim. Para continuar assistindo à programação esportiva, renove seu plano ou ative seu código.
               </p>
               <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
@@ -1128,7 +1128,7 @@ export function PlayerHero({
               )}
             </div>
 
-            <span className={`text-[10px] font-mono font-bold ${signalQuality.colorClass} tracking-tight`}>
+            <span className={`text-[10px] font-bold ${signalQuality.colorClass} tracking-tight`}>
               {signalQuality.latencyMs}ms
             </span>
 
@@ -1490,7 +1490,7 @@ export function PlayerHero({
                             )}
                           </div>
                           <div className="flex items-center gap-1.5">
-                            <span className="text-[10px] text-zinc-500 font-mono">
+                            <span className="text-[10px] text-zinc-400 font-normal">
                               {formatRelativeTime(comm.createdAt)}
                             </span>
                             {isAuthor && (

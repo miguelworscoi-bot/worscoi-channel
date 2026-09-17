@@ -72,31 +72,31 @@ export const SubscriptionExpiredModal: React.FC<SubscriptionExpiredModalProps> =
           </div>
 
           {/* Título e Relógio Zero */}
-          <h2 className="text-2xl font-black tracking-tight text-white mb-1">
+          <h2 className="text-2xl font-bold tracking-tight text-white mb-1">
             Sua Assinatura Expirou!
           </h2>
-          <p className="text-sm text-zinc-400 mb-5">
+          <p className="text-sm text-zinc-400 font-normal mb-5">
             O tempo de acesso contratado para a sua conta chegou ao fim.
           </p>
 
           {/* Mostrador Digital Zero */}
           <div className="bg-black/60 border border-rose-500/30 rounded-2xl p-4 mb-5 shadow-inner">
-            <div className="text-xs uppercase tracking-widest text-zinc-500 font-semibold mb-1">
+            <div className="text-xs uppercase tracking-widest text-zinc-400 font-normal mb-1">
               Tempo Restante
             </div>
-            <div className="font-mono text-3xl sm:text-4xl font-black text-rose-500 tracking-wider">
+            <div className="text-3xl sm:text-4xl font-bold text-rose-500 tracking-tight">
               00:00:00
             </div>
-            <div className="text-xs text-rose-400/80 mt-1 font-medium">
+            <div className="text-xs text-rose-400/80 mt-1 font-normal">
               Conta e transmissões temporariamente pausadas
             </div>
           </div>
 
           {/* Detalhe da Conta & Regra de 1 Acesso por Aparelho */}
           <div className="bg-zinc-900/70 border border-zinc-800 rounded-xl p-3.5 text-left text-xs text-zinc-300 space-y-2 mb-6">
-            <div className="flex justify-between items-center text-zinc-400 pb-2 border-b border-zinc-800">
+            <div className="flex justify-between items-center text-zinc-400 font-normal pb-2 border-b border-zinc-800">
               <span>Conta vinculada:</span>
-              <span className="font-mono text-zinc-200 truncate max-w-[200px]">
+              <span className="font-normal text-zinc-200 truncate max-w-[200px]">
                 {userProfile?.email || 'Espectador'}
               </span>
             </div>

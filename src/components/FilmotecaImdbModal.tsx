@@ -128,11 +128,11 @@ export function FilmotecaImdbModal({
             <span className="inline-flex items-center justify-center bg-[#f5c518] text-black font-black text-xs px-2.5 py-0.5 rounded shadow-sm tracking-wider">
               IMDb
             </span>
-            <span className="text-xs font-medium text-zinc-400">
+            <span className="text-xs font-normal text-zinc-400">
               Metadados & Ficha Técnica Oficial
             </span>
             {detalhes?.imdbId && (
-              <span className="hidden sm:inline-block text-[11px] font-mono text-zinc-500 bg-zinc-800/60 px-2 py-0.5 rounded">
+              <span className="hidden sm:inline-block text-[11px] font-normal text-zinc-400 bg-zinc-800/60 px-2 py-0.5 rounded">
                 {detalhes.imdbId}
               </span>
             )}
@@ -440,10 +440,10 @@ export function FilmotecaImdbModal({
                           <button
                             key={ep}
                             onClick={() => setEpisodeSelecionado(ep)}
-                            className={`px-2.5 py-1 rounded text-xs font-mono transition-colors ${
+                            className={`px-2.5 py-1 rounded text-xs transition-colors ${
                               episodeSelecionado === ep
                                 ? 'bg-[#f5c518] text-black font-bold'
-                                : 'bg-zinc-900/80 hover:bg-zinc-800 text-zinc-400 border border-zinc-800/80'
+                                : 'bg-zinc-900/80 hover:bg-zinc-800 text-zinc-400 border border-zinc-800/80 font-normal'
                             }`}
                           >
                             EP {ep}

@@ -63,7 +63,7 @@ export function UserProfileModal({
               <h2 className="text-base font-bold text-white truncate tracking-tight">
                 {displayName}
               </h2>
-              <p className="text-xs text-zinc-400 truncate font-mono">
+              <p className="text-xs text-zinc-400 truncate font-normal">
                 {userEmail}
               </p>
             </div>
@@ -113,12 +113,12 @@ export function UserProfileModal({
 
           {/* CRONÔMETRO DE VALIDADE REFINADO */}
           <div className="pt-3 border-t border-zinc-800/60 flex items-center justify-between text-xs">
-            <div className="flex items-center gap-1.5 text-zinc-400">
+            <div className="flex items-center gap-1.5 text-zinc-400 font-normal">
               <Clock className="w-3.5 h-3.5 text-zinc-400" />
               <span>Validade do Acesso:</span>
             </div>
 
-            <div className="font-mono text-xs font-bold">
+            <div className="text-xs font-bold">
               {isAdmin ? (
                 <span className="text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
                   Acesso Ilimitado (Admin)
@@ -148,9 +148,9 @@ export function UserProfileModal({
 
           {/* TOKEN ATIVADO (SE HOUVER) */}
           {userProfile?.activatedToken && (
-            <div className="pt-2 border-t border-zinc-800/40 flex items-center justify-between text-[11px] text-zinc-400">
+            <div className="pt-2 border-t border-zinc-800/40 flex items-center justify-between text-[11px] text-zinc-400 font-normal">
               <span>Código Ativo:</span>
-              <span className="font-mono font-bold text-zinc-200 bg-zinc-800 px-1.5 py-0.5 rounded border border-zinc-700">
+              <span className="font-bold text-zinc-200 bg-zinc-800 px-1.5 py-0.5 rounded border border-zinc-700">
                 {userProfile.activatedToken}
               </span>
             </div>
