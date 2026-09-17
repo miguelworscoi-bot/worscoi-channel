@@ -13,7 +13,7 @@ interface FilmeCardProps {
   className?: string;
 }
 
-export function FilmeCard({
+function FilmeCardComponent({
   filme,
   isAtivo = false,
   onSelect,
@@ -44,14 +44,14 @@ export function FilmeCard({
   return (
     <div
       onClick={() => onSelect(filme)}
-      className={`group relative flex flex-col bg-[#0e1015] rounded-xl overflow-hidden border transition-all duration-200 cursor-pointer shadow-md hover:shadow-xl hover:shadow-black/60 select-none ${
+      className={`group relative flex flex-col bg-[#0e1015] rounded-xl overflow-hidden border cursor-pointer shadow-md select-none film-card-motion ${
         isAtivo
-          ? 'border-zinc-400 ring-1 ring-zinc-400/80 bg-[#12141c]'
+          ? 'border-zinc-300 ring-2 ring-zinc-300/80 bg-[#12141c] shadow-[0_0_20px_rgba(255,255,255,0.15)]'
           : 'border-zinc-800/80 hover:border-zinc-700/90'
       } ${className}`}
     >
-      {/* CAPA DO FILME COM PROPORÇÃO CINEMATOGRÁFICA 2:3 */}
-      <div className="relative aspect-[2/3] w-full bg-zinc-900 overflow-hidden">
+      {/* CAPA DO FILME COM PROPORÇÃO CINEMATOGRÁFICA 2:3 & SHEEN ANIMADO */}
+      <div className="relative aspect-[2/3] w-full bg-zinc-900 overflow-hidden film-poster-sheen">
         <img
           src={
             filme.capa && filme.capa !== 'https://tmdb.org'
@@ -61,11 +61,12 @@ export function FilmeCard({
           alt={filme.titulo}
           referrerPolicy="no-referrer"
           loading="lazy"
+          decoding="async"
           onError={(e) => {
             (e.currentTarget as HTMLImageElement).src =
               'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=500&auto=format&fit=crop&q=80';
           }}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 ease-out"
+          className="w-full h-full object-cover group-hover:scale-108 transition-transform duration-500 ease-out"
         />
 
         {/* GRADIENTE DE PROFUNDIDADE NA IMAGEM */}
@@ -73,15 +74,15 @@ export function FilmeCard({
 
         {/* BADGE DE FORMATO (DISCRETO, PRETO TRANSLÚCIDO) */}
         {formatTag && (
-          <div className="absolute top-2.5 left-2.5 z-10 pointer-events-none">
-            <span className="px-2 py-0.5 rounded-md bg-black/70 backdrop-blur-md text-zinc-200 text-[10px] font-medium border border-white/10 tracking-wide">
+          <div className="absolute top-2.5 left-2.5 z-10 pointer-events-none transition-transform duration-200 group-hover:scale-105">
+            <span className="px-2 py-0.5 rounded-md bg-black/70 backdrop-blur-md text-zinc-200 text-[10px] font-medium border border-white/10 tracking-wide shadow-sm">
               {formatTag}
             </span>
           </div>
         )}
 
         {/* BADGE RATING / ANO (TOP DIREITA) */}
-        <div className="absolute top-2.5 right-2.5 flex items-center gap-1 z-10 pointer-events-none">
+        <div className="absolute top-2.5 right-2.5 flex items-center gap-1 z-10 pointer-events-none transition-transform duration-200 group-hover:scale-105">
           {filme.rating && (
             <span className="px-1.5 py-0.5 rounded-md bg-black/75 backdrop-blur-md text-amber-300 text-[10px] font-semibold border border-amber-500/20 shadow flex items-center gap-1">
               <Star className="w-2.5 h-2.5 fill-amber-400 text-amber-400" />
@@ -90,9 +91,9 @@ export function FilmeCard({
           )}
         </div>
 
-        {/* OVERLAY ELEGANTE DE AÇÕES AO PASSAR O MOUSE */}
-        <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col items-center justify-center gap-2.5 p-3">
-          {/* BOTÃO PRINCIPAL DE PLAY */}
+        {/* OVERLAY ELEGANTE DE AÇÕES AO PASSAR O MOUSE (ESTILO STREAMING / TIKTOK) */}
+        <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-all duration-200 flex flex-col items-center justify-center gap-2.5 p-3">
+          {/* BOTÃO PRINCIPAL DE PLAY COM POP TIKTOK */}
           <button
             type="button"
             onClick={(e) => {
@@ -103,10 +104,10 @@ export function FilmeCard({
                 onSelect(filme);
               }
             }}
-            className="w-11 h-11 rounded-full bg-white text-black flex items-center justify-center shadow-xl hover:scale-105 transition-transform cursor-pointer"
+            className="w-12 h-12 rounded-full bg-white hover:bg-[#FF2D55] text-black hover:text-white flex items-center justify-center shadow-2xl transition-all duration-200 hover:scale-115 active:scale-90 cursor-pointer group/play"
             title="Assistir agora"
           >
-            <Play className="w-4 h-4 fill-black ml-0.5" />
+            <Play className="w-5 h-5 fill-current ml-0.5 transition-transform duration-200 group-hover/play:scale-110" />
           </button>
 
           {/* AÇÕES SECUNDÁRIAS DISCRETAS */}
@@ -118,7 +119,7 @@ export function FilmeCard({
                 e.stopPropagation();
                 onOpenTeatro(filme);
               }}
-              className="p-2 rounded-lg bg-zinc-900/90 hover:bg-zinc-800 text-zinc-200 border border-zinc-700/80 transition cursor-pointer"
+              className="p-2 rounded-lg bg-zinc-900/90 hover:bg-zinc-800 text-zinc-200 hover:text-white border border-zinc-700/80 transition-all duration-200 hover:scale-110 active:scale-90 cursor-pointer"
             >
               <Maximize2 className="w-3.5 h-3.5" />
             </button>
@@ -185,3 +186,5 @@ export function FilmeCard({
     </div>
   );
 }
+
+export const FilmeCard = React.memo(FilmeCardComponent);

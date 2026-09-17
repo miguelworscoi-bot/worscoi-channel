@@ -6,10 +6,8 @@ import {
   Plus,
   Trash2,
   CheckCircle2,
-  XCircle,
   X,
   Users,
-  Activity,
   KeyRound,
   ArrowRight,
   CreditCard,
@@ -17,7 +15,6 @@ import {
 } from 'lucide-react';
 import { Canal } from '@/types';
 import { useAuth, UserRole } from '@/context/AuthContext';
-import { PAYMENT_CONFIG } from '@/services/subscriptionService';
 import { SubscriberGrowthChart } from '@/components/SubscriberGrowthChart';
 
 interface AdminPanelModalProps {
@@ -44,7 +41,7 @@ export function AdminPanelModal({
   const { user, userProfile, role, isAdmin, switchRole } = useAuth();
   const [switching, setSwitching] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'analytics' | 'session' | 'channels'>('analytics');
+  const [activeTab, setActiveTab] = useState<'analytics' | 'channels' | 'session'>('analytics');
 
   if (!isOpen) return null;
   if (!isAdmin) return null;
@@ -54,9 +51,9 @@ export function AdminPanelModal({
     setFeedback(null);
     try {
       await switchRole(newRole);
-      setFeedback(`Sessão alterada com sucesso para: ${newRole === 'admin' ? 'Administrador' : 'Usuário Normal'}`);
+      setFeedback(`Sessão alterada para: ${newRole === 'admin' ? 'Administrador' : 'Usuário Normal'}`);
     } catch {
-      setFeedback('Erro ao alternar o papel da sessão.');
+      setFeedback('Erro ao alternar permissão da sessão.');
     } finally {
       setSwitching(false);
     }
@@ -65,71 +62,87 @@ export function AdminPanelModal({
   return (
     <div
       id="admin-panel-backdrop"
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4 overflow-y-auto"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 overflow-y-auto"
       onClick={onClose}
     >
       <div
         id="admin-panel-modal"
-        className="relative w-full max-w-4xl bg-[#0b0b10] border border-zinc-800/80 rounded-3xl p-5 sm:p-7 shadow-2xl shadow-black/90 ring-1 ring-white/10 my-8 animate-in fade-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto"
+        className="relative w-full max-w-4xl bg-[#0d0f14] border border-zinc-800/90 rounded-2xl p-5 sm:p-6 shadow-2xl shadow-black/90 ring-1 ring-white/5 my-auto animate-in fade-in zoom-in-95 duration-200 max-h-[90vh] flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* CABEÇALHO DO PAINEL */}
-        <div className="flex items-start justify-between pb-4 border-b border-zinc-850">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
-              <Crown className="w-6 h-6" />
+        {/* CABEÇALHO LIMPO E DIRETO */}
+        <div className="flex items-center justify-between pb-3.5 border-b border-zinc-800/80 shrink-0">
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
+              <Crown className="w-4 h-4" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-lg font-black text-white tracking-tight">
+                <h2 className="text-base font-bold text-white tracking-tight">
                   Painel de Administração
                 </h2>
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-400/20 text-amber-300 border border-amber-400/30">
-                  {role === 'admin' ? 'Acesso Total' : 'Modo Espectador'}
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-amber-400/15 text-amber-300 border border-amber-400/25">
+                  {role === 'admin' ? 'Admin' : 'Espectador'}
                 </span>
               </div>
-              <p className="text-xs text-zinc-400 mt-0.5">
-                Métricas de crescimento de assinantes, controle de sessões e canais do sistema.
+              <p className="text-xs text-zinc-400">
+                Gerenciamento de assinantes, grade de canais e permissões.
               </p>
             </div>
           </div>
+
           <button
             type="button"
             onClick={onClose}
-            className="p-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white border border-zinc-800 transition-colors cursor-pointer shrink-0"
+            className="p-2 rounded-xl bg-zinc-900/80 hover:bg-zinc-800 text-zinc-400 hover:text-white border border-zinc-800 transition-all duration-200 hover:scale-110 active:scale-95 cursor-pointer shrink-0 group"
+            title="Fechar"
           >
-            <X className="w-4 h-4" />
+            <X className="w-4 h-4 transition-transform duration-200 group-hover:rotate-90" />
           </button>
         </div>
 
-        {/* FEEDBACK BANNER */}
+        {/* FEEDBACK DE AÇÃO */}
         {feedback && (
-          <div className="mt-4 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs flex items-center gap-2">
-            <CheckCircle2 className="w-4 h-4 shrink-0" />
+          <div className="mt-3 p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs flex items-center gap-2 shrink-0">
+            <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-400" />
             <span>{feedback}</span>
           </div>
         )}
 
-        {/* NAVEGAÇÃO POR ABAS DO PAINEL DE ADMINISTRAÇÃO */}
-        <div className="mt-4 flex items-center gap-1.5 p-1 rounded-2xl bg-zinc-900/80 border border-zinc-800 overflow-x-auto">
+        {/* BARRA DE NAVEGAÇÃO ENTRE ABAS */}
+        <div className="mt-3.5 flex items-center gap-1.5 p-1 rounded-xl bg-zinc-900/90 border border-zinc-800/80 shrink-0">
           <button
             type="button"
             id="admin-tab-growth"
             onClick={() => setActiveTab('analytics')}
-            className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+            className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-semibold transition-all duration-200 cursor-pointer ${
               activeTab === 'analytics'
-                ? 'bg-[#00E676] text-black shadow-md font-extrabold'
-                : 'text-zinc-400 hover:text-white hover:bg-zinc-800/60'
+                ? 'bg-emerald-500 text-black shadow-sm font-bold'
+                : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'
             }`}
           >
-            <TrendingUp className="w-4 h-4" />
-            <span>Crescimento (30 Dias)</span>
+            <TrendingUp className="w-3.5 h-3.5" />
+            <span>Visão Geral</span>
+          </button>
+
+          <button
+            type="button"
+            id="admin-tab-channels"
+            onClick={() => setActiveTab('channels')}
+            className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-semibold transition-all duration-200 cursor-pointer ${
+              activeTab === 'channels'
+                ? 'bg-emerald-500 text-black shadow-sm font-bold'
+                : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'
+            }`}
+          >
+            <Tv className="w-3.5 h-3.5" />
+            <span>Canais</span>
             <span
-              className={`text-[9px] px-1.5 py-0.2 rounded-full font-black uppercase ${
-                activeTab === 'analytics' ? 'bg-black/20 text-black' : 'bg-emerald-500/20 text-emerald-300'
+              className={`text-[10px] px-1.5 py-0.2 rounded-md ${
+                activeTab === 'channels' ? 'bg-black/20 text-black font-bold' : 'bg-zinc-800 text-zinc-400'
               }`}
             >
-              Recharts
+              {todosCanais.length}
             </span>
           </button>
 
@@ -137,69 +150,24 @@ export function AdminPanelModal({
             type="button"
             id="admin-tab-session"
             onClick={() => setActiveTab('session')}
-            className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+            className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-semibold transition-all duration-200 cursor-pointer ${
               activeTab === 'session'
-                ? 'bg-[#00E676] text-black shadow-md font-extrabold'
-                : 'text-zinc-400 hover:text-white hover:bg-zinc-800/60'
+                ? 'bg-emerald-500 text-black shadow-sm font-bold'
+                : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'
             }`}
           >
-            <Users className="w-4 h-4" />
-            <span>Sessão & Permissões</span>
-          </button>
-
-          <button
-            type="button"
-            id="admin-tab-channels"
-            onClick={() => setActiveTab('channels')}
-            className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
-              activeTab === 'channels'
-                ? 'bg-[#00E676] text-black shadow-md font-extrabold'
-                : 'text-zinc-400 hover:text-white hover:bg-zinc-800/60'
-            }`}
-          >
-            <Tv className="w-4 h-4" />
-            <span>Grade de Canais</span>
-            <span
-              className={`text-[9px] px-1.5 py-0.2 rounded-full font-bold ${
-                activeTab === 'channels' ? 'bg-black/20 text-black' : 'bg-zinc-800 text-zinc-400'
-              }`}
-            >
-              {todosCanais.length}
-            </span>
+            <Users className="w-3.5 h-3.5" />
+            <span>Permissões</span>
           </button>
         </div>
 
-        {/* CONTEÚDO DA ABA 1: CRESCIMENTO DE ASSINANTES (RECHARTS) */}
-        {activeTab === 'analytics' && (
-          <div className="mt-4 space-y-4 animate-in fade-in duration-200">
-            {/* COMPONENTE DE GRÁFICO RECHARTS DOS ÚLTIMOS 30 DIAS */}
-            <SubscriberGrowthChart
-              onOpenSubscribersModal={() => {
-                onClose();
-                onOpenSubscribers();
-              }}
-            />
-
-            {/* BOTÃO EM DESTAQUE: MEUS ASSINANTES & GERADOR DE TOKENS (SOLICITADO) */}
-            <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-500/15 via-zinc-900 to-emerald-500/10 border border-amber-500/30">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-amber-400/20 text-amber-400 flex items-center justify-center shrink-0 border border-amber-400/40">
-                    <Users className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <h3 className="text-sm font-black text-white">Meus Assinantes & Tokens</h3>
-                      <span className="text-[9px] px-1.5 py-0.5 rounded font-black uppercase bg-[#00E676] text-black">
-                        Tokens 5 Dígitos
-                      </span>
-                    </div>
-                    <p className="text-[11px] text-zinc-300 mt-0.5 max-w-md">
-                      Veja todos os usuários do site, tipo de plano ativo, gere tokens de 5 caracteres alfanuméricos 100% válidos e consulte o histórico completo.
-                    </p>
-                  </div>
-                </div>
-
+        {/* CONTEÚDO COM SCROLL SUAVE */}
+        <div className="flex-1 overflow-y-auto mt-3.5 pr-1 space-y-3.5">
+          {/* ABA 1: VISÃO GERAL & CRESCIMENTO */}
+          {activeTab === 'analytics' && (
+            <div className="space-y-3.5 animate-in fade-in duration-150">
+              {/* ATALHOS RÁPIDOS E DIRETOS */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                 <button
                   type="button"
                   id="admin-btn-open-subscribers"
@@ -207,166 +175,74 @@ export function AdminPanelModal({
                     onClose();
                     onOpenSubscribers();
                   }}
-                  className="px-4 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-500 text-black font-extrabold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-lg shadow-amber-500/20 shrink-0 hover:scale-[1.02] active:scale-98"
+                  className="p-3 rounded-xl bg-zinc-900/80 hover:bg-zinc-850 border border-zinc-800/80 hover:border-zinc-700 flex items-center justify-between text-left transition-all duration-200 hover:scale-[1.01] active:scale-99 cursor-pointer group"
                 >
-                  <Users className="w-4 h-4" />
-                  <span>Ver Meus Assinantes</span>
-                  <KeyRound className="w-3.5 h-3.5 opacity-70" />
-                  <ArrowRight className="w-4 h-4" />
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-lg bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
+                      <Users className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <div className="text-xs font-bold text-white group-hover:text-amber-300 transition-colors">
+                        Gerenciar Assinantes
+                      </div>
+                      <div className="text-[11px] text-zinc-400">
+                        Lista de usuários e gerador de tokens
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center text-zinc-500 group-hover:text-white transition-colors">
+                    <KeyRound className="w-3.5 h-3.5 mr-1" />
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </div>
                 </button>
-              </div>
-            </div>
 
-            {/* ATALHO PLANOS & MÉTODOS DE PAGAMENTO (MULTICAIXA & PAYPAY: 942472983) */}
-            {onOpenPaymentPlans && (
-              <div className="p-3.5 rounded-2xl bg-zinc-900/60 border border-zinc-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-lg bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0">
-                    <CreditCard className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <h4 className="text-xs font-bold text-white">Planos de Assinatura & Pagamentos</h4>
-                    <p className="text-[11px] text-zinc-400">
-                      Multicaixa Express & PayPay: <span className="text-emerald-400 font-mono font-bold">{PAYMENT_CONFIG.phoneFormatted}</span>
-                    </p>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  id="admin-btn-open-plans"
-                  onClick={() => {
+                {onOpenPaymentPlans && (
+                  <button
+                    type="button"
+                    id="admin-btn-open-plans"
+                    onClick={() => {
+                      onClose();
+                      onOpenPaymentPlans();
+                    }}
+                    className="p-3 rounded-xl bg-zinc-900/80 hover:bg-zinc-850 border border-zinc-800/80 hover:border-zinc-700 flex items-center justify-between text-left transition-all duration-200 hover:scale-[1.01] active:scale-99 cursor-pointer group"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-lg bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0">
+                        <CreditCard className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <div className="text-xs font-bold text-white group-hover:text-emerald-300 transition-colors">
+                          Tabela de Planos
+                        </div>
+                        <div className="text-[11px] text-zinc-400">
+                          Preços, prazos e métodos de pagamento
+                        </div>
+                      </div>
+                    </div>
+                    <ArrowRight className="w-3.5 h-3.5 text-zinc-500 group-hover:text-white transition-colors" />
+                  </button>
+                )}
+              </div>
+
+              {/* GRÁFICO RECHARTS */}
+              <div className="rounded-xl border border-zinc-800/70 overflow-hidden">
+                <SubscriberGrowthChart
+                  onOpenSubscribersModal={() => {
                     onClose();
-                    onOpenPaymentPlans();
+                    onOpenSubscribers();
                   }}
-                  className="px-3 py-1.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-emerald-300 font-bold text-xs border border-zinc-700 flex items-center justify-center gap-1.5 transition-all cursor-pointer hover:scale-105 active:scale-95 shrink-0"
-                >
-                  <CreditCard className="w-3.5 h-3.5 text-emerald-400" />
-                  <span>Ver Tabela de Preços</span>
-                </button>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* CONTEÚDO DA ABA 2: SESSÃO & MATRIZ DE PERMISSÕES */}
-        {activeTab === 'session' && (
-          <div className="mt-4 space-y-4 animate-in fade-in duration-200">
-            {/* CARD DE SESSÃO ATIVA & ALTERNADOR RÁPIDO */}
-            <div className="p-4 rounded-2xl bg-zinc-900/60 border border-zinc-800">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div>
-                  <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">
-                    Sessão Conectada
-                  </span>
-                  <div className="text-sm font-bold text-white mt-0.5">
-                    {userProfile?.displayName || user?.email?.split('@')[0]}
-                  </div>
-                  <div className="text-xs text-zinc-400">{user?.email}</div>
-                </div>
-
-                {/* TOGGLE INTERATIVO DE SESSÃO */}
-                <div className="flex items-center gap-1.5 p-1 rounded-xl bg-zinc-950 border border-zinc-800">
-                  <button
-                    type="button"
-                    id="role-switch-user"
-                    disabled={switching}
-                    onClick={() => handleRoleToggle('user')}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                      role === 'user'
-                        ? 'bg-[#00E676] text-black shadow-sm'
-                        : 'text-zinc-400 hover:text-white'
-                    }`}
-                  >
-                    Usuário Normal
-                  </button>
-                  <button
-                    type="button"
-                    id="role-switch-admin"
-                    disabled={switching}
-                    onClick={() => handleRoleToggle('admin')}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                      role === 'admin'
-                        ? 'bg-amber-400 text-black shadow-sm'
-                        : 'text-zinc-400 hover:text-white'
-                    }`}
-                  >
-                    Administrador
-                  </button>
-                </div>
+                />
               </div>
             </div>
+          )}
 
-            {/* MATRIZ COMPARATIVA DE PERMISSÕES */}
-            <div>
-              <h3 className="text-xs font-bold text-zinc-400 uppercase tracking-wider mb-2">
-                Matriz de Permissões das Sessões
-              </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                {/* Bloco Usuário Normal */}
-                <div className="p-3.5 rounded-2xl bg-zinc-900/40 border border-zinc-800/80">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Users className="w-4 h-4 text-emerald-400" />
-                    <span className="text-xs font-bold text-white">Sessão: Usuário Normal</span>
-                  </div>
-                  <ul className="space-y-1.5 text-[11px] text-zinc-400">
-                    <li className="flex items-center gap-2">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                      <span>Assistir transmissões HLS ao vivo</span>
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                      <span>Alternar áudios e servidores espelho</span>
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                      <span>Favoritar e filtrar canais esportivos</span>
-                    </li>
-                    <li className="flex items-center gap-2 text-zinc-500">
-                      <XCircle className="w-3.5 h-3.5 text-red-500/80" />
-                      <span>Adicionar ou remover canais da grade</span>
-                    </li>
-                  </ul>
-                </div>
-
-                {/* Bloco Administrador */}
-                <div className="p-3.5 rounded-2xl bg-amber-950/15 border border-amber-500/20">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Crown className="w-4 h-4 text-amber-400" />
-                    <span className="text-xs font-bold text-amber-300">Sessão: Administrador</span>
-                  </div>
-                  <ul className="space-y-1.5 text-[11px] text-zinc-300">
-                    <li className="flex items-center gap-2">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                      <span>Todas as permissões do usuário comum</span>
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                      <span>Cadastrar novos canais M3U8</span>
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                      <span>Excluir canais adicionados</span>
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                      <span>Acesso ao Painel Admin e diagnósticos</span>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* CONTEÚDO DA ABA 3: GRADE DE CANAIS */}
-        {activeTab === 'channels' && (
-          <div className="mt-4 space-y-4 animate-in fade-in duration-200">
-            <div className="flex items-center justify-between mb-2.5">
-              <h3 className="text-xs font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-1.5">
-                <Tv className="w-3.5 h-3.5 text-[#00E676]" />
-                Grade de Canais ({todosCanais.length} ativos)
-              </h3>
-              {isAdmin && (
+          {/* ABA 2: CANAIS */}
+          {activeTab === 'channels' && (
+            <div className="space-y-3 animate-in fade-in duration-150">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-zinc-400">
+                  Grade Geral ({todosCanais.length} canais ativos)
+                </span>
                 <button
                   type="button"
                   id="admin-btn-add-channel"
@@ -374,64 +250,112 @@ export function AdminPanelModal({
                     onClose();
                     onOpenAddChannel();
                   }}
-                  className="px-3 py-1.5 rounded-xl bg-[#00E676] hover:bg-[#00c864] text-black font-extrabold text-xs flex items-center gap-1.5 transition-all cursor-pointer"
+                  className="px-3 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-xs flex items-center gap-1.5 transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer shadow-sm"
                 >
                   <Plus className="w-3.5 h-3.5" />
-                  <span>Adicionar Canal</span>
+                  <span>Novo Canal</span>
                 </button>
-              )}
-            </div>
+              </div>
 
-            <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
-              {customChannels.length === 0 ? (
-                <div className="p-4 rounded-xl bg-zinc-900/30 border border-zinc-800/60 text-center text-xs text-zinc-500">
-                  Nenhum canal customizado adicionado ainda. Os {todosCanais.length} canais padrão estão carregados.
-                </div>
-              ) : (
-                customChannels.map((c) => (
-                  <div
-                    key={c.id}
-                    className="flex items-center justify-between p-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs"
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-2 h-2 rounded-full bg-emerald-400" />
-                      <span className="font-bold text-white">{c.nome}</span>
-                      <span className="text-[10px] text-zinc-500 font-mono">
-                        {c.categoria || 'Geral'}
-                      </span>
-                    </div>
-                    {isAdmin && (
+              <div className="space-y-1.5 max-h-72 overflow-y-auto pr-1">
+                {customChannels.length === 0 ? (
+                  <div className="p-4 rounded-xl bg-zinc-900/40 border border-zinc-800/60 text-center text-xs text-zinc-400">
+                    Nenhum canal personalizado criado. Os {todosCanais.length} canais padrão estão ativos na transmissão.
+                  </div>
+                ) : (
+                  customChannels.map((c) => (
+                    <div
+                      key={c.id}
+                      className="flex items-center justify-between p-2.5 rounded-xl bg-zinc-900/70 border border-zinc-800/70 text-xs hover:border-zinc-700 transition-colors"
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-2 h-2 rounded-full bg-emerald-400" />
+                        <span className="font-semibold text-white">{c.nome}</span>
+                        <span className="text-[10px] text-zinc-400 font-mono">
+                          {c.categoria || 'Geral'}
+                        </span>
+                      </div>
                       <button
                         type="button"
                         onClick={() => onRemoveCustomChannel(c.id)}
-                        className="p-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 transition-colors cursor-pointer"
-                        title="Excluir canal"
+                        className="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 hover:text-rose-300 transition-colors cursor-pointer"
+                        title="Remover canal"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
-                    )}
-                  </div>
-                ))
-              )}
+                    </div>
+                  ))
+                )}
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* STATUS DO AMBIENTE */}
-        <div className="mt-5 pt-4 border-t border-zinc-850 flex flex-wrap items-center justify-between gap-3 text-[11px] text-zinc-500">
+          {/* ABA 3: PERMISSÕES & SESSÃO */}
+          {activeTab === 'session' && (
+            <div className="space-y-3 animate-in fade-in duration-150">
+              <div className="p-3.5 rounded-xl bg-zinc-900/60 border border-zinc-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                  <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">
+                    Conta Ativa
+                  </span>
+                  <div className="text-sm font-bold text-white mt-0.5">
+                    {userProfile?.displayName || user?.email?.split('@')[0]}
+                  </div>
+                  <div className="text-xs text-zinc-400">{user?.email}</div>
+                </div>
+
+                {/* ALTERNADOR DE MODO */}
+                <div className="flex items-center gap-1 p-1 rounded-xl bg-zinc-950 border border-zinc-800">
+                  <button
+                    type="button"
+                    id="role-switch-user"
+                    disabled={switching}
+                    onClick={() => handleRoleToggle('user')}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                      role === 'user'
+                        ? 'bg-emerald-500 text-black font-bold'
+                        : 'text-zinc-400 hover:text-white'
+                    }`}
+                  >
+                    Usuário Comum
+                  </button>
+                  <button
+                    type="button"
+                    id="role-switch-admin"
+                    disabled={switching}
+                    onClick={() => handleRoleToggle('admin')}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                      role === 'admin'
+                        ? 'bg-amber-400 text-black font-bold'
+                        : 'text-zinc-400 hover:text-white'
+                    }`}
+                  >
+                    Administrador
+                  </button>
+                </div>
+              </div>
+
+              {/* RESUMO SIMPLIFICADO DO PAPEL */}
+              <div className="p-3 rounded-xl bg-zinc-900/40 border border-zinc-800/80 text-xs text-zinc-400 flex items-center justify-between">
+                <span>Permissão ativa:</span>
+                <span className="font-semibold text-zinc-200">
+                  {role === 'admin' ? 'Acesso administrativo irrestrito' : 'Visualização como espectador'}
+                </span>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* RODAPÉ MINIMALISTA */}
+        <div className="mt-3 pt-3 border-t border-zinc-800/80 flex items-center justify-between text-[11px] text-zinc-400 shrink-0">
           <div className="flex items-center gap-2">
-            <Activity className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
-            <span>Motor HLS e Firestore: Operacionais</span>
+            <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            <span>Sistema Operacional</span>
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="px-4 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-300 font-semibold text-xs border border-zinc-700/60 transition-colors cursor-pointer"
-          >
-            Fechar Painel
-          </button>
+          <span className="text-zinc-400 font-mono">Worscoi Channel</span>
         </div>
       </div>
     </div>
   );
 }
+

@@ -32,6 +32,7 @@ import {
   clearStoredRecentChannels,
   CanalRecente,
 } from '@/utils/recentChannelsUtils';
+import { recordChannelSelection } from '@/services/channelSelectionLogService';
 
 const LOCAL_STORAGE_FAVORITES_KEY = 'playsports_favorites';
 const LOCAL_STORAGE_CUSTOM_KEY = 'playsports_custom_channels';
@@ -54,7 +55,8 @@ export default function Home() {
   const [canais, setCanais] = useState<Canal[]>(CANAIS_PADRAO);
   const [customChannels, setCustomChannels] = useState<Canal[]>([]);
   const [recentChannels, setRecentChannels] = useState<CanalRecente[]>([]);
-  const [canalAtivo, setCanalAtivo] = useState<Canal | null>(CANAIS_PADRAO[0] || null);
+  // Por definição, o player dos canais inicia sem reprodução antes de o usuário escolher seu canal
+  const [canalAtivo, setCanalAtivo] = useState<Canal | null>(null);
   const [streamIndex, setStreamIndex] = useState(0);
   const [filtroAtivo, setFiltroAtivo] = useState<FiltroAtivo>('Todos');
   const [favorites, setFavorites] = useState<string[]>([]);
@@ -141,7 +143,6 @@ export default function Home() {
             clean.push(item);
           }
           setCanais(clean);
-          setCanalAtivo((prev) => prev || clean[0]);
         }
       })
       .catch(() => {
@@ -165,13 +166,6 @@ export default function Home() {
     }
     return result;
   }, [customChannels, canais]);
-
-  // Garante que haja um canal ativo
-  useEffect(() => {
-    if (!canalAtivo && todosCanais.length > 0) {
-      setCanalAtivo(todosCanais[0]);
-    }
-  }, [todosCanais, canalAtivo]);
 
   // Checa se o canal está favoritado
   const isCanalFavorited = useCallback(
@@ -225,19 +219,21 @@ export default function Home() {
       setIsMobileMenuOpen(false);
       setIsMiniPlayerDismissed(false);
 
-      // Salva no localStorage como canal recente
+      // Salva no localStorage como canal recente e registra no log de seleções da semana
       const updated = addChannelToRecents(canal);
       setRecentChannels(updated);
+      recordChannelSelection(canal, user?.uid);
     }, 0);
-  }, []);
+  }, [user?.uid]);
 
   // Sincroniza canais recentes sempre que o canal ativo mudar
   useEffect(() => {
     if (canalAtivo && (canalAtivo.id || canalAtivo.url)) {
       const updated = addChannelToRecents(canalAtivo);
       setRecentChannels(updated);
+      recordChannelSelection(canalAtivo, user?.uid);
     }
-  }, [canalAtivo]);
+  }, [canalAtivo, user?.uid]);
 
   const handleClearRecentChannels = useCallback(() => {
     clearStoredRecentChannels();
@@ -254,14 +250,16 @@ export default function Home() {
   );
 
   // Navegação de canais (Zapping Anterior / Próximo)
-  const currentCanalIndex = todosCanais.findIndex(
-    (c) => (canalAtivo?.id && c.id ? c.id === canalAtivo.id : c.url === canalAtivo?.url)
-  );
+  const currentCanalIndex = canalAtivo
+    ? todosCanais.findIndex(
+        (c) => (canalAtivo.id && c.id ? c.id === canalAtivo.id : c.url === canalAtivo.url)
+      )
+    : -1;
 
   const handleNextCanal = useCallback(() => {
     setTimeout(() => {
       if (todosCanais.length === 0) return;
-      const nextIdx = (currentCanalIndex + 1) % todosCanais.length;
+      const nextIdx = currentCanalIndex >= 0 ? (currentCanalIndex + 1) % todosCanais.length : 0;
       handleSelectCanal(todosCanais[nextIdx]);
     }, 0);
   }, [currentCanalIndex, todosCanais, handleSelectCanal]);
@@ -269,7 +267,10 @@ export default function Home() {
   const handlePrevCanal = useCallback(() => {
     setTimeout(() => {
       if (todosCanais.length === 0) return;
-      const prevIdx = (currentCanalIndex - 1 + todosCanais.length) % todosCanais.length;
+      const prevIdx =
+        currentCanalIndex >= 0
+          ? (currentCanalIndex - 1 + todosCanais.length) % todosCanais.length
+          : todosCanais.length - 1;
       handleSelectCanal(todosCanais[prevIdx]);
     }, 0);
   }, [currentCanalIndex, todosCanais, handleSelectCanal]);

@@ -359,6 +359,7 @@ export function WorscoiFilmotecaView({ onBackToTV }: WorscoiFilmotecaViewProps) 
   const [busca, setBusca] = useState('');
   const [generoAtivo, setGeneroAtivo] = useState<string>('todos');
   const [modoVisualizacao, setModoVisualizacao] = useState<'secoes' | 'grelha'>('secoes');
+  const [limiteGrelha, setLimiteGrelha] = useState<number>(36);
   const [tipoFiltro, setTipoFiltro] = useState<
     'todos' | 'imdb' | 'animacao' | 'filme' | 'serie' | 'anime' | 'classico' | 'hbo' | 'disney' | 'netflix' | 'crunchyroll'
   >('todos');
@@ -626,7 +627,8 @@ export function WorscoiFilmotecaView({ onBackToTV }: WorscoiFilmotecaViewProps) 
       });
       return {
         ...sec,
-        filmes: itens
+        filmes: itens.slice(0, 16),
+        totalCount: itens.length
       };
     }).filter((sec) => sec.filmes.length > 0);
   }, [filmesBase, busca]);
@@ -1413,25 +1415,42 @@ export function WorscoiFilmotecaView({ onBackToTV }: WorscoiFilmotecaViewProps) 
             </div>
           )}
 
-          {/* CASO 4: MODO GRELHA GERAL COMPLETA */}
+          {/* CASO 4: MODO GRELHA GERAL COMPLETA (OTIMIZADO COM PAGINAÇÃO DINÂMICA) */}
           {!busca && generoAtivo === 'todos' && modoVisualizacao === 'grelha' && (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
-              {filmesFiltrados.map((filme) => (
-                <FilmeCard
-                  key={`all-grid-${filme.id}`}
-                  filme={filme}
-                  isAtivo={filmeAtivo?.id === filme.id}
-                  onSelect={handleSelecionarFilme}
-                  onOpenImdb={abrirModalImdb}
-                  onPlayDirect={handlePlayDireto}
-                  onOpenTeatro={(f) => {
-                    setFilmeSelecionado(f);
-                    setModoPlayer(obterServidorPadrao(f));
-                    setModalTemporada(1);
-                    setModalEpisodio(1);
-                  }}
-                />
-              ))}
+            <div className="flex flex-col gap-5">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
+                {filmesFiltrados.slice(0, limiteGrelha).map((filme) => (
+                  <FilmeCard
+                    key={`all-grid-${filme.id}`}
+                    filme={filme}
+                    isAtivo={filmeAtivo?.id === filme.id}
+                    onSelect={handleSelecionarFilme}
+                    onOpenImdb={abrirModalImdb}
+                    onPlayDirect={handlePlayDireto}
+                    onOpenTeatro={(f) => {
+                      setFilmeSelecionado(f);
+                      setModoPlayer(obterServidorPadrao(f));
+                      setModalTemporada(1);
+                      setModalEpisodio(1);
+                    }}
+                  />
+                ))}
+              </div>
+
+              {filmesFiltrados.length > limiteGrelha && (
+                <div className="flex flex-col items-center justify-center py-4 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setLimiteGrelha((prev) => prev + 36)}
+                    className="px-6 py-2.5 rounded-full bg-zinc-900 hover:bg-zinc-800 text-zinc-200 hover:text-white border border-zinc-800 text-xs font-semibold transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer shadow-md"
+                  >
+                    Carregar Mais Filmes (+36 títulos)
+                  </button>
+                  <span className="text-[11px] text-zinc-500 font-mono">
+                    Exibindo {Math.min(limiteGrelha, filmesFiltrados.length)} de {filmesFiltrados.length} filmes
+                  </span>
+                </div>
+              )}
             </div>
           )}
         </div>

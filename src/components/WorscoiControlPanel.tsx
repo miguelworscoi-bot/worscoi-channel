@@ -1,36 +1,15 @@
 'use client';
 import React, { useState } from 'react';
 import { ArrowRight, KeyRound, Check } from 'lucide-react';
-import {
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-  CartesianGrid,
-} from 'recharts';
 import { SubscriptionPlanId } from '@/types';
+import { WorscoiAnalyticsDashboard } from './WorscoiAnalyticsDashboard';
+import { WeeklyMostWatchedChannelsBarChart } from './WeeklyMostWatchedChannelsBarChart';
 
 interface WorscoiControlPanelProps {
   onNavigateToSubscribers: () => void;
   onOpenTokenGenerator: () => void;
   onSelectPlan?: (planId: SubscriptionPlanId) => void;
 }
-
-const REVENUE_DATA = [
-  { hora: '9h', valor: 4200, label: 'R$ 4.200,00' },
-  { hora: '10h', valor: 5900, label: 'R$ 5.900,00' },
-  { hora: '11h', valor: 4800, label: 'R$ 4.800,00' },
-  { hora: '12h', valor: 800, label: 'R$ 800,00' },
-  { hora: '13h', valor: 2100, label: 'R$ 2.100,00' },
-  { hora: '14h', valor: 1100, label: 'R$ 1.100,00' },
-  { hora: '15h', valor: 3800, label: 'R$ 3.800,00' },
-  { hora: '16h', valor: 2300, label: 'R$ 2.300,00' },
-  { hora: '17h', valor: 1800, label: 'R$ 1.800,00' },
-  { hora: '18h', valor: 2200, label: 'R$ 2.200,00' },
-  { hora: '19h', valor: 1900, label: 'R$ 1.900,00' },
-];
 
 export function WorscoiControlPanel({
   onNavigateToSubscribers,
@@ -118,10 +97,10 @@ export function WorscoiControlPanel({
           <button
             type="button"
             onClick={onOpenTokenGenerator}
-            className="w-full h-44 rounded-2xl border border-zinc-800 hover:border-zinc-700 bg-zinc-900/40 hover:bg-zinc-800/40 transition-all cursor-pointer flex flex-col items-center justify-center p-5 text-center group shadow-sm"
+            className="w-full h-44 rounded-2xl border border-zinc-800 hover:border-zinc-700 bg-zinc-900/40 hover:bg-zinc-800/40 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] cursor-pointer flex flex-col items-center justify-center p-5 text-center group shadow-sm"
           >
-            <div className="w-10 h-10 rounded-full bg-zinc-800/80 border border-zinc-700 flex items-center justify-center text-zinc-200 group-hover:scale-105 transition mb-2">
-              <KeyRound className="w-5 h-5 text-zinc-300" />
+            <div className="tiktok-icon-badge w-12 h-12 rounded-full bg-zinc-800/90 border border-zinc-700/80 flex items-center justify-center text-zinc-200 group-hover:scale-120 group-hover:rotate-12 group-hover:border-zinc-500 group-hover:text-white transition-all duration-200 mb-2.5 shadow-md">
+              <KeyRound className="w-5 h-5 text-zinc-300 group-hover:text-white transition-colors" />
             </div>
             <span className="text-sm font-semibold text-zinc-100 group-hover:text-white transition tracking-tight">
               Gerar Chave Token
@@ -184,94 +163,14 @@ export function WorscoiControlPanel({
         </div>
       </div>
 
-      {/* SEÇÃO DO MEIO: CRESCIMENTO DE ASSINANTES */}
-      <div className="space-y-4 pt-4 border-t border-zinc-900/80">
-        <div className="text-center">
-          <h2 className="text-sm font-semibold text-zinc-200 tracking-tight">
-            Métricas de Assinantes & Receita
-          </h2>
-        </div>
+      {/* SEÇÃO EM DESTAQUE: GRÁFICO DE BARRAS DOS CANAIS MAIS ASSISTIDOS DA SEMANA */}
+      <div className="pt-2 border-t border-zinc-900/80">
+        <WeeklyMostWatchedChannelsBarChart />
+      </div>
 
-        {/* 4 CARDS DE MÉTRICA COM DESIGN SÓBRIO */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
-          <div className="rounded-2xl border border-zinc-800/80 bg-zinc-900/40 p-4 text-center shadow-sm">
-            <span className="text-[11px] font-medium text-zinc-400 block">Total</span>
-            <span className="text-xl font-bold text-white mt-1 block tracking-tight">
-              1.428
-            </span>
-          </div>
-
-          <div className="rounded-2xl border border-zinc-800/80 bg-zinc-900/40 p-4 text-center shadow-sm">
-            <span className="text-[11px] font-medium text-zinc-400 block">Novos</span>
-            <span className="text-xl font-bold text-emerald-400 mt-1 block tracking-tight">
-              +94
-            </span>
-          </div>
-
-          <div className="rounded-2xl border border-zinc-800/80 bg-zinc-900/40 p-4 text-center shadow-sm">
-            <span className="text-[11px] font-medium text-zinc-400 block">Assinantes Pagos</span>
-            <span className="text-xl font-bold text-white mt-1 block tracking-tight">
-              1.120
-            </span>
-          </div>
-
-          <div className="rounded-2xl border border-zinc-800/80 bg-zinc-900/40 p-4 text-center shadow-sm">
-            <span className="text-[11px] font-medium text-zinc-400 block">Taxa de Conversão</span>
-            <span className="text-xl font-bold text-zinc-200 mt-1 block tracking-tight">
-              78.4%
-            </span>
-          </div>
-        </div>
-
-        {/* GRÁFICO DE CRESCIMENTO DE ASSINANTES / RECEITA */}
-        <div className="w-full max-w-2xl mx-auto rounded-2xl bg-zinc-950/40 border border-zinc-800/60 p-4 sm:p-5">
-          <div className="h-56 sm:h-64 w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={REVENUE_DATA} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
-                <defs>
-                  <linearGradient id="curveFill" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#71717a" stopOpacity={0.4} />
-                    <stop offset="95%" stopColor="#71717a" stopOpacity={0.0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#27272a" />
-                <XAxis
-                  dataKey="hora"
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fill: '#71717a', fontSize: 11, fontWeight: 500 }}
-                />
-                <YAxis
-                  domain={[0, 6000]}
-                  ticks={[0, 2000, 4000, 6000]}
-                  axisLine={false}
-                  tickLine={false}
-                  tickFormatter={(val) => `R$ ${val.toLocaleString('pt-BR')}`}
-                  tick={{ fill: '#71717a', fontSize: 10, fontWeight: 500 }}
-                />
-                <Tooltip
-                  formatter={(val: number) => [`R$ ${val.toLocaleString('pt-BR')},00`, 'Receita']}
-                  labelFormatter={(label) => `Horário: ${label}`}
-                  contentStyle={{
-                    backgroundColor: '#18181b',
-                    borderColor: '#27272a',
-                    borderRadius: '8px',
-                    color: '#fff',
-                    fontSize: '11px',
-                  }}
-                />
-                <Area
-                  type="monotone"
-                  dataKey="valor"
-                  stroke="#d4d4d8"
-                  strokeWidth={2}
-                  fillOpacity={1}
-                  fill="url(#curveFill)"
-                />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
+      {/* SEÇÃO PRINCIPAL DE INTELIGÊNCIA ANALÍTICA & MÉTRICAS */}
+      <div className="pt-2 border-t border-zinc-900/80">
+        <WorscoiAnalyticsDashboard onNavigateToSubscribers={onNavigateToSubscribers} />
       </div>
 
       {/* SEÇÃO INFERIOR: BOTÃO VER ASSINANTES */}
@@ -279,10 +178,10 @@ export function WorscoiControlPanel({
         <button
           type="button"
           onClick={onNavigateToSubscribers}
-          className="px-5 py-2.5 rounded-full bg-zinc-100 hover:bg-white text-zinc-950 font-semibold text-xs transition cursor-pointer flex items-center gap-1.5 active:scale-95 shadow-sm"
+          className="group px-5 py-2.5 rounded-full bg-zinc-100 hover:bg-white text-zinc-950 font-bold text-xs transition-all duration-200 cursor-pointer flex items-center gap-2 hover:scale-105 active:scale-95 shadow-md"
         >
           <span>Ver Assinantes</span>
-          <ArrowRight className="w-3.5 h-3.5" />
+          <ArrowRight className="w-3.5 h-3.5 transition-transform duration-200 group-hover:translate-x-1 group-hover:scale-110" />
         </button>
       </div>
     </div>

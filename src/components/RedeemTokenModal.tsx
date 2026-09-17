@@ -6,10 +6,7 @@ import {
   AlertCircle,
   X,
   Sparkles,
-  ShieldCheck,
-  Clock,
-  ArrowRight,
-  Tv,
+  ArrowRight
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { redeemAccessToken, PLANS } from '@/services/subscriptionService';
@@ -42,7 +39,6 @@ export function RedeemTokenModal({
   const currentPlanInfo = PLANS[currentPlanId] || PLANS.free;
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // Mantém apenas letras e números, limitados a 5 caracteres maiúsculos
     const val = e.target.value.replace(/[^a-zA-Z0-9]/g, '').toUpperCase().slice(0, 5);
     setTokenCode(val);
     if (errorMsg) setErrorMsg(null);
@@ -51,7 +47,7 @@ export function RedeemTokenModal({
   const handleRedeem = async (e: React.FormEvent) => {
     e.preventDefault();
     if (tokenCode.length !== 5) {
-      setErrorMsg('O código do token deve conter exatamente 5 caracteres.');
+      setErrorMsg('Insira o código completo de 5 caracteres.');
       return;
     }
 
@@ -60,12 +56,11 @@ export function RedeemTokenModal({
 
     const currentUserData = {
       uid: user?.uid || userProfile?.id || 'guest_' + Date.now(),
-      email: user?.email || userProfile?.email || 'espectador@playsports.tv',
+      email: user?.email || userProfile?.email || 'espectador@worscoi.tv',
       displayName: userProfile?.displayName || 'Espectador',
     };
 
     const res = await redeemAccessToken(tokenCode, currentUserData);
-
     setLoading(false);
 
     if (res.success && res.plan) {
@@ -92,87 +87,56 @@ export function RedeemTokenModal({
   return (
     <div
       id="redeem-token-backdrop"
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4 overflow-y-auto"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 overflow-y-auto"
       onClick={onClose}
     >
       <div
         id="redeem-token-modal"
-        className="relative w-full max-w-lg bg-[#0b0b10] border border-zinc-800/80 rounded-3xl p-6 sm:p-7 shadow-2xl shadow-black/90 ring-1 ring-white/10 my-8 animate-in fade-in zoom-in-95 duration-200"
+        className="relative w-full max-w-sm bg-[#0d0f14] border border-zinc-800/90 rounded-2xl p-5 sm:p-6 shadow-2xl shadow-black/90 ring-1 ring-white/5 my-auto animate-in fade-in zoom-in-95 duration-200 select-none"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* CABEÇALHO */}
-        <div className="flex items-start justify-between pb-4 border-b border-zinc-850">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-[#00E676]/10 border border-[#00E676]/30 flex items-center justify-center text-[#00E676]">
-              <KeyRound className="w-6 h-6" />
+        {/* CABEÇALHO LIMPO */}
+        <div className="flex items-center justify-between gap-3 pb-3.5 border-b border-zinc-800/80">
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-xl bg-zinc-800 border border-zinc-700/60 flex items-center justify-center text-zinc-200 shrink-0">
+              <KeyRound className="w-4 h-4 text-emerald-400" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <h2 className="text-lg font-black text-white tracking-tight">
-                  Ativar Código de Acesso
-                </h2>
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                  5 Dígitos
-                </span>
-              </div>
-              <p className="text-xs text-zinc-400 mt-0.5">
-                Digite o token oficial gerado pelo administrador para liberar seu plano.
+              <h2 className="text-base font-bold text-white tracking-tight">
+                Ativar Código
+              </h2>
+              <p className="text-xs text-zinc-400">
+                Digite seu token de 5 dígitos para liberar o acesso.
               </p>
             </div>
           </div>
+
           <button
             type="button"
             onClick={onClose}
-            className="p-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white border border-zinc-800 transition-colors cursor-pointer"
+            className="p-2 rounded-xl bg-zinc-900/80 hover:bg-zinc-800 text-zinc-400 hover:text-white border border-zinc-800 transition-all duration-200 hover:scale-110 active:scale-95 cursor-pointer shrink-0 group"
+            title="Fechar"
           >
-            <X className="w-4 h-4" />
+            <X className="w-4 h-4 transition-transform duration-200 group-hover:rotate-90" />
           </button>
         </div>
 
-        {/* STATUS DO PLANO ATUAL */}
-        <div className="mt-4 p-3.5 rounded-2xl bg-zinc-900/60 border border-zinc-850 flex items-center justify-between">
-          <div>
-            <span className="text-[10px] uppercase tracking-wider font-bold text-zinc-400">
-              Seu Plano Atual
-            </span>
-            <div className="text-sm font-black text-white flex items-center gap-2 mt-0.5">
-              <span>{currentPlanInfo.name}</span>
-              <span
-                className={`px-2 py-0.5 rounded-md text-[10px] font-extrabold border ${currentPlanInfo.badgeBg} ${currentPlanInfo.badgeText} ${currentPlanInfo.badgeBorder}`}
-              >
-                {currentPlanInfo.badge}
-              </span>
-            </div>
-          </div>
-          {userProfile?.planExpiresAt && (
-            <div className="text-right">
-              <span className="text-[10px] uppercase tracking-wider font-bold text-zinc-400">
-                Válido Até
-              </span>
-              <div className="text-xs font-mono text-zinc-300 flex items-center gap-1 mt-0.5">
-                <Clock className="w-3 h-3 text-emerald-400" />
-                {new Date(userProfile.planExpiresAt).toLocaleDateString('pt-BR')}
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* SUCESSO OU FORMULÁRIO */}
+        {/* FEEDBACK DE SUCESSO OU FORMULÁRIO DE ENTRADA */}
         {successResult ? (
-          <div className="mt-6 space-y-4">
-            <div className="p-5 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-center">
-              <div className="w-12 h-12 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto mb-3">
-                <CheckCircle2 className="w-7 h-7" />
+          <div className="mt-4 space-y-4 text-center">
+            <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30">
+              <div className="w-10 h-10 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto mb-2">
+                <CheckCircle2 className="w-6 h-6" />
               </div>
-              <h3 className="text-base font-extrabold text-white">
+              <h3 className="text-sm font-bold text-white">
                 Plano Ativado com Sucesso!
               </h3>
-              <p className="text-xs text-emerald-300 mt-1 max-w-sm mx-auto">
+              <p className="text-xs text-emerald-300/90 mt-1">
                 {successResult.message}
               </p>
-              <div className="mt-4 inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-950/80 border border-emerald-700/50 text-emerald-200 text-xs font-bold">
-                <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                <span>Todos os canais do plano foram liberados imediatamente</span>
+              <div className="mt-3 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-950/60 border border-emerald-700/40 text-emerald-200 text-[11px] font-medium">
+                <Sparkles className="w-3 h-3 text-amber-400" />
+                <span>Canais e conteúdos liberados</span>
               </div>
             </div>
 
@@ -180,28 +144,22 @@ export function RedeemTokenModal({
               <button
                 type="button"
                 onClick={resetForm}
-                className="flex-1 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-300 text-xs font-bold border border-zinc-800 transition-colors cursor-pointer"
+                className="flex-1 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-300 text-xs font-semibold border border-zinc-800 transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer"
               >
-                Ativar Outro Código
+                Outro Código
               </button>
               <button
                 type="button"
                 onClick={onClose}
-                className="flex-1 py-2.5 rounded-xl bg-[#00E676] hover:bg-[#00c864] text-black text-xs font-black transition-colors cursor-pointer"
+                className="flex-1 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black text-xs font-bold transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer shadow-md"
               >
                 Assistir Agora
               </button>
             </div>
           </div>
         ) : (
-          <form onSubmit={handleRedeem} className="mt-5 space-y-4">
+          <form onSubmit={handleRedeem} className="mt-4 space-y-3.5">
             <div>
-              <label
-                htmlFor="token-code-input"
-                className="block text-xs font-bold text-zinc-300 mb-1.5"
-              >
-                Código do Token (5 Caracteres)
-              </label>
               <div className="relative">
                 <input
                   id="token-code-input"
@@ -209,26 +167,19 @@ export function RedeemTokenModal({
                   maxLength={5}
                   value={tokenCode}
                   onChange={handleInputChange}
-                  placeholder="EX: V7K9M"
+                  placeholder="DIGITE O CÓDIGO"
                   autoFocus
-                  className="w-full text-center tracking-[0.4em] font-mono text-2xl font-black px-4 py-3.5 rounded-2xl bg-zinc-900/90 border-2 border-zinc-800 focus:border-[#00E676] text-white placeholder:text-zinc-600 focus:outline-none transition-all"
+                  className="w-full text-center tracking-[0.35em] font-mono text-xl font-black px-4 py-3 rounded-xl bg-zinc-900/90 border border-zinc-700/80 focus:border-emerald-500 text-white placeholder:text-zinc-600 focus:outline-none transition-all"
                 />
-                <div className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-mono font-bold text-zinc-500">
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-mono font-bold text-zinc-500">
                   {tokenCode.length}/5
                 </div>
               </div>
-              <p className="text-[11px] text-zinc-500 mt-1.5 flex items-center gap-1.5">
-                <ShieldCheck className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
-                <span>
-                  Apenas códigos gerados e registrados no histórico do administrador são válidos.
-                  Tentativas aleatórias são bloqueadas.
-                </span>
-              </p>
             </div>
 
             {errorMsg && (
-              <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs flex items-start gap-2.5 animate-in fade-in duration-150">
-                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+              <div className="p-2.5 rounded-lg bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs flex items-center gap-2">
+                <AlertCircle className="w-3.5 h-3.5 shrink-0 text-rose-400" />
                 <span>{errorMsg}</span>
               </div>
             )}
@@ -236,53 +187,36 @@ export function RedeemTokenModal({
             <button
               type="submit"
               disabled={tokenCode.length !== 5 || loading}
-              className={`w-full py-3.5 rounded-2xl font-black text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-lg ${
+              className={`w-full py-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all duration-200 cursor-pointer shadow-md group ${
                 tokenCode.length === 5 && !loading
-                  ? 'bg-[#00E676] hover:bg-[#00c864] text-black shadow-[#00E676]/20'
-                  : 'bg-zinc-850 text-zinc-500 cursor-not-allowed border border-zinc-800'
+                  ? 'bg-emerald-500 hover:bg-emerald-400 text-black hover:scale-[1.02] active:scale-98'
+                  : 'bg-zinc-800 text-zinc-500 cursor-not-allowed border border-zinc-700/50'
               }`}
             >
               {loading ? (
                 <>
-                  <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
-                  <span>Validando Token Oficial...</span>
+                  <div className="w-3.5 h-3.5 border-2 border-black border-t-transparent rounded-full animate-spin" />
+                  <span>Validando Código...</span>
                 </>
               ) : (
                 <>
-                  <span>Validar e Resgatar Plano</span>
-                  <ArrowRight className="w-4 h-4" />
+                  <span>Ativar Acesso</span>
+                  <ArrowRight className="w-3.5 h-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />
                 </>
               )}
             </button>
+
+            {/* STATUS DISCRETO DO PLANO ATUAL */}
+            <div className="pt-2 border-t border-zinc-800/60 flex items-center justify-between text-[11px] text-zinc-400">
+              <span>Plano atual:</span>
+              <span className="font-semibold text-zinc-300">
+                {currentPlanInfo.name}
+              </span>
+            </div>
           </form>
         )}
-
-        {/* GUIA DE PLANOS DISPONÍVEIS */}
-        <div className="mt-6 pt-4 border-t border-zinc-850">
-          <div className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-            <Tv className="w-3.5 h-3.5 text-[#00E676]" />
-            Planos de Assinatura & Benefícios
-          </div>
-          <div className="grid grid-cols-2 gap-2 text-[11px]">
-            <div className="p-2.5 rounded-xl bg-zinc-900/40 border border-zinc-850">
-              <div className="font-bold text-emerald-400">VIP Esportes (30d)</div>
-              <div className="text-zinc-400 text-[10px] mt-0.5">Todos canais HD sem anúncios</div>
-            </div>
-            <div className="p-2.5 rounded-xl bg-zinc-900/40 border border-zinc-850">
-              <div className="font-bold text-purple-400">Premium Ultra 4K (90d)</div>
-              <div className="text-zinc-400 text-[10px] mt-0.5">ZAP + SuperSport + 4K</div>
-            </div>
-            <div className="p-2.5 rounded-xl bg-zinc-900/40 border border-zinc-850">
-              <div className="font-bold text-blue-400">Básico Esportes (30d)</div>
-              <div className="text-zinc-400 text-[10px] mt-0.5">Grade esportiva nacional</div>
-            </div>
-            <div className="p-2.5 rounded-xl bg-zinc-900/40 border border-zinc-850">
-              <div className="font-bold text-amber-400">Passe Anual (365d)</div>
-              <div className="text-zinc-400 text-[10px] mt-0.5">Acesso total por 1 ano</div>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );
 }
+

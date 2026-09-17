@@ -22,17 +22,12 @@ import {
   Sliders,
   Zap,
   SkipForward,
-  Sparkles,
-  Radio,
-  RotateCcw,
   Play,
-  Pause,
   SignalHigh,
   SignalMedium,
   SignalLow,
   Film,
   Trash2,
-  ListVideo,
 } from 'lucide-react';
 import { Canal, LatencyMode } from '@/types';
 import { motion, AnimatePresence } from 'motion/react';
@@ -40,7 +35,6 @@ import {
   getSafeStreamUrl,
   isStreamAutoProxied,
   getHlsOptionsForLatencyMode,
-  SPORTS_TRIVIA,
   getEmergencyFallbackStream,
 } from '@/utils/streamUtils';
 import { useAuth } from '@/context/AuthContext';
@@ -148,8 +142,7 @@ export function PlayerHero({
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isChannelVideosOpen, setIsChannelVideosOpen] = useState(false);
 
-  // Estados anti-tédio e recuperação inteligente de streaming
-  const [triviaIndex, setTriviaIndex] = useState(0);
+  // Estados de recuperação inteligente de streaming
   const [isRescueActive, setIsRescueActive] = useState(false);
   const [rescueCountdown, setRescueCountdown] = useState(6);
   const [isRescuePaused, setIsRescuePaused] = useState(false);
@@ -386,10 +379,10 @@ export function PlayerHero({
       }
     };
 
-    // Primeira checagem rápida após 1s de montagem
-    const initTimer = setTimeout(measureStreamLatency, 1000);
-    // Intervalo de medição contínua a cada 7 segundos
-    const interval = setInterval(measureStreamLatency, 7000);
+    // Primeira checagem rápida após 2s de montagem do canal
+    const initTimer = setTimeout(measureStreamLatency, 2000);
+    // Intervalo de medição leve a cada 45 segundos (evita sobrecarga de rede e CPU durante streaming)
+    const interval = setInterval(measureStreamLatency, 45000);
 
     return () => {
       isMounted = false;
@@ -460,15 +453,6 @@ export function PlayerHero({
       latencyMs: streamLatency,
     };
   })();
-
-  // Rotaciona curiosidades esportivas a cada 3.5s para entreter enquanto carrega
-  useEffect(() => {
-    if (hasFirstFrame || isCinemaMode) return;
-    const triviaTimer = setInterval(() => {
-      setTriviaIndex((prev) => (prev + 1) % SPORTS_TRIVIA.length);
-    }, 3500);
-    return () => clearInterval(triviaTimer);
-  }, [hasFirstFrame, isCinemaMode]);
 
   // Watchdog de failover inteligente e resgate contra telas intermináveis
   useEffect(() => {
@@ -675,23 +659,74 @@ export function PlayerHero({
     setTimeout(() => onClearFailoverNotice(), 0);
   };
 
-  const suggestedChannels = (todosCanais || [])
-    .filter((c) => c.id !== canalAtivo?.id && (c.categoria === canalAtivo?.categoria || c.categoria === 'Esportes'))
-    .slice(0, 3);
-
   if (!canalAtivo) {
+    const quickChannels = (todosCanais || []).slice(0, 6);
+
     return (
       <div
-        id="player-hero-placeholder"
-        className="w-full aspect-video bg-[#0c0c0e] border border-zinc-900 rounded-2xl sm:rounded-3xl flex flex-col items-center justify-center p-8 text-center"
+        id="player-hero-standby-container"
+        className="flex flex-col items-center w-full max-w-4xl mx-auto select-none"
       >
-        <div className="w-16 h-16 rounded-2xl bg-zinc-900 flex items-center justify-center text-zinc-600 mb-4 border border-zinc-800">
-          <Tv className="w-8 h-8 text-zinc-500 animate-pulse" />
+        <div className="relative aspect-video w-full bg-[#090b0e] rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl shadow-black/80 border border-zinc-800/80 ring-1 ring-white/5 flex flex-col items-center justify-between p-5 sm:p-8 text-center">
+          {/* Top Bar: Status Badge */}
+          <div className="w-full flex items-center justify-between z-10">
+            <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-zinc-900/80 border border-zinc-800 text-zinc-300 text-xs font-semibold">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              <span>Transmissão Pronta</span>
+            </div>
+            <span className="text-xs text-zinc-500 font-mono hidden sm:inline-block">
+              {todosCanais?.length || 0} canais disponíveis
+            </span>
+          </div>
+
+          {/* Central Area: Standby Title & Fast Channels */}
+          <div className="flex flex-col items-center my-auto max-w-lg px-2 z-10">
+            <div className="w-13 h-13 sm:w-15 sm:h-15 rounded-2xl bg-zinc-900/90 border border-zinc-800 flex items-center justify-center text-zinc-300 shadow-xl mb-3.5">
+              <Tv className="w-6 h-6 sm:w-7 sm:h-7 text-zinc-300" />
+            </div>
+
+            <h3 className="text-base sm:text-xl font-bold text-white tracking-tight mb-1.5">
+              Escolha seu canal para assistir
+            </h3>
+            <p className="text-xs sm:text-sm text-zinc-400 max-w-md leading-relaxed mb-4">
+              Selecione um canal na barra lateral ou sintonize um dos destaques abaixo:
+            </p>
+
+            {/* Botões de canais rápidos de início */}
+            {quickChannels.length > 0 && onSelectCanal && (
+              <div className="flex flex-wrap items-center justify-center gap-2 max-w-lg">
+                {quickChannels.map((c) => (
+                  <button
+                    key={c.id || c.url}
+                    type="button"
+                    onClick={() => onSelectCanal(c)}
+                    className="px-3 py-1.5 rounded-xl bg-zinc-900/90 hover:bg-zinc-800 text-zinc-200 hover:text-white border border-zinc-800 hover:border-zinc-700 text-xs font-semibold flex items-center gap-2 transition cursor-pointer shadow-sm group active:scale-95"
+                    title={`Sintonizar ${c.nome}`}
+                  >
+                    <img
+                      src={getChannelLogo(c)}
+                      alt=""
+                      className="w-4 h-4 object-contain"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = getChannelFallbackLogo(c);
+                      }}
+                    />
+                    <span className="truncate max-w-[120px]">{c.nome}</span>
+                    <Play className="w-3 h-3 text-[#FF2D55] group-hover:scale-110 transition-transform" />
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Bottom Bar: Instructions */}
+          <div className="w-full flex items-center justify-center pt-2 z-10 border-t border-zinc-900 text-[11px] text-zinc-500">
+            <span>Selecione qualquer canal para iniciar a transmissão ao vivo</span>
+          </div>
+
+          {/* Fundo suave com iluminação sutil */}
+          <div className="absolute inset-0 bg-radial from-zinc-900/20 via-transparent to-black pointer-events-none" />
         </div>
-        <h3 className="text-base font-bold text-zinc-200 mb-1">Nenhum canal selecionado</h3>
-        <p className="text-xs text-zinc-500 max-w-sm">
-          Selecione um canal na grade lateral para iniciar a reprodução.
-        </p>
       </div>
     );
   }
@@ -770,21 +805,21 @@ export function PlayerHero({
         </div>
       )}
 
-      {/* SEÇÃO PRINCIPAL: VÍDEO CENTRALIZADO + BARRA LATERAL VERTICAL DE AÇÕES */}
+      {/* SEÇÃO PRINCIPAL: VÍDEO CENTRALIZADO */}
       <div
         className={
           isMiniMode
             ? 'relative w-full'
-            : 'relative flex items-end justify-center gap-3 sm:gap-4 w-full'
+            : 'relative flex flex-col items-center w-full'
         }
       >
-        {/* CONTAINER DO VÍDEO COM CANTOS ARREDONDADOS E LINHA DE PROGRESSO VERMELHA */}
+        {/* CONTAINER DO VÍDEO COM CANTOS ARREDONDADOS E LINHA DE PROGRESSO */}
         <div
           ref={videoContainerRef}
           className={
             isMiniMode
               ? 'group relative aspect-video w-full bg-black overflow-hidden'
-              : 'group relative aspect-video w-full max-w-[880px] bg-black rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl shadow-black/90 border border-zinc-800/80 ring-1 ring-white/10 ambient-player-glow'
+              : 'group relative aspect-video w-full max-w-4xl bg-black rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl shadow-black/90 border border-zinc-800/80 ring-1 ring-white/5'
           }
         >
           {/* REPRODUTOR DE VÍDEO */}
@@ -975,297 +1010,94 @@ export function PlayerHero({
             </div>
           )}
 
-          {/* BACKDROP INTERATIVO E ENGAJANTE DE PRÉ-CARREGAMENTO (ANTI-TÉDIO & ANTI-STALL) */}
+          {/* BACKDROP LIMPO E PROFISSIONAL DE CARREGAMENTO */}
           {!hasFirstFrame && (
             <div
               id="player-signal-backdrop"
-              className="absolute inset-0 z-20 flex flex-col items-center justify-between p-3 sm:p-5 bg-gradient-to-b from-zinc-950 via-zinc-900 to-black overflow-hidden select-none"
+              className="absolute inset-0 z-20 flex flex-col items-center justify-center p-6 bg-[#080a0e] select-none text-center"
             >
-              {/* Efeito Glow com Logo do Canal Difuso no Fundo */}
-              <div
-                className="absolute inset-0 bg-cover bg-center opacity-10 blur-3xl scale-125 pointer-events-none transition-all duration-700"
-                style={{ backgroundImage: `url(${canalAtivo.logo})` }}
-              />
-
-              {/* TOPO: IDENTIDADE DO CANAL E STATUS DO SINAL */}
-              <div className="relative z-10 w-full flex flex-col items-center pt-1">
-                <div className="relative mb-2">
-                  <div className="w-13 h-13 sm:w-16 sm:h-16 rounded-2xl bg-zinc-900/90 border border-zinc-700/80 p-2 shadow-2xl flex items-center justify-center backdrop-blur-md">
-                    <img
-                      src={getChannelLogo(canalAtivo)}
-                      alt={canalAtivo.nome}
-                      className="w-full h-full object-contain filter drop-shadow"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src = getChannelFallbackLogo(canalAtivo);
-                      }}
-                    />
-                  </div>
-                  <span className="absolute -bottom-1 -right-1 flex h-3.5 w-3.5 sm:h-4 sm:w-4">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#FF2D55] opacity-80" />
-                    <span className="relative inline-flex rounded-full h-3.5 w-3.5 sm:h-4 sm:w-4 bg-[#FF2D55] border-2 border-black" />
-                  </span>
+              {/* Logo do Canal com indicador ao vivo */}
+              <div className="relative mb-3.5">
+                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-zinc-900 border border-zinc-700/70 p-2.5 shadow-2xl flex items-center justify-center">
+                  <img
+                    src={getChannelLogo(canalAtivo)}
+                    alt={canalAtivo.nome}
+                    className="w-full h-full object-contain filter drop-shadow"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = getChannelFallbackLogo(canalAtivo);
+                    }}
+                  />
                 </div>
-
-                <div className="flex items-center gap-2">
-                  <h4 className="text-xs sm:text-base font-black text-white tracking-wide text-center">
-                    {canalAtivo.nome}
-                  </h4>
-                  <span className="px-1.5 py-0.5 rounded text-[9px] sm:text-[10px] font-bold bg-[#FF2D55]/20 text-[#FF2D55] border border-[#FF2D55]/40">
-                    AO VIVO
-                  </span>
-                </div>
-
-                {/* STATUS VISUAL DE SINCRONIA E BARRA DE PROGRESSO */}
-                <div className="mt-1.5 flex flex-col items-center w-full max-w-xs">
-                  <div className="flex items-center gap-1.5 text-[11px] sm:text-xs font-semibold text-zinc-300">
-                    <Radio className="w-3.5 h-3.5 text-[#FF2D55] animate-pulse shrink-0" />
-                    <span className="truncate">
-                      {hasYouTubeEmbedError
-                        ? 'Vídeo com restrição de incorporação'
-                        : isRescueActive
-                        ? 'Origem instável. Modo Resgate ativo'
-                        : loadSeconds < 2
-                        ? 'Sintonizando feed via satélite...'
-                        : loadSeconds < 4
-                        ? 'Sincronizando áudio e vídeo HD...'
-                        : 'Otimizando buffer e rotas de entrega...'}
-                    </span>
-                  </div>
-
-                  {/* Barra de progresso de conexão ativa */}
-                  <div className="w-full h-1 sm:h-1.5 bg-zinc-800/80 rounded-full overflow-hidden mt-1.5 border border-zinc-700/50">
-                    <motion.div
-                      className="h-full bg-gradient-to-r from-cyan-400 via-[#FF2D55] to-amber-400"
-                      initial={{ width: '15%' }}
-                      animate={{
-                        width: `${Math.min(95, Math.max(25, (loadSeconds + 1) * 20))}%`,
-                      }}
-                      transition={{ duration: 0.5, ease: 'easeInOut' }}
-                    />
-                  </div>
-                </div>
-
-                {hasYouTubeEmbedError && (
-                  <div className="mt-3 flex items-center gap-2 flex-wrap justify-center">
-                    {isYouTubeChannel && (
-                      <button
-                        type="button"
-                        onClick={() => setIsChannelVideosOpen(true)}
-                        className="px-3.5 py-1.5 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-lg shadow-red-950/50 transition"
-                        title="Ver mais vídeos deste canal"
-                      >
-                        <Film className="w-3.5 h-3.5" />
-                        <span>Ver mais vídeos do canal</span>
-                      </button>
-                    )}
-                    {streamsDisponiveis.length > 1 && (
-                      <button
-                        type="button"
-                        onClick={() => onStreamChange((streamIndex + 1) % streamsDisponiveis.length)}
-                        className="px-3.5 py-1.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-bold flex items-center gap-1.5 cursor-pointer border border-zinc-700 transition"
-                      >
-                        <Zap className="w-3.5 h-3.5 text-amber-400" />
-                        <span>Sinal Alternativo</span>
-                      </button>
-                    )}
-                  </div>
-                )}
+                <span className="absolute -bottom-1 -right-1 flex h-3.5 w-3.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#FF2D55] opacity-75" />
+                  <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-[#FF2D55] border-2 border-black" />
+                </span>
               </div>
 
-              {/* CENTRO: MODO RESGATE OU CARTÃO INTERATIVO ANTI-TÉDIO ("SABIA QUE...?") */}
-              {!isMiniMode && (
-                <div className="relative z-10 w-full max-w-md my-auto px-2">
-                  <AnimatePresence mode="wait">
-                    {isRescueActive ? (
-                      /* PAINEL DE RESGATE ATIVO: EVITA CARREGAMENTO INFINITO */
-                      <motion.div
-                        key="rescue-panel"
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.95 }}
-                        className="bg-zinc-900/95 border border-amber-500/40 rounded-2xl p-3 sm:p-4 text-center shadow-2xl backdrop-blur-md"
-                      >
-                        <div className="flex items-center justify-center gap-2 mb-1.5">
-                          <AlertCircle className="w-4 h-4 text-amber-400 animate-bounce" />
-                          <span className="text-[11px] font-black text-amber-300 uppercase tracking-wider">
-                            Central de Recuperação de Transmissão
-                          </span>
-                        </div>
+              {/* Nome do Canal */}
+              <h4 className="text-sm sm:text-base font-bold text-white tracking-wide">
+                {canalAtivo.nome}
+              </h4>
 
-                        <p className="text-xs text-zinc-300 mb-3 leading-relaxed">
-                          O servidor deste canal está demorando a responder.
-                          <br />
-                          {isRescuePaused ? (
-                            <span className="text-zinc-400">Transição pausada. Escolha uma opção abaixo:</span>
-                          ) : (
-                            <span className="font-bold text-white">
-                              Alternando para canal estável em{' '}
-                              <span className="text-amber-400 font-mono text-sm">{rescueCountdown}s</span>...
-                            </span>
-                          )}
-                        </p>
+              {/* Status de Conexão e Barra de Sincronia */}
+              <div className="mt-2.5 flex flex-col items-center w-full max-w-xs">
+                <div className="flex items-center gap-2 text-xs font-medium text-zinc-400">
+                  <div className="w-3 h-3 rounded-full border-2 border-[#FF2D55] border-t-transparent animate-spin shrink-0" />
+                  <span>
+                    {hasYouTubeEmbedError
+                      ? 'Vídeo com restrição de incorporação'
+                      : loadSeconds < 4
+                      ? 'Conectando transmissão ao vivo...'
+                      : 'Sincronizando sinal HD...'}
+                  </span>
+                </div>
 
-                        <div className="flex flex-wrap items-center justify-center gap-2 mb-2.5">
-                          {/* Botão de Emergência HD Garantido */}
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setIsRescuePaused(true);
-                              setEmergencyOverrideUrl(getEmergencyFallbackStream(canalAtivo.categoria));
-                            }}
-                            className="px-3 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs flex items-center gap-1.5 cursor-pointer shadow-lg shadow-amber-950/40"
-                            title="Carregar canal de emergência garantido 24/7"
-                          >
-                            <Zap className="w-3.5 h-3.5 fill-white" />
-                            <span>Sinal Reserva HD</span>
-                          </button>
+                {/* Barra de progresso sutil */}
+                <div className="w-full h-1 bg-zinc-800 rounded-full overflow-hidden mt-2.5">
+                  <motion.div
+                    className="h-full bg-gradient-to-r from-red-500 to-[#FF2D55]"
+                    initial={{ width: '20%' }}
+                    animate={{ width: `${Math.min(95, Math.max(30, (loadSeconds + 1) * 20))}%` }}
+                    transition={{ duration: 0.4 }}
+                  />
+                </div>
+              </div>
 
-                          {/* Botão Pular Canal */}
-                          {onNextCanal && (
-                            <button
-                              type="button"
-                              onClick={onNextCanal}
-                              className="px-3 py-1.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-100 font-bold text-xs flex items-center gap-1.5 border border-zinc-600 cursor-pointer"
-                              title="Pular para o próximo canal da grade"
-                            >
-                              <SkipForward className="w-3.5 h-3.5 text-[#FF2D55]" />
-                              <span>Pular Canal</span>
-                            </button>
-                          )}
-
-                          {/* Pausar / Retomar contagem */}
-                          <button
-                            type="button"
-                            onClick={() => setIsRescuePaused(!isRescuePaused)}
-                            className="px-2.5 py-1.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-zinc-200 font-semibold text-xs border border-zinc-700 cursor-pointer"
-                            title={isRescuePaused ? 'Retomar contagem regressiva' : 'Pausar contagem regressiva'}
-                          >
-                            {isRescuePaused ? <Play className="w-3.5 h-3.5" /> : <Pause className="w-3.5 h-3.5" />}
-                          </button>
-                        </div>
-
-                        {/* Atalhos rápidos para canais recomendados ativos */}
-                        {suggestedChannels.length > 0 && (
-                          <div className="pt-2 border-t border-zinc-800 flex items-center justify-center gap-2">
-                            <span className="text-[10px] text-zinc-400 font-medium">Ao vivo agora:</span>
-                            {suggestedChannels.map((c) => (
-                              <button
-                                key={c.id}
-                                type="button"
-                                onClick={() => onSelectCanal && onSelectCanal(c)}
-                                className="px-2 py-1 rounded-lg bg-black/60 hover:bg-zinc-800 text-zinc-300 hover:text-white text-[11px] font-semibold border border-zinc-700 flex items-center gap-1 cursor-pointer transition truncate max-w-[110px]"
-                                title={`Assistir ${c.nome}`}
-                              >
-                                <img
-                                  src={c.logo}
-                                  alt=""
-                                  className="w-3.5 h-3.5 object-contain"
-                                  onError={(e) => {
-                                    (e.target as HTMLImageElement).style.display = 'none';
-                                  }}
-                                />
-                                <span className="truncate">{c.nome}</span>
-                              </button>
-                            ))}
-                          </div>
-                        )}
-                      </motion.div>
-                    ) : (
-                      /* CARTÃO INTERATIVO ANTI-TÉDIO: CURIOSIDADES E FATOS ESPORTIVOS */
-                      <motion.div
-                        key={`trivia-${triviaIndex}`}
-                        initial={{ opacity: 0, y: 8 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -8 }}
-                        transition={{ duration: 0.3 }}
-                        onClick={() => setTriviaIndex((prev) => (prev + 1) % SPORTS_TRIVIA.length)}
-                        className="bg-zinc-900/85 hover:bg-zinc-900 border border-zinc-700/60 hover:border-zinc-500/80 rounded-2xl p-3 sm:p-4 text-left shadow-2xl backdrop-blur-md cursor-pointer transition group"
-                        title="Clique para ver outra curiosidade ou dica"
-                      >
-                        <div className="flex items-center justify-between mb-1.5">
-                          <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-zinc-800/90 text-amber-300 text-[10px] sm:text-[11px] font-bold border border-amber-400/20">
-                            <span>{SPORTS_TRIVIA[triviaIndex].tag}</span>
-                          </div>
-                          <span className="text-[10px] text-zinc-400 group-hover:text-zinc-200 flex items-center gap-1 transition">
-                            <RotateCcw className="w-3 h-3 group-hover:rotate-180 transition-transform duration-500" />
-                            Toque p/ trocar
-                          </span>
-                        </div>
-
-                        <h5 className="text-xs sm:text-sm font-bold text-white mb-1">
-                          {SPORTS_TRIVIA[triviaIndex].title}
-                        </h5>
-                        <p className="text-xs text-zinc-300 leading-relaxed">
-                          {SPORTS_TRIVIA[triviaIndex].fact}
-                        </p>
-
-                        {/* Indicadores sutis de curiosidade */}
-                        <div className="flex items-center justify-center gap-1 mt-2.5">
-                          {SPORTS_TRIVIA.slice(0, 7).map((_, i) => (
-                            <span
-                              key={i}
-                              className={`h-1 rounded-full transition-all duration-300 ${
-                                i === triviaIndex % 7 ? 'w-4 bg-[#FF2D55]' : 'w-1 bg-zinc-700'
-                              }`}
-                            />
-                          ))}
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+              {/* Alternativas se demorar a carregar */}
+              {(loadSeconds >= 5 || hasYouTubeEmbedError) && (
+                <div className="mt-4 flex items-center gap-2 flex-wrap justify-center">
+                  {streamsDisponiveis.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => onStreamChange((streamIndex + 1) % streamsDisponiveis.length)}
+                      className="px-3 py-1.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-semibold border border-zinc-700 flex items-center gap-1.5 cursor-pointer transition shadow-sm"
+                    >
+                      <Zap className="w-3.5 h-3.5 text-amber-400" />
+                      <span>Alternar Sinal ({streamIndex + 1}/{streamsDisponiveis.length})</span>
+                    </button>
+                  )}
+                  {onNextCanal && (
+                    <button
+                      type="button"
+                      onClick={onNextCanal}
+                      className="px-3 py-1.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-semibold border border-zinc-700 flex items-center gap-1.5 cursor-pointer transition shadow-sm"
+                    >
+                      <SkipForward className="w-3.5 h-3.5 text-[#FF2D55]" />
+                      <span>Próximo Canal</span>
+                    </button>
+                  )}
+                  {isYouTubeChannel && (
+                    <button
+                      type="button"
+                      onClick={() => setIsChannelVideosOpen(true)}
+                      className="px-3 py-1.5 rounded-xl bg-red-900/60 hover:bg-red-900 text-red-200 text-xs font-semibold border border-red-700/60 flex items-center gap-1.5 cursor-pointer transition shadow-sm"
+                    >
+                      <Film className="w-3.5 h-3.5" />
+                      <span>Ver Vídeos</span>
+                    </button>
+                  )}
                 </div>
               )}
-
-              {/* RODAPÉ: AÇÕES DIRETAS PARA O USUÁRIO NUNCA FICAR PRESO */}
-              <div className="relative z-10 w-full flex flex-wrap items-center justify-center gap-2 pb-1">
-                {/* BOTÃO VER MAIS VÍDEOS DO CANAL NO RODAPÉ DO CARREGAMENTO - APENAS SE FOR CANAL DO YOUTUBE */}
-                {isYouTubeChannel && (
-                  <button
-                    type="button"
-                    id="player-rescue-channel-videos-btn"
-                    onClick={() => setIsChannelVideosOpen(true)}
-                    className="px-2.5 py-1.5 rounded-xl bg-red-950/40 hover:bg-red-900/60 text-red-200 hover:text-white text-xs font-semibold border border-red-500/40 flex items-center gap-1.5 cursor-pointer shadow transition"
-                    title="Ver mais vídeos do canal (reproduzir diretamente no nosso player)"
-                  >
-                    <Film className="w-3.5 h-3.5 text-red-400" />
-                    <span>Ver mais vídeos {streamsDisponiveis.length > 1 ? `(${streamsDisponiveis.length})` : ''}</span>
-                  </button>
-                )}
-
-                {streamsDisponiveis.length > 1 && (
-                  <button
-                    type="button"
-                    onClick={() => onStreamChange((streamIndex + 1) % streamsDisponiveis.length)}
-                    className="px-2.5 py-1.5 rounded-xl bg-zinc-900/90 hover:bg-zinc-800 text-zinc-300 hover:text-white text-xs font-semibold border border-zinc-700 flex items-center gap-1.5 cursor-pointer shadow transition"
-                    title="Alternar entre links de transmissão deste canal"
-                  >
-                    <Zap className="w-3.5 h-3.5 text-amber-400" />
-                    <span>Servidor {streamIndex + 1} de {streamsDisponiveis.length}</span>
-                  </button>
-                )}
-
-                {onNextCanal && (
-                  <button
-                    type="button"
-                    onClick={onNextCanal}
-                    className="px-3 py-1.5 rounded-xl bg-zinc-900/90 hover:bg-zinc-800 text-zinc-200 hover:text-white text-xs font-semibold border border-zinc-700 flex items-center gap-1.5 cursor-pointer shadow transition"
-                    title="Assistir ao próximo canal da grade"
-                  >
-                    <SkipForward className="w-3.5 h-3.5 text-[#FF2D55]" />
-                    <span>Pular Canal</span>
-                  </button>
-                )}
-
-                <button
-                  type="button"
-                  onClick={() => onToggleLatencyMode('economy')}
-                  className="px-2.5 py-1.5 rounded-xl bg-zinc-900/90 hover:bg-zinc-800 text-zinc-300 hover:text-white text-xs font-semibold border border-zinc-700 flex items-center gap-1.5 cursor-pointer shadow transition"
-                  title="Ativar modo leve e economizar dados móveis"
-                >
-                  <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
-                  <span>Poupar Internet</span>
-                </button>
-              </div>
             </div>
           )}
 
@@ -1306,9 +1138,40 @@ export function PlayerHero({
             </span>
           </div>
 
-          {/* BOTÕES RÁPIDOS NO VÍDEO: CONFIGURAÇÕES E PICTURE-IN-PICTURE (HOVER) */}
+          {/* BOTÕES RÁPIDOS NO VÍDEO: ÁUDIO, RECARREGAR, MODO CINEMA, AJUSTES E PICTURE-IN-PICTURE (HOVER) */}
           {!isMiniMode && (
             <div className="absolute top-3 right-3 z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center gap-1.5">
+              <button
+                type="button"
+                id="player-quick-audio-btn"
+                onClick={onToggleMute}
+                className="p-2 rounded-full backdrop-blur-md border shadow-lg transition cursor-pointer flex items-center justify-center bg-black/70 hover:bg-black text-zinc-200 hover:text-white border-zinc-700/60"
+                title={isMuted ? 'Ativar som (M)' : 'Silenciar áudio (M)'}
+              >
+                {isMuted ? (
+                  <VolumeX className="w-4 h-4 text-amber-400" />
+                ) : (
+                  <Volume2 className="w-4 h-4 text-zinc-200" />
+                )}
+              </button>
+              <button
+                type="button"
+                id="player-quick-reload-btn"
+                onClick={handleReload}
+                className="p-2 rounded-full backdrop-blur-md border shadow-lg transition cursor-pointer flex items-center justify-center bg-black/70 hover:bg-black text-zinc-200 hover:text-white border-zinc-700/60"
+                title="Recarregar transmissão"
+              >
+                <RefreshCw className="w-4 h-4 text-zinc-200" />
+              </button>
+              <button
+                type="button"
+                id="player-quick-cinema-btn"
+                onClick={onEnterCinemaMode}
+                className="p-2 rounded-full backdrop-blur-md border shadow-lg transition cursor-pointer flex items-center justify-center bg-black/70 hover:bg-black text-zinc-200 hover:text-white border-zinc-700/60"
+                title="Modo Cinema (Atalho C)"
+              >
+                <Maximize2 className="w-4 h-4 text-zinc-200" />
+              </button>
               <button
                 type="button"
                 id="player-quick-settings-btn"
@@ -1372,241 +1235,142 @@ export function PlayerHero({
           </div>
         </div>
 
-        {/* BARRA LATERAL VERTICAL DE AÇÕES (AVATAR, CORAÇÃO, COMENTÁRIO, SALVAR) */}
+        {/* BARRA INFERIOR INTEGRADA DO CANAL (LIMPA, MODERNA E PROFISSIONAL) */}
         {!isMiniMode && (
-          <div className="flex flex-col items-center gap-4 sm:gap-5 pb-2 select-none shrink-0">
-            {/* AVATAR DO CANAL COM MOLDURA ELEGANTE */}
-            <div
-              className="relative p-[2px] rounded-full bg-zinc-800 border border-zinc-700/80 shadow-md cursor-pointer hover:scale-105 transition-transform"
-              title={canalAtivo.nome}
-            >
-              <img
-                src={getChannelLogo(canalAtivo)}
-                alt={canalAtivo.nome}
-                className="w-10 h-10 sm:w-11 sm:h-11 rounded-full object-cover bg-zinc-950"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).src = getChannelFallbackLogo(canalAtivo);
-                }}
-              />
+          <div
+            id="player-channel-bar"
+            className="w-full max-w-4xl mt-3 px-3.5 py-2.5 sm:px-4 sm:py-3 rounded-2xl bg-zinc-900/90 border border-zinc-800 flex flex-wrap items-center justify-between gap-3 text-zinc-300 select-none shadow-lg backdrop-blur-md"
+          >
+            {/* LADO ESQUERDO: INFO DO CANAL */}
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="relative w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-zinc-950 border border-zinc-800 p-1 flex items-center justify-center shrink-0 shadow-sm">
+                <img
+                  src={getChannelLogo(canalAtivo)}
+                  alt={canalAtivo.nome}
+                  className="w-full h-full object-contain"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = getChannelFallbackLogo(canalAtivo);
+                  }}
+                />
+                <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-400 border-2 border-zinc-900" />
+              </div>
+              <div className="flex flex-col min-w-0">
+                <div className="flex items-center gap-2">
+                  <h3 className="text-sm sm:text-base font-bold text-white truncate max-w-[170px] sm:max-w-[260px]">
+                    {canalAtivo.nome}
+                  </h3>
+                  <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-[#FF2D55]/15 text-[#FF2D55] border border-[#FF2D55]/30 shrink-0">
+                    AO VIVO
+                  </span>
+                </div>
+                <div className="flex items-center gap-2 text-xs text-zinc-400 mt-0.5">
+                  <span className="truncate">{canalAtivo.categoria || 'Geral'}</span>
+                  {streamsDisponiveis.length > 1 && (
+                    <>
+                      <span className="text-zinc-600">•</span>
+                      <button
+                        type="button"
+                        onClick={() => onStreamChange((streamIndex + 1) % streamsDisponiveis.length)}
+                        className="hover:text-amber-400 text-zinc-400 transition cursor-pointer flex items-center gap-1 font-medium"
+                        title="Alternar servidor de transmissão"
+                      >
+                        <Zap className="w-3 h-3 text-amber-400" />
+                        <span>Sinal {streamIndex + 1}/{streamsDisponiveis.length}</span>
+                      </button>
+                    </>
+                  )}
+                </div>
+              </div>
             </div>
 
-            {/* BOTÃO ADORO / LIKE REAL */}
-            <button
-              type="button"
-              id="player-action-like-btn"
-              onClick={handleToggleLike}
-              className="flex flex-col items-center gap-1 group cursor-pointer"
-              title={isLiked ? 'Remover Adoro' : 'Dar Adoro'}
-            >
-              <div
-                className={`p-1.5 rounded-full transition-transform group-hover:scale-110 active:scale-90 ${
-                  isLiked ? 'text-rose-500' : 'text-zinc-200 group-hover:text-rose-400'
-                }`}
-              >
-                <Heart
-                  className={`w-6 h-6 sm:w-7 sm:h-7 transition-colors ${
-                    isLiked ? 'fill-rose-500 text-rose-500' : 'text-zinc-200'
-                  }`}
-                />
-              </div>
-              <span className="text-[11px] sm:text-xs font-bold text-zinc-200 tracking-tight">
-                {formatInteractionCount(adorosCount)}
-              </span>
-            </button>
-
-            {/* BOTÃO COMENTÁRIOS REAL */}
-            <button
-              type="button"
-              id="player-action-comment-btn"
-              onClick={() => setShowComments((prev) => !prev)}
-              className="flex flex-col items-center gap-1 group cursor-pointer"
-              title="Comentários ao Vivo"
-            >
-              <div className="p-1.5 rounded-full text-white group-hover:text-zinc-300 transition-transform group-hover:scale-110 active:scale-90">
-                <MessageCircle className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
-              </div>
-              <span className="text-[11px] sm:text-xs font-bold text-white tracking-tight">
-                {formatInteractionCount(commentsCount)}
-              </span>
-            </button>
-
-            {/* BOTÃO SALVAR / FAVORITAR */}
-            <button
-              type="button"
-              id="player-action-bookmark-btn"
-              onClick={onToggleFavorite}
-              className="flex flex-col items-center gap-1 group cursor-pointer"
-              title={isFavorited ? 'Salvo' : 'Salvar'}
-            >
-              <div
-                className={`p-1.5 rounded-full transition-transform group-hover:scale-110 active:scale-90 ${
-                  isFavorited ? 'text-white' : 'text-white group-hover:text-zinc-300'
-                }`}
-              >
-                <Bookmark
-                  className={`w-6 h-6 sm:w-7 sm:h-7 ${
-                    isFavorited ? 'fill-white text-white' : 'text-white'
-                  }`}
-                />
-              </div>
-            </button>
-
-            {/* BOTÃO VER MAIS VÍDEOS DO CANAL NA COLUNA VERTICAL - APENAS SE FOR CANAL DO YOUTUBE */}
-            {isYouTubeChannel && (
+            {/* LADO DIREITO: AÇÕES LIMPAS */}
+            <div className="flex items-center gap-1.5 sm:gap-2 ml-auto">
+              {/* BOTÃO ADORO / LIKE */}
               <button
                 type="button"
-                id="player-action-channel-videos-btn"
-                onClick={() => setIsChannelVideosOpen(true)}
-                className="flex flex-col items-center gap-1 group cursor-pointer"
-                title="Ver mais vídeos do canal (reproduzir no nosso player)"
+                id="player-action-like-btn"
+                onClick={handleToggleLike}
+                className={`px-3 py-1.5 rounded-xl border text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer active:scale-95 ${
+                  isLiked
+                    ? 'bg-rose-500/15 border-rose-500/40 text-rose-400'
+                    : 'bg-zinc-800/80 hover:bg-zinc-800 border-zinc-700/60 hover:border-zinc-600 text-zinc-300 hover:text-white'
+                }`}
+                title={isLiked ? 'Remover Adoro' : 'Adorar canal'}
               >
-                <div className="p-1.5 rounded-full text-white group-hover:text-red-400 hover:bg-red-500/15 transition-all group-hover:scale-110 active:scale-90 border border-transparent group-hover:border-red-500/30">
-                  <Film className="w-6 h-6 sm:w-7 sm:h-7 text-red-500 group-hover:text-red-400" />
-                </div>
-                <span className="text-[10px] sm:text-[11px] font-bold text-zinc-300 group-hover:text-white tracking-tight text-center leading-tight max-w-[48px]">
-                  Vídeos
-                </span>
+                <Heart className={`w-4 h-4 ${isLiked ? 'fill-rose-500 text-rose-500' : 'text-zinc-300'}`} />
+                <span>{formatInteractionCount(adorosCount)}</span>
               </button>
-            )}
+
+              {/* BOTÃO COMENTÁRIOS */}
+              <button
+                type="button"
+                id="player-action-comment-btn"
+                onClick={() => setShowComments((prev) => !prev)}
+                className={`px-3 py-1.5 rounded-xl border text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer active:scale-95 ${
+                  showComments
+                    ? 'bg-[#FF2D55]/15 border-[#FF2D55]/40 text-[#FF2D55]'
+                    : 'bg-zinc-800/80 hover:bg-zinc-800 border-zinc-700/60 hover:border-zinc-600 text-zinc-300 hover:text-white'
+                }`}
+                title="Comentários ao Vivo"
+              >
+                <MessageCircle className="w-4 h-4" />
+                <span>{formatInteractionCount(commentsCount)}</span>
+              </button>
+
+              {/* BOTÃO SALVAR / FAVORITAR */}
+              <button
+                type="button"
+                id="player-action-bookmark-btn"
+                onClick={onToggleFavorite}
+                className={`p-2 rounded-xl border text-xs transition cursor-pointer active:scale-95 ${
+                  isFavorited
+                    ? 'bg-amber-500/15 border-amber-500/40 text-amber-400'
+                    : 'bg-zinc-800/80 hover:bg-zinc-800 border-zinc-700/60 hover:border-zinc-600 text-zinc-300 hover:text-white'
+                }`}
+                title={isFavorited ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
+              >
+                <Bookmark className={`w-4 h-4 ${isFavorited ? 'fill-amber-400 text-amber-400' : ''}`} />
+              </button>
+
+              {/* BOTÃO VÍDEOS (YOUTUBE) */}
+              {isYouTubeChannel && (
+                <button
+                  type="button"
+                  id="player-action-channel-videos-btn"
+                  onClick={() => setIsChannelVideosOpen(true)}
+                  className="px-2.5 py-1.5 rounded-xl bg-red-900/30 hover:bg-red-900/50 border border-red-500/40 text-red-300 hover:text-white text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer"
+                  title="Ver catálogo de vídeos deste canal"
+                >
+                  <Film className="w-4 h-4 text-red-400" />
+                  <span className="hidden sm:inline">Vídeos</span>
+                </button>
+              )}
+
+              {/* BOTÃO AJUSTES / CONFIGURAÇÕES */}
+              <button
+                type="button"
+                onClick={() => setIsSettingsOpen(true)}
+                className="p-2 rounded-xl bg-zinc-800/80 hover:bg-zinc-800 border border-zinc-700/60 hover:border-zinc-600 text-zinc-300 hover:text-white text-xs transition cursor-pointer active:scale-95"
+                title="Ajustes do Reprodutor"
+              >
+                <Sliders className="w-4 h-4 text-cyan-400" />
+              </button>
+
+              {/* PRÓXIMO CANAL */}
+              {onNextCanal && (
+                <button
+                  type="button"
+                  onClick={onNextCanal}
+                  className="p-2 rounded-xl bg-zinc-800/80 hover:bg-zinc-800 border border-zinc-700/60 hover:border-zinc-600 text-zinc-300 hover:text-white text-xs transition cursor-pointer active:scale-95"
+                  title="Próximo canal (Atalho: N)"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              )}
+            </div>
           </div>
         )}
       </div>
-
-      {/* BARRA INFERIOR DE CONTROLE EM DOCK DE VIDRO ELEGANTE */}
-      {!isMiniMode && (
-        <div className="w-full max-w-[880px] flex items-center justify-between mt-3 pt-[6px] pb-[3px] pl-[12px] pr-[67px] mr-[18px] rounded-xl bg-zinc-950/80 border border-zinc-800/80 backdrop-blur-xl shadow-xl select-none gap-2">
-          {/* LADO ESQUERDO: MODOS DE VISUALIZAÇÃO & STATUS */}
-          <div className="flex items-center gap-1.5 overflow-x-auto custom-scrollbar py-0.5">
-            {/* MODO CINEMA */}
-            <button
-              type="button"
-              id="player-pill-cinema-mode"
-              onClick={onEnterCinemaMode}
-              className="px-3 py-1.5 rounded-lg bg-zinc-900/90 hover:bg-zinc-800 text-zinc-200 hover:text-white border border-zinc-800 hover:border-zinc-700 text-xs font-medium transition cursor-pointer flex items-center gap-1.5 shrink-0"
-              title="Modo Cinema"
-            >
-              <Maximize2 className="w-3.5 h-3.5 text-zinc-300" />
-              <span>Cinema</span>
-            </button>
-
-            {/* BOTÃO DA FILA DE PRÓXIMOS VÍDEOS */}
-            <button
-              type="button"
-              id="player-pill-queue-btn"
-              onClick={() => setIsQueueDrawerOpen(true)}
-              className="px-3 py-1.5 rounded-lg bg-zinc-900/90 hover:bg-zinc-800 text-zinc-200 hover:text-white border border-zinc-800 hover:border-zinc-700 text-xs font-medium transition cursor-pointer flex items-center gap-1.5 shrink-0"
-              title="Fila de Próximos Vídeos e Histórico"
-            >
-              <ListVideo className="w-3.5 h-3.5 text-zinc-300" />
-              <span>Próximos</span>
-              {queueItems.length > 0 && (
-                <span className="px-1.5 py-0.2 rounded-md bg-zinc-800 text-zinc-300 text-[10px] font-mono font-bold border border-zinc-700">
-                  {queueItems.length}
-                </span>
-              )}
-            </button>
-
-            {/* PÍLULA DE QUALIDADE DO SINAL & LATÊNCIA REAL */}
-            <div
-              id="player-pill-signal-indicator"
-              className={`px-2.5 py-1.5 rounded-lg border text-xs font-medium transition flex items-center gap-1.5 select-none shrink-0 ${
-                signalQuality.tier === 'green'
-                  ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
-                  : signalQuality.tier === 'yellow'
-                  ? 'bg-amber-500/10 border-amber-500/30 text-amber-300'
-                  : 'bg-rose-500/10 border-rose-500/30 text-rose-400'
-              }`}
-              title={`Qualidade da Conexão: ${signalQuality.label} • Latência: ${signalQuality.latencyMs}ms`}
-            >
-              <signalQuality.icon className={`w-3 h-3 ${signalQuality.colorClass}`} />
-              <span className="font-mono text-[11px] font-semibold">{signalQuality.latencyMs}ms</span>
-            </div>
-
-            {/* CONFIGURAÇÕES DO REPRODUTOR */}
-            <button
-              type="button"
-              id="player-pill-settings-btn"
-              onClick={() => setIsSettingsOpen(true)}
-              className="p-1.5 sm:px-2.5 sm:py-1.5 rounded-lg bg-zinc-900/90 hover:bg-zinc-800 text-zinc-400 hover:text-white border border-zinc-800 hover:border-zinc-700 text-xs font-medium transition cursor-pointer flex items-center gap-1.5 shrink-0"
-              title="Configurações de fluxo e latência"
-            >
-              <Sliders className="w-3.5 h-3.5 text-zinc-400" />
-              <span className="hidden sm:inline">Ajustes</span>
-            </button>
-
-            {/* PICTURE-IN-PICTURE */}
-            <button
-              type="button"
-              id="player-pill-pip"
-              onClick={handleTogglePip}
-              className={`p-1.5 sm:px-2.5 sm:py-1.5 rounded-lg border text-xs font-medium transition cursor-pointer flex items-center gap-1.5 shrink-0 ${
-                isPipActive
-                  ? 'bg-zinc-100 text-zinc-950 border-white font-semibold'
-                  : 'bg-zinc-900/90 hover:bg-zinc-800 text-zinc-400 hover:text-white border-zinc-800 hover:border-zinc-700'
-              }`}
-              title={isPipActive ? 'Sair do PiP' : 'Picture-in-Picture (P)'}
-            >
-              <PictureInPicture2 className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">PiP</span>
-            </button>
-          </div>
-
-          {/* LADO DIREITO: NAVEGAÇÃO DE CANAL E CONTROLES DE ÁUDIO/SINAL */}
-          <div className="flex items-center gap-1.5 shrink-0 ml-auto">
-            {/* NAVEGAÇÃO ENTRE CANAIS */}
-            <div className="flex items-center gap-0.5 bg-zinc-900/60 p-0.5 rounded-lg border border-zinc-800/80">
-              <button
-                type="button"
-                id="player-btn-prev-canal"
-                onClick={onPrevCanal}
-                className="p-1.5 rounded-md text-zinc-400 hover:text-white hover:bg-zinc-800 transition cursor-pointer"
-                title="Canal anterior"
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </button>
-              <button
-                type="button"
-                id="player-btn-next-canal"
-                onClick={onNextCanal}
-                className="p-1.5 rounded-md text-zinc-400 hover:text-white hover:bg-zinc-800 transition cursor-pointer"
-                title="Próximo canal"
-              >
-                <ChevronRight className="w-4 h-4" />
-              </button>
-            </div>
-
-            {/* RECARREGAR */}
-            <button
-              type="button"
-              id="player-btn-reload-stream"
-              onClick={handleReload}
-              className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-900 border border-zinc-800/80 transition cursor-pointer"
-              title="Recarregar sinal"
-            >
-              <RefreshCw className="w-3.5 h-3.5" />
-            </button>
-
-            {/* ÁUDIO */}
-            <button
-              type="button"
-              id="player-btn-audio-mute"
-              onClick={onToggleMute}
-              className={`p-1.5 rounded-lg border transition cursor-pointer ${
-                isMuted
-                  ? 'bg-amber-500/15 border-amber-500/30 text-amber-400'
-                  : 'bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white border-zinc-800'
-              }`}
-              title={isMuted ? 'Ativar som (M)' : 'Silenciar áudio (M)'}
-            >
-              {isMuted ? (
-                <VolumeX className="w-4 h-4" />
-              ) : (
-                <Volume2 className="w-4 h-4" />
-              )}
-            </button>
-          </div>
-        </div>
-      )}
 
       {/* MINI CONTROLES INFERIORES DO MODO PIP FLUTUANTE */}
       {isMiniMode && (
@@ -1656,7 +1420,7 @@ export function PlayerHero({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.98 }}
             transition={{ duration: 0.18 }}
-            className="w-full max-w-[860px] mt-3 p-4 rounded-2xl bg-[#0e0e11] border border-zinc-800 text-zinc-200 shadow-xl"
+            className="w-full max-w-4xl mt-3 p-4 rounded-2xl bg-zinc-900/95 border border-zinc-800 text-zinc-200 shadow-xl backdrop-blur-md"
           >
             <div className="flex items-center justify-between pb-3 border-b border-zinc-800/80 mb-3">
               <div className="flex items-center gap-2">

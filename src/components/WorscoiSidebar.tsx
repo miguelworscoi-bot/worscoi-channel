@@ -5,14 +5,14 @@ import {
   Star,
   X,
   ChevronDown,
-  Compass,
-  TrendingUp,
   LogOut,
   PanelLeftClose,
   PanelLeft,
   Tv,
   Trash2,
   Film,
+  Clapperboard,
+  BarChart3,
   Trophy,
   Globe,
   Sparkles,
@@ -343,24 +343,26 @@ export function WorscoiSidebar({
           {!isCollapsed ? (
             <div
               onClick={() => onNavigate('explorar')}
-              className="cursor-pointer flex items-center gap-2"
+              className="cursor-pointer flex items-center gap-2 group hover:opacity-95 transition"
               title="Worscoi - Grade de Transmissões"
             >
-              <WorscoiLogo size="md" />
-              <span className="text-[10px] font-bold text-zinc-400 bg-zinc-900 px-2 py-0.5 rounded-full border border-zinc-800">
+              <div className="transition-transform duration-200 group-hover:scale-105">
+                <WorscoiLogo size="md" />
+              </div>
+              <span className="text-[10px] font-bold text-zinc-400 bg-zinc-900 px-2 py-0.5 rounded-full border border-zinc-800 group-hover:border-zinc-700 transition">
                 {todosCanais.length} canais
               </span>
             </div>
           ) : (
             <div
               onClick={() => onNavigate('explorar')}
-              className="cursor-pointer mx-auto"
+              className="cursor-pointer mx-auto transition-transform duration-200 hover:scale-110 active:scale-95"
               title="Worscoi"
             >
               <span
                 data-logomark="true"
                 style={{ fontFamily: "'Brittany Signature', 'Brittany', 'Dancing Script', cursive" }}
-                className="text-2xl font-normal text-[#FF2D55] font-logomark logomark-font"
+                className="text-2xl font-normal text-[#FF2D55] font-logomark logomark-font drop-shadow-[0_0_8px_rgba(255,45,85,0.4)]"
               >
                 W
               </span>
@@ -371,35 +373,36 @@ export function WorscoiSidebar({
             <button
               type="button"
               onClick={onToggleCollapse}
-              className="p-1.5 rounded-lg text-zinc-500 hover:text-zinc-200 hover:bg-zinc-900 transition cursor-pointer"
+              className="w-7 h-7 rounded-full flex items-center justify-center bg-zinc-900/80 border border-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-800 hover:scale-115 active:scale-90 transition-all duration-200 cursor-pointer shadow-sm"
               title={isCollapsed ? 'Expandir barra lateral' : 'Recolher barra lateral'}
             >
               {isCollapsed ? (
-                <PanelLeft className="w-4 h-4" />
+                <PanelLeft className="w-3.5 h-3.5 transition-transform duration-200 hover:scale-110" />
               ) : (
-                <PanelLeftClose className="w-4 h-4" />
+                <PanelLeftClose className="w-3.5 h-3.5 transition-transform duration-200 hover:scale-110" />
               )}
             </button>
           )}
         </div>
 
-        {/* CAMPO DE BUSCA DE CANAIS */}
+        {/* CAMPO DE BUSCA DE CANAIS COM ÍCONES NO ESTILO TIKTOK */}
         {!isCollapsed && (
           <div className="px-3 pt-3 pb-2 shrink-0">
-            <div className="relative flex items-center">
-              <Search className="w-3.5 h-3.5 text-zinc-500 absolute left-3 pointer-events-none" />
+            <div className="relative flex items-center group">
+              <Search className="w-3.5 h-3.5 text-zinc-500 absolute left-3 pointer-events-none transition-transform duration-200 group-focus-within:scale-110 group-focus-within:text-[#FF2D55]" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Buscar canal..."
-                className="w-full bg-zinc-900/80 text-xs text-zinc-200 placeholder-zinc-500 rounded-lg pl-8 pr-7 py-2 border border-zinc-800/80 focus:outline-none focus:border-zinc-700 transition"
+                className="w-full bg-zinc-900/80 text-xs text-zinc-200 placeholder-zinc-500 rounded-xl pl-8 pr-8 py-2 border border-zinc-800/80 focus:outline-none focus:border-[#FF2D55]/60 focus:ring-1 focus:ring-[#FF2D55]/30 transition"
               />
               {searchQuery && (
                 <button
                   type="button"
                   onClick={() => setSearchQuery('')}
-                  className="absolute right-2.5 text-zinc-500 hover:text-zinc-300 text-xs cursor-pointer"
+                  className="absolute right-2.5 w-4 h-4 rounded-full flex items-center justify-center text-zinc-400 hover:text-white hover:bg-zinc-800 hover:scale-125 hover:rotate-90 active:scale-90 transition-all duration-200 cursor-pointer"
+                  title="Limpar busca"
                 >
                   <X className="w-3 h-3" />
                 </button>
@@ -408,7 +411,7 @@ export function WorscoiSidebar({
           </div>
         )}
 
-        {/* PILLS DE CATEGORIA */}
+        {/* PILLS DE CATEGORIA COM ÍCONES NO ESTILO TIKTOK & ANIMAÇÃO HOVER */}
         {!isCollapsed && (
           <div className="px-3 pb-2.5 shrink-0 border-b border-zinc-900/80">
             <div className="flex items-center gap-1.5 overflow-x-auto custom-scrollbar pb-0.5 select-none">
@@ -427,20 +430,26 @@ export function WorscoiSidebar({
                     key={f.id}
                     type="button"
                     onClick={() => onSelectFiltro(f.id)}
-                    className={`px-2.5 py-1 rounded-lg text-xs font-medium whitespace-nowrap transition-colors flex items-center gap-1.5 cursor-pointer shrink-0 ${
+                    className={`group px-2.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all duration-200 flex items-center gap-1.5 cursor-pointer shrink-0 hover:scale-105 active:scale-95 ${
                       isSelected
-                        ? 'bg-zinc-100 text-zinc-950 font-semibold shadow-sm'
-                        : 'bg-zinc-900/60 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/80 border border-zinc-800/60'
+                        ? 'bg-white text-zinc-950 font-bold shadow-md ring-1 ring-white/50'
+                        : 'bg-zinc-900/80 text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/90 border border-zinc-800/80 hover:border-zinc-700'
                     }`}
                   >
-                    <IconComponent className={`w-3 h-3 ${isSelected ? 'text-zinc-950' : 'text-zinc-400'}`} />
+                    <span className="tiktok-icon-hover inline-flex items-center justify-center">
+                      <IconComponent
+                        className={`w-3.5 h-3.5 transition-transform duration-200 group-hover:scale-120 group-hover:rotate-6 ${
+                          isSelected ? 'text-zinc-950' : 'text-zinc-400 group-hover:text-white'
+                        }`}
+                      />
+                    </span>
                     <span>{f.label}</span>
                     {typeof count === 'number' && count > 0 && (
                       <span
-                        className={`text-[9px] font-mono px-1 rounded ${
+                        className={`text-[9px] font-mono px-1.5 py-0.2 rounded-full transition-colors ${
                           isSelected
-                            ? 'bg-zinc-900 text-zinc-100'
-                            : 'bg-zinc-800 text-zinc-400'
+                            ? 'bg-zinc-950 text-white font-bold'
+                            : 'bg-zinc-800 text-zinc-400 group-hover:bg-zinc-700 group-hover:text-zinc-200'
                         }`}
                       >
                         {count}
@@ -477,12 +486,14 @@ export function WorscoiSidebar({
                       className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/50 transition-colors cursor-pointer group"
                     >
                       <div className="flex items-center gap-2 min-w-0">
-                        <GroupIcon className="w-3.5 h-3.5 text-zinc-500 group-hover:text-zinc-300 shrink-0" />
+                        <div className="w-6 h-6 rounded-full bg-zinc-900 border border-zinc-800/80 flex items-center justify-center shrink-0 transition-all duration-200 group-hover:scale-115 group-hover:border-zinc-700 group-hover:bg-zinc-800">
+                          <GroupIcon className="w-3 h-3 text-zinc-400 group-hover:text-white transition-transform duration-200 group-hover:rotate-6" />
+                        </div>
                         <span className="text-xs font-medium text-zinc-400 group-hover:text-zinc-200 truncate">
                           {group.meta.label}
                         </span>
                         {hasActiveChannel && (
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0 animate-pulse" />
                         )}
                       </div>
 
@@ -493,7 +504,7 @@ export function WorscoiSidebar({
                               e.stopPropagation();
                               onClearRecentChannels();
                             }}
-                            className="text-[10px] text-zinc-500 hover:text-rose-400 hover:bg-zinc-800 px-1.5 py-0.5 rounded transition cursor-pointer"
+                            className="text-[10px] text-zinc-500 hover:text-rose-400 hover:bg-zinc-800 px-1.5 py-0.5 rounded transition-transform duration-200 hover:scale-105 active:scale-95 cursor-pointer"
                             title="Limpar histórico recente"
                           >
                             Limpar
@@ -503,7 +514,7 @@ export function WorscoiSidebar({
                           {group.channels.length}
                         </span>
                         <ChevronDown
-                          className={`w-3.5 h-3.5 text-zinc-500 transition-transform duration-200 ${
+                          className={`w-3.5 h-3.5 text-zinc-500 transition-all duration-200 group-hover:scale-125 ${
                             isOpen ? 'rotate-180 text-zinc-300' : 'rotate-0'
                           }`}
                         />
@@ -554,6 +565,8 @@ export function WorscoiSidebar({
                                     <img
                                       src={getChannelLogo(canal)}
                                       alt={canal.nome}
+                                      loading="lazy"
+                                      decoding="async"
                                       className="w-full h-full object-contain"
                                       referrerPolicy="no-referrer"
                                       onError={(e) => {
@@ -595,15 +608,15 @@ export function WorscoiSidebar({
                                         e.stopPropagation();
                                         onToggleFavorite(canal, e);
                                       }}
-                                      className={`p-1 rounded transition cursor-pointer ${
+                                      className={`p-1.5 rounded-full transition-all duration-200 hover:scale-130 hover:rotate-12 active:scale-90 cursor-pointer ${
                                         isFav
-                                          ? 'text-amber-400 opacity-100'
-                                          : 'text-zinc-600 opacity-0 group-hover:opacity-100 hover:text-amber-400 hover:bg-zinc-800'
+                                          ? 'text-amber-400 opacity-100 drop-shadow-[0_0_6px_rgba(251,191,36,0.4)]'
+                                          : 'text-zinc-500 opacity-0 group-hover:opacity-100 hover:text-amber-400 hover:bg-zinc-800'
                                       }`}
                                       title={isFav ? 'Remover dos favoritos' : 'Favoritar canal'}
                                     >
                                       <Star
-                                        className={`w-3.5 h-3.5 ${
+                                        className={`w-3.5 h-3.5 transition-transform duration-200 ${
                                           isFav ? 'fill-amber-400 text-amber-400' : 'text-current'
                                         }`}
                                       />
@@ -616,7 +629,7 @@ export function WorscoiSidebar({
                                           e.stopPropagation();
                                           onRemoveRecentChannel(canal.id || canal.url, e);
                                         }}
-                                        className="p-1 text-zinc-500 hover:text-rose-400 hover:bg-zinc-800 rounded opacity-0 group-hover:opacity-100 transition cursor-pointer"
+                                        className="p-1.5 text-zinc-500 hover:text-rose-400 hover:bg-zinc-800 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-200 hover:scale-130 hover:rotate-90 active:scale-90 cursor-pointer"
                                         title="Remover dos recentes"
                                       >
                                         <X className="w-3 h-3" />
@@ -630,7 +643,7 @@ export function WorscoiSidebar({
                                           e.stopPropagation();
                                           onDeleteCustomChannel(canal.id!, e);
                                         }}
-                                        className="p-1 text-zinc-600 hover:text-red-400 hover:bg-zinc-800 rounded opacity-0 group-hover:opacity-100 transition cursor-pointer"
+                                        className="p-1.5 text-zinc-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-200 hover:scale-130 active:scale-90 cursor-pointer"
                                         title="Excluir canal"
                                       >
                                         <Trash2 className="w-3 h-3" />
@@ -684,78 +697,143 @@ export function WorscoiSidebar({
         </div>
       </div>
 
-      {/* SEÇÃO INFERIOR DOCKED: EXPLORAR, PAINEL DE CONTROLE, TERMINAR SESSÃO */}
-      <div className="p-3 border-t border-zinc-900 space-y-1 bg-[#050507] shrink-0">
-        {/* BOTÃO EXPLORAR */}
+      {/* SEÇÃO INFERIOR DOCKED NO ESTILO DO APP TIKTOK: TRANSMISSÃO, FILMOTECA, PAINEL DE CONTROLE, TERMINAR SESSÃO */}
+      <div className="p-3 border-t border-zinc-900 space-y-1.5 bg-[#050507] shrink-0">
+        {/* BOTÃO TRANSMISSÃO (TIKTOK LIVE / STREAM STYLE) */}
         <button
           type="button"
           onClick={() => onNavigate('explorar')}
-          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition cursor-pointer ${
+          className={`w-full group flex items-center ${
+            isCollapsed ? 'justify-center p-2' : 'gap-3 px-3 py-2.5'
+          } rounded-2xl text-xs font-bold transition-all duration-200 cursor-pointer ${
             currentView === 'explorar'
-              ? 'bg-zinc-800 text-white ring-1 ring-zinc-700'
-              : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/50'
+              ? 'bg-zinc-800/90 text-white ring-1 ring-zinc-700 shadow-md'
+              : 'text-zinc-400 hover:text-white hover:bg-zinc-900/80 border border-transparent'
           }`}
-          title="Grade de Canais e Transmissões"
+          title="Grade de Canais e Transmissões Ao Vivo"
         >
-          <Compass
-            className={`w-4 h-4 ${
-              currentView === 'explorar' ? 'text-white' : 'text-zinc-400'
+          <div
+            className={`tiktok-icon-badge relative w-8 h-8 rounded-full flex items-center justify-center shrink-0 transition-all duration-200 ease-out group-hover:scale-115 group-hover:rotate-3 ${
+              currentView === 'explorar'
+                ? 'bg-[#00F2FE]/20 text-[#00F2FE] border border-[#00F2FE]/50 shadow-[0_0_12px_rgba(0,242,254,0.35)]'
+                : 'bg-zinc-900/90 text-zinc-400 border border-zinc-800/90 group-hover:text-[#00F2FE] group-hover:border-[#00F2FE]/50 group-hover:bg-[#00F2FE]/10'
             }`}
-          />
-          {!isCollapsed && <span>Transmissão</span>}
+          >
+            <Tv className="w-4 h-4 transition-transform duration-200 group-hover:scale-110" />
+            <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-[#FF2D55] animate-pulse ring-2 ring-[#050507]" />
+          </div>
+          {!isCollapsed && (
+            <div className="flex flex-col text-left min-w-0">
+              <span className={`text-xs font-bold tracking-tight transition-colors ${
+                currentView === 'explorar' ? 'text-white' : 'text-zinc-300 group-hover:text-white'
+              }`}>
+                Transmissão
+              </span>
+              <span className="text-[10px] text-zinc-500 font-medium">
+                Grade ao vivo
+              </span>
+            </div>
+          )}
         </button>
 
-        {/* BOTÃO FILMOTECA */}
+        {/* BOTÃO FILMOTECA (TIKTOK CINEMA VOD STYLE) */}
         <button
           type="button"
           onClick={() => onNavigate('filmoteca')}
-          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition cursor-pointer ${
+          className={`w-full group flex items-center ${
+            isCollapsed ? 'justify-center p-2' : 'gap-3 px-3 py-2.5'
+          } rounded-2xl text-xs font-bold transition-all duration-200 cursor-pointer ${
             currentView === 'filmoteca'
-              ? 'bg-zinc-800 text-white ring-1 ring-zinc-700'
-              : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/50'
+              ? 'bg-zinc-800/90 text-white ring-1 ring-zinc-700 shadow-md'
+              : 'text-zinc-400 hover:text-white hover:bg-zinc-900/80 border border-transparent'
           }`}
           title="Filmoteca & Cinema VOD"
         >
-          <Film
-            className={`w-4 h-4 ${
-              currentView === 'filmoteca' ? 'text-white' : 'text-zinc-400'
+          <div
+            className={`tiktok-icon-badge relative w-8 h-8 rounded-full flex items-center justify-center shrink-0 transition-all duration-200 ease-out group-hover:scale-115 group-hover:-rotate-6 ${
+              currentView === 'filmoteca'
+                ? 'bg-amber-400/20 text-amber-400 border border-amber-400/50 shadow-[0_0_12px_rgba(251,191,36,0.35)]'
+                : 'bg-zinc-900/90 text-zinc-400 border border-zinc-800/90 group-hover:text-amber-400 group-hover:border-amber-400/50 group-hover:bg-amber-400/10'
             }`}
-          />
-          {!isCollapsed && <span>Filmoteca</span>}
+          >
+            <Clapperboard className="w-4 h-4 transition-transform duration-200 group-hover:scale-110" />
+          </div>
+          {!isCollapsed && (
+            <div className="flex flex-col text-left min-w-0">
+              <span className={`text-xs font-bold tracking-tight transition-colors ${
+                currentView === 'filmoteca' ? 'text-white' : 'text-zinc-300 group-hover:text-white'
+              }`}>
+                Filmoteca
+              </span>
+              <span className="text-[10px] text-zinc-500 font-medium">
+                Cinema & Séries
+              </span>
+            </div>
+          )}
         </button>
 
-        {/* BOTÃO PAINEL DE CONTROLE (EXCLUSIVO PARA ADMINISTRADOR) */}
+        {/* BOTÃO PAINEL DE CONTROLE (TIKTOK CREATOR STUDIO STYLE - EXCLUSIVO ADMINISTRADOR) */}
         {isAdmin && (
           <button
             type="button"
             onClick={() => onNavigate('painel')}
-            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition cursor-pointer ${
+            className={`w-full group flex items-center ${
+              isCollapsed ? 'justify-center p-2' : 'gap-3 px-3 py-2.5'
+            } rounded-2xl text-xs font-bold transition-all duration-200 cursor-pointer ${
               currentView === 'painel' || currentView === 'assinantes'
-                ? 'bg-zinc-800 text-white ring-1 ring-zinc-700'
-                : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/50'
+                ? 'bg-zinc-800/90 text-white ring-1 ring-zinc-700 shadow-md'
+                : 'text-zinc-400 hover:text-white hover:bg-zinc-900/80 border border-transparent'
             }`}
             title="Painel de controle e métricas"
           >
-            <TrendingUp
-              className={`w-4 h-4 ${
+            <div
+              className={`tiktok-icon-badge relative w-8 h-8 rounded-full flex items-center justify-center shrink-0 transition-all duration-200 ease-out group-hover:scale-115 group-hover:rotate-6 ${
                 currentView === 'painel' || currentView === 'assinantes'
-                  ? 'text-white'
-                  : 'text-zinc-400'
+                  ? 'bg-[#00E676]/20 text-[#00E676] border border-[#00E676]/50 shadow-[0_0_12px_rgba(0,230,118,0.35)]'
+                  : 'bg-zinc-900/90 text-zinc-400 border border-zinc-800/90 group-hover:text-[#00E676] group-hover:border-[#00E676]/50 group-hover:bg-[#00E676]/10'
               }`}
-            />
-            {!isCollapsed && <span>Painel de controle</span>}
+            >
+              <BarChart3 className="w-4 h-4 transition-transform duration-200 group-hover:scale-110" />
+            </div>
+            {!isCollapsed && (
+              <div className="flex flex-col text-left min-w-0">
+                <span className={`text-xs font-bold tracking-tight transition-colors ${
+                  currentView === 'painel' || currentView === 'assinantes'
+                    ? 'text-white'
+                    : 'text-zinc-300 group-hover:text-white'
+                }`}>
+                  Painel de controle
+                </span>
+                <span className="text-[10px] text-zinc-500 font-medium">
+                  Métricas & Gestão
+                </span>
+              </div>
+            )}
           </button>
         )}
 
-        {/* BOTÃO TERMINAR SESSÃO */}
+        {/* BOTÃO TERMINAR SESSÃO (TIKTOK LOGOUT DANGER STYLE) */}
         <button
           type="button"
           onClick={onLogout}
-          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold text-zinc-400 hover:text-rose-400 hover:bg-rose-500/10 transition cursor-pointer"
+          className={`w-full group flex items-center ${
+            isCollapsed ? 'justify-center p-2' : 'gap-3 px-3 py-2.5'
+          } rounded-2xl text-xs font-bold transition-all duration-200 cursor-pointer text-zinc-400 hover:text-[#FF2D55] hover:bg-[#FF2D55]/10 border border-transparent hover:border-[#FF2D55]/30`}
           title="Terminar sessão"
         >
-          <LogOut className="w-4 h-4 text-zinc-400" />
-          {!isCollapsed && <span>Terminar sessão</span>}
+          <div className="tiktok-icon-badge relative w-8 h-8 rounded-full flex items-center justify-center shrink-0 bg-zinc-900/90 text-zinc-400 border border-zinc-800/90 group-hover:text-[#FF2D55] group-hover:border-[#FF2D55]/50 group-hover:bg-[#FF2D55]/15 transition-all duration-200 ease-out group-hover:scale-115 group-hover:translate-x-0.5 shadow-sm">
+            <LogOut className="w-4 h-4 transition-transform duration-200 group-hover:scale-110" />
+          </div>
+          {!isCollapsed && (
+            <div className="flex flex-col text-left min-w-0">
+              <span className="text-xs font-bold tracking-tight text-zinc-300 group-hover:text-[#FF2D55] transition-colors">
+                Terminar sessão
+              </span>
+              <span className="text-[10px] text-zinc-500 font-medium group-hover:text-rose-400/80">
+                Sair da conta
+              </span>
+            </div>
+          )}
         </button>
       </div>
     </aside>
