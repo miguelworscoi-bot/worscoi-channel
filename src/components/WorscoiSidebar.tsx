@@ -63,10 +63,14 @@ const FILTROS_CONFIG: Array<{
   { id: 'Recentes', label: 'Recentes', icon: Clock },
   { id: 'Favoritos', label: 'Favoritos', icon: Star },
   { id: 'Esportes', label: 'Esportes', icon: Trophy },
+  { id: 'TNT Sports', label: 'TNT Sports', icon: Trophy },
+  { id: 'SuperSport', label: 'SuperSport', icon: Trophy },
+  { id: 'Premier League', label: 'Premier League', icon: Trophy },
+  { id: 'LaLiga', label: 'LaLiga', icon: Trophy },
+  { id: 'Vivo TV', label: 'Vivo TV', icon: Tv },
   { id: 'ZAP Angola', label: 'ZAP Angola', icon: Globe },
   { id: 'Portugal', label: 'Portugal', icon: Globe },
   { id: 'Brasil', label: 'Brasil', icon: Globe },
-  { id: 'SuperSport', label: 'SuperSport', icon: Trophy },
   { id: 'Filmes', label: 'Filmes & Séries', icon: Film },
   { id: 'Bonecos', label: 'Kids & Animação', icon: Smile },
   { id: 'Novelas', label: 'Novelas & Dramas', icon: Heart },
@@ -229,6 +233,8 @@ export function WorscoiSidebar({
         cName.includes(q) ||
         (canal.grupo && canal.grupo.toLowerCase().includes(q)) ||
         (canal.rede && canal.rede.toLowerCase().includes(q)) ||
+        (canal.descricao && canal.descricao.toLowerCase().includes(q)) ||
+        (canal.competicoes && canal.competicoes.some((comp) => comp.toLowerCase().includes(q))) ||
         catInfo.label.toLowerCase().includes(q) ||
         getSportTag(canal).toLowerCase().includes(q);
 
@@ -240,6 +246,45 @@ export function WorscoiSidebar({
         matchFiltro = canal.isCustom === true;
       } else if (filtroAtivo === 'Esportes') {
         matchFiltro = catInfo.categoria === 'Esportes' || canal.categoria === 'Esportes';
+      } else if (filtroAtivo === 'TNT Sports') {
+        matchFiltro =
+          canal.rede === 'TNT Sports' ||
+          cName.includes('tnt') ||
+          (canal.grupo && canal.grupo.toLowerCase().includes('tnt'));
+      } else if (filtroAtivo === 'SuperSport') {
+        matchFiltro =
+          canal.rede === 'SuperSport' ||
+          cName.includes('supersport') ||
+          (canal.grupo && canal.grupo.toLowerCase().includes('supersport'));
+      } else if (filtroAtivo === 'Premier League') {
+        matchFiltro =
+          cName.includes('premier league') ||
+          (canal.competicoes && canal.competicoes.some((c) => c.toLowerCase().includes('premier league'))) ||
+          cName.includes('sky sports') ||
+          cName.includes('espn');
+      } else if (filtroAtivo === 'LaLiga') {
+        matchFiltro =
+          cName.includes('laliga') ||
+          cName.includes('la liga') ||
+          (canal.competicoes && canal.competicoes.some((c) => c.toLowerCase().includes('laliga'))) ||
+          cName.includes('movistar') ||
+          cName.includes('real madrid') ||
+          cName.includes('barça') ||
+          cName.includes('barca');
+      } else if (filtroAtivo === 'LaLiga & Premier') {
+        matchFiltro =
+          cName.includes('premier') ||
+          cName.includes('laliga') ||
+          cName.includes('la liga') ||
+          (canal.competicoes && canal.competicoes.some((c) => {
+            const lc = c.toLowerCase();
+            return lc.includes('premier league') || lc.includes('laliga');
+          }));
+      } else if (filtroAtivo === 'Vivo' || filtroAtivo === 'Vivo TV') {
+        matchFiltro =
+          canal.rede === 'Vivo' ||
+          cName.includes('vivo') ||
+          (canal.grupo && canal.grupo.toLowerCase().includes('vivo'));
       } else if (filtroAtivo === 'Bonecos') {
         matchFiltro = catInfo.categoria === 'Bonecos' || canal.categoria === 'Bonecos';
       } else if (filtroAtivo === 'Filmes' || filtroAtivo === 'Lazer') {
@@ -267,11 +312,6 @@ export function WorscoiSidebar({
           cName.includes('zap') ||
           cName.includes('angola') ||
           cName.includes('zimbo');
-      } else if (filtroAtivo === 'SuperSport') {
-        matchFiltro =
-          canal.rede === 'SuperSport' ||
-          cName.includes('supersport') ||
-          (canal.grupo && canal.grupo.toLowerCase().includes('supersport'));
       }
 
       return matchBusca && matchFiltro;

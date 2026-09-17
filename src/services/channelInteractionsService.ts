@@ -229,13 +229,17 @@ export function subscribeChannelStats(
   const localSet = getLocalAdorosSet(userId);
   const localStats = getLocalStats(channelSlug);
 
-  // Notificação inicial imediata com cache local para zero latência visual
-  onUpdate({
-    channelId: channelSlug,
-    adorosCount: localStats.adorosCount,
-    commentsCount: localStats.commentsCount,
-    userHasAdorado: localSet.has(channelSlug),
-  });
+  // Notificação inicial assíncrona com cache local para evitar setState síncrono durante a montagem do useEffect
+  if (typeof window !== 'undefined') {
+    queueMicrotask(() => {
+      onUpdate({
+        channelId: channelSlug,
+        adorosCount: localStats.adorosCount,
+        commentsCount: localStats.commentsCount,
+        userHasAdorado: localSet.has(channelSlug),
+      });
+    });
+  }
 
   let currentAdorosCount = localStats.adorosCount;
   let currentCommentsCount = localStats.commentsCount;
@@ -383,9 +387,13 @@ export function subscribeChannelComments(
   channelSlug: string,
   onUpdate: (comments: ChannelComment[]) => void
 ): () => void {
-  // Notificação inicial a partir do cache local
+  // Notificação inicial assíncrona a partir do cache local
   const cached = getLocalComments(channelSlug);
-  onUpdate(cached);
+  if (typeof window !== 'undefined') {
+    queueMicrotask(() => {
+      onUpdate(cached);
+    });
+  }
 
   const commentsCol = collection(db, 'channel_comments');
   const q = query(

@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import ReactPlayer from 'react-player';
 import {
   Bookmark,
@@ -19,11 +19,12 @@ import {
   Sliders,
   Zap,
   SkipForward,
-  Play,
   SignalHigh,
   SignalMedium,
   SignalLow,
   Film,
+  Heart,
+  MessageCircle,
 } from 'lucide-react';
 import { Canal, LatencyMode } from '@/types';
 import { motion, AnimatePresence } from 'motion/react';
@@ -42,6 +43,18 @@ import { ChannelVideosModal, extractYouTubeId } from './ChannelVideosModal';
 import { NextVideosQueueDrawer } from './NextVideosQueueDrawer';
 import { NextVideoAutoplayOverlay } from './NextVideoAutoplayOverlay';
 import { autoplayQueueService, QueueItem } from '@/services/autoplayQueueService';
+import { PlayerCommentsDrawer } from './PlayerCommentsDrawer';
+import {
+  subscribeChannelStats,
+  subscribeChannelComments,
+  toggleChannelAdoro,
+  addChannelComment,
+  deleteChannelComment,
+  getVideoItemSlug,
+  formatInteractionCount,
+  getEffectiveVisitorId,
+  ChannelComment,
+} from '@/services/channelInteractionsService';
 
 interface PlayerHeroProps {
   canalAtivo: Canal | null;
@@ -144,16 +157,176 @@ export function PlayerHero({
   const [queueItems, setQueueItems] = useState<QueueItem[]>([]);
   const [autoplayTarget, setAutoplayTarget] = useState<QueueItem | null>(null);
   const [isAutoplayCountdownActive, setIsAutoplayCountdownActive] = useState(false);
+  // Partículas disparadas ao apertar o botão favoritar (#ed3c5c)
+  const [bookmarkParticles, setBookmarkParticles] = useState<
+    Array<{ id: number; angle: number; distance: number; size: number; duration: number }>
+  >([]);
 
-  const streamsDisponiveis = canalAtivo
-    ? [canalAtivo.url, ...(canalAtivo.backupUrls || [])]
-    : [];
+  // Estados de Interações (Adoro e Comentários ao Vivo)
+  const [isLiked, setIsLiked] = useState(false);
+  const [adorosCount, setAdorosCount] = useState(0);
+  const [commentsCount, setCommentsCount] = useState(0);
+  const [commentsList, setCommentsList] = useState<ChannelComment[]>([]);
+  const [isCommentsOpen, setIsCommentsOpen] = useState(false);
+  const [isSubmittingComment, setIsSubmittingComment] = useState(false);
+  const [adoroParticles, setAdoroParticles] = useState<
+    Array<{ id: number; angle: number; distance: number; size: number; duration: number }>
+  >([]);
+
+  const handleBookmarkClick = (_e?: React.MouseEvent<HTMLButtonElement>) => {
+    // Dispara a animação de partículas na cor #ed3c5c
+    const angleBase = Math.random() * Math.PI * 2;
+    const newParticles = Array.from({ length: 14 }).map((_, i) => {
+      const angle = angleBase + (i / 14) * Math.PI * 2 + (Math.random() - 0.5) * 0.4;
+      const distance = 26 + Math.random() * 28;
+      const size = 3 + Math.random() * 4;
+      const duration = 0.55 + Math.random() * 0.25;
+      return { id: Date.now() + i, angle, distance, size, duration };
+    });
+
+    setBookmarkParticles(newParticles);
+    setTimeout(() => {
+      setBookmarkParticles([]);
+    }, 900);
+
+    onToggleFavorite();
+  };
+
+  // Callbacks estabilizados em refs para garantir que useEffects com intervals/listeners nunca reiniciem a cada render
+  const onNextCanalRef = React.useRef(onNextCanal);
+  onNextCanalRef.current = onNextCanal;
+  const onPrevCanalRef = React.useRef(onPrevCanal);
+  onPrevCanalRef.current = onPrevCanal;
+  const onToggleMuteRef = React.useRef(onToggleMute);
+  onToggleMuteRef.current = onToggleMute;
+  const onEnterCinemaModeRef = React.useRef(onEnterCinemaMode);
+  onEnterCinemaModeRef.current = onEnterCinemaMode;
+  const onToggleLatencyModeRef = React.useRef(onToggleLatencyMode);
+  onToggleLatencyModeRef.current = onToggleLatencyMode;
+  const onStreamChangeRef = React.useRef(onStreamChange);
+  onStreamChangeRef.current = onStreamChange;
+  const onToggleProxyRef = React.useRef(onToggleProxy);
+  onToggleProxyRef.current = onToggleProxy;
+  const onPlayerErrorRef = React.useRef(onPlayerError);
+  onPlayerErrorRef.current = onPlayerError;
+  const onAddStreamUrlRef = React.useRef(onAddStreamUrl);
+  onAddStreamUrlRef.current = onAddStreamUrl;
+
+  const backupUrlsKey = (canalAtivo?.backupUrls || []).join('|');
+  const streamsDisponiveis = useMemo(() => {
+    return canalAtivo ? [canalAtivo.url, ...(canalAtivo.backupUrls || [])] : [];
+  }, [canalAtivo?.id, canalAtivo?.url, backupUrlsKey]);
+
   const activeRawStreamUrl =
     canalAtivo && streamsDisponiveis[streamIndex]
       ? streamsDisponiveis[streamIndex]
       : canalAtivo?.url || '';
 
+  // Carrega e sincroniza em tempo real Adoros e Comentários do canal/transmissão
+  useEffect(() => {
+    if (!canalAtivo) {
+      setIsLiked(false);
+      setAdorosCount(0);
+      setCommentsCount(0);
+      setCommentsList([]);
+      return;
+    }
+
+    const rawUrl = emergencyOverrideUrl || streamsDisponiveis[streamIndex] || canalAtivo.url || '';
+    const videoSlug = getVideoItemSlug(canalAtivo, streamIndex, rawUrl);
+    const effectiveUserId = getEffectiveVisitorId(userProfile?.id);
+
+    const unsubStats = subscribeChannelStats(videoSlug, effectiveUserId, (stats) => {
+      setIsLiked((prev) => (prev === stats.userHasAdorado ? prev : stats.userHasAdorado));
+      setAdorosCount((prev) => (prev === stats.adorosCount ? prev : stats.adorosCount));
+      setCommentsCount((prev) => (prev === stats.commentsCount ? prev : stats.commentsCount));
+    });
+
+    const unsubComments = subscribeChannelComments(videoSlug, (comments) => {
+      setCommentsList(comments);
+    });
+
+    return () => {
+      unsubStats();
+      unsubComments();
+    };
+  }, [
+    canalAtivo?.id,
+    canalAtivo?.nome,
+    canalAtivo?.url,
+    streamIndex,
+    emergencyOverrideUrl,
+    activeRawStreamUrl,
+    userProfile?.id,
+  ]);
+
+  const handleToggleAdoro = async () => {
+    if (!canalAtivo) return;
+    const rawUrl = emergencyOverrideUrl || streamsDisponiveis[streamIndex] || canalAtivo.url || '';
+    const videoSlug = getVideoItemSlug(canalAtivo, streamIndex, rawUrl);
+    const effectiveUserId = getEffectiveVisitorId(userProfile?.id);
+
+    // Efeito de partículas vibrantes na cor #ed3c5c
+    const angleBase = Math.random() * Math.PI * 2;
+    const newParticles = Array.from({ length: 14 }).map((_, i) => {
+      const angle = angleBase + (i / 14) * Math.PI * 2 + (Math.random() - 0.5) * 0.4;
+      const distance = 26 + Math.random() * 28;
+      const size = 3 + Math.random() * 4;
+      const duration = 0.55 + Math.random() * 0.25;
+      return { id: Date.now() + i, angle, distance, size, duration };
+    });
+    setAdoroParticles(newParticles);
+    setTimeout(() => {
+      setAdoroParticles([]);
+    }, 900);
+
+    const res = await toggleChannelAdoro(videoSlug, canalAtivo.nome, effectiveUserId);
+    setIsLiked(res.userHasAdorado);
+    setAdorosCount(res.adorosCount);
+  };
+
+  const handleSendComment = async (text: string) => {
+    if (!canalAtivo || !text.trim() || isSubmittingComment) return;
+    const rawUrl = emergencyOverrideUrl || streamsDisponiveis[streamIndex] || canalAtivo.url || '';
+    const videoSlug = getVideoItemSlug(canalAtivo, streamIndex, rawUrl);
+    const effectiveUserId = getEffectiveVisitorId(userProfile?.id);
+    const effectiveUserName =
+      userProfile?.displayName ||
+      (userProfile?.email ? userProfile.email.split('@')[0] : 'Espectador');
+    const effectiveUserPhoto = userProfile?.photoURL || null;
+    const effectiveUserPlan = userProfile?.planName || userProfile?.plan || null;
+
+    setIsSubmittingComment(true);
+    try {
+      await addChannelComment({
+        channelSlug: videoSlug,
+        channelName: canalAtivo.nome,
+        userId: effectiveUserId,
+        userName: effectiveUserName,
+        userPhoto: effectiveUserPhoto,
+        userPlan: effectiveUserPlan,
+        text,
+      });
+    } catch (err) {
+      console.error('Erro ao enviar comentário:', err);
+    } finally {
+      setIsSubmittingComment(false);
+    }
+  };
+
+  const handleDeleteComment = async (commentId: string) => {
+    if (!canalAtivo) return;
+    const rawUrl = emergencyOverrideUrl || streamsDisponiveis[streamIndex] || canalAtivo.url || '';
+    const videoSlug = getVideoItemSlug(canalAtivo, streamIndex, rawUrl);
+    try {
+      await deleteChannelComment(commentId, videoSlug);
+    } catch (err) {
+      console.error('Erro ao excluir comentário:', err);
+    }
+  };
+
   // Atualiza a fila de reprodução inteligente e grava no histórico do usuário
+  const totalCanaisCount = todosCanais?.length || 0;
   useEffect(() => {
     if (!canalAtivo) return;
     const items = autoplayQueueService.buildQueue(
@@ -163,7 +336,7 @@ export function PlayerHero({
     );
     setQueueItems(items);
     autoplayQueueService.addToWatchHistory(canalAtivo, streamIndex, activeRawStreamUrl);
-  }, [canalAtivo, streamIndex, todosCanais, activeRawStreamUrl]);
+  }, [canalAtivo?.id, streamIndex, totalCanaisCount, activeRawStreamUrl]);
 
   const handlePlaybackFinished = () => {
     if (autoplayQueueService.isAutoplayEnabled()) {
@@ -260,9 +433,9 @@ export function PlayerHero({
                 const existingIndex = allUrls.findIndex((u) => u.includes(videoData.video_id));
                 setTimeout(() => {
                   if (existingIndex >= 0) {
-                    onStreamChange?.(existingIndex);
-                  } else if (onAddStreamUrl) {
-                    onAddStreamUrl(newUrl);
+                    onStreamChangeRef.current?.(existingIndex);
+                  } else if (onAddStreamUrlRef.current) {
+                    onAddStreamUrlRef.current(newUrl);
                   }
                 }, 0);
               }
@@ -278,7 +451,7 @@ export function PlayerHero({
     return () => {
       window.removeEventListener('message', handleYouTubeMessage);
     };
-  }, [activeRawStreamUrl, canalAtivo, onStreamChange, onAddStreamUrl]);
+  }, [activeRawStreamUrl, canalAtivo?.id]);
 
   // Medição contínua e dinâmica da latência do sinal da transmissão (ping RTT)
   useEffect(() => {
@@ -396,6 +569,7 @@ export function PlayerHero({
   })();
 
   // Watchdog de failover inteligente e resgate contra telas intermináveis
+  const streamsCount = streamsDisponiveis.length;
   useEffect(() => {
     if (hasFirstFrame || !canalAtivo || isCinemaMode) return;
 
@@ -407,14 +581,14 @@ export function PlayerHero({
       // Aos 3.5s: tenta servidor alternativo ou ativa proxy
       if (seconds === 4 && !hasFirstFrame) {
         setTimeout(() => {
-          if (streamsDisponiveis.length > 1 && streamIndex < streamsDisponiveis.length - 1) {
-            onStreamChange(streamIndex + 1);
+          if (streamsCount > 1 && streamIndex < streamsCount - 1) {
+            onStreamChangeRef.current?.(streamIndex + 1);
           } else if (
             !useProxy &&
             !activeRawStreamUrl.includes('youtube.com') &&
             !activeRawStreamUrl.includes('youtu.be')
           ) {
-            onToggleProxy();
+            onToggleProxyRef.current?.();
           }
         }, 0);
       }
@@ -426,13 +600,13 @@ export function PlayerHero({
 
       if (seconds === 8 && !hasFirstFrame) {
         setTimeout(() => {
-          onPlayerError(new Error('Tempo limite de conexão'));
+          onPlayerErrorRef.current?.(new Error('Tempo limite de conexão'));
         }, 0);
       }
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [hasFirstFrame, canalAtivo, streamsDisponiveis.length, streamIndex, useProxy, onStreamChange, onToggleProxy, onPlayerError, activeRawStreamUrl, isCinemaMode]);
+  }, [hasFirstFrame, canalAtivo?.id, streamsCount, streamIndex, useProxy, activeRawStreamUrl, isCinemaMode]);
 
   // Contagem regressiva de auto-resgate para nunca travar o usuário
   useEffect(() => {
@@ -445,8 +619,8 @@ export function PlayerHero({
         clearInterval(timer);
         setRescueCountdown(0);
         setTimeout(() => {
-          if (onNextCanal) {
-            onNextCanal();
+          if (onNextCanalRef.current) {
+            onNextCanalRef.current();
           } else {
             setEmergencyOverrideUrl(getEmergencyFallbackStream(canalAtivo?.categoria));
           }
@@ -457,7 +631,7 @@ export function PlayerHero({
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [isRescueActive, hasFirstFrame, isRescuePaused, isCinemaMode, onNextCanal, canalAtivo?.categoria]);
+  }, [isRescueActive, hasFirstFrame, isRescuePaused, isCinemaMode, canalAtivo?.categoria]);
 
   // Atalhos de teclado úteis
   useEffect(() => {
@@ -468,22 +642,22 @@ export function PlayerHero({
         return;
       }
       if (e.key === 'ArrowRight' || e.key === ']') {
-        setTimeout(() => onNextCanal?.(), 0);
+        setTimeout(() => onNextCanalRef.current?.(), 0);
       } else if (e.key === 'ArrowLeft' || e.key === '[') {
-        setTimeout(() => onPrevCanal?.(), 0);
+        setTimeout(() => onPrevCanalRef.current?.(), 0);
       } else if (e.key.toLowerCase() === 'm') {
-        setTimeout(() => onToggleMute(), 0);
+        setTimeout(() => onToggleMuteRef.current?.(), 0);
       } else if (e.key.toLowerCase() === 'f') {
-        setTimeout(() => onEnterCinemaMode(), 0);
+        setTimeout(() => onEnterCinemaModeRef.current?.(), 0);
       } else if (e.key.toLowerCase() === 's') {
-        setTimeout(() => onToggleLatencyMode(), 0);
+        setTimeout(() => onToggleLatencyModeRef.current?.(), 0);
       } else if (e.key.toLowerCase() === 'p') {
         handleTogglePip();
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onNextCanal, onPrevCanal, onToggleMute, onEnterCinemaMode, onToggleLatencyMode, isCinemaMode, isTransitioning]);
+  }, [isCinemaMode, isTransitioning]);
 
   const videoContainerRef = React.useRef<HTMLDivElement>(null);
   const [isPipActive, setIsPipActive] = useState(false);
@@ -556,65 +730,59 @@ export function PlayerHero({
         id="player-hero-standby-container"
         className="flex flex-col items-center w-full max-w-4xl mx-auto select-none"
       >
-        <div className="relative aspect-video w-full bg-[#090b0e] rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl shadow-black/80 border border-zinc-800/80 ring-1 ring-white/5 flex flex-col items-center justify-between p-5 sm:p-8 text-center">
-          {/* Top Bar: Status Badge */}
-          <div className="w-full flex items-center justify-between z-10">
-            <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-zinc-900/80 border border-zinc-800 text-zinc-300 text-xs font-semibold">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+        <div className="relative aspect-video w-full bg-[#08090c] rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl shadow-black/80 border border-zinc-800/60 ring-1 ring-white/5 flex flex-col items-center justify-center p-6 sm:p-10 text-center">
+          {/* Header discreto: Status */}
+          <div className="absolute top-5 left-5 right-5 flex items-center justify-between z-10">
+            <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.04] border border-white/10 text-zinc-300 text-xs font-medium">
+              <span className="w-2 h-2 rounded-full bg-emerald-400" />
               <span>Transmissão Pronta</span>
             </div>
-            <span className="text-xs text-zinc-400 font-normal hidden sm:inline-block">
+            <span className="text-xs text-zinc-500 font-medium hidden sm:inline-block">
               {todosCanais?.length || 0} canais disponíveis
             </span>
           </div>
 
-          {/* Central Area: Standby Title & Fast Channels */}
-          <div className="flex flex-col items-center my-auto max-w-lg px-2 z-10">
-            <div className="w-13 h-13 sm:w-15 sm:h-15 rounded-2xl bg-zinc-900/90 border border-zinc-800 flex items-center justify-center text-zinc-300 shadow-xl mb-3.5">
-              <Tv className="w-6 h-6 sm:w-7 sm:h-7 text-zinc-300" />
+          {/* Área Central: Título Direto e Canais em Destaque */}
+          <div className="flex flex-col items-center max-w-lg px-2 z-10 mt-3 sm:mt-0">
+            <div className="w-12 h-12 rounded-2xl bg-white/[0.04] border border-white/10 flex items-center justify-center text-zinc-300 shadow-md mb-3">
+              <Tv className="w-6 h-6 text-zinc-300" />
             </div>
 
-            <h3 className="text-base sm:text-xl font-bold text-white tracking-tight mb-1.5">
+            <h3 className="text-lg sm:text-xl font-bold text-white tracking-tight mb-1.5">
               Escolha seu canal para assistir
             </h3>
-            <p className="text-xs sm:text-sm text-zinc-400 max-w-md leading-relaxed mb-4">
-              Selecione um canal na barra lateral ou sintonize um dos destaques abaixo:
+            <p className="text-xs sm:text-sm text-zinc-400 max-w-sm leading-relaxed mb-5">
+              Selecione um canal na lista lateral ou toque em um dos destaques:
             </p>
 
-            {/* Botões de canais rápidos de início */}
+            {/* Destaques de Canais Rápidos sem Poluição Visual */}
             {quickChannels.length > 0 && onSelectCanal && (
-              <div className="flex flex-wrap items-center justify-center gap-2 max-w-lg">
+              <div className="flex flex-wrap items-center justify-center gap-2 max-w-md">
                 {quickChannels.map((c) => (
                   <button
                     key={c.id || c.url}
                     type="button"
                     onClick={() => onSelectCanal(c)}
-                    className="px-3 py-1.5 rounded-xl bg-zinc-900/90 hover:bg-zinc-800 text-zinc-200 hover:text-white border border-zinc-800 hover:border-zinc-700 text-xs font-semibold flex items-center gap-2 transition cursor-pointer shadow-sm group active:scale-95"
+                    className="px-3.5 py-2 rounded-xl bg-white/[0.05] hover:bg-white/[0.1] text-zinc-200 hover:text-white border border-white/10 hover:border-white/20 text-xs font-semibold flex items-center gap-2.5 transition-all duration-150 cursor-pointer shadow-sm active:scale-95"
                     title={`Sintonizar ${c.nome}`}
                   >
                     <img
                       src={getChannelLogo(c)}
                       alt=""
-                      className="w-4 h-4 object-contain"
+                      className="w-4 h-4 object-contain rounded-sm"
                       onError={(e) => {
                         (e.target as HTMLImageElement).src = getChannelFallbackLogo(c);
                       }}
                     />
                     <span className="truncate max-w-[120px]">{c.nome}</span>
-                    <Play className="w-3 h-3 text-[#FF2D55] group-hover:scale-110 transition-transform" />
                   </button>
                 ))}
               </div>
             )}
           </div>
 
-          {/* Bottom Bar: Instructions */}
-          <div className="w-full flex items-center justify-center pt-2 z-10 border-t border-zinc-900 text-[11px] text-zinc-500">
-            <span>Selecione qualquer canal para iniciar a transmissão ao vivo</span>
-          </div>
-
           {/* Fundo suave com iluminação sutil */}
-          <div className="absolute inset-0 bg-radial from-zinc-900/20 via-transparent to-black pointer-events-none" />
+          <div className="absolute inset-0 bg-radial from-zinc-800/10 via-transparent to-black pointer-events-none" />
         </div>
       </div>
     );
@@ -1151,21 +1319,121 @@ export function PlayerHero({
             </div>
 
             {/* LADO DIREITO: AÇÕES ESSENCIAIS E ORGANIZADAS */}
-            <div className="flex items-center gap-2 shrink-0">
-              {/* BOTÃO SALVAR / FAVORITAR */}
+            <div className="flex items-center gap-2 shrink-0 flex-wrap sm:flex-nowrap">
+              {/* BOTÃO ADORO (CORAÇÃO COM CONTADOR E PARTÍCULAS #ed3c5c) */}
+              <div className="relative inline-flex items-center justify-center">
+                <button
+                  type="button"
+                  id="player-action-adoro-btn"
+                  onClick={handleToggleAdoro}
+                  className={`relative flex items-center gap-1.5 px-3 py-2 rounded-xl border text-xs font-semibold transition-all cursor-pointer active:scale-95 ${
+                    isLiked
+                      ? 'bg-[#ed3c5c]/15 border-[#ed3c5c]/50 text-[#ed3c5c] shadow-sm shadow-[#ed3c5c]/20'
+                      : 'bg-zinc-800/60 hover:bg-zinc-800 border-white/10 text-zinc-300 hover:text-white'
+                  }`}
+                  title={isLiked ? 'Remover Adoro' : 'Adoro este canal'}
+                >
+                  <Heart
+                    className={`w-4 h-4 transition-transform duration-200 ${
+                      isLiked ? 'fill-[#ed3c5c] text-[#ed3c5c] scale-110' : ''
+                    }`}
+                  />
+                  <span>{formatInteractionCount(adorosCount)}</span>
+                  <span className="hidden sm:inline">Adoro</span>
+                </button>
+
+                {/* Explosão de Partículas #ed3c5c ao Adorar */}
+                <AnimatePresence>
+                  {adoroParticles.map((p) => {
+                    const targetX = Math.cos(p.angle) * p.distance;
+                    const targetY = Math.sin(p.angle) * p.distance;
+                    return (
+                      <motion.span
+                        key={p.id}
+                        initial={{ scale: 0.2, x: 0, y: 0, opacity: 1 }}
+                        animate={{
+                          scale: [0.2, 1.2, 0],
+                          x: targetX,
+                          y: targetY,
+                          opacity: [1, 0.9, 0],
+                        }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: p.duration, ease: 'easeOut' }}
+                        className="pointer-events-none absolute rounded-full shadow-sm"
+                        style={{
+                          width: `${p.size}px`,
+                          height: `${p.size}px`,
+                          backgroundColor: '#ed3c5c',
+                          boxShadow: '0 0 8px #ed3c5c',
+                        }}
+                      />
+                    );
+                  })}
+                </AnimatePresence>
+              </div>
+
+              {/* BOTÃO COMENTÁRIOS */}
               <button
                 type="button"
-                id="player-action-bookmark-btn"
-                onClick={onToggleFavorite}
-                className={`p-2.5 rounded-xl border text-xs transition-all cursor-pointer active:scale-95 flex items-center justify-center ${
-                  isFavorited
-                    ? 'bg-amber-500/15 border-amber-500/40 text-amber-400 shadow-sm'
-                    : 'bg-zinc-800/60 hover:bg-zinc-800 border-white/10 text-zinc-400 hover:text-white'
+                id="player-action-comment-btn"
+                onClick={() => setIsCommentsOpen(!isCommentsOpen)}
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border text-xs font-semibold transition-all cursor-pointer active:scale-95 ${
+                  isCommentsOpen
+                    ? 'bg-rose-500/20 border-rose-500/50 text-[#ed3c5c] shadow-sm'
+                    : 'bg-zinc-800/60 hover:bg-zinc-800 border-white/10 text-zinc-300 hover:text-white'
                 }`}
-                title={isFavorited ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
+                title="Ver e adicionar comentários ao vivo"
               >
-                <Bookmark className={`w-4 h-4 ${isFavorited ? 'fill-amber-400 text-amber-400' : ''}`} />
+                <MessageCircle className="w-4 h-4" />
+                <span>{formatInteractionCount(commentsCount)}</span>
+                <span className="hidden sm:inline">Comentários</span>
               </button>
+
+              {/* BOTÃO SALVAR / FAVORITAR */}
+              <div className="relative inline-flex items-center justify-center">
+                <button
+                  type="button"
+                  id="player-action-bookmark-btn"
+                  onClick={handleBookmarkClick}
+                  className={`relative p-2.5 rounded-xl border text-xs transition-all cursor-pointer active:scale-90 flex items-center justify-center ${
+                    isFavorited
+                      ? 'bg-[#ed3c5c]/15 border-[#ed3c5c]/50 text-[#ed3c5c] shadow-sm shadow-[#ed3c5c]/20'
+                      : 'bg-zinc-800/60 hover:bg-zinc-800 border-white/10 text-zinc-400 hover:text-white'
+                  }`}
+                  title={isFavorited ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
+                >
+                  <Bookmark className={`w-4 h-4 transition-transform ${isFavorited ? 'fill-[#ed3c5c] text-[#ed3c5c] scale-110' : ''}`} />
+                </button>
+
+                {/* Explosão de Partículas #ed3c5c */}
+                <AnimatePresence>
+                  {bookmarkParticles.map((p) => {
+                    const targetX = Math.cos(p.angle) * p.distance;
+                    const targetY = Math.sin(p.angle) * p.distance;
+                    return (
+                      <motion.span
+                        key={p.id}
+                        initial={{ scale: 0.2, x: 0, y: 0, opacity: 1 }}
+                        animate={{
+                          scale: [0.2, 1.2, 0],
+                          x: targetX,
+                          y: targetY,
+                          opacity: [1, 0.9, 0],
+                        }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: p.duration, ease: 'easeOut' }}
+                        className="pointer-events-none absolute rounded-full shadow-sm"
+                        style={{
+                          width: `${p.size}px`,
+                          height: `${p.size}px`,
+                          backgroundColor: '#ed3c5c',
+                          boxShadow: '0 0 8px #ed3c5c',
+                        }}
+                      />
+                    );
+                  })}
+                </AnimatePresence>
+              </div>
 
               {/* BOTÃO VÍDEOS DO CANAL (SE FOR YOUTUBE) */}
               {isYouTubeChannel && (
@@ -1311,6 +1579,19 @@ export function PlayerHero({
             );
           }
         }}
+      />
+
+      {/* GAVETA DE COMENTÁRIOS AO VIVO */}
+      <PlayerCommentsDrawer
+        isOpen={isCommentsOpen}
+        onClose={() => setIsCommentsOpen(false)}
+        canalNome={canalAtivo?.nome || 'Canal'}
+        comments={commentsList}
+        onSendComment={handleSendComment}
+        onDeleteComment={handleDeleteComment}
+        isSubmitting={isSubmittingComment}
+        currentUserId={getEffectiveVisitorId(userProfile?.id)}
+        isAdmin={isAdmin}
       />
     </div>
   );

@@ -242,6 +242,100 @@ export const LOGO_SPORT_TV = svgToUri(`
 </svg>
 `);
 
+// 10b. SUPERSPORT (DStv - Azul nobre, faixa luminosa e tipografia icônica de esportes mundiais)
+export const LOGO_SUPERSPORT = svgToUri(`
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+  <defs>
+    <radialGradient id="ssBg" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#003580"/>
+      <stop offset="100%" stop-color="#001438"/>
+    </radialGradient>
+    <linearGradient id="ssSlash" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00d2ff"/>
+      <stop offset="100%" stop-color="#0072ff"/>
+    </linearGradient>
+  </defs>
+  <rect width="120" height="120" rx="26" fill="url(#ssBg)"/>
+  <g transform="skewX(-15)">
+    <path d="M42 34 L92 34 L82 46 L32 46 Z" fill="#ffffff"/>
+    <path d="M38 50 L88 50 L78 62 L28 62 Z" fill="url(#ssSlash)"/>
+    <path d="M34 66 L84 66 L74 78 L24 78 Z" fill="#ff3366"/>
+  </g>
+  <text x="60" y="98" font-family="'Arial Black',system-ui,sans-serif" font-weight="900" font-size="12" fill="#ffffff" text-anchor="middle" letter-spacing="1.5">SUPERSPORT</text>
+  <text x="60" y="112" font-family="'Arial Black',system-ui,sans-serif" font-weight="800" font-size="8" fill="#00d2ff" text-anchor="middle" letter-spacing="2">WORLD OF CHAMPIONS</text>
+</svg>
+`);
+
+// 10c. SUPERSPORT MÁXIMO (Em Português para Angola e Moçambique)
+export const LOGO_SUPERSPORT_MAXIMO = svgToUri(`
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+  <defs>
+    <radialGradient id="ssMaxBg" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#002b66"/>
+      <stop offset="100%" stop-color="#0a1128"/>
+    </radialGradient>
+  </defs>
+  <rect width="120" height="120" rx="26" fill="url(#ssMaxBg)"/>
+  <text x="60" y="32" font-family="'Arial Black',system-ui,sans-serif" font-weight="900" font-size="10" fill="#00d2ff" text-anchor="middle" letter-spacing="1">SUPERSPORT</text>
+  <rect x="18" y="42" width="84" height="34" rx="8" fill="#e63946"/>
+  <text x="60" y="66" font-family="'Arial Black',system-ui,sans-serif" font-weight="900" font-size="16" fill="#ffffff" text-anchor="middle" letter-spacing="1">MÁXIMO</text>
+  <rect x="26" y="86" width="68" height="18" rx="5" fill="#111111"/>
+  <text x="60" y="99" font-family="'Arial Black',system-ui,sans-serif" font-weight="800" font-size="8" fill="#ffd100" text-anchor="middle" letter-spacing="1.5">EM PORTUGUÊS</text>
+</svg>
+`);
+
+// 10d. PREMIER LEAGUE (Roxo Real #38003c e Verde Neon Elétrico #00ff87 com coroa do leão)
+export const LOGO_PREMIER_LEAGUE = svgToUri(`
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+  <defs>
+    <radialGradient id="plBg" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#38003c"/>
+      <stop offset="100%" stop-color="#19001b"/>
+    </radialGradient>
+  </defs>
+  <rect width="120" height="120" rx="26" fill="url(#plBg)"/>
+  <path d="M38 46 L46 30 L60 40 L74 30 L82 46 L76 66 L44 66 Z" fill="#00ff87"/>
+  <circle cx="60" cy="54" r="5" fill="#38003c"/>
+  <text x="60" y="86" font-family="'Arial Black',system-ui,sans-serif" font-weight="900" font-size="11" fill="#ffffff" text-anchor="middle" letter-spacing="1.2">PREMIER</text>
+  <text x="60" y="104" font-family="'Arial Black',system-ui,sans-serif" font-weight="900" font-size="11" fill="#00ff87" text-anchor="middle" letter-spacing="1.5">LEAGUE</text>
+</svg>
+`);
+
+// 10e. VIVO / VIVO TV (Roxo vibrante #660099, mascote e destaque de esportes)
+export const LOGO_VIVO = svgToUri(`
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+  <defs>
+    <radialGradient id="vivoBg" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#660099"/>
+      <stop offset="100%" stop-color="#3c005a"/>
+    </radialGradient>
+  </defs>
+  <rect width="120" height="120" rx="26" fill="url(#vivoBg)"/>
+  <circle cx="60" cy="34" r="9" fill="#ffffff"/>
+  <rect x="55" y="45" width="10" height="14" rx="5" fill="#ffffff"/>
+  <text x="60" y="82" font-family="'Arial Black',system-ui,sans-serif" font-weight="900" font-size="24" fill="#ffffff" text-anchor="middle" letter-spacing="-0.5">vivo</text>
+  <rect x="30" y="92" width="60" height="16" rx="8" fill="#ffd100"/>
+  <text x="60" y="104" font-family="'Arial Black',system-ui,sans-serif" font-weight="900" font-size="9" fill="#3c005a" text-anchor="middle" letter-spacing="1.5">ESPORTES</text>
+</svg>
+`);
+
+// 10f. MOVISTAR LALIGA (Azul M+ com LaLiga oficial)
+export const LOGO_MOVISTAR_LALIGA = svgToUri(`
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+  <defs>
+    <radialGradient id="mLaLigaBg" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#001845"/>
+      <stop offset="100%" stop-color="#000814"/>
+    </radialGradient>
+  </defs>
+  <rect width="120" height="120" rx="26" fill="url(#mLaLigaBg)"/>
+  <text x="60" y="44" font-family="'Arial Black',system-ui,sans-serif" font-weight="900" font-size="28" fill="#00e5ff" text-anchor="middle">M+</text>
+  <rect x="18" y="56" width="84" height="2" fill="#ff0046"/>
+  <text x="60" y="78" font-family="'Arial Black',system-ui,sans-serif" font-weight="900" font-size="16" fill="#ff0046" text-anchor="middle">LALIGA</text>
+  <text x="60" y="100" font-family="'Arial Black',system-ui,sans-serif" font-weight="900" font-size="10" fill="#ffffff" text-anchor="middle" letter-spacing="2">TV HD</text>
+</svg>
+`);
+
 // 11. ZAP VIVA / ZAP ANGOLA (Laranja vibrante e curva dinâmica)
 export const LOGO_ZAP_VIVA = svgToUri(`
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
@@ -1584,6 +1678,49 @@ export function getChannelLogo(canal?: Partial<Canal> | null): string {
     id.includes('libertadores')
   ) {
     return LOGO_LIBERTADORES;
+  }
+
+  // 3b. Premier League
+  if (
+    name.includes('premier league') ||
+    id.includes('premier-league') ||
+    comps.includes('premier league')
+  ) {
+    return LOGO_PREMIER_LEAGUE;
+  }
+
+  // 3c. Movistar LaLiga
+  if (
+    name.includes('movistar') ||
+    id.includes('movistar')
+  ) {
+    return LOGO_MOVISTAR_LALIGA;
+  }
+
+  // 3d. SuperSport MáXimo (Angola & Moçambique em Português)
+  if (
+    (rede.includes('supersport') || name.includes('supersport') || id.includes('supersport')) &&
+    (name.includes('maximo') || name.includes('máximo') || id.includes('maximo'))
+  ) {
+    return LOGO_SUPERSPORT_MAXIMO;
+  }
+
+  // 3e. SuperSport (World of Champions)
+  if (
+    rede.includes('supersport') ||
+    name.includes('supersport') ||
+    id.includes('supersport')
+  ) {
+    return LOGO_SUPERSPORT;
+  }
+
+  // 3f. Vivo / Vivo Play / Vivo TV
+  if (
+    rede.includes('vivo') ||
+    name.includes('vivo') ||
+    id.includes('vivo')
+  ) {
+    return LOGO_VIVO;
   }
 
   // 4. LaLiga / Liga Espanhola

@@ -1,6 +1,7 @@
 import { Canal } from '@/types';
 import { CANAIS_YOUTUBE } from './channelsYoutube';
 import { CANAIS_NOVOS_SOLICITADOS } from './channelsNewUserList';
+import { CANAIS_ESPORTES_SOLICITADOS } from './channelsEsportesSolicitados';
 import { LOGO_TNT_SPORTS, LOGO_CHAMPIONS_LEAGUE } from '@/utils/channelLogoUtils';
 
 export const CANAIS_COMPLETOS: Canal[] = [
@@ -4182,6 +4183,7 @@ export const CANAIS_COMPLETOS: Canal[] = [
 ];
 
 export const TODOS_OS_CANAIS: Canal[] = [
+  ...CANAIS_ESPORTES_SOLICITADOS,
   ...CANAIS_NOVOS_SOLICITADOS,
   ...CANAIS_COMPLETOS,
   ...CANAIS_YOUTUBE,
@@ -4194,4 +4196,4 @@ export const CANAIS_NOVELAS: Canal[] = TODOS_OS_CANAIS.filter(c => c.categoria =
 export const CANAIS_NOTICIAS: Canal[] = TODOS_OS_CANAIS.filter(c => c.categoria === 'Notícias');
 export const CANAIS_MUSICAS: Canal[] = TODOS_OS_CANAIS.filter(c => c.categoria === 'Músicas');
 export const CANAIS_LAZER: Canal[] = TODOS_OS_CANAIS.filter(c => c.categoria === 'Lazer');
-export { CANAIS_NOVOS_SOLICITADOS };
+export { CANAIS_NOVOS_SOLICITADOS, CANAIS_ESPORTES_SOLICITADOS };

@@ -9,6 +9,7 @@ import {
   CANAIS_LAZER,
   TODOS_OS_CANAIS,
   CANAIS_NOVOS_SOLICITADOS,
+  CANAIS_ESPORTES_SOLICITADOS,
 } from './channelsFullCatalog';
 import { CANAIS_YOUTUBE } from './channelsYoutube';
 
@@ -22,6 +23,7 @@ export {
   CANAIS_LAZER,
   CANAIS_YOUTUBE,
   CANAIS_NOVOS_SOLICITADOS,
+  CANAIS_ESPORTES_SOLICITADOS,
 };
 
 export function deduplicateCanais(list: Canal[]): Canal[] {
