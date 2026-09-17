@@ -98,6 +98,9 @@ export interface WorscoiPlanSelectionFlowProps {
     name?: string;
     email?: string;
     uid?: string;
+    plan?: SubscriptionPlanId;
+    planExpiresAt?: string | null;
+    planName?: string;
   };
   onSelectFreePlan: () => Promise<void> | void;
   onTokenValidated: (params: {
@@ -105,6 +108,9 @@ export interface WorscoiPlanSelectionFlowProps {
     planName: string;
     token: string;
     expiresAt: string | null;
+    accumulated?: boolean;
+    addedDays?: number;
+    remainingDaysTotal?: number;
   }) => Promise<void> | void;
 }
 
@@ -210,6 +216,9 @@ export function WorscoiPlanSelectionFlow({
         uid: userData?.uid || 'usr_' + Date.now(),
         email: userData?.email || 'usuario@worscoi.tv',
         displayName: userData?.name || 'Assinante Worscoi',
+        currentPlan: userData?.plan,
+        currentPlanExpiresAt: userData?.planExpiresAt,
+        currentPlanName: userData?.planName,
       };
 
       const result = await redeemAccessToken(cleanToken, currentUserData);
@@ -220,6 +229,9 @@ export function WorscoiPlanSelectionFlow({
           planName: result.planName || result.plan,
           token: cleanToken,
           expiresAt: result.expiresAt ?? null,
+          accumulated: result.accumulated,
+          addedDays: result.addedDays,
+          remainingDaysTotal: result.remainingDaysTotal,
         });
       } else {
         setTokenError(

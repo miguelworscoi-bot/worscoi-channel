@@ -51,16 +51,33 @@ export function PaymentPlansModal({
     planName: string;
     token: string;
     expiresAt: string | null;
+    accumulated?: boolean;
+    addedDays?: number;
+    remainingDaysTotal?: number;
   }) => {
-    updateProfilePlan(params.plan, params.planName, params.expiresAt, params.token);
+    updateProfilePlan(
+      params.plan,
+      params.planName,
+      params.expiresAt,
+      params.token,
+      {
+        accumulated: params.accumulated,
+        addedDays: params.addedDays,
+        remainingDaysTotal: params.remainingDaysTotal,
+      }
+    );
     onClose();
 
     if (onCelebration) {
+      const celebrationMsg =
+        params.accumulated && params.addedDays
+          ? `Foram somados +${params.addedDays} dias ao seu limite restante! Agora você tem ${params.remainingDaysTotal} dias de acesso liberado sem limites.`
+          : 'A sua chave token foi validada com sucesso e seu plano foi ativado! Aproveite todas as transmissões sem limites.';
+
       onCelebration({
         userName: userProfile?.displayName || user?.displayName || 'Assinante',
         planName: params.planName,
-        message:
-          'A sua chave token foi validada com sucesso e seu plano foi ativado! Aproveite todas as transmissões sem limites.',
+        message: celebrationMsg,
       });
     }
   };
@@ -83,6 +100,9 @@ export function PaymentPlansModal({
             name: userProfile?.displayName || user?.displayName || 'Assinante Worscoi',
             email: userProfile?.email || user?.email || '',
             uid: user?.uid || userProfile?.id,
+            plan: userProfile?.plan,
+            planExpiresAt: userProfile?.planExpiresAt,
+            planName: userProfile?.planName,
           }}
           onClose={onClose}
           onSelectFreePlan={handleSelectFreePlan}

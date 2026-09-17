@@ -4,6 +4,28 @@ export type LatencyMode = 'economy' | 'stable' | 'low-latency';
 
 export type SubscriptionPlanId = 'free' | 'diario' | 'basico' | 'vip' | 'premium' | 'anual';
 
+export const PLAN_HIERARCHY: Record<SubscriptionPlanId, number> = {
+  free: 0,
+  diario: 1,
+  basico: 2,
+  vip: 3,
+  premium: 4,
+  anual: 5,
+};
+
+export interface RedeemTokenResult {
+  success: boolean;
+  message: string;
+  plan?: SubscriptionPlanId;
+  planName?: string;
+  expiresAt?: string;
+  token?: AccessTokenRecord;
+  accumulated?: boolean;
+  addedDays?: number;
+  remainingDaysTotal?: number;
+  previousExpiresAt?: string | null;
+}
+
 export interface PlanInfo {
   id: SubscriptionPlanId;
   name: string;

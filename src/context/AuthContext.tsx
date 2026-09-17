@@ -109,7 +109,17 @@ interface AuthContextType {
   signInAsGuest: (role?: UserRole) => Promise<void>;
   signOut: () => Promise<void>;
   switchRole: (newRole: UserRole) => Promise<void>;
-  updateProfilePlan: (plan: SubscriptionPlanId, planName: string, expiresAt?: string | null, tokenCode?: string | null) => void;
+  updateProfilePlan: (
+    plan: SubscriptionPlanId,
+    planName: string,
+    expiresAt?: string | null,
+    tokenCode?: string | null,
+    stackingInfo?: {
+      accumulated?: boolean;
+      addedDays?: number;
+      remainingDaysTotal?: number;
+    }
+  ) => void;
 }
 
 export function normalizeIdentifier(raw: string): { email: string; displayName: string; isPhone: boolean } {
@@ -1099,7 +1109,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     plan: SubscriptionPlanId,
     planName: string,
     expiresAt?: string | null,
-    tokenCode?: string | null
+    tokenCode?: string | null,
+    stackingInfo?: {
+      accumulated?: boolean;
+      addedDays?: number;
+      remainingDaysTotal?: number;
+    }
   ) => {
     if (!userProfile) return;
     const activatedAt = new Date().toISOString();
@@ -1123,6 +1138,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       activatedAt,
       expiresAt: resolvedExpiresAt,
       tokenCode,
+      accumulated: stackingInfo?.accumulated,
+      addedDays: stackingInfo?.addedDays,
+      remainingDaysTotal: stackingInfo?.remainingDaysTotal,
     }).catch(() => {});
   };
 

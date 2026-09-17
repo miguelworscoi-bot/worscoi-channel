@@ -31,6 +31,10 @@ export function RedeemTokenModal({
     plan: SubscriptionPlanId;
     planName: string;
     message: string;
+    accumulated?: boolean;
+    addedDays?: number;
+    remainingDaysTotal?: number;
+    expiresAt?: string;
   } | null>(null);
 
   if (!isOpen) return null;
@@ -58,17 +62,34 @@ export function RedeemTokenModal({
       uid: user?.uid || userProfile?.id || 'guest_' + Date.now(),
       email: user?.email || userProfile?.email || 'espectador@worscoi.tv',
       displayName: userProfile?.displayName || 'Espectador',
+      currentPlan: userProfile?.plan,
+      currentPlanExpiresAt: userProfile?.planExpiresAt,
+      currentPlanName: userProfile?.planName,
     };
 
     const res = await redeemAccessToken(tokenCode, currentUserData);
     setLoading(false);
 
     if (res.success && res.plan) {
-      updateProfilePlan(res.plan, res.planName || res.plan, res.expiresAt, tokenCode);
+      updateProfilePlan(
+        res.plan,
+        res.planName || res.plan,
+        res.expiresAt,
+        tokenCode,
+        {
+          accumulated: res.accumulated,
+          addedDays: res.addedDays,
+          remainingDaysTotal: res.remainingDaysTotal,
+        }
+      );
       setSuccessResult({
         plan: res.plan,
         planName: res.planName || res.plan,
         message: res.message,
+        accumulated: res.accumulated,
+        addedDays: res.addedDays,
+        remainingDaysTotal: res.remainingDaysTotal,
+        expiresAt: res.expiresAt,
       });
       if (onTokenRedeemed) {
         onTokenRedeemed(res.plan);
@@ -106,7 +127,7 @@ export function RedeemTokenModal({
                 Ativar Código
               </h2>
               <p className="text-xs text-zinc-400 font-normal">
-                Digite seu token de 5 dígitos para liberar o acesso.
+                Digite a chave token oficial de 5 caracteres para liberar o sinal.
               </p>
             </div>
           </div>
@@ -129,15 +150,27 @@ export function RedeemTokenModal({
                 <CheckCircle2 className="w-6 h-6" />
               </div>
               <h3 className="text-sm font-bold text-white">
-                Plano Ativado com Sucesso!
+                {successResult.accumulated ? 'Limite Somado com Sucesso!' : 'Plano Ativado com Sucesso!'}
               </h3>
-              <p className="text-xs text-emerald-300/90 mt-1">
+              <p className="text-xs text-emerald-300/90 mt-1 leading-relaxed">
                 {successResult.message}
               </p>
-              <div className="mt-3 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-950/60 border border-emerald-700/40 text-emerald-200 text-[11px] font-medium">
-                <Sparkles className="w-3 h-3 text-amber-400" />
-                <span>Canais e conteúdos liberados</span>
-              </div>
+
+              {successResult.accumulated && successResult.addedDays ? (
+                <div className="mt-3 flex items-center justify-center gap-2 flex-wrap">
+                  <span className="px-2.5 py-1 rounded-lg bg-emerald-500/20 border border-emerald-500/40 text-emerald-200 text-[11px] font-bold">
+                    +{successResult.addedDays} Dias Adicionados
+                  </span>
+                  <span className="px-2.5 py-1 rounded-lg bg-zinc-800/80 border border-zinc-700 text-zinc-200 text-[11px] font-semibold">
+                    Total: {successResult.remainingDaysTotal} Dias Liberados
+                  </span>
+                </div>
+              ) : (
+                <div className="mt-3 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-950/60 border border-emerald-700/40 text-emerald-200 text-[11px] font-medium">
+                  <Sparkles className="w-3 h-3 text-amber-400" />
+                  <span>Canais e conteúdos liberados</span>
+                </div>
+              )}
             </div>
 
             <div className="flex gap-2">
@@ -146,7 +179,7 @@ export function RedeemTokenModal({
                 onClick={resetForm}
                 className="flex-1 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-300 text-xs font-semibold border border-zinc-800 transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer"
               >
-                Outro Código
+                + Adicionar Outro Código
               </button>
               <button
                 type="button"
@@ -175,6 +208,13 @@ export function RedeemTokenModal({
                   {tokenCode.length}/5
                 </div>
               </div>
+            </div>
+
+            <div className="text-[11px] text-zinc-400 bg-zinc-900/50 rounded-lg p-2 border border-zinc-800/80 flex items-start gap-1.5">
+              <Sparkles className="w-3.5 h-3.5 text-amber-400 shrink-0 mt-0.5" />
+              <span>
+                <strong>Tokens Cumulativos:</strong> Se você já possui dias restantes, cada nova chave ativada soma seus dias ao limite atual automaticamente!
+              </span>
             </div>
 
             {errorMsg && (

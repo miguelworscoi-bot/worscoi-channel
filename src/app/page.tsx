@@ -1,5 +1,5 @@
 'use client';
-import React, { useEffect, useState, useCallback, useMemo, Suspense } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Canal, LatencyMode, WorscoiView, FiltroAtivo } from '@/types';
 import { Tv } from 'lucide-react';
@@ -8,12 +8,9 @@ import { CANAIS_PADRAO } from '@/app/api/canais/route';
 import { WorscoiSidebar } from '@/components/WorscoiSidebar';
 import { WorscoiTopBar } from '@/components/WorscoiTopBar';
 import { PlayerHero } from '@/components/PlayerHero';
-import { WorscoiViewSkeleton } from '@/components/WorscoiViewSkeleton';
-
-// Views dinâmicas carregadas sob demanda via React.lazy e Suspense para máxima performance do bundle
-const WorscoiControlPanel = React.lazy(() => import('@/components/WorscoiControlPanel'));
-const WorscoiSubscribersView = React.lazy(() => import('@/components/WorscoiSubscribersView'));
-const WorscoiFilmotecaView = React.lazy(() => import('@/components/WorscoiFilmotecaView'));
+import WorscoiControlPanel from '@/components/WorscoiControlPanel';
+import WorscoiSubscribersView from '@/components/WorscoiSubscribersView';
+import WorscoiFilmotecaView from '@/components/WorscoiFilmotecaView';
 
 import { WorscoiLoginModal } from '@/components/WorscoiLoginModal';
 import { CinemaPlayer } from '@/components/CinemaPlayer';
@@ -649,18 +646,17 @@ export default function Home() {
         <div
           className="flex-1 w-full p-3 sm:p-6 flex flex-col items-center overflow-y-auto custom-scrollbar"
         >
-          {/* TRANSIÇÃO ULTRA SUAVE ENTRE TELAS DO APLICATIVO */}
-          <AnimatePresence mode="wait" initial={false}>
+          {/* TRANSIÇÃO ULTRA SUAVE E LEVE ENTRE TELAS */}
+          <AnimatePresence initial={false}>
             {/* VISTA 1: TRANSMISSÃO DE TV AO VIVO (EXPLORAR) */}
             {currentView === 'explorar' && (
               <motion.div
                 key="screen-view-explorar"
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -6 }}
-                transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.16, ease: 'easeOut' }}
                 className="w-full max-w-5xl mx-auto py-1 my-auto flex flex-col items-center justify-center"
-                style={{ willChange: 'opacity, transform' }}
               >
                 <PlayerHero
                   canalAtivo={canalAtivo}
@@ -699,20 +695,17 @@ export default function Home() {
             {currentView === 'painel' && (
               <motion.div
                 key="screen-view-painel"
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -6 }}
-                transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.16, ease: 'easeOut' }}
                 className="w-full"
-                style={{ willChange: 'opacity, transform' }}
               >
-                <Suspense fallback={<WorscoiViewSkeleton view="painel" />}>
-                  <WorscoiControlPanel
-                    onNavigateToSubscribers={() => setCurrentView('assinantes')}
-                    onOpenTokenGenerator={() => setIsSubscribersModalOpen(true)}
-                    onSelectPlan={() => setIsPaymentModalOpen(true)}
-                  />
-                </Suspense>
+                <WorscoiControlPanel
+                  onNavigateToSubscribers={() => setCurrentView('assinantes')}
+                  onOpenTokenGenerator={() => setIsSubscribersModalOpen(true)}
+                  onSelectPlan={() => setIsPaymentModalOpen(true)}
+                />
               </motion.div>
             )}
 
@@ -720,19 +713,16 @@ export default function Home() {
             {currentView === 'assinantes' && (
               <motion.div
                 key="screen-view-assinantes"
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -6 }}
-                transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.16, ease: 'easeOut' }}
                 className="w-full"
-                style={{ willChange: 'opacity, transform' }}
               >
-                <Suspense fallback={<WorscoiViewSkeleton view="assinantes" />}>
-                  <WorscoiSubscribersView
-                    onBackToControlPanel={() => setCurrentView('painel')}
-                    onOpenTokenGenerator={() => setIsSubscribersModalOpen(true)}
-                  />
-                </Suspense>
+                <WorscoiSubscribersView
+                  onBackToControlPanel={() => setCurrentView('painel')}
+                  onOpenTokenGenerator={() => setIsSubscribersModalOpen(true)}
+                />
               </motion.div>
             )}
 
@@ -740,18 +730,15 @@ export default function Home() {
             {currentView === 'filmoteca' && (
               <motion.div
                 key="screen-view-filmoteca"
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -6 }}
-                transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.16, ease: 'easeOut' }}
                 className="w-full"
-                style={{ willChange: 'opacity, transform' }}
               >
-                <Suspense fallback={<WorscoiViewSkeleton view="filmoteca" />}>
-                  <WorscoiFilmotecaView
-                    onBackToTV={() => setCurrentView('explorar')}
-                  />
-                </Suspense>
+                <WorscoiFilmotecaView
+                  onBackToTV={() => setCurrentView('explorar')}
+                />
               </motion.div>
             )}
           </AnimatePresence>

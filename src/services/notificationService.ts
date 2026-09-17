@@ -290,6 +290,9 @@ export async function notifyPlanActivation(params: {
   activatedAt?: string;
   expiresAt?: string | null;
   tokenCode?: string | null;
+  accumulated?: boolean;
+  addedDays?: number;
+  remainingDaysTotal?: number;
 }): Promise<UserNotification> {
   const activatedDate = params.activatedAt || new Date().toISOString();
   const formattedActivated = formatFriendlyDateTime(activatedDate);
@@ -298,6 +301,20 @@ export async function notifyPlanActivation(params: {
     : 'Acesso Ilimitado';
 
   const tokenText = params.tokenCode ? ` com o código ${params.tokenCode}` : '';
+
+  if (params.accumulated && params.addedDays) {
+    return createNotification({
+      userId: params.userId,
+      userEmail: params.userEmail,
+      type: 'activation',
+      title: `Limite Adicionado! (+${params.addedDays}d) ⏱️`,
+      message: `A chave token${tokenText} somou +${params.addedDays} dias ao seu limite restante em ${formattedActivated}. Seu novo limite acumulado é de ${params.remainingDaysTotal || params.addedDays} dias (sinal liberado até ${formattedExpires}).`,
+      activatedAt: activatedDate,
+      expiresAt: params.expiresAt || undefined,
+      planName: params.planName,
+      actionLabel: 'Ver Meus Canais',
+    });
+  }
 
   return createNotification({
     userId: params.userId,

@@ -155,6 +155,17 @@ export function UserProfileModal({
               </span>
             </div>
           )}
+
+          {/* INFORMATIVO DE SOMA CUMULATIVA DE TOKENS */}
+          <div className="pt-2 border-t border-zinc-800/40 flex items-center justify-between text-[11px] text-zinc-400 font-normal">
+            <span className="flex items-center gap-1.5 text-emerald-400">
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+              <span>Soma de Limite Cumulativa</span>
+            </span>
+            <span className="text-[10px] text-zinc-400 bg-zinc-800/60 px-2 py-0.5 rounded border border-zinc-700/60">
+              Novas chaves somam dias
+            </span>
+          </div>
         </div>
 
         {/* BOTÕES DE AÇÃO: RENOVAR / ATIVAR CÓDIGO */}

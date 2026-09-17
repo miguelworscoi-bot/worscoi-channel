@@ -11,7 +11,13 @@ import {
   limit,
 } from 'firebase/firestore';
 import { db, safeFirestoreCall } from '@/lib/firebase';
-import { AccessTokenRecord, PlanInfo, SubscriberUser, SubscriptionPlanId } from '@/types';
+import {
+  AccessTokenRecord,
+  PlanInfo,
+  SubscriberUser,
+  SubscriptionPlanId,
+  RedeemTokenResult,
+} from '@/types';
 import { tokenEfficiency, TokenEfficiencyMetrics } from './tokenEfficiency';
 
 export { tokenEfficiency };
@@ -943,6 +949,14 @@ export async function createAccessTokens(params: {
 }
 
 /**
+ * Registra um token individual no histórico oficial do sistema (ex: gerado em recibo)
+ * garantindo que ele tenha 100% de validade e seja rastreável no histórico.
+ */
+export async function registerSingleAccessToken(record: AccessTokenRecord): Promise<void> {
+  return tokenEfficiency.registerSingleToken(record);
+}
+
+/**
  * Revoga ou exclui um token da lista de autorizados
  */
 export async function revokeAccessToken(code: string): Promise<void> {
@@ -967,19 +981,19 @@ export async function revokeAccessToken(code: string): Promise<void> {
 /**
  * Resgata um token de acesso de 5 caracteres.
  * Utiliza o motor TokenEfficiency com resolução O(1) de alta velocidade,
- * cache LRU e validação contra combinações arbitrárias.
+ * cache LRU, soma cumulativa de dias (Token Stacking) e validação robusta.
  */
 export async function redeemAccessToken(
   rawCode: string,
-  user: { uid: string; email?: string | null; displayName?: string | null }
-): Promise<{
-  success: boolean;
-  message: string;
-  plan?: SubscriptionPlanId;
-  planName?: string;
-  expiresAt?: string;
-  token?: AccessTokenRecord;
-}> {
+  user: {
+    uid: string;
+    email?: string | null;
+    displayName?: string | null;
+    currentPlan?: SubscriptionPlanId;
+    currentPlanExpiresAt?: string | null;
+    currentPlanName?: string;
+  }
+): Promise<RedeemTokenResult> {
   const res = await tokenEfficiency.redeemToken(rawCode, user);
 
   if (res.success && res.token) {
@@ -990,8 +1004,8 @@ export async function redeemAccessToken(
         localStorage.getItem('playsports_auth_session');
       if (sessionData) {
         const parsed = JSON.parse(sessionData);
-        parsed.plan = res.token.plan;
-        parsed.planName = res.token.planName;
+        parsed.plan = res.plan || res.token.plan;
+        parsed.planName = res.planName || res.token.planName;
         parsed.planExpiresAt = res.expiresAt;
         parsed.activatedToken = res.token.code;
         localStorage.setItem('worscoi_auth_session', JSON.stringify(parsed));

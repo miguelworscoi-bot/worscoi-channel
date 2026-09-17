@@ -18,9 +18,11 @@ import {
   History,
   ArrowLeft,
   Trash2,
+  FileDown,
 } from 'lucide-react';
 import { SubscriptionPlanId } from '@/types';
-import { PLANS, generateFiveCharCode } from '@/services/subscriptionService';
+import { PLANS, generateFiveCharCode, registerSingleAccessToken } from '@/services/subscriptionService';
+import { exportReceiptToPdf } from '@/services/pdfExportService';
 import { useAuth } from '@/context/AuthContext';
 
 export interface ReceiptData {
@@ -82,7 +84,8 @@ export function WorscoiReceiptModal({
   useEffect(() => {
     if (isOpen) {
       setReceiptNumber(generateNewReceiptNumber());
-      setTokenCode(`WRC-${generateFiveCharCode()}`);
+      const newFiveCode = generateFiveCharCode();
+      setTokenCode(newFiveCode);
       setShowHistory(false);
       setCopiedText(false);
       setSavedSuccess(false);
@@ -90,6 +93,21 @@ export function WorscoiReceiptModal({
       if (prefillPlanId) {
         setSelectedPlan(prefillPlanId);
       }
+
+      // Registra preventivamente o novo token gerado de 5 caracteres no histórico oficial do sistema
+      const targetPlan = prefillPlanId || 'vip';
+      const planInfo = PLANS[targetPlan] || PLANS.vip;
+      registerSingleAccessToken({
+        id: `tok_${newFiveCode}_${Date.now()}`,
+        code: newFiveCode,
+        plan: targetPlan,
+        planName: planInfo.name,
+        durationDays: planInfo.durationDays || 30,
+        status: 'active',
+        createdAt: new Date().toISOString(),
+        createdBy: user?.email || 'admin@worscoi.tv',
+        notes: `Recibo Worscoi Oficial`,
+      });
 
       // Carrega histórico
       try {
@@ -101,7 +119,7 @@ export function WorscoiReceiptModal({
         // Ignora erro de storage
       }
     }
-  }, [isOpen, prefillPlanId]);
+  }, [isOpen, prefillPlanId, user]);
 
   // Informações do plano ativo
   const currentPlanInfo = useMemo(() => {
@@ -171,7 +189,7 @@ export function WorscoiReceiptModal({
     user,
   ]);
 
-  // Salva no histórico
+  // Salva no histórico e garante registro do token no sistema
   const handleSaveReceipt = () => {
     try {
       const updated = [
@@ -180,6 +198,24 @@ export function WorscoiReceiptModal({
       ];
       setReceiptHistory(updated);
       localStorage.setItem(LOCAL_STORAGE_RECEIPTS_KEY, JSON.stringify(updated.slice(0, 50)));
+
+      // Garante que o token de 5 caracteres gerado pelo sistema esteja 100% ativo no histórico oficial
+      const cleanToken = (tokenCode || '').trim().toUpperCase();
+      if (cleanToken.length === 5) {
+        const planInfo = PLANS[selectedPlan] || PLANS.vip;
+        registerSingleAccessToken({
+          id: `tok_${cleanToken}_${Date.now()}`,
+          code: cleanToken,
+          plan: selectedPlan,
+          planName: planInfo.name,
+          durationDays: planInfo.durationDays || 30,
+          status: 'active',
+          createdAt: new Date().toISOString(),
+          createdBy: user?.email || 'admin@worscoi.tv',
+          notes: `Recibo #${receiptNumber} - ${customerName.trim() || 'Assinante'}`,
+        });
+      }
+
       setSavedSuccess(true);
       setTimeout(() => setSavedSuccess(false), 2000);
     } catch {
@@ -191,6 +227,13 @@ export function WorscoiReceiptModal({
   const handlePrintReceipt = () => {
     handleSaveReceipt();
     window.print();
+  };
+
+  // Exportar Recibo Oficial em PDF
+  const handleDownloadPdf = (dataToExport?: ReceiptData) => {
+    handleSaveReceipt();
+    const target = dataToExport || currentReceipt;
+    exportReceiptToPdf(target);
   };
 
   // Mensagem formatada do WhatsApp
@@ -240,9 +283,22 @@ export function WorscoiReceiptModal({
     window.open(url, '_blank');
   };
 
-  // Gerar novo token rápido
+  // Gerar novo token rápido de 5 caracteres registrado oficialmente
   const handleGenerateFastToken = () => {
-    setTokenCode(`WRC-${generateFiveCharCode()}`);
+    const newFiveCode = generateFiveCharCode();
+    setTokenCode(newFiveCode);
+    const planInfo = PLANS[selectedPlan] || PLANS.vip;
+    registerSingleAccessToken({
+      id: `tok_${newFiveCode}_${Date.now()}`,
+      code: newFiveCode,
+      plan: selectedPlan,
+      planName: planInfo.name,
+      durationDays: planInfo.durationDays || 30,
+      status: 'active',
+      createdAt: new Date().toISOString(),
+      createdBy: user?.email || 'admin@worscoi.tv',
+      notes: `Recibo #${receiptNumber} - ${customerName.trim() || 'Assinante'}`,
+    });
   };
 
   if (!isOpen) return null;
@@ -382,6 +438,15 @@ export function WorscoiReceiptModal({
                               </div>
                             )}
                           </div>
+                          <button
+                            type="button"
+                            onClick={() => handleDownloadPdf(rec)}
+                            className="px-2.5 py-1.5 rounded-xl bg-zinc-800 hover:bg-emerald-950 hover:text-emerald-400 border border-zinc-700 hover:border-emerald-800/80 text-zinc-300 text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer"
+                            title="Baixar PDF deste recibo"
+                          >
+                            <FileDown className="w-3.5 h-3.5 text-emerald-400" />
+                            <span>PDF</span>
+                          </button>
                           <button
                             type="button"
                             onClick={() => {
@@ -537,7 +602,7 @@ export function WorscoiReceiptModal({
                         type="text"
                         value={tokenCode}
                         onChange={(e) => setTokenCode(e.target.value)}
-                        placeholder="Ex: WRC-84920"
+                        placeholder="Ex: 84K9M (5 caracteres)"
                         className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-xl text-xs font-mono font-bold text-emerald-400 focus:outline-none focus:border-emerald-500"
                       />
                     </div>
@@ -545,29 +610,42 @@ export function WorscoiReceiptModal({
 
                   {/* 4. BOTÕES DE AÇÃO IMEDIATA */}
                   <div className="space-y-2 pt-1">
+                    {/* BOTÃO PRINCIPAL: EXPORTAR PDF OFICIAL */}
                     <button
                       type="button"
-                      onClick={handlePrintReceipt}
-                      className="w-full py-2.5 px-4 rounded-xl bg-white hover:bg-zinc-100 text-zinc-950 font-bold text-xs transition flex items-center justify-center gap-2 shadow-md hover:scale-[1.01] active:scale-[0.99] cursor-pointer"
+                      onClick={() => handleDownloadPdf()}
+                      className="w-full py-2.5 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-black text-xs transition flex items-center justify-center gap-2 shadow-md hover:scale-[1.01] active:scale-[0.99] cursor-pointer"
                     >
-                      <Printer className="w-4 h-4 text-zinc-900" />
-                      <span>Imprimir / Salvar PDF</span>
+                      <FileDown className="w-4 h-4 text-zinc-950" />
+                      <span>Baixar Recibo Oficial em PDF</span>
                     </button>
 
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-3 gap-2">
+                      <button
+                        type="button"
+                        onClick={handlePrintReceipt}
+                        className="py-2 px-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-200 font-semibold text-xs transition flex items-center justify-center gap-1.5 cursor-pointer"
+                        title="Imprimir Recibo"
+                      >
+                        <Printer className="w-3.5 h-3.5 text-zinc-300" />
+                        <span>Imprimir</span>
+                      </button>
+
                       <button
                         type="button"
                         onClick={handleOpenWhatsApp}
-                        className="py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition flex items-center justify-center gap-1.5 shadow-sm hover:scale-[1.01] active:scale-[0.99] cursor-pointer"
+                        className="py-2 px-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition flex items-center justify-center gap-1.5 shadow-sm hover:scale-[1.01] active:scale-[0.99] cursor-pointer"
+                        title="Enviar Recibo pelo WhatsApp"
                       >
                         <Share2 className="w-3.5 h-3.5" />
-                        <span>Enviar WhatsApp</span>
+                        <span>WhatsApp</span>
                       </button>
 
                       <button
                         type="button"
                         onClick={handleCopyWhatsApp}
-                        className="py-2 px-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-200 font-semibold text-xs transition flex items-center justify-center gap-1.5 cursor-pointer"
+                        className="py-2 px-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-200 font-semibold text-xs transition flex items-center justify-center gap-1.5 cursor-pointer"
+                        title="Copiar Texto"
                       >
                         {copiedText ? (
                           <>
@@ -577,7 +655,7 @@ export function WorscoiReceiptModal({
                         ) : (
                           <>
                             <Copy className="w-3.5 h-3.5 text-zinc-400" />
-                            <span>Copiar Texto</span>
+                            <span>Copiar</span>
                           </>
                         )}
                       </button>

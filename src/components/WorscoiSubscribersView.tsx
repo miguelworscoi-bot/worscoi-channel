@@ -8,9 +8,12 @@ import {
   Search,
   Clock,
   Crown,
+  FileDown,
 } from 'lucide-react';
 import { SubscriptionPlanId } from '@/types';
 import { SubscribersPlanRevenueChart } from './SubscribersPlanRevenueChart';
+import { exportSubscribersReportToPdf } from '@/services/pdfExportService';
+import { getAccessTokens } from '@/services/subscriptionService';
 
 interface SubscriberRow {
   id: string;
@@ -116,6 +119,31 @@ export function WorscoiSubscribersView({
     }
   };
 
+  const handleExportPdf = async () => {
+    try {
+      const tokens = await getAccessTokens();
+      const mappedSubscribers = filtered.map((sub) => ({
+        id: sub.id,
+        name: sub.name,
+        email: sub.email,
+        role: 'subscriber' as const,
+        plan: sub.planId,
+        planExpiresAt: sub.validity,
+        planActivatedAt: new Date().toISOString(),
+        avatar: sub.avatar,
+      }));
+
+      exportSubscribersReportToPdf({
+        subscribers: mappedSubscribers,
+        tokens,
+        title: `Relatório Executivo de Assinantes Worscoi TV (${filtered.length})`,
+        generatedBy: 'Administrador Worscoi TV',
+      });
+    } catch {
+      // Fallback
+    }
+  };
+
   return (
     <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 py-6 space-y-8 select-none">
       {/* CABEÇALHO COM BOTÃO VOLTAR E TÍTULO CENTRAL */}
@@ -133,14 +161,26 @@ export function WorscoiSubscribersView({
           Assinantes
         </h1>
 
-        <button
-          type="button"
-          onClick={onOpenTokenGenerator}
-          className="flex items-center gap-2 text-xs font-semibold text-white px-4 py-2 rounded-full bg-[#FF2D55] hover:bg-[#FF2D55]/90 transition cursor-pointer shadow-md shadow-[#FF2D55]/30"
-        >
-          <KeyRound className="w-3.5 h-3.5" />
-          <span>Gerar Chave</span>
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={handleExportPdf}
+            className="flex items-center gap-2 text-xs font-semibold text-emerald-400 hover:text-emerald-300 px-3.5 py-2 rounded-full bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 transition cursor-pointer"
+            title="Exportar Relatório Geral em PDF"
+          >
+            <FileDown className="w-3.5 h-3.5" />
+            <span>Exportar PDF</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={onOpenTokenGenerator}
+            className="flex items-center gap-2 text-xs font-semibold text-white px-4 py-2 rounded-full bg-[#FF2D55] hover:bg-[#FF2D55]/90 transition cursor-pointer shadow-md shadow-[#FF2D55]/30"
+          >
+            <KeyRound className="w-3.5 h-3.5" />
+            <span>Gerar Chave</span>
+          </button>
+        </div>
       </div>
 
       {/* 4 CARDS DE MÉTRICA COM DESIGN REFINADO */}
@@ -191,9 +231,20 @@ export function WorscoiSubscribersView({
             />
           </div>
 
-          <span className="text-xs text-zinc-500">
-            Mostrando {filtered.length} de {subscribers.length} assinantes
-          </span>
+          <div className="flex items-center gap-3">
+            <span className="text-xs text-zinc-500 hidden sm:inline">
+              Mostrando {filtered.length} de {subscribers.length} assinantes
+            </span>
+            <button
+              type="button"
+              onClick={handleExportPdf}
+              className="px-3 py-1.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-emerald-400 border border-zinc-800 hover:border-emerald-500/40 text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer"
+              title="Exportar esta lista de assinantes em PDF"
+            >
+              <FileDown className="w-3.5 h-3.5" />
+              <span>Exportar PDF</span>
+            </button>
+          </div>
         </div>
 
         <div className="overflow-x-auto custom-scrollbar">
