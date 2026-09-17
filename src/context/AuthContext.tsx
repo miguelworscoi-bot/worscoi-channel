@@ -119,7 +119,7 @@ export function normalizeIdentifier(raw: string): { email: string; displayName: 
 
   if (isPhone) {
     return {
-      email: `${digitsOnly}@playsports.ao`,
+      email: `${digitsOnly}@worscoi.ao`,
       displayName: `Tel: ${digitsOnly}`,
       isPhone: true,
     };
@@ -145,14 +145,16 @@ export function normalizeIdentifier(raw: string): { email: string; displayName: 
 
   const safeUsername = clean.toLowerCase().replace(/[^a-z0-9._-]/g, '');
   return {
-    email: `${safeUsername || 'usuario'}@playsports.com`,
+    email: `${safeUsername || 'usuario'}@worscoi.com`,
     displayName: clean || 'Usuário',
     isPhone: false,
   };
 }
 
-const LOCAL_SESSION_KEY = 'playsports_auth_session';
-const LOCAL_REGISTRY_KEY = 'playsports_user_registry';
+const LOCAL_SESSION_KEY = 'worscoi_auth_session';
+const LEGACY_SESSION_KEY = 'playsports_auth_session';
+const LOCAL_REGISTRY_KEY = 'worscoi_user_registry';
+const LEGACY_REGISTRY_KEY = 'playsports_user_registry';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -273,7 +275,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const getLocalRegistry = (): LocalUserRecord[] => {
     try {
-      const data = localStorage.getItem(LOCAL_REGISTRY_KEY);
+      const data =
+        localStorage.getItem(LOCAL_REGISTRY_KEY) || localStorage.getItem(LEGACY_REGISTRY_KEY);
       if (data) {
         const parsed = JSON.parse(data);
         if (Array.isArray(parsed)) {
@@ -383,7 +386,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Carrega sessão salva imediatamente no boot com fallback rápido
   useEffect(() => {
     try {
-      const saved = localStorage.getItem(LOCAL_SESSION_KEY);
+      const saved = localStorage.getItem(LOCAL_SESSION_KEY) || localStorage.getItem(LEGACY_SESSION_KEY);
       if (saved) {
         const parsed = JSON.parse(saved) as UserProfile;
         if (parsed && parsed.email) {
@@ -414,7 +417,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Se nenhuma sessão existir, inicializa sessão de espectador gratuita para exibir a aplicação imediatamente
     const guestProfile: UserProfile = {
       id: 'guest_' + Math.random().toString(36).substring(2, 9),
-      email: 'espectador@playsports.tv',
+      email: 'espectador@worscoi.tv',
       displayName: 'Espectador',
       photoURL: '',
       role: 'user',
@@ -514,13 +517,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 let trialExpiry = devStatus.trialRecord?.expiresAt;
 
                 if (!devStatus.hasClaimed) {
-                  const newRec = await recordDeviceTrial('espectador@playsports.tv', 'convidado');
+                  const newRec = await recordDeviceTrial('espectador@worscoi.tv', 'convidado');
                   trialExpiry = newRec.expiresAt;
                 }
 
                 const guestProfile: UserProfile = {
                   id: 'guest_' + Math.random().toString(36).substring(2, 9),
-                  email: 'espectador@playsports.tv',
+                  email: 'espectador@worscoi.tv',
                   displayName: 'Espectador Esportivo',
                   photoURL: '',
                   role: 'user',
@@ -939,7 +942,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const res = await signInWithPopup(auth, provider);
       if (res.user) {
         const role = resolveRole(res.user.email);
-        const googleEmail = res.user.email || 'google.user@playsports.tv';
+        const googleEmail = res.user.email || 'google.user@worscoi.tv';
 
         if (role !== 'admin') {
           // Verifica no Firestore o deviceId único e o e-mail
@@ -986,7 +989,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     // Fallback gracioso para ambiente de iframe e testes
-    const googleEmail = 'usuario.google@playsports.tv';
+    const googleEmail = 'usuario.google@worscoi.tv';
     const checkResult = await checkDeviceAndEmailFreePlanInFirestore(googleEmail, 'user', 'free');
     if (checkResult.isBlocked) {
       triggerFreePlanBlocked({
@@ -1019,13 +1022,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // Verifica no Firestore o deviceId único
     const checkResult = await checkDeviceAndEmailFreePlanInFirestore(
-      'espectador@playsports.tv',
+      'espectador@worscoi.tv',
       'user',
       'free'
     );
     if (checkResult.isBlocked) {
       triggerFreePlanBlocked({
-        email: 'espectador@playsports.tv',
+        email: 'espectador@worscoi.tv',
         deviceId: checkResult.deviceId || getOrCreateDeviceId(),
         message: checkResult.message,
         reason: checkResult.reason,
@@ -1041,14 +1044,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       resolvedExpiresAt = devStatus.trialRecord.expiresAt;
     } else {
       resolvedExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
-      await recordDeviceTrial('espectador@playsports.tv', 'convidado', resolvedExpiresAt);
+      await recordDeviceTrial('espectador@worscoi.tv', 'convidado', resolvedExpiresAt);
     }
     refreshDeviceTrial();
 
     const guestNowIso = new Date().toISOString();
     const profile: UserProfile = {
       id: 'guest_' + Math.random().toString(36).substring(2, 9),
-      email: 'espectador@playsports.tv',
+      email: 'espectador@worscoi.tv',
       displayName: 'Espectador Esportivo',
       photoURL: '',
       role: 'user', // NUNCA aceita admin aqui

@@ -6,10 +6,12 @@ import {
   Crown,
   Shield,
   LogIn,
+  Bell,
 } from 'lucide-react';
 import { WorscoiLogo } from './WorscoiLogo';
 import { SubscriptionCountdownBadge } from './SubscriptionCountdownBadge';
 import { useAuth } from '@/context/AuthContext';
+import { useNotifications } from '@/context/NotificationContext';
 import { WorscoiView, Canal } from '@/types';
 
 interface WorscoiTopBarProps {
@@ -23,6 +25,7 @@ interface WorscoiTopBarProps {
   onOpenAuth: () => void;
   onOpenAdminPanel?: () => void;
   onOpenLanding?: () => void;
+  onOpenNotifications?: () => void;
 }
 
 export function WorscoiTopBar({
@@ -35,8 +38,10 @@ export function WorscoiTopBar({
   onOpenUserProfile,
   onOpenAuth,
   onOpenAdminPanel,
+  onOpenNotifications,
 }: WorscoiTopBarProps) {
   const { user, userProfile, isAdmin } = useAuth();
+  const { unreadCount, openNotifications } = useNotifications();
 
   const isGuestOrNull = !user || Boolean('isAnonymous' in user && user.isAnonymous);
   const displayName = userProfile?.displayName || user?.displayName || 'Usuário';
@@ -80,7 +85,7 @@ export function WorscoiTopBar({
         )}
       </div>
 
-      {/* LADO DIREITO: CRONÔMETRO AO VIVO / PLANOS + ATALHO CHAVE + AVATAR NO ESTILO TIKTOK */}
+      {/* LADO DIREITO: CRONÔMETRO AO VIVO / PLANOS + ATALHO CHAVE + NOTIFICAÇÕES + AVATAR NO ESTILO TIKTOK */}
       <div className="flex items-center gap-2 sm:gap-2.5">
         {/* CRONÔMETRO DE ASSINATURA EM TEMPO REAL (OU PLANOS SE NÃO LOGADO) */}
         {userProfile ? (
@@ -125,6 +130,29 @@ export function WorscoiTopBar({
             <span>Admin</span>
           </button>
         )}
+
+        {/* BOTÃO CENTRAL DE NOTIFICAÇÕES (BÔNUS, EXPIRAÇÃO, ATIVAÇÃO) */}
+        <button
+          type="button"
+          onClick={() => {
+            if (onOpenNotifications) {
+              onOpenNotifications();
+            } else {
+              openNotifications();
+            }
+          }}
+          className="relative group p-2 sm:px-2.5 sm:py-1.5 rounded-full bg-zinc-900/90 hover:bg-zinc-800 text-zinc-300 hover:text-white border border-zinc-800/80 hover:border-zinc-700 transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer shadow-sm flex items-center gap-1.5"
+          title={unreadCount > 0 ? `${unreadCount} nova(s) notificação(ões)` : 'Notificações e Avisos'}
+        >
+          <div className="w-5 h-5 flex items-center justify-center transition-transform duration-200 group-hover:scale-120 group-hover:rotate-12">
+            <Bell className="w-3.5 h-3.5 text-zinc-300 group-hover:text-white" />
+          </div>
+          {unreadCount > 0 && (
+            <span className="min-w-4 h-4 px-1 rounded-full bg-[#FF2D55] text-white text-[10px] font-extrabold flex items-center justify-center animate-pulse shadow-md">
+              {unreadCount > 9 ? '9+' : unreadCount}
+            </span>
+          )}
+        </button>
 
         {/* AVATAR DO USUÁRIO OU ENTRAR */}
         {!isGuestOrNull ? (

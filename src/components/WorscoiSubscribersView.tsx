@@ -10,6 +10,7 @@ import {
   Crown,
 } from 'lucide-react';
 import { SubscriptionPlanId } from '@/types';
+import { SubscribersPlanRevenueChart } from './SubscribersPlanRevenueChart';
 
 interface SubscriberRow {
   id: string;
@@ -172,6 +173,9 @@ export function WorscoiSubscribersView({
           </span>
         </div>
       </div>
+
+      {/* GRÁFICO 100% FUNCIONAL: FLUXO DE SUBSCRITORES, TIPOS DE PLANO E DINHEIRO GANHO */}
+      <SubscribersPlanRevenueChart />
 
       {/* TABELA DE ASSINANTES */}
       <div className="bg-zinc-950/70 border border-zinc-850 rounded-2xl p-4 sm:p-6 space-y-4 shadow-xl">

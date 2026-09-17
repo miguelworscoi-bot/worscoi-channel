@@ -1,5 +1,5 @@
 {
-  "name": "PLAYSPORTS - TV e Esportes Ao Vivo",
+  "name": "Worscoi - TV e Esportes Ao Vivo",
   "description": "Transmissão ao vivo de canais esportivos (Libertadores, Champions League, TNT Sports, LaLiga), Bonecos & Animes, Filmes, Novelas, Notícias e Músicas.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]

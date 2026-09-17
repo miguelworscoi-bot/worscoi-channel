@@ -10,6 +10,7 @@ import {
   Loader2,
   X,
   AlertCircle,
+  ArrowRight,
 } from 'lucide-react';
 import { WorscoiCardVisual, PLAN_CARD_THEMES } from './WorscoiCardVisual';
 import { POSTerminalIllustration } from './POSTerminalIllustration';
@@ -132,6 +133,8 @@ export function WorscoiPlanSelectionFlow({
   // Estado para copiar telefone de pagamento
   const [copiedPhone, setCopiedPhone] = useState(false);
   const [isProcessingFree, setIsProcessingFree] = useState(false);
+  const [isChoosingPlan, setIsChoosingPlan] = useState(false);
+  const [slideDirection, setSlideDirection] = useState<number>(1);
 
   const handlePrevPlan = () => {
     setCurrentPlanIndex((prev) => (prev > 0 ? prev - 1 : FLOW_PLANS.length - 1));
@@ -168,7 +171,7 @@ export function WorscoiPlanSelectionFlow({
     setTimeout(() => setCopiedPhone(false), 2000);
   };
 
-  // Ao clicar em "Escolher" na Imagem 7
+  // Ao clicar em "Escolher" na Imagem 7 com transição fluida
   const handleSelectPlan = async () => {
     if (selectedPlan.isFree) {
       // Caso plano grátis: entra directo no sistema com notificação de parabéns
@@ -179,8 +182,13 @@ export function WorscoiPlanSelectionFlow({
         setIsProcessingFree(false);
       }
     } else {
-      // Caso plano pago: vai para o resumo do plano (Imagem 8)
-      setCurrentScreen('summary');
+      // Transição cinematográfica e responsiva para a tela de resumo (Imagem 8)
+      setSlideDirection(1);
+      setIsChoosingPlan(true);
+      setTimeout(() => {
+        setCurrentScreen('summary');
+        setIsChoosingPlan(false);
+      }, 70);
     }
   };
 
@@ -247,10 +255,10 @@ export function WorscoiPlanSelectionFlow({
         {currentScreen === 'plans' && (
           <motion.div
             key="screen-plans"
-            initial={{ opacity: 0, x: -16 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: 16 }}
-            transition={{ duration: 0.2 }}
+            initial={{ opacity: 0, x: slideDirection > 0 ? -24 : 24, scale: 0.99 }}
+            animate={{ opacity: 1, x: 0, scale: 1 }}
+            exit={{ opacity: 0, x: slideDirection > 0 ? -32 : 32, scale: 0.98, filter: 'blur(3px)' }}
+            transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
             className="flex flex-col h-full min-h-[520px] justify-between p-4 sm:p-6"
           >
             {/* TOPO: BOTÃO VOLTAR + TÍTULO */}
@@ -466,29 +474,51 @@ export function WorscoiPlanSelectionFlow({
                 </button>
               </div>
 
-              {/* Botão Escolher Branco Pill */}
-              <button
+              {/* Botão Escolher Branco Pill com Micro-Física e Transição Fluida */}
+              <motion.button
                 type="button"
+                id="btn-escolher-plano"
                 onClick={handleSelectPlan}
-                disabled={isProcessingFree}
-                className="w-full sm:w-auto px-8 py-2.5 rounded-full bg-white text-black font-extrabold text-sm sm:text-base hover:bg-zinc-200 transition shadow-xl active:scale-95 disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2"
+                disabled={isProcessingFree || isChoosingPlan}
+                whileHover={{
+                  scale: 1.04,
+                  y: -1,
+                  boxShadow: '0 8px 30px -4px rgba(255, 255, 255, 0.45)',
+                }}
+                whileTap={{ scale: 0.93 }}
+                transition={{ type: 'spring', stiffness: 450, damping: 22 }}
+                className="group relative w-full sm:w-auto px-8 py-2.5 rounded-full bg-white text-black font-extrabold text-sm sm:text-base hover:bg-zinc-100 transition-colors shadow-xl disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2 overflow-hidden"
               >
+                {/* Brilho dinâmico ao passar mouse */}
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 pointer-events-none" />
+
                 {isProcessingFree ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin text-black" />
                     <span>Ativando...</span>
                   </>
+                ) : isChoosingPlan ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin text-black" />
+                    <span>Abrindo...</span>
+                  </>
                 ) : (
-                  <span>Escolher</span>
+                  <>
+                    <span>Escolher</span>
+                    <ArrowRight className="w-4 h-4 text-black transition-transform duration-200 group-hover:translate-x-1" />
+                  </>
                 )}
-              </button>
+              </motion.button>
             </div>
 
             {/* Link de atalho direto para quem já comprou token */}
             <div className="text-center mt-3">
               <button
                 type="button"
-                onClick={() => setCurrentScreen('validate-token')}
+                onClick={() => {
+                  setSlideDirection(1);
+                  setCurrentScreen('validate-token');
+                }}
                 className="text-xs text-zinc-400 hover:text-white transition underline cursor-pointer"
               >
                 Já possui uma chave token de 5 dígitos? Ativar aqui
@@ -503,18 +533,21 @@ export function WorscoiPlanSelectionFlow({
         {currentScreen === 'summary' && (
           <motion.div
             key="screen-summary"
-            initial={{ opacity: 0, x: 16 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -16 }}
-            transition={{ duration: 0.2 }}
+            initial={{ opacity: 0, x: slideDirection > 0 ? 32 : -32, scale: 0.98, filter: 'blur(3px)' }}
+            animate={{ opacity: 1, x: 0, scale: 1, filter: 'blur(0px)' }}
+            exit={{ opacity: 0, x: slideDirection > 0 ? -32 : 32, scale: 0.98, filter: 'blur(3px)' }}
+            transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
             className="flex flex-col h-full min-h-[520px] justify-between p-4 sm:p-6"
           >
             {/* TOPO: BOTÃO VOLTAR + FECHAR */}
             <div className="flex items-center justify-between w-full mb-3">
               <button
                 type="button"
-                onClick={() => setCurrentScreen('plans')}
-                className="w-10 h-10 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center text-white hover:bg-zinc-800 transition cursor-pointer"
+                onClick={() => {
+                  setSlideDirection(-1);
+                  setCurrentScreen('plans');
+                }}
+                className="w-10 h-10 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center text-white hover:bg-zinc-800 transition cursor-pointer hover:scale-105 active:scale-95"
                 title="Voltar aos planos"
               >
                 <ChevronLeft className="w-5 h-5" />
@@ -530,19 +563,34 @@ export function WorscoiPlanSelectionFlow({
               </button>
             </div>
 
-            {/* CENTRO: TÍTULO + CARTÃO HORIZONTAL + PILHAS BRANCAS */}
+            {/* CENTRO: TÍTULO + CARTÃO HORIZONTAL + PILHAS BRANCAS COM TRANSIÇÃO EM CASCATA */}
             <div className="flex-1 flex flex-col items-center justify-center max-w-sm sm:max-w-md w-full mx-auto space-y-4">
-              <h2 className="text-base sm:text-lg font-bold text-white text-center tracking-tight">
+              <motion.h2
+                initial={{ opacity: 0, y: -6 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.25, delay: 0.05 }}
+                className="text-base sm:text-lg font-bold text-white text-center tracking-tight"
+              >
                 {selectedPlan.name}
-              </h2>
+              </motion.h2>
 
               {/* Cartão Worscoi Horizontal com Cor Dinâmica do Plano (Imagem 8) */}
-              <div className="w-full flex justify-center">
+              <motion.div
+                initial={{ opacity: 0, y: 12, scale: 0.94 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                transition={{ duration: 0.3, delay: 0.08, ease: [0.22, 1, 0.36, 1] }}
+                className="w-full flex justify-center"
+              >
                 <WorscoiCardVisual variant="horizontal" planId={selectedPlan.id} />
-              </div>
+              </motion.div>
 
               {/* Informações do Plano em uma Única Div Compacta e Organizada */}
-              <div className="w-full bg-white text-black px-5 py-3 rounded-2xl sm:rounded-3xl shadow-lg border border-zinc-100 flex flex-col divide-y divide-zinc-200/80">
+              <motion.div
+                initial={{ opacity: 0, y: 14 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: 0.12, ease: [0.22, 1, 0.36, 1] }}
+                className="w-full bg-white text-black px-5 py-3 rounded-2xl sm:rounded-3xl shadow-lg border border-zinc-100 flex flex-col divide-y divide-zinc-200/80"
+              >
                 {/* Linha 1: Card com indicador de cor */}
                 <div className="flex justify-between items-center py-2 text-sm font-semibold">
                   <div className="flex items-center gap-2">
@@ -590,20 +638,28 @@ export function WorscoiPlanSelectionFlow({
                     {selectedPlan.priceNumber.toLocaleString('pt-AO')} kz
                   </span>
                 </div>
-              </div>
+              </motion.div>
             </div>
 
             {/* BASE: BOTÃO DE PROSSEGUIR PARA PAGAMENTO */}
-            <div className="w-full max-w-sm sm:max-w-md mx-auto pt-3">
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.28, delay: 0.16, ease: [0.22, 1, 0.36, 1] }}
+              className="w-full max-w-sm sm:max-w-md mx-auto pt-3"
+            >
               <button
                 type="button"
-                onClick={() => setCurrentScreen('payment')}
+                onClick={() => {
+                  setSlideDirection(1);
+                  setCurrentScreen('payment');
+                }}
                 className="w-full py-4 px-6 rounded-full bg-[#FF2D55] hover:bg-[#ff1744] text-white font-extrabold text-sm sm:text-base shadow-xl shadow-[#FF2D55]/30 transition active:scale-95 cursor-pointer flex items-center justify-center gap-2"
               >
                 <span>Prosseguir para Pagamento</span>
                 <ChevronRight className="w-4 h-4" />
               </button>
-            </div>
+            </motion.div>
           </motion.div>
         )}
 
@@ -613,18 +669,21 @@ export function WorscoiPlanSelectionFlow({
         {currentScreen === 'payment' && (
           <motion.div
             key="screen-payment"
-            initial={{ opacity: 0, x: 16 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -16 }}
-            transition={{ duration: 0.2 }}
+            initial={{ opacity: 0, x: slideDirection > 0 ? 32 : -32, scale: 0.98, filter: 'blur(3px)' }}
+            animate={{ opacity: 1, x: 0, scale: 1, filter: 'blur(0px)' }}
+            exit={{ opacity: 0, x: slideDirection > 0 ? -32 : 32, scale: 0.98, filter: 'blur(3px)' }}
+            transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
             className="flex flex-col h-full min-h-[520px] justify-between p-4 sm:p-6"
           >
             {/* TOPO: BOTÃO VOLTAR + FECHAR */}
             <div className="flex items-center justify-between w-full mb-2">
               <button
                 type="button"
-                onClick={() => setCurrentScreen('summary')}
-                className="w-10 h-10 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center text-white hover:bg-zinc-800 transition cursor-pointer"
+                onClick={() => {
+                  setSlideDirection(-1);
+                  setCurrentScreen('summary');
+                }}
+                className="w-10 h-10 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center text-white hover:bg-zinc-800 transition cursor-pointer hover:scale-105 active:scale-95"
                 title="Voltar ao resumo"
               >
                 <ChevronLeft className="w-5 h-5" />
@@ -724,7 +783,10 @@ export function WorscoiPlanSelectionFlow({
             <div className="w-full max-w-sm sm:max-w-md mx-auto pt-3 flex justify-center">
               <button
                 type="button"
-                onClick={() => setCurrentScreen('validate-token')}
+                onClick={() => {
+                  setSlideDirection(1);
+                  setCurrentScreen('validate-token');
+                }}
                 className="w-full py-3.5 px-6 rounded-full bg-[#FF2D55] hover:bg-[#ff1744] text-white font-extrabold text-sm shadow-xl shadow-[#FF2D55]/30 transition active:scale-95 cursor-pointer flex items-center justify-center gap-2"
               >
                 <span>Já tenho a chave token</span>
@@ -740,18 +802,21 @@ export function WorscoiPlanSelectionFlow({
         {currentScreen === 'validate-token' && (
           <motion.div
             key="screen-token"
-            initial={{ opacity: 0, x: 16 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -16 }}
-            transition={{ duration: 0.2 }}
+            initial={{ opacity: 0, x: slideDirection > 0 ? 32 : -32, scale: 0.98, filter: 'blur(3px)' }}
+            animate={{ opacity: 1, x: 0, scale: 1, filter: 'blur(0px)' }}
+            exit={{ opacity: 0, x: slideDirection > 0 ? -32 : 32, scale: 0.98, filter: 'blur(3px)' }}
+            transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
             className="flex flex-col h-full min-h-[520px] justify-between p-4 sm:p-6"
           >
             {/* TOPO: BOTÃO VOLTAR + FECHAR */}
             <div className="flex items-center justify-between w-full mb-6">
               <button
                 type="button"
-                onClick={() => setCurrentScreen('payment')}
-                className="w-10 h-10 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center text-white hover:bg-zinc-800 transition cursor-pointer"
+                onClick={() => {
+                  setSlideDirection(-1);
+                  setCurrentScreen('payment');
+                }}
+                className="w-10 h-10 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center text-white hover:bg-zinc-800 transition cursor-pointer hover:scale-105 active:scale-95"
                 title="Voltar às instruções"
               >
                 <ChevronLeft className="w-5 h-5" />

@@ -260,3 +260,38 @@ span.text-secondary {
     overscroll-behavior-x: contain;
   }
 }
+
+/* ========================================================================= */
+/* ESTILOS DE IMPRESSÃO PROFISSIONAL DO RECIBO WORSCOI                       */
+/* ========================================================================= */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  #worscoi-printable-receipt,
+  #worscoi-printable-receipt * {
+    visibility: visible;
+  }
+
+  #worscoi-printable-receipt {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 24px !important;
+    border: none !important;
+    box-shadow: none !important;
+    background: #ffffff !important;
+    color: #090a0f !important;
+  }
+
+  /* Remove fundos e sobreposições desnecessárias na impressão */
+  #worscoi-receipt-modal-overlay {
+    background: transparent !important;
+    position: static !important;
+    padding: 0 !important;
+  }
+}

@@ -179,7 +179,7 @@ export const PAYMENT_CONFIG = {
     shortName: 'MCX Express',
     number: '942472983',
     numberFormatted: '942 472 983',
-    beneficiary: 'PLAYSPORTS TV / 942 472 983',
+    beneficiary: 'Worscoi TV / 942 472 983',
     steps: [
       'Abra o aplicativo Multicaixa Express no seu smartphone.',
       'Selecione a opção "Transferência" ou "Enviar Dinheiro".',
@@ -194,7 +194,7 @@ export const PAYMENT_CONFIG = {
     shortName: 'PayPay',
     number: '942472983',
     numberFormatted: '942 472 983',
-    beneficiary: 'PLAYSPORTS / 942 472 983',
+    beneficiary: 'Worscoi / 942 472 983',
     steps: [
       'Abra o aplicativo PayPay no seu telemóvel.',
       'Selecione a opção "Transferir / Pagar" para contacto telefónico.',
@@ -221,9 +221,9 @@ export function createWhatsAppPaymentProofLink(params: {
 }): string {
   const { planName, priceFormatted, userName, contact, paymentMethod } = params;
   const lines: string[] = [
-    `*INSCRIÇÃO & COMPROVATIVO DE PAGAMENTO - PLAYSPORTS TV*`,
+    `*INSCRIÇÃO & COMPROVATIVO DE PAGAMENTO - WORSCOI TV*`,
     ``,
-    `Olá equipe PLAYSPORTS TV! Estou a realizar a minha inscrição no site.`,
+    `Olá equipe Worscoi TV! Estou a realizar a minha inscrição no site.`,
     `*Plano Selecionado:* ${planName} (${priceFormatted})`,
   ];
 
@@ -611,7 +611,7 @@ export async function recordDeviceTrial(
     deviceId,
     claimedAt: now.toISOString(),
     expiresAt,
-    claimedEmail: email || 'espectador@playsports.tv',
+    claimedEmail: email || 'espectador@worscoi.tv',
     claimedUserId: userId || 'convidado',
   };
 
@@ -985,14 +985,16 @@ export async function redeemAccessToken(
   if (res.success && res.token) {
     // Atualiza sessão ativa
     try {
-      const sessionData = localStorage.getItem('playsports_auth_session');
+      const sessionData =
+        localStorage.getItem('worscoi_auth_session') ||
+        localStorage.getItem('playsports_auth_session');
       if (sessionData) {
         const parsed = JSON.parse(sessionData);
         parsed.plan = res.token.plan;
         parsed.planName = res.token.planName;
         parsed.planExpiresAt = res.expiresAt;
         parsed.activatedToken = res.token.code;
-        localStorage.setItem('playsports_auth_session', JSON.stringify(parsed));
+        localStorage.setItem('worscoi_auth_session', JSON.stringify(parsed));
       }
     } catch {
       // Ignora
@@ -1089,7 +1091,7 @@ export async function getSubscribers(): Promise<SubscriberUser[]> {
       },
       {
         id: 'usr_espectador',
-        email: 'espectador@playsports.tv',
+        email: 'espectador@worscoi.tv',
         displayName: 'Espectador Esportivo',
         role: 'user',
         plan: 'vip',
@@ -1182,14 +1184,16 @@ export async function updateSubscriberPlan(
 
   // Se for o usuário ativo logado, atualiza a sessão
   try {
-    const sessionData = localStorage.getItem('playsports_auth_session');
+    const sessionData =
+      localStorage.getItem('worscoi_auth_session') ||
+      localStorage.getItem('playsports_auth_session');
     if (sessionData) {
       const parsed = JSON.parse(sessionData);
       if (parsed.id === userId || parsed.email.toLowerCase() === userEmail.toLowerCase()) {
         parsed.plan = newPlan;
         parsed.planName = planInfo.name;
         parsed.planExpiresAt = expiresAtISO;
-        localStorage.setItem('playsports_auth_session', JSON.stringify(parsed));
+        localStorage.setItem('worscoi_auth_session', JSON.stringify(parsed));
       }
     }
   } catch {

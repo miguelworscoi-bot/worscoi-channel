@@ -42,7 +42,7 @@ async function startServer() {
   }
 
   app.listen(PORT, '0.0.0.0', () => {
-    console.log(`PLAYSPORTS Worscoi server running on http://0.0.0.0:${PORT}`);
+    console.log(`Worscoi server running on http://0.0.0.0:${PORT}`);
   });
 }
 

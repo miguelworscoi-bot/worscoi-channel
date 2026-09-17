@@ -247,7 +247,7 @@ export const ImdbService = {
       genero: formatarGeneros(filme.genero),
       elenco: parseElenco(filme.sinopse?.includes('Elenco') ? filme.sinopse.replace(/.*Elenco[^\w]*/i, '') : ''),
       elencoTexto: filme.sinopse?.includes('Elenco') ? filme.sinopse : 'Elenco principal e equipe técnica',
-      sinopse: filme.sinopse || 'Grande produção cinematográfica em alta definição disponível na Filmoteca PlaySports.',
+      sinopse: filme.sinopse || 'Grande produção cinematográfica em alta definição disponível na Filmoteca Worscoi.',
       sinopseLocal: filme.sinopse,
       notaImdb: filme.rating || '8.5',
       votosImdb: 'Avaliação da comunidade IMDb',

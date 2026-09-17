@@ -627,7 +627,7 @@ export function WorscoiFilmotecaView({ onBackToTV }: WorscoiFilmotecaViewProps) 
       });
       return {
         ...sec,
-        filmes: itens.slice(0, 16),
+        filmes: itens.slice(0, 32),
         totalCount: itens.length
       };
     }).filter((sec) => sec.filmes.length > 0);

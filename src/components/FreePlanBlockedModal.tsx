@@ -165,7 +165,7 @@ export const FreePlanBlockedModal: React.FC<FreePlanBlockedModalProps> = ({
               </button>
 
               <a
-                href="https://wa.me/244942472983?text=Ol%C3%A1%21+Meu+teste+gratuito+terminou+e+gostaria+de+assinar+um+plano+PlaySports."
+                href="https://wa.me/244942472983?text=Ol%C3%A1%21+Meu+teste+gratuito+terminou+e+gostaria+de+assinar+um+plano+Worscoi."
                 target="_blank"
                 rel="noreferrer"
                 id="blocked-whatsapp-support-btn"

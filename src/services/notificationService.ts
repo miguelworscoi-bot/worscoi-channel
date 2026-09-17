@@ -9,7 +9,7 @@ import {
   where,
 } from 'firebase/firestore';
 import { db, safeFirestoreCall } from '@/lib/firebase';
-import { UserNotification, NotificationType } from '@/types';
+import { UserNotification } from '@/types';
 
 const NOTIFICATIONS_COLLECTION = 'notifications';
 const LOCAL_STORAGE_PREFIX = 'playsports_notifications_';

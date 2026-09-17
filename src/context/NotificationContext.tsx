@@ -97,7 +97,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
         userId,
         userEmail: userProfile?.email,
         type: 'bonus',
-        title: 'Bem-vindo ao PLAYSPORTS! 🎁',
+        title: 'Bem-vindo ao Worscoi! 🎁',
         message: 'Você recebeu um bônus de boas-vindas! Acesse transmissões esportivas e canais de TV ao vivo com sinal estabilizado.',
         actionLabel: 'Começar a Assistir',
       }).then(() => {

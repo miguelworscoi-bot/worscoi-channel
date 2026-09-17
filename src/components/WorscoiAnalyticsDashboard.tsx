@@ -50,7 +50,7 @@ interface WorscoiAnalyticsDashboardProps {
 }
 
 // -----------------------------------------------------------------------------
-// DADOS REALISTAS MODELADOS PARA A PLATAFORMA DE STREAMING WORSCOI / PLAYSPORTS
+// DADOS REALISTAS MODELADOS PARA A PLATAFORMA DE STREAMING WORSCOI
 // Moeda oficial: Kwanza Angolano (Kz / AOA)
 // -----------------------------------------------------------------------------
 

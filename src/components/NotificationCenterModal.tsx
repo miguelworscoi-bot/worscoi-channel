@@ -19,7 +19,7 @@ import {
   ArrowRight,
 } from 'lucide-react';
 import { useNotifications } from '@/context/NotificationContext';
-import { UserNotification, NotificationType } from '@/types';
+import { NotificationType } from '@/types';
 import { formatFriendlyDateTime } from '@/services/notificationService';
 
 interface NotificationCenterModalProps {
@@ -421,7 +421,7 @@ export function NotificationCenterModal({
 
           {/* RODAPÉ */}
           <div className="p-3 border-t border-zinc-800/80 bg-zinc-950/80 flex items-center justify-between text-xs text-zinc-400 font-normal">
-            <span>PLAYSPORTS Notificações</span>
+            <span>Worscoi Notificações</span>
             <button
               type="button"
               onClick={onClose}

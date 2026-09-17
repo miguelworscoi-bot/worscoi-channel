@@ -38,8 +38,8 @@ export function generateFiveCharCode(): string {
   return code;
 }
 
-// Caracteres alfanuméricos limpos permitidos
-const TOKEN_REGEX = /^[23456789ABCDEFGHJKLMNPQRSTUVWXYZ]{5}$/;
+// Caracteres alfanuméricos limpos permitidos (5 caracteres)
+const TOKEN_REGEX = /^[A-Z0-9]{5}$/;
 
 interface CacheEntry {
   token: AccessTokenRecord | null;
@@ -210,7 +210,7 @@ class TokenEfficiencyEngine {
         durationDays: duration,
         status: 'active',
         createdAt: new Date().toISOString(),
-        createdBy: creatorEmail || 'admin@playsports.tv',
+        createdBy: creatorEmail || 'admin@worscoi.tv',
         notes: notes?.trim() || `Token ${planName} (${duration} dias)`,
       };
 
@@ -300,7 +300,7 @@ class TokenEfficiencyEngine {
       status: 'used',
       usedAt: now.toISOString(),
       usedByUserId: user.uid,
-      usedByEmail: user.email || 'usuario@playsports.tv',
+      usedByEmail: user.email || 'usuario@worscoi.tv',
     };
 
     // Atualiza caches

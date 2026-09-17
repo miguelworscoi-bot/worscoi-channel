@@ -26,8 +26,11 @@ import { UserProfileModal } from '@/components/UserProfileModal';
 import { SubscriptionExpiredModal } from '@/components/SubscriptionExpiredModal';
 import { FreePlanBlockedModal } from '@/components/FreePlanBlockedModal';
 import { CongratulationsNotification } from '@/components/CongratulationsNotification';
+import { NotificationCenterModal } from '@/components/NotificationCenterModal';
+import { NotificationToast } from '@/components/NotificationToast';
 import { LandingScreen } from '@/components/LandingScreen';
 import { useAuth } from '@/context/AuthContext';
+import { useNotifications } from '@/context/NotificationContext';
 import { autoplayQueueService } from '@/services/autoplayQueueService';
 import {
   getStoredRecentChannels,
@@ -52,6 +55,11 @@ export default function Home() {
     freePlanBlockedDetails,
     closeFreePlanBlockedAlert,
   } = useAuth();
+  const {
+    isOpen: isNotificationsOpen,
+    openNotifications,
+    closeNotifications,
+  } = useNotifications();
   const [currentView, setCurrentView] = useState<WorscoiView>('explorar');
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -456,7 +464,13 @@ export default function Home() {
 
   // Se o usuário estiver autenticado (não convidado espectador), avança para o app
   useEffect(() => {
-    if (user && user.email && user.email !== 'espectador@playsports.tv' && !user.isAnonymous) {
+    if (
+      user &&
+      user.email &&
+      user.email !== 'espectador@worscoi.tv' &&
+      user.email !== 'espectador@playsports.tv' &&
+      !user.isAnonymous
+    ) {
       setIsLandingOpen(false);
       try {
         sessionStorage.setItem('playsports_landing_entered', 'true');
@@ -628,6 +642,7 @@ export default function Home() {
           onOpenUserProfile={() => setIsUserProfileModalOpen(true)}
           onOpenAuth={() => handleOpenLoginModal('login')}
           onOpenAdminPanel={isAdmin ? () => setIsAdminPanelOpen(true) : undefined}
+          onOpenNotifications={openNotifications}
         />
 
         {/* CORPO CENTRAL DINÂMICO BASEADO NA ABA ATIVA */}
@@ -972,6 +987,26 @@ export default function Home() {
         onLoginSuccess={handleLoginSuccess}
         onCelebration={(data) => {
           setCelebrationData({ isOpen: true, ...data });
+        }}
+      />
+
+      {/* NOTIFICAÇÃO TOAST FLUTUANTE EM TEMPO REAL (BÔNUS, EXPIRAÇÃO, ATIVAÇÃO) */}
+      <NotificationToast
+        onOpenNotifications={openNotifications}
+        onOpenPlans={() => setIsPaymentModalOpen(true)}
+      />
+
+      {/* MODAL CENTRAL DE NOTIFICAÇÕES (MENSAGENS DE BÔNUS, FIM DO PLANO, ALERTA E ATIVAÇÃO) */}
+      <NotificationCenterModal
+        isOpen={isNotificationsOpen}
+        onClose={closeNotifications}
+        onOpenPlans={() => {
+          closeNotifications();
+          setIsPaymentModalOpen(true);
+        }}
+        onOpenRedeemToken={() => {
+          closeNotifications();
+          setIsRedeemModalOpen(true);
         }}
       />
     </main>

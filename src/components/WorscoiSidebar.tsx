@@ -479,7 +479,7 @@ export function WorscoiSidebar({
               return (
                 <div key={`group-${group.meta.key}`} className="space-y-0.5">
                   {/* CABEÇALHO DO GRUPO */}
-                  {!isCollapsed && groupedCategories.length > 1 && (
+                  {!isCollapsed && (
                     <button
                       type="button"
                       onClick={() => toggleCategory(group.meta.key)}
@@ -524,7 +524,7 @@ export function WorscoiSidebar({
 
                   {/* ITENS DOS CANAIS */}
                   <AnimatePresence initial={false}>
-                    {(isOpen || isCollapsed || groupedCategories.length === 1) && (
+                    {(isOpen || isCollapsed) && (
                       <motion.div
                         initial={{ height: 0, opacity: 0 }}
                         animate={{ height: 'auto', opacity: 1 }}
