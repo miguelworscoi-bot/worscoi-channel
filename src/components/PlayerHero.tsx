@@ -26,9 +26,12 @@ import {
   Heart,
   MessageCircle,
   ExternalLink,
+  Share2,
 } from 'lucide-react';
 import { Canal, LatencyMode, VideoQuality } from '@/types';
 import { motion, AnimatePresence } from 'motion/react';
+import { ChannelShareModal } from './ChannelShareModal';
+import { CustomPage } from '@/services/customPagesService';
 import {
   getSafeStreamUrl,
   isStreamAutoProxied,
@@ -93,6 +96,8 @@ interface PlayerHeroProps {
   isPlaybackPaused?: boolean;
   videoQuality?: VideoQuality;
   onSelectVideoQuality?: (quality: VideoQuality) => void;
+  customPages?: CustomPage[];
+  onNavigateToCustomPage?: (slug: string) => void;
 }
 
 export function PlayerHero({
@@ -129,7 +134,10 @@ export function PlayerHero({
   isPlaybackPaused = false,
   videoQuality = 'auto',
   onSelectVideoQuality,
+  customPages = [],
+  onNavigateToCustomPage,
 }: PlayerHeroProps) {
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const { userProfile, isAdmin, countdown, isSubscriptionExpired } = useAuth();
   const isPlanExpired = !isAdmin && (isSubscriptionExpired || countdown.expired || isUserPlanExpired(userProfile));
   const channelAccess = canUserWatchChannel(canalAtivo, userProfile);
@@ -1520,6 +1528,18 @@ export function PlayerHero({
                 </button>
               )}
 
+              {/* BOTÃO COMPARTILHAR / LINK PERSONALIZADO */}
+              <button
+                type="button"
+                id="player-action-share-custom-link-btn"
+                onClick={() => setIsShareModalOpen(true)}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-cyan-300 hover:text-cyan-200 text-xs font-semibold transition-all cursor-pointer active:scale-95"
+                title="Compartilhar link direto ou ver páginas com links personalizados"
+              >
+                <Share2 className="w-4 h-4 text-cyan-400" />
+                <span className="hidden sm:inline">Compartilhar</span>
+              </button>
+
               {/* BOTÃO AJUSTES / CONFIGURAÇÕES */}
               <button
                 type="button"
@@ -1687,6 +1707,15 @@ export function PlayerHero({
         isSubmitting={isSubmittingComment}
         currentUserId={getEffectiveVisitorId(userProfile?.id)}
         isAdmin={isAdmin}
+      />
+
+      {/* MODAL DE COMPARTILHAMENTO E LINKS PERSONALIZADOS */}
+      <ChannelShareModal
+        isOpen={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
+        canal={canalAtivo}
+        customPages={customPages}
+        onNavigateToCustomPage={onNavigateToCustomPage}
       />
     </div>
   );

@@ -248,7 +248,7 @@ export interface Canal {
   descricao?: string;
 }
 
-export type WorscoiView = 'explorar' | 'painel' | 'assinantes' | 'filmoteca';
+export type WorscoiView = 'explorar' | 'painel' | 'assinantes' | 'filmoteca' | `custom_${string}`;
 
 export interface GameDeal {
   id: string;
