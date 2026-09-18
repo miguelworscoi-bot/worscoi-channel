@@ -78,13 +78,13 @@ app.get('/api/health', (_req: ExpressReq, res: ExpressRes) => {
 });
 
 // API Routes
-app.options(['/api/proxy', '/api/proxy.m3u8'], async (req, res) => {
+app.options('/api/proxy', async (req, res) => {
   await handleWebRoute(optionsProxy, req, res);
 });
-app.head(['/api/proxy', '/api/proxy.m3u8'], async (req, res) => {
+app.head('/api/proxy', async (req, res) => {
   await handleWebRoute(headProxy, req, res);
 });
-app.get(['/api/proxy', '/api/proxy.m3u8'], async (req, res) => {
+app.get('/api/proxy', async (req, res) => {
   await handleWebRoute(getProxy, req, res);
 });
 

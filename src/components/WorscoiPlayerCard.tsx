@@ -218,14 +218,13 @@ export function WorscoiPlayerCard({
       {/* CARD PRINCIPAL DO PLAYER */}
       <div className="relative w-full aspect-[16/10] sm:aspect-[16/9] bg-[#0A0A0C] border border-zinc-850 rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl shadow-black/80 flex items-center justify-center group">
         {/* REPRODUTOR DE VÍDEO / STREAM */}
-        {canalAtivo && finalStreamUrl ? (
+        {canalAtivo ? (
           <div className="relative w-full h-full bg-black">
             {React.createElement(
               ReactPlayer as unknown as React.ComponentType<Record<string, unknown>>,
               {
                 key: `${canalAtivo.id || canalAtivo.url}-${streamIndex}-${useProxy}`,
                 url: finalStreamUrl,
-                src: finalStreamUrl,
                 playing: true,
                 muted: isMuted,
                 controls: false,

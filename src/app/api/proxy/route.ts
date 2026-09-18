@@ -69,7 +69,7 @@ function resolveAndProxy(uri: string, baseUrl: string): string {
     // Se já está roteado pelo proxy, preserva
     if (trimmed.startsWith('/api/proxy')) return trimmed;
     const abs = new URL(trimmed, baseUrl).toString();
-    return `/api/proxy.m3u8?url=${encodeURIComponent(abs)}`;
+    return `/api/proxy?url=${encodeURIComponent(abs)}`;
   } catch {
     return uri;
   }
@@ -178,25 +178,6 @@ export async function GET(request?: Request) {
     if (isM3U8Url || isM3U8Type) {
       const text = await response.text();
       if (text.includes('#EXTM3U') || text.includes('#EXT-X-')) {
-        // Verifica se a playlist não está vazia ou encerrada sem segmentos
-        const hasSegmentsOrVariants =
-          text.includes('#EXTINF') ||
-          text.includes('#EXT-X-STREAM-INF') ||
-          text.includes('#EXT-X-TARGETDURATION');
-
-        if (!hasSegmentsOrVariants && text.includes('#EXT-X-ENDLIST')) {
-          return NextResponse.json(
-            { error: 'Transmissão finalizada ou sem segmentos ativos pela emissora' },
-            {
-              status: 502,
-              headers: {
-                'Access-Control-Allow-Origin': '*',
-                'Cache-Control': 'no-store, no-cache',
-              },
-            }
-          );
-        }
-
         const rewritten = rewriteM3U8(text, finalUrl);
         return new NextResponse(rewritten, {
           status: response.status >= 200 && response.status < 300 ? 200 : response.status,
@@ -208,18 +189,6 @@ export async function GET(request?: Request) {
             'Cache-Control': 'public, max-age=2, must-revalidate',
           },
         });
-      } else {
-        // Servidor remoto retornou resposta sem cabeçalho HLS válido (ex: página de erro HTML, geoblock ou offline)
-        return NextResponse.json(
-          { error: 'Sinal da emissora não retornou um fluxo HLS M3U8 válido' },
-          {
-            status: 502,
-            headers: {
-              'Access-Control-Allow-Origin': '*',
-              'Cache-Control': 'no-store, no-cache',
-            },
-          }
-        );
       }
     }
 
