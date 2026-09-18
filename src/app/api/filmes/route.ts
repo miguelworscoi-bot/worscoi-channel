@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { globalRateLimiter, createRateLimitExceededResponse } from '@/lib/rateLimiter';
 import { obterCatalogoCompleto } from '@/data/catalogoFilmotecaCompleto';
 
 export interface FilmeItem {
@@ -840,6 +841,15 @@ interface ImdbSuggestionItem {
 }
 
 export async function GET(request: Request) {
+  const rateLimit = globalRateLimiter.check(request, {
+    routeKey: 'api-filmes',
+    maxRequests: 120,
+    windowSeconds: 60,
+  });
+  if (!rateLimit.allowed) {
+    return createRateLimitExceededResponse(rateLimit);
+  }
+
   try {
     const { searchParams } = new URL(request.url);
     const action = searchParams.get('action');

@@ -1,6 +1,18 @@
 import { NextResponse } from 'next/server';
+import { globalRateLimiter, createRateLimitExceededResponse } from '@/lib/rateLimiter';
 
-export async function GET() {
+export async function GET(request?: Request) {
+  if (request) {
+    const rateLimit = globalRateLimiter.check(request, {
+      routeKey: 'api-epg',
+      maxRequests: 60,
+      windowSeconds: 60,
+    });
+    if (!rateLimit.allowed) {
+      return createRateLimitExceededResponse(rateLimit);
+    }
+  }
+
   try {
     // Puxa o guia de programação simplificado (JSON) fornecido pela comunidade iptv-org
     const response = await fetch('https://github.io', {

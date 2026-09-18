@@ -116,6 +116,11 @@ export function CinemaPlayer({
   const [isBuffering, setIsBuffering] = useState(true);
   const [hasFirstFrame, setHasFirstFrame] = useState(false);
   const [loadSeconds, setLoadSeconds] = useState(0);
+  const [isPlaybackStalled, setIsPlaybackStalled] = useState(false);
+  const [stalledMessage, setStalledMessage] = useState<string | null>(null);
+  const lastProgressTimestampRef = React.useRef<number>(Date.now());
+  const lastPlayedSecondsRef = React.useRef<number>(-1);
+  const cinemaContainerRef = React.useRef<HTMLDivElement>(null);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isChannelVideosOpen, setIsChannelVideosOpen] = useState(false);
   const [triviaIndex, setTriviaIndex] = useState(0);
@@ -307,6 +312,10 @@ export function CinemaPlayer({
     setIsBuffering(true);
     setHasFirstFrame(false);
     setLoadSeconds(0);
+    setIsPlaybackStalled(false);
+    setStalledMessage(null);
+    lastProgressTimestampRef.current = Date.now();
+    lastPlayedSecondsRef.current = -1;
     setEmergencyOverrideUrl(null);
   }, [canalAtivo.id, canalAtivo.url, streamIndex, useProxy]);
 
@@ -319,47 +328,146 @@ export function CinemaPlayer({
     return () => clearInterval(triviaTimer);
   }, [hasFirstFrame]);
 
-  // Watchdog de failover inteligente no modo cinema
+  // Watchdog de failover inteligente e resgate contra tela preta no modo cinema
   useEffect(() => {
-    if (hasFirstFrame) return;
+    if (!canalAtivo || isTransitioning || isPlanExpired || isChannelLockedByPlan) return;
 
     let seconds = 0;
     const interval = setInterval(() => {
       seconds += 1;
       setLoadSeconds(seconds);
 
-      // Aos 8s: se o sinal direto ainda não abriu e não é YouTube, ativa o proxy seguro
-      if (seconds === 8 && !hasFirstFrame) {
-        if (!useProxy && !isYouTubeChannel) {
+      const now = Date.now();
+      const timeSinceLastProgress = now - lastProgressTimestampRef.current;
+      const videoEl = cinemaContainerRef.current?.querySelector('video');
+
+      const isActivelyPlaying =
+        videoEl &&
+        videoEl.videoWidth > 0 &&
+        videoEl.videoHeight > 0 &&
+        !videoEl.paused &&
+        videoEl.currentTime > 0.05 &&
+        timeSinceLastProgress < 3000;
+
+      if (isActivelyPlaying) {
+        if (!hasFirstFrame) setHasFirstFrame(true);
+        if (isBuffering) setIsBuffering(false);
+        if (isPlaybackStalled) setIsPlaybackStalled(false);
+        setStalledMessage(null);
+        return;
+      }
+
+      // Se passou mais de 4s sem progresso de vídeo
+      if (timeSinceLastProgress >= 4000) {
+        setIsPlaybackStalled(true);
+
+        if (videoEl) {
+          if (videoEl.paused) {
+            videoEl.play().catch(() => {});
+          } else if (videoEl.currentTime > 0) {
+            videoEl.currentTime += 0.25;
+          }
+        }
+
+        // Aos 6s: se o sinal direto ainda não abriu e não é YouTube, ativa o proxy seguro
+        if (seconds === 6 && !useProxy && !isYouTubeChannel) {
+          setStalledMessage('Sinal sem retorno de vídeo. Otimizando rota via proxy seguro...');
           onToggleProxy();
+          return;
         }
-      }
 
-      // Aos 14s: tenta o próximo servidor reserva se disponível
-      if (seconds === 14 && !hasFirstFrame) {
-        if (streamsDisponiveis.length > 1 && streamIndex < streamsDisponiveis.length - 1) {
-          onStreamChange(streamIndex + 1);
+        // Aos 10s: tenta o próximo servidor reserva se disponível
+        if (seconds === 10 && streamsDisponiveis.length > 1) {
+          setStalledMessage('Alternando para servidor alternativo com transmissão ativa...');
+          onStreamChange((streamIndex + 1) % streamsDisponiveis.length);
+          return;
         }
-      }
 
-      // Aos 22s: se ainda não abriu, aciona o sinal de emergência da categoria
-      if (seconds === 22 && !hasFirstFrame) {
-        const emergencyStream = getEmergencyFallbackStream(canalAtivo?.categoria);
-        if (emergencyStream && emergencyStream !== activeRawStreamUrl) {
-          setEmergencyOverrideUrl(emergencyStream);
+        // Aos 15s: se ainda não abriu imagem, aciona o sinal de emergência da categoria
+        if (seconds === 15) {
+          const emergencyStream = getEmergencyFallbackStream(canalAtivo?.categoria);
+          if (emergencyStream && emergencyStream !== activeRawStreamUrl && emergencyOverrideUrl !== emergencyStream) {
+            setStalledMessage('Sinal de origem sem resposta. Conectando sinal reserva HD...');
+            setEmergencyOverrideUrl(emergencyStream);
+            return;
+          }
         }
-      }
 
-      // Aos 30s: notifica o erro caso nenhum sinal responda
-      if (seconds === 30 && !hasFirstFrame) {
-        setTimeout(() => {
-          onPlayerError?.(new Error('Tempo limite excedido'));
-        }, 0);
+        // Aos 24s: notifica o erro caso nenhum sinal responda
+        if (seconds === 24) {
+          setTimeout(() => {
+            onPlayerError?.(new Error('Sinal sem resposta da emissora'));
+          }, 0);
+        }
       }
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [hasFirstFrame, canalAtivo?.categoria, activeRawStreamUrl, streamsDisponiveis.length, streamIndex, onStreamChange, useProxy, isYouTubeChannel, onToggleProxy, onPlayerError]);
+  }, [
+    hasFirstFrame,
+    isBuffering,
+    isPlaybackStalled,
+    canalAtivo?.categoria,
+    activeRawStreamUrl,
+    emergencyOverrideUrl,
+    streamsDisponiveis.length,
+    streamIndex,
+    onStreamChange,
+    useProxy,
+    isYouTubeChannel,
+    onToggleProxy,
+    onPlayerError,
+    isTransitioning,
+    isPlanExpired,
+    isChannelLockedByPlan,
+  ]);
+
+  // Monitoramento nativo de decodificação e exibição de imagem no elemento <video>
+  useEffect(() => {
+    const videoEl = cinemaContainerRef.current?.querySelector('video');
+    if (!videoEl) return;
+
+    const handleLoadedData = () => {
+      if (videoEl.videoWidth > 0) {
+        setHasFirstFrame(true);
+        setIsBuffering(false);
+        setIsPlaybackStalled(false);
+        setStalledMessage(null);
+        lastProgressTimestampRef.current = Date.now();
+      }
+    };
+
+    const handleTimeUpdate = () => {
+      if (videoEl.currentTime > 0.05 && !videoEl.paused) {
+        lastProgressTimestampRef.current = Date.now();
+        if (videoEl.videoWidth > 0) {
+          setHasFirstFrame(true);
+          setIsPlaybackStalled(false);
+          setStalledMessage(null);
+        }
+      }
+    };
+
+    const handlePlaying = () => {
+      setIsBuffering(false);
+    };
+
+    const handleWaiting = () => {
+      setIsBuffering(true);
+    };
+
+    videoEl.addEventListener('loadeddata', handleLoadedData);
+    videoEl.addEventListener('timeupdate', handleTimeUpdate);
+    videoEl.addEventListener('playing', handlePlaying);
+    videoEl.addEventListener('waiting', handleWaiting);
+
+    return () => {
+      videoEl.removeEventListener('loadeddata', handleLoadedData);
+      videoEl.removeEventListener('timeupdate', handleTimeUpdate);
+      videoEl.removeEventListener('playing', handlePlaying);
+      videoEl.removeEventListener('waiting', handleWaiting);
+    };
+  }, [canalAtivo?.id, streamIndex, isCurrentlyProxied, latencyMode, emergencyOverrideUrl]);
 
   // Teclado: ESC fecha cinema, Setas zapam canais, M muta, S alterna modo
   useEffect(() => {
@@ -682,7 +790,7 @@ export function CinemaPlayer({
       )}
 
       {/* FULLSCREEN PLAYER CONTAINER */}
-      <div className="w-full h-full flex items-center justify-center p-0 md:p-4 relative">
+      <div ref={cinemaContainerRef} className="w-full h-full flex items-center justify-center p-0 md:p-4 relative">
         {/* POSTER CINEMATOGRÁFICO DE CONEXÃO AO VIVO */}
         {!hasFirstFrame && (
           <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-zinc-950 overflow-hidden">
@@ -784,93 +892,171 @@ export function CinemaPlayer({
         )}
 
         {/* SPINNER DISCRETO DE REBUFFERING SE O VÍDEO JÁ ESTIVER RODANDO */}
-        {hasFirstFrame && isBuffering && (
+        {hasFirstFrame && isBuffering && !isPlaybackStalled && (
           <div className="absolute top-24 right-6 z-40 bg-black/80 backdrop-blur-md border border-[#00E676]/40 px-3 py-1.5 rounded-full flex items-center gap-2 text-xs text-white shadow-xl">
             <div className="w-3 h-3 rounded-full border-2 border-[#00E676] border-t-transparent animate-spin"></div>
             <span className="text-[11px] font-semibold text-zinc-300">Ajustando sinal...</span>
           </div>
         )}
 
-        {React.createElement(
-          ReactPlayer as unknown as React.ComponentType<Record<string, unknown>>,
-          {
-            key: `cinema-${canalAtivo.id || canalAtivo.url}-${streamIndex}-${isCurrentlyProxied ? 'proxy' : 'direct'}`,
-            url: finalStreamUrl,
-            src: finalStreamUrl,
-            playing: !isPlanExpired && !isChannelLockedByPlan,
-            muted: effectiveMuted,
-            controls: !isPlanExpired && !isChannelLockedByPlan,
-            width: '100%',
-            height: '100%',
-            playsinline: true,
-            config: {
-              file: {
-                forceHLS:
-                  !finalStreamUrl.includes('youtube.com') &&
-                  !finalStreamUrl.includes('youtu.be'),
-                hlsOptions: getHlsOptionsForLatencyMode(latencyMode),
-              },
-              youtube: {
-                playerVars: {
-                  autoplay: 1,
-                  modestbranding: 1,
-                  rel: 0,
+        {/* AVISO E AÇÕES DE RESGATE QUANDO O SINAL TRAVA OU FICA EM TELA PRETA NO MODO CINEMA */}
+        {hasFirstFrame && isPlaybackStalled && (
+          <div
+            id="cinema-stalled-recovery-bar"
+            className="absolute bottom-6 left-6 right-6 z-40 p-3.5 rounded-2xl bg-black/85 backdrop-blur-md border border-amber-500/50 text-white shadow-2xl flex flex-col sm:flex-row items-center justify-between gap-3 animate-in fade-in duration-200"
+          >
+            <div className="flex items-center gap-2.5 text-left">
+              <div className="w-9 h-9 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400 shrink-0">
+                <Zap className="w-4 h-4 text-amber-400 animate-pulse" />
+              </div>
+              <div>
+                <p className="text-xs font-bold text-white flex items-center gap-1.5">
+                  <span>{stalledMessage || 'Sinal sem resposta de imagem da emissora'}</span>
+                </p>
+                <p className="text-[11px] text-zinc-400">
+                  O fluxo de dados foi interrompido. Você pode alternar o servidor ou acionar o sinal reserva:
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 shrink-0 flex-wrap justify-end">
+              {streamsDisponiveis.length > 1 && (
+                <button
+                  type="button"
+                  onClick={() => onStreamChange((streamIndex + 1) % streamsDisponiveis.length)}
+                  className="px-3.5 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 text-xs font-bold flex items-center gap-1.5 cursor-pointer transition shadow-sm"
+                >
+                  <Zap className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Trocar Servidor ({streamIndex + 1}/{streamsDisponiveis.length})</span>
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => {
+                  setEmergencyOverrideUrl(getEmergencyFallbackStream(canalAtivo.categoria));
+                }}
+                className="px-3.5 py-1.5 rounded-xl bg-emerald-600/30 hover:bg-emerald-600/50 text-emerald-300 border border-emerald-500/40 text-xs font-bold flex items-center gap-1.5 cursor-pointer transition shadow-sm"
+              >
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                <span>Sinal Reserva HD</span>
+              </button>
+              {onNextCanal && (
+                <button
+                  type="button"
+                  onClick={onNextCanal}
+                  className="px-3.5 py-1.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 text-xs font-bold flex items-center gap-1.5 cursor-pointer transition shadow-sm"
+                >
+                  <SkipForward className="w-3.5 h-3.5 text-[#00E676]" />
+                  <span>Próximo</span>
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+
+        {finalStreamUrl ? (
+          React.createElement(
+            ReactPlayer as unknown as React.ComponentType<Record<string, unknown>>,
+            {
+              key: `cinema-${canalAtivo.id || canalAtivo.url}-${streamIndex}-${isCurrentlyProxied ? 'proxy' : 'direct'}`,
+              url: finalStreamUrl,
+              src: finalStreamUrl,
+              playing: !isPlanExpired && !isChannelLockedByPlan,
+              muted: effectiveMuted,
+              controls: !isPlanExpired && !isChannelLockedByPlan,
+              width: '100%',
+              height: '100%',
+              playsinline: true,
+              config: {
+                file: {
+                  forceHLS:
+                    !finalStreamUrl.includes('youtube.com') &&
+                    !finalStreamUrl.includes('youtu.be'),
+                  hlsOptions: getHlsOptionsForLatencyMode(latencyMode),
+                },
+                youtube: {
+                  playerVars: {
+                    autoplay: 1,
+                    modestbranding: 1,
+                    rel: 0,
+                  },
                 },
               },
-            },
-            onReady: () => setIsReady(true),
-            onStart: () => {
-              setIsReady(true);
-              setIsBuffering(false);
-              setHasFirstFrame(true);
-            },
-            onPlay: () => {
-              setIsBuffering(false);
-              setHasFirstFrame(true);
-            },
-            onBuffer: () => setIsBuffering(true),
-            onBufferEnd: () => {
-              setIsBuffering(false);
-              setHasFirstFrame(true);
-            },
-            onEnded: () => {
-              // Transição automática para o próximo vídeo quando terminar
-              setTimeout(() => {
-                onVideoEnded?.();
-              }, 0);
-            },
-            onError: (err: unknown, data?: unknown) => {
-              setTimeout(() => {
-                if (err instanceof Error) {
-                  if (
-                    err.name === 'NotAllowedError' ||
-                    err.message?.includes('play() failed') ||
-                    err.message?.includes("user didn't interact")
-                  ) {
-                    if (!isMuted) {
-                      onToggleMute?.();
+              onReady: () => setIsReady(true),
+              onStart: () => {
+                setIsReady(true);
+                setIsBuffering(false);
+                const isYt = finalStreamUrl.includes('youtube.com') || finalStreamUrl.includes('youtu.be');
+                if (isYt) {
+                  setHasFirstFrame(true);
+                }
+              },
+              onPlay: () => {
+                setIsBuffering(false);
+                const isYt = finalStreamUrl.includes('youtube.com') || finalStreamUrl.includes('youtu.be');
+                const videoEl = cinemaContainerRef.current?.querySelector('video');
+                if (isYt || (videoEl && videoEl.videoWidth > 0)) {
+                  setHasFirstFrame(true);
+                }
+              },
+              onProgress: (state: { played: number; playedSeconds: number; loaded: number; loadedSeconds: number }) => {
+                if (state.playedSeconds > 0.05 && state.playedSeconds !== lastPlayedSecondsRef.current) {
+                  lastPlayedSecondsRef.current = state.playedSeconds;
+                  lastProgressTimestampRef.current = Date.now();
+                  setHasFirstFrame(true);
+                  setIsBuffering(false);
+                  setIsPlaybackStalled(false);
+                  setStalledMessage(null);
+                }
+              },
+              onWaiting: () => setIsBuffering(true),
+              onPlaying: () => {
+                setIsBuffering(false);
+                const isYt = finalStreamUrl.includes('youtube.com') || finalStreamUrl.includes('youtu.be');
+                const videoEl = cinemaContainerRef.current?.querySelector('video');
+                if (isYt || (videoEl && videoEl.videoWidth > 0)) {
+                  setHasFirstFrame(true);
+                }
+              },
+              onEnded: () => {
+                // Transição automática para o próximo vídeo quando terminar
+                setTimeout(() => {
+                  onVideoEnded?.();
+                }, 0);
+              },
+              onError: (err: unknown, data?: unknown) => {
+                setTimeout(() => {
+                  if (err instanceof Error) {
+                    if (
+                      err.name === 'NotAllowedError' ||
+                      err.message?.includes('play() failed') ||
+                      err.message?.includes("user didn't interact")
+                    ) {
+                      if (!isMuted) {
+                        onToggleMute?.();
+                      }
+                      return;
                     }
+                    if (err.name === 'AbortError' || err.message?.includes('interrupted by a call to pause')) {
+                      return;
+                    }
+                  }
+
+                  if (data && typeof data === 'object' && 'fatal' in data && !(data as { fatal: boolean }).fatal) {
                     return;
                   }
-                  if (err.name === 'AbortError' || err.message?.includes('interrupted by a call to pause')) {
+
+                  if (!useProxy && !isYouTubeChannel) {
+                    onToggleProxy();
                     return;
                   }
-                }
 
-                if (data && typeof data === 'object' && 'fatal' in data && !(data as { fatal: boolean }).fatal) {
-                  return;
-                }
-
-                if (!useProxy && !isYouTubeChannel) {
-                  onToggleProxy();
-                  return;
-                }
-
-                onPlayerError?.(err);
-              }, 0);
-            },
-          }
-        )}
+                  onPlayerError?.(err);
+                }, 0);
+              },
+            }
+          )
+        ) : null}
 
         {/* BLOQUEIO POR EXPIRAÇÃO DE ASSINATURA NO MODO CINEMA */}
         {isPlanExpired && (

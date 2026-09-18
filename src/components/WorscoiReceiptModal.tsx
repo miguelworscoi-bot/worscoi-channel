@@ -682,92 +682,116 @@ export function WorscoiReceiptModal({
                     </span>
                   </div>
 
-                  {/* DOCUMENTO DO RECIBO (DESIGN OFICIAL E NITIDO PARA IMPRESSÃO) */}
+                  {/* DOCUMENTO DO RECIBO (DESIGN EXECUTIVO, LIMPO E PROFISSIONAL) */}
                   <div
                     ref={receiptPrintRef}
                     id="worscoi-printable-receipt"
-                    className="w-full bg-white text-zinc-950 p-6 sm:p-7 rounded-2xl shadow-xl border border-zinc-200 space-y-5 select-text"
+                    className="w-full bg-white text-zinc-950 p-6 sm:p-8 rounded-2xl shadow-xl border border-zinc-200/90 space-y-6 select-text"
                   >
-                    {/* CABEÇALHO DO RECIBO */}
-                    <div className="flex items-start justify-between border-b border-zinc-200 pb-4">
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2">
-                          <div className="w-9 h-9 rounded-xl bg-zinc-950 flex items-center justify-center text-white font-extrabold text-base shadow-sm">
+                    {/* CABEÇALHO SUPERIOR ELEGANTE */}
+                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 pb-5 border-b border-zinc-200">
+                      <div className="space-y-1.5">
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-8 h-8 rounded-lg bg-zinc-950 flex items-center justify-center text-white font-black text-sm tracking-tighter shadow-xs">
                             W
                           </div>
                           <div>
-                            <h1 className="text-lg font-black tracking-tight text-zinc-950 leading-none">
-                              WORSCOI TV
-                            </h1>
-                            <p className="text-[10px] text-zinc-500 font-medium">
-                              Streaming & Esportes Ao Vivo
+                            <div className="flex items-center gap-2">
+                              <h1 className="text-base font-black tracking-tight text-zinc-950 leading-none">
+                                WORSCOI TV
+                              </h1>
+                              <span className="text-[9px] uppercase tracking-widest font-extrabold px-1.5 py-0.5 rounded bg-zinc-100 text-zinc-600 border border-zinc-200">
+                                FATURA-RECIBO
+                              </span>
+                            </div>
+                            <p className="text-[11px] text-zinc-500 font-medium mt-0.5">
+                              Tecnologia de Transmissão & Streaming Digital
                             </p>
                           </div>
                         </div>
-                        <div className="pt-1.5 text-[10px] text-zinc-500 leading-tight">
-                          <p>Plataforma Digital • Luanda, Angola</p>
-                          <p>WhatsApp Suporte: +244 942 472 983</p>
+                        <div className="text-[10px] text-zinc-500 space-y-0.5 pt-0.5">
+                          <p>Luanda, Angola • Suporte Oficial: +244 942 472 983</p>
                         </div>
                       </div>
 
-                      {/* SELO DE PAGO */}
-                      <div className="text-right space-y-1">
-                        <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 text-[10px] font-black uppercase tracking-wider">
-                          <ShieldCheck className="w-3 h-3 text-emerald-700" />
-                          <span>PAGO & VALIDADO</span>
+                      {/* STATUS & IDENTIFICAÇÃO DO RECIBO */}
+                      <div className="sm:text-right space-y-1">
+                        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 text-[10px] font-bold tracking-wide">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                          <span>PAGO & LIQUIDADO</span>
                         </div>
-                        <div className="text-[11px] font-mono text-zinc-700">
-                          Nº: <strong className="text-zinc-950">{currentReceipt.receiptNumber}</strong>
+                        <div className="text-xs font-mono text-zinc-700">
+                          Nº: <strong className="text-zinc-950 font-bold">{currentReceipt.receiptNumber}</strong>
                         </div>
                         <div className="text-[10px] text-zinc-500">
-                          {currentReceipt.date} • {currentReceipt.time}
+                          Data: {currentReceipt.date} às {currentReceipt.time}
                         </div>
                       </div>
                     </div>
 
-                    {/* DADOS DO CLIENTE & PAGAMENTO */}
-                    <div className="grid grid-cols-2 gap-3 bg-zinc-50 p-3.5 rounded-xl border border-zinc-200/80 text-xs">
-                      <div>
-                        <span className="text-[9px] uppercase font-bold text-zinc-400 tracking-wider block">
-                          Assinante:
+                    {/* DADOS BENTO: CLIENTE E PAGAMENTO */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                      {/* CARD 1: DADOS DO ASSINANTE */}
+                      <div className="p-4 rounded-xl bg-zinc-50/90 border border-zinc-200/80 space-y-1.5">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-500 block">
+                          Faturado A
                         </span>
-                        <p className="font-bold text-zinc-900 text-sm">{currentReceipt.customerName}</p>
-                        <p className="text-zinc-600 text-[11px] mt-0.5">{currentReceipt.customerPhone}</p>
+                        <p className="text-sm font-bold text-zinc-950 leading-tight">
+                          {currentReceipt.customerName}
+                        </p>
+                        <p className="text-xs text-zinc-600 flex items-center gap-1.5">
+                          <span>Telefone / WhatsApp:</span>
+                          <strong className="text-zinc-800">{currentReceipt.customerPhone}</strong>
+                        </p>
+                        <p className="text-[10px] text-zinc-400 font-mono">
+                          ID Cliente: {currentReceipt.id}
+                        </p>
                       </div>
 
-                      <div className="text-right">
-                        <span className="text-[9px] uppercase font-bold text-zinc-400 tracking-wider block">
-                          Pagamento:
+                      {/* CARD 2: DADOS DE LIQUIDAÇÃO */}
+                      <div className="p-4 rounded-xl bg-zinc-50/90 border border-zinc-200/80 space-y-1.5">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-500 block">
+                          Forma de Liquidação
                         </span>
-                        <p className="font-bold text-zinc-900">{paymentMethodLabel}</p>
-                        <p className="text-zinc-500 text-[10px] mt-0.5 font-mono">
-                          Ref: {currentReceipt.paymentReference}
+                        <p className="text-sm font-bold text-zinc-950 leading-tight">
+                          {paymentMethodLabel}
+                        </p>
+                        <p className="text-xs text-zinc-600 flex items-center gap-1.5">
+                          <span>Referência:</span>
+                          <strong className="font-mono text-zinc-800">{currentReceipt.paymentReference}</strong>
+                        </p>
+                        <p className="text-[10px] text-zinc-400">
+                          Emissor: {currentReceipt.issuedBy}
                         </p>
                       </div>
                     </div>
 
-                    {/* DISCRIMINAÇÃO DO SERVIÇO */}
-                    <div>
+                    {/* TABELA DE DISCRIMINAÇÃO DO SERVIÇO */}
+                    <div className="border border-zinc-200 rounded-xl overflow-hidden">
                       <table className="w-full text-xs text-left">
-                        <thead>
-                          <tr className="border-b-2 border-zinc-900 text-[10px] font-bold uppercase tracking-wider text-zinc-700">
-                            <th className="py-2">Descrição do Serviço</th>
-                            <th className="py-2 text-center">Qtd</th>
-                            <th className="py-2 text-right">Subtotal</th>
+                        <thead className="bg-zinc-50/90 text-zinc-600 border-b border-zinc-200 text-[10px] uppercase font-bold tracking-wider">
+                          <tr>
+                            <th className="py-2.5 px-4">Item / Descrição</th>
+                            <th className="py-2.5 px-3 text-center">Duração</th>
+                            <th className="py-2.5 px-3 text-center">Qtd</th>
+                            <th className="py-2.5 px-4 text-right">Valor</th>
                           </tr>
                         </thead>
-                        <tbody className="divide-y divide-zinc-200">
+                        <tbody className="divide-y divide-zinc-200/70">
                           <tr>
-                            <td className="py-3">
+                            <td className="py-3 px-4">
                               <p className="font-bold text-zinc-900 text-xs">
-                                Assinatura {currentReceipt.planName}
+                                Assinatura Worscoi TV {currentReceipt.planName}
                               </p>
-                              <p className="text-[10px] text-zinc-500 mt-0.5">
-                                Acesso ilimitado a todos os canais de esportes, filmes e entretenimento HD.
+                              <p className="text-[11px] text-zinc-500 mt-0.5 leading-snug">
+                                Acesso irrestrito a todos os canais esportivos, filmes, séries e entretenimento HD.
                               </p>
                             </td>
-                            <td className="py-3 text-center font-semibold text-zinc-700">1</td>
-                            <td className="py-3 text-right font-bold text-zinc-900">
+                            <td className="py-3 px-3 text-center text-zinc-700 font-medium">
+                              {currentPlanInfo.durationDays ? `${currentPlanInfo.durationDays} Dias` : 'Ativo'}
+                            </td>
+                            <td className="py-3 px-3 text-center text-zinc-700 font-medium">1</td>
+                            <td className="py-3 px-4 text-right font-bold text-zinc-900">
                               {currentReceipt.planPriceFormatted}
                             </td>
                           </tr>
@@ -775,47 +799,55 @@ export function WorscoiReceiptModal({
                       </table>
                     </div>
 
-                    {/* TOKEN DESTACADO */}
+                    {/* TOKEN DE ATIVAÇÃO — DESIGN ELEGANTE INTEGRADO AO DOCUMENTO */}
                     {currentReceipt.tokenCode && (
-                      <div className="p-3.5 rounded-xl bg-zinc-900 text-white flex items-center justify-between gap-3 border border-zinc-800">
-                        <div>
-                          <span className="text-[10px] uppercase font-bold tracking-wider text-emerald-400 flex items-center gap-1">
-                            <KeyRound className="w-3 h-3" />
-                            Chave Token de Ativação
-                          </span>
-                          <p className="text-[10px] text-zinc-400 mt-0.5">
-                            Use no site para liberar seu sinal imediatamente
+                      <div className="p-4 rounded-xl bg-emerald-50/70 border border-emerald-200/90 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                        <div className="space-y-0.5">
+                          <div className="flex items-center gap-1.5 text-emerald-900 font-bold text-xs">
+                            <KeyRound className="w-3.5 h-3.5 text-emerald-700" />
+                            <span>Chave Token de Ativação do Assinante</span>
+                          </div>
+                          <p className="text-[11px] text-emerald-800/80">
+                            Insira este código na tela inicial da plataforma para liberar seu acesso imediatamente:
                           </p>
                         </div>
-                        <div className="px-3 py-1.5 rounded-lg bg-zinc-950 border border-zinc-700 font-mono text-base font-black tracking-wider text-emerald-400">
+                        <div className="self-start sm:self-auto px-4 py-1.5 rounded-lg bg-white border border-emerald-300 font-mono text-lg font-black tracking-[0.25em] text-emerald-900 shadow-xs">
                           {currentReceipt.tokenCode}
                         </div>
                       </div>
                     )}
 
-                    {/* TOTAL */}
-                    <div className="border-t-2 border-zinc-900 pt-3 flex items-center justify-between">
-                      <div className="flex items-center gap-1 text-xs font-bold text-emerald-700">
-                        <CheckCircle2 className="w-4 h-4" />
-                        <span>Transação Confirmada</span>
-                      </div>
-
-                      <div className="text-right">
-                        <span className="text-[10px] text-zinc-500 uppercase font-bold tracking-wider block">
-                          Total Pago
-                        </span>
-                        <span className="text-xl font-black text-zinc-950">
-                          {currentReceipt.planPriceFormatted}
-                        </span>
+                    {/* BLOCO DE TOTAIS */}
+                    <div className="pt-2 flex flex-col items-end gap-1 text-xs">
+                      <div className="w-full sm:w-64 space-y-1.5">
+                        <div className="flex items-center justify-between text-zinc-500">
+                          <span>Subtotal:</span>
+                          <span className="font-semibold text-zinc-800">{currentReceipt.planPriceFormatted}</span>
+                        </div>
+                        <div className="flex items-center justify-between text-zinc-500">
+                          <span>Impostos / IVA:</span>
+                          <span className="font-semibold text-zinc-800">0,00 Kz (Isento)</span>
+                        </div>
+                        <div className="border-t border-zinc-300 pt-2 flex items-center justify-between">
+                          <span className="text-xs uppercase font-extrabold tracking-wider text-zinc-700">
+                            Total Liquidado:
+                          </span>
+                          <span className="text-lg font-black text-zinc-950">
+                            {currentReceipt.planPriceFormatted}
+                          </span>
+                        </div>
                       </div>
                     </div>
 
-                    {/* RODAPÉ DO DOCUMENTO */}
-                    <div className="border-t border-dashed border-zinc-300 pt-3 text-[9px] text-zinc-500 text-center space-y-0.5">
-                      <p className="font-semibold text-zinc-700">
-                        Comprovativo emitido digitalmente pela plataforma Worscoi TV.
-                      </p>
-                      <p>Válido para comprovação de acesso aos canais digitais.</p>
+                    {/* RODAPÉ & AUTENTICIDADE */}
+                    <div className="border-t border-dashed border-zinc-200 pt-3 text-[10px] text-zinc-500 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                      <div className="flex items-center gap-1 text-emerald-700 font-semibold">
+                        <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+                        <span>Comprovativo emitido digitalmente • Dispensa assinatura física</span>
+                      </div>
+                      <div className="font-mono text-[9px] text-zinc-400">
+                        HASH: WRC-{currentReceipt.receiptNumber.replace('WRC-', '')}
+                      </div>
                     </div>
                   </div>
                 </div>

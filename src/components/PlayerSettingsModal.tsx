@@ -10,6 +10,7 @@ import {
   Sliders,
   Leaf,
   Smartphone,
+  Gauge,
 } from 'lucide-react';
 import { LatencyMode } from '@/types';
 
@@ -402,6 +403,50 @@ export function PlayerSettingsModal({
               >
                 {useProxy ? 'Ativado' : 'Desativado'}
               </button>
+            </div>
+          </div>
+
+          {/* SEÇÃO: CONTROLE E LIMITE DE REQUISIÇÕES (LIMITS OF REQUESTS) */}
+          <div className="p-4 rounded-2xl bg-zinc-900/60 border border-zinc-800/80 space-y-2.5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="p-1.5 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-[#00E676]">
+                  <Gauge className="w-4 h-4" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h4 className="text-xs sm:text-sm font-bold text-white">
+                      Limits of Requests (Controle de Requisições)
+                    </h4>
+                    <span className="text-[9px] font-extrabold uppercase px-1.5 py-0.2 rounded bg-emerald-500/20 text-[#00E676] border border-emerald-500/30">
+                      Ativo
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-zinc-400">
+                    Proteção anti-bloqueio e controle de taxa ativado para streams e catálogo
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[11px] font-semibold">
+                <span className="w-2 h-2 rounded-full bg-[#00E676] animate-ping" />
+                <span>Protegido</span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-3 gap-2 pt-1 border-t border-zinc-800/60 text-center">
+              <div className="p-1.5 rounded-lg bg-zinc-950/60 border border-zinc-800/60">
+                <div className="text-[10px] text-zinc-500 font-medium">Proxy Stream</div>
+                <div className="text-xs font-bold text-zinc-200">240/min</div>
+              </div>
+              <div className="p-1.5 rounded-lg bg-zinc-950/60 border border-zinc-800/60">
+                <div className="text-[10px] text-zinc-500 font-medium">Catálogo Filmes</div>
+                <div className="text-xs font-bold text-zinc-200">120/min</div>
+              </div>
+              <div className="p-1.5 rounded-lg bg-zinc-950/60 border border-zinc-800/60">
+                <div className="text-[10px] text-zinc-500 font-medium">Grade de Canais</div>
+                <div className="text-xs font-bold text-zinc-200">90/min</div>
+              </div>
             </div>
           </div>
 

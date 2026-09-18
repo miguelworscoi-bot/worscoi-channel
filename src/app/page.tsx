@@ -25,6 +25,8 @@ import { FreePlanBlockedModal } from '@/components/FreePlanBlockedModal';
 import { CongratulationsNotification } from '@/components/CongratulationsNotification';
 import { NotificationCenterModal } from '@/components/NotificationCenterModal';
 import { NotificationToast } from '@/components/NotificationToast';
+import { CookieConsentBanner } from '@/components/CookieConsentBanner';
+import { PrivacyPolicyModal } from '@/components/PrivacyPolicyModal';
 import { LandingScreen } from '@/components/LandingScreen';
 import { useAuth } from '@/context/AuthContext';
 import { useNotifications } from '@/context/NotificationContext';
@@ -92,6 +94,8 @@ export default function Home() {
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [isUserProfileModalOpen, setIsUserProfileModalOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [isPrivacyModalOpen, setIsPrivacyModalOpen] = useState(false);
+  const [privacyModalDefaultTab, setPrivacyModalDefaultTab] = useState<'terms' | 'cookies'>('terms');
   const [isMiniPlayerDismissed, setIsMiniPlayerDismissed] = useState(false);
   const [celebrationData, setCelebrationData] = useState<{
     isOpen: boolean;
@@ -942,6 +946,11 @@ export default function Home() {
           setIsUserProfileModalOpen(false);
           setIsLoginModalOpen(true);
         }}
+        onOpenPrivacyPolicy={() => {
+          setIsUserProfileModalOpen(false);
+          setPrivacyModalDefaultTab('terms');
+          setIsPrivacyModalOpen(true);
+        }}
       />
 
       {/* MODAL DE ADMIN */}
@@ -1009,6 +1018,20 @@ export default function Home() {
           closeNotifications();
           setIsRedeemModalOpen(true);
         }}
+      />
+      {/* BANNER DE CONSENTIMENTO DE COOKIES */}
+      <CookieConsentBanner
+        onOpenPrivacyPolicy={() => {
+          setPrivacyModalDefaultTab('cookies');
+          setIsPrivacyModalOpen(true);
+        }}
+      />
+
+      {/* MODAL DE POLÍTICA DE PRIVACIDADE E TERMOS DE COOKIES */}
+      <PrivacyPolicyModal
+        isOpen={isPrivacyModalOpen}
+        onClose={() => setIsPrivacyModalOpen(false)}
+        defaultTab={privacyModalDefaultTab}
       />
     </main>
   );

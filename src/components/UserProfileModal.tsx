@@ -9,7 +9,8 @@ import {
   CheckCircle2,
   AlertTriangle,
   LogOut,
-  RefreshCw
+  RefreshCw,
+  ShieldCheck,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { PLANS } from '@/services/subscriptionService';
@@ -20,6 +21,7 @@ interface UserProfileModalProps {
   onOpenPaymentPlans?: () => void;
   onOpenRedeemToken?: () => void;
   onOpenAuth?: () => void;
+  onOpenPrivacyPolicy?: () => void;
 }
 
 export function UserProfileModal({
@@ -28,6 +30,7 @@ export function UserProfileModal({
   onOpenPaymentPlans,
   onOpenRedeemToken,
   onOpenAuth,
+  onOpenPrivacyPolicy,
 }: UserProfileModalProps) {
   const { user, userProfile, signOut, countdown, isAdmin } = useAuth();
 
@@ -202,23 +205,39 @@ export function UserProfileModal({
         </div>
 
         {/* RODAPÉ SIMPLIFICADO COM AÇÕES DE CONTA */}
-        <div className="mt-4 pt-3.5 border-t border-zinc-800/80 flex items-center justify-between text-xs">
-          {onOpenAuth ? (
-            <button
-              type="button"
-              id="profile-btn-switch"
-              onClick={() => {
-                onClose();
-                onOpenAuth();
-              }}
-              className="text-zinc-400 hover:text-zinc-200 flex items-center gap-1.5 transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer py-1 group"
-            >
-              <RefreshCw className="w-3 h-3 text-zinc-500 transition-transform duration-200 group-hover:rotate-180" />
-              <span>Trocar de Conta</span>
-            </button>
-          ) : (
-            <div />
-          )}
+        <div className="mt-4 pt-3.5 border-t border-zinc-800/80 flex flex-wrap items-center justify-between gap-2 text-xs">
+          <div className="flex items-center gap-3">
+            {onOpenAuth && (
+              <button
+                type="button"
+                id="profile-btn-switch"
+                onClick={() => {
+                  onClose();
+                  onOpenAuth();
+                }}
+                className="text-zinc-400 hover:text-zinc-200 flex items-center gap-1.5 transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer py-1 group"
+              >
+                <RefreshCw className="w-3 h-3 text-zinc-500 transition-transform duration-200 group-hover:rotate-180" />
+                <span>Trocar Conta</span>
+              </button>
+            )}
+
+            {onOpenPrivacyPolicy && (
+              <button
+                type="button"
+                id="profile-btn-privacy"
+                onClick={() => {
+                  onClose();
+                  onOpenPrivacyPolicy();
+                }}
+                className="text-zinc-400 hover:text-[#00E676] flex items-center gap-1 transition-all cursor-pointer py-1"
+                title="Ver Política de Privacidade e Cookies"
+              >
+                <ShieldCheck className="w-3.5 h-3.5 text-zinc-500" />
+                <span>Privacidade & Cookies</span>
+              </button>
+            )}
+          </div>
 
           <button
             type="button"

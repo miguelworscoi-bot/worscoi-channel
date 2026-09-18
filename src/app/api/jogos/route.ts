@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { globalRateLimiter, createRateLimitExceededResponse } from '@/lib/rateLimiter';
 import * as cheerio from 'cheerio';
 
 export interface JogoReal {
@@ -92,7 +93,18 @@ function resolveTeamLogo(teamName: string): string {
   return `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" width="80" height="80"><rect width="80" height="80" rx="40" fill="%2318181b"/><path d="M40 14 L62 24 V44 C62 56 40 66 40 66 C40 66 18 56 18 44 V24 Z" fill="none" stroke="%2300E676" stroke-width="3"/><text x="40" y="47" font-family="system-ui,-apple-system,sans-serif" font-size="16" font-weight="900" fill="%2300E676" text-anchor="middle">${initials}</text></svg>`;
 }
 
-export async function GET() {
+export async function GET(request?: Request) {
+  if (request) {
+    const rateLimit = globalRateLimiter.check(request, {
+      routeKey: 'api-jogos',
+      maxRequests: 60,
+      windowSeconds: 60,
+    });
+    if (!rateLimit.allowed) {
+      return createRateLimitExceededResponse(rateLimit);
+    }
+  }
+
   try {
     // Puxa a programação de futebol real do dia de um agregador público e estável
     const response = await fetch('https://www1.folha.uol.com.br/esporte/jogo-ao-vivo.shtml', {

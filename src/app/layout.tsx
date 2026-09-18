@@ -2,7 +2,10 @@ import React, { ReactNode } from 'react';
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="min-h-screen bg-[#070709] text-zinc-100 font-sans selection:bg-[#FF2D55] selection:text-white relative overflow-x-hidden">
+    <div
+      onContextMenu={(e) => e.preventDefault()}
+      className="min-h-screen bg-[#070709] text-zinc-100 font-sans selection:bg-[#FF2D55] selection:text-white relative overflow-x-hidden select-none"
+    >
       {/* Luz ambiente superior suave */}
       <div
         aria-hidden="true"

@@ -1,5 +1,5 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Crown,
   Tv,
@@ -12,6 +12,9 @@ import {
   ArrowRight,
   CreditCard,
   TrendingUp,
+  Gauge,
+  ShieldCheck,
+  RefreshCw,
 } from 'lucide-react';
 import { Canal } from '@/types';
 import { useAuth, UserRole } from '@/context/AuthContext';
@@ -41,7 +44,58 @@ export function AdminPanelModal({
   const { user, userProfile, role, isAdmin, switchRole } = useAuth();
   const [switching, setSwitching] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'analytics' | 'channels' | 'session'>('analytics');
+  const [activeTab, setActiveTab] = useState<'analytics' | 'channels' | 'limits' | 'session'>('analytics');
+  const [rateLimitData, setRateLimitData] = useState<{
+    enabled: boolean;
+    totalRequestsTracked: number;
+    totalRequestsBlocked: number;
+    activeBucketsCount: number;
+    limits: Record<string, string>;
+  } | null>(null);
+  const [loadingLimits, setLoadingLimits] = useState(false);
+
+  const fetchRateLimits = async () => {
+    try {
+      setLoadingLimits(true);
+      const res = await fetch('/api/ratelimit');
+      if (res.ok) {
+        const json = await res.json();
+        if (json.rateLimiter) {
+          setRateLimitData(json.rateLimiter);
+        }
+      }
+    } catch {
+      // Falha silenciosa em dev
+    } finally {
+      setLoadingLimits(false);
+    }
+  };
+
+  useEffect(() => {
+    if (isOpen) {
+      fetchRateLimits();
+    }
+  }, [isOpen]);
+
+  const handleToggleRateLimit = async (enabled: boolean) => {
+    try {
+      setLoadingLimits(true);
+      const res = await fetch('/api/ratelimit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ enabled }),
+      });
+      if (res.ok) {
+        const json = await res.json();
+        setRateLimitData(json.metrics);
+        setFeedback(enabled ? 'Limits of Requests ativado com sucesso!' : 'Limits of Requests pausado.');
+      }
+    } catch {
+      setFeedback('Falha ao atualizar status do limitador.');
+    } finally {
+      setLoadingLimits(false);
+    }
+  };
 
   if (!isOpen) return null;
   if (!isAdmin) return null;
@@ -143,6 +197,29 @@ export function AdminPanelModal({
               }`}
             >
               {todosCanais.length}
+            </span>
+          </button>
+
+          <button
+            type="button"
+            id="admin-tab-limits"
+            onClick={() => setActiveTab('limits')}
+            className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-semibold transition-all duration-200 cursor-pointer ${
+              activeTab === 'limits'
+                ? 'bg-emerald-500 text-black shadow-sm font-bold'
+                : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'
+            }`}
+          >
+            <Gauge className="w-3.5 h-3.5" />
+            <span>Limits of Requests</span>
+            <span
+              className={`text-[9px] px-1.5 py-0.2 rounded font-bold uppercase ${
+                rateLimitData?.enabled !== false
+                  ? 'bg-emerald-500/20 text-[#00E676]'
+                  : 'bg-zinc-800 text-zinc-400'
+              }`}
+            >
+              {rateLimitData?.enabled !== false ? 'ON' : 'OFF'}
             </span>
           </button>
 
@@ -341,6 +418,140 @@ export function AdminPanelModal({
                 <span className="font-semibold text-zinc-200">
                   {role === 'admin' ? 'Acesso administrativo irrestrito' : 'Visualização como espectador'}
                 </span>
+              </div>
+            </div>
+          )}
+
+          {/* ABA 4: LIMITS OF REQUESTS (CONTROLE DE TAXA & ANTI-ABUSO) */}
+          {activeTab === 'limits' && (
+            <div className="space-y-3.5 animate-in fade-in duration-150">
+              {/* CARD PRINCIPAL COM STATUS E TOGGLE */}
+              <div className="p-4 rounded-xl bg-zinc-900/80 border border-zinc-800/90 flex flex-col sm:flex-row sm:items-center justify-between gap-3.5">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-[#00E676] shrink-0">
+                    <ShieldCheck className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-sm font-bold text-white">Limits of Requests Engine</h3>
+                      <span
+                        className={`text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full border ${
+                          rateLimitData?.enabled !== false
+                            ? 'bg-emerald-500/20 text-[#00E676] border-emerald-500/30'
+                            : 'bg-rose-500/20 text-rose-300 border-rose-500/30'
+                        }`}
+                      >
+                        {rateLimitData?.enabled !== false ? 'Ativado (Proteção Ligada)' : 'Desativado'}
+                      </span>
+                    </div>
+                    <p className="text-xs text-zinc-400 mt-0.5">
+                      Controle dinâmico de taxa por IP contra DDoS, saturação de banda e raspagem de dados.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 self-end sm:self-center">
+                  <button
+                    type="button"
+                    disabled={loadingLimits}
+                    onClick={fetchRateLimits}
+                    className="p-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border border-zinc-700 text-xs flex items-center gap-1.5 transition-all cursor-pointer"
+                    title="Atualizar métricas"
+                  >
+                    <RefreshCw className={`w-3.5 h-3.5 ${loadingLimits ? 'animate-spin' : ''}`} />
+                    <span>Atualizar</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    disabled={loadingLimits}
+                    onClick={() => handleToggleRateLimit(rateLimitData?.enabled === false)}
+                    className={`px-3.5 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
+                      rateLimitData?.enabled !== false
+                        ? 'bg-rose-500/15 text-rose-300 border-rose-500/30 hover:bg-rose-500/25'
+                        : 'bg-emerald-500 text-black font-extrabold border-emerald-400 hover:bg-emerald-400'
+                    }`}
+                  >
+                    {rateLimitData?.enabled !== false ? 'Pausar Limites' : 'Ativar Limits of Requests'}
+                  </button>
+                </div>
+              </div>
+
+              {/* CARDS DE MÉTRICAS */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                <div className="p-3.5 rounded-xl bg-zinc-900/60 border border-zinc-800/80">
+                  <div className="text-[11px] text-zinc-400 font-medium">Requisições Monitoradas</div>
+                  <div className="text-lg font-black text-white mt-1">
+                    {rateLimitData?.totalRequestsTracked ?? 0}
+                  </div>
+                  <div className="text-[10px] text-emerald-400 mt-0.5">Analisadas em tempo real</div>
+                </div>
+
+                <div className="p-3.5 rounded-xl bg-zinc-900/60 border border-zinc-800/80">
+                  <div className="text-[11px] text-zinc-400 font-medium">Requisições Bloqueadas</div>
+                  <div className="text-lg font-black text-amber-400 mt-1">
+                    {rateLimitData?.totalRequestsBlocked ?? 0}
+                  </div>
+                  <div className="text-[10px] text-zinc-400 mt-0.5">Respostas HTTP 429</div>
+                </div>
+
+                <div className="p-3.5 rounded-xl bg-zinc-900/60 border border-zinc-800/80">
+                  <div className="text-[11px] text-zinc-400 font-medium">Clientes Simultâneos</div>
+                  <div className="text-lg font-black text-cyan-400 mt-1">
+                    {rateLimitData?.activeBucketsCount ?? 0}
+                  </div>
+                  <div className="text-[10px] text-zinc-400 mt-0.5">IPs na janela de 60s</div>
+                </div>
+              </div>
+
+              {/* TABELA DE LIMITES ATIVOS */}
+              <div className="p-3.5 rounded-xl bg-zinc-900/60 border border-zinc-800/80 space-y-2.5">
+                <div className="text-xs font-bold text-zinc-300 flex items-center gap-2">
+                  <Gauge className="w-4 h-4 text-[#00E676]" />
+                  <span>Limites Configurados Por Rota (Sliding Window 60s)</span>
+                </div>
+
+                <div className="space-y-2 text-xs">
+                  <div className="p-2.5 rounded-lg bg-zinc-950/70 border border-zinc-800/60 flex items-center justify-between">
+                    <div>
+                      <div className="font-semibold text-white">/api/proxy (Stream HLS & Chunks)</div>
+                      <div className="text-[11px] text-zinc-400">Entrega de segmentos de vídeo ao vivo sem travamentos</div>
+                    </div>
+                    <span className="px-2.5 py-1 rounded-md bg-emerald-500/15 text-[#00E676] font-mono font-bold text-[11px] border border-emerald-500/30">
+                      240 req / 60s
+                    </span>
+                  </div>
+
+                  <div className="p-2.5 rounded-lg bg-zinc-950/70 border border-zinc-800/60 flex items-center justify-between">
+                    <div>
+                      <div className="font-semibold text-white">/api/filmes (Catálogo & IMDb)</div>
+                      <div className="text-[11px] text-zinc-400">Buscas de filmes, séries e metadados OMDb</div>
+                    </div>
+                    <span className="px-2.5 py-1 rounded-md bg-emerald-500/15 text-[#00E676] font-mono font-bold text-[11px] border border-emerald-500/30">
+                      120 req / 60s
+                    </span>
+                  </div>
+
+                  <div className="p-2.5 rounded-lg bg-zinc-950/70 border border-zinc-800/60 flex items-center justify-between">
+                    <div>
+                      <div className="font-semibold text-white">/api/canais (Grade de IPTV)</div>
+                      <div className="text-[11px] text-zinc-400">Listagem de canais categorizados por país e rede</div>
+                    </div>
+                    <span className="px-2.5 py-1 rounded-md bg-emerald-500/15 text-[#00E676] font-mono font-bold text-[11px] border border-emerald-500/30">
+                      90 req / 60s
+                    </span>
+                  </div>
+
+                  <div className="p-2.5 rounded-lg bg-zinc-950/70 border border-zinc-800/60 flex items-center justify-between">
+                    <div>
+                      <div className="font-semibold text-white">/api/epg & /api/jogos (Guia e Agenda)</div>
+                      <div className="text-[11px] text-zinc-400">Atualização em tempo real das partidas e grade</div>
+                    </div>
+                    <span className="px-2.5 py-1 rounded-md bg-emerald-500/15 text-[#00E676] font-mono font-bold text-[11px] border border-emerald-500/30">
+                      60 req / 60s
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
           )}

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { globalRateLimiter, createRateLimitExceededResponse } from '@/lib/rateLimiter';
 import { TODOS_OS_CANAIS_CATALOGO } from '@/data/channelsCatalog';
 import {
   LOGO_TNT_SPORTS,
@@ -889,6 +890,17 @@ function parseM3U(
 }
 
 export async function GET(request?: Request) {
+  if (request) {
+    const rateLimit = globalRateLimiter.check(request, {
+      routeKey: 'api-canais',
+      maxRequests: 90,
+      windowSeconds: 60,
+    });
+    if (!rateLimit.allowed) {
+      return createRateLimitExceededResponse(rateLimit);
+    }
+  }
+
   try {
     const urlObj = request?.url ? new URL(request.url) : null;
     const requestedCategoria = urlObj?.searchParams.get('categoria');

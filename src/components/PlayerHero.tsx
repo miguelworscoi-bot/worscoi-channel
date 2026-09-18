@@ -18,6 +18,7 @@ import {
   Maximize2,
   Sliders,
   Zap,
+  ShieldCheck,
   SkipForward,
   SignalHigh,
   SignalMedium,
@@ -136,6 +137,10 @@ export function PlayerHero({
   const [hasFirstFrame, setHasFirstFrame] = useState(false);
   const [hasYouTubeEmbedError, setHasYouTubeEmbedError] = useState(false);
   const [loadSeconds, setLoadSeconds] = useState(0);
+  const [isPlaybackStalled, setIsPlaybackStalled] = useState(false);
+  const [stalledMessage, setStalledMessage] = useState<string | null>(null);
+  const lastProgressTimestampRef = React.useRef<number>(Date.now());
+  const lastPlayedSecondsRef = React.useRef<number>(-1);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isChannelVideosOpen, setIsChannelVideosOpen] = useState(false);
 
@@ -421,6 +426,10 @@ export function PlayerHero({
     setHasFirstFrame(false);
     setHasYouTubeEmbedError(false);
     setLoadSeconds(0);
+    setIsPlaybackStalled(false);
+    setStalledMessage(null);
+    lastProgressTimestampRef.current = Date.now();
+    lastPlayedSecondsRef.current = -1;
     setEmergencyOverrideUrl(null);
     // Reseta a latência base para o novo canal
     setStreamLatency(latencyMode === 'low-latency' ? 120 : latencyMode === 'economy' ? 260 : 180);
@@ -581,56 +590,157 @@ export function PlayerHero({
     };
   })();
 
-  // Watchdog de failover inteligente e resgate contra telas intermináveis
+  // Watchdog inteligente de detecção de tela preta e resgate de sinal travado
   const streamsCount = streamsDisponiveis.length;
   useEffect(() => {
-    if (hasFirstFrame || !canalAtivo || isCinemaMode) return;
+    if (!canalAtivo || isCinemaMode || isPlaybackPaused || isPlanExpired || isChannelLockedByPlan) return;
 
     let seconds = 0;
     const interval = setInterval(() => {
       seconds += 1;
       setLoadSeconds(seconds);
 
-      // Aos 6s: se o sinal direto ainda não abriu e não é YouTube, tenta via proxy seguro (corrige bloqueios de CORS/SSL da emissora)
-      if (seconds === 6 && !hasFirstFrame) {
-        setTimeout(() => {
+      const now = Date.now();
+      const timeSinceLastProgress = now - lastProgressTimestampRef.current;
+      const videoEl = videoContainerRef.current?.querySelector('video');
+
+      // Checa se o vídeo está entregando frames reais e avançando a linha do tempo
+      const isActivelyPlaying =
+        videoEl &&
+        videoEl.videoWidth > 0 &&
+        videoEl.videoHeight > 0 &&
+        !videoEl.paused &&
+        videoEl.currentTime > 0.05 &&
+        timeSinceLastProgress < 3000;
+
+      if (isActivelyPlaying) {
+        if (!hasFirstFrame) setHasFirstFrame(true);
+        if (isBuffering) setIsBuffering(false);
+        if (isPlaybackStalled) setIsPlaybackStalled(false);
+        setStalledMessage(null);
+        return;
+      }
+
+      // Se passou mais de 4s sem progresso de vídeo (sinal processando mas travado em tela preta ou sem resposta da emissora):
+      if (timeSinceLastProgress >= 4000) {
+        setIsPlaybackStalled(true);
+
+        // Aos 4s: tenta destravar o buffer caso o player tenha pausado ou ficado preso em micro-buraco
+        if (videoEl) {
+          if (videoEl.paused) {
+            videoEl.play().catch(() => {});
+          } else if (videoEl.currentTime > 0) {
+            videoEl.currentTime += 0.25;
+          }
+        }
+
+        // Aos 6s: se o sinal direto ainda não abriu e não é YouTube, tenta via proxy seguro (corrige bloqueios de CORS/SSL da emissora)
+        if (seconds === 6 && !useProxy) {
           if (
-            !useProxy &&
             !activeRawStreamUrl.includes('youtube.com') &&
             !activeRawStreamUrl.includes('youtu.be')
           ) {
-            onToggleProxyRef.current?.();
+            setStalledMessage('Sinal sem retorno de vídeo. Otimizando rota via proxy seguro...');
+            setTimeout(() => {
+              onToggleProxyRef.current?.();
+            }, 0);
+            return;
           }
-        }, 0);
-      }
-
-      // Aos 10s: tenta servidor alternativo da lista se houver
-      if (seconds === 10 && !hasFirstFrame) {
-        setTimeout(() => {
-          if (streamsCount > 1 && streamIndex < streamsCount - 1) {
-            onStreamChangeRef.current?.(streamIndex + 1);
-          }
-        }, 0);
-      }
-
-      // Aos 15s: se ainda não abriu, aciona o sinal de contingência da categoria para garantir que a tela não fique preta
-      if (seconds === 15 && !hasFirstFrame) {
-        const emergencyStream = getEmergencyFallbackStream(canalAtivo.categoria);
-        if (emergencyStream && emergencyStream !== activeRawStreamUrl) {
-          setEmergencyOverrideUrl(emergencyStream);
         }
-      }
 
-      // Aos 22s: se persistir sem sinal após todas as tentativas, notifica o erro
-      if (seconds === 22 && !hasFirstFrame) {
-        setTimeout(() => {
-          onPlayerErrorRef.current?.(new Error('Tempo limite de conexão'));
-        }, 0);
+        // Aos 10s: tenta servidor alternativo da lista se houver
+        if (seconds === 10 && streamsCount > 1) {
+          setStalledMessage('Alternando para servidor alternativo com transmissão ativa...');
+          setTimeout(() => {
+            const nextIdx = (streamIndex + 1) % streamsCount;
+            onStreamChangeRef.current?.(nextIdx);
+          }, 0);
+          return;
+        }
+
+        // Aos 15s: se ainda não abriu imagem, aciona o sinal de contingência da categoria para garantir que a tela não fique preta
+        if (seconds === 15) {
+          const emergencyStream = getEmergencyFallbackStream(canalAtivo.categoria);
+          if (emergencyStream && emergencyStream !== activeRawStreamUrl && emergencyOverrideUrl !== emergencyStream) {
+            setStalledMessage('Sinal de origem sem resposta. Conectando sinal reserva HD...');
+            setEmergencyOverrideUrl(emergencyStream);
+            return;
+          }
+        }
+
+        // Aos 24s: se persistir sem sinal após todas as tentativas, notifica o erro
+        if (seconds === 24) {
+          setTimeout(() => {
+            onPlayerErrorRef.current?.(new Error('Sinal sem resposta da emissora'));
+          }, 0);
+        }
       }
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [hasFirstFrame, canalAtivo?.id, canalAtivo?.categoria, streamsCount, streamIndex, useProxy, activeRawStreamUrl, isCinemaMode]);
+  }, [
+    canalAtivo?.id,
+    canalAtivo?.categoria,
+    streamsCount,
+    streamIndex,
+    useProxy,
+    activeRawStreamUrl,
+    emergencyOverrideUrl,
+    isCinemaMode,
+    isPlaybackPaused,
+    isPlanExpired,
+    isChannelLockedByPlan,
+    hasFirstFrame,
+    isBuffering,
+    isPlaybackStalled,
+  ]);
+
+  // Monitoramento nativo de decodificação e exibição de imagem no elemento <video>
+  useEffect(() => {
+    const videoEl = videoContainerRef.current?.querySelector('video');
+    if (!videoEl) return;
+
+    const handleLoadedData = () => {
+      if (videoEl.videoWidth > 0) {
+        setHasFirstFrame(true);
+        setIsBuffering(false);
+        setIsPlaybackStalled(false);
+        setStalledMessage(null);
+        lastProgressTimestampRef.current = Date.now();
+      }
+    };
+
+    const handleTimeUpdate = () => {
+      if (videoEl.currentTime > 0.05 && !videoEl.paused) {
+        lastProgressTimestampRef.current = Date.now();
+        if (videoEl.videoWidth > 0) {
+          setHasFirstFrame(true);
+          setIsPlaybackStalled(false);
+          setStalledMessage(null);
+        }
+      }
+    };
+
+    const handlePlaying = () => {
+      setIsBuffering(false);
+    };
+
+    const handleWaiting = () => {
+      setIsBuffering(true);
+    };
+
+    videoEl.addEventListener('loadeddata', handleLoadedData);
+    videoEl.addEventListener('timeupdate', handleTimeUpdate);
+    videoEl.addEventListener('playing', handlePlaying);
+    videoEl.addEventListener('waiting', handleWaiting);
+
+    return () => {
+      videoEl.removeEventListener('loadeddata', handleLoadedData);
+      videoEl.removeEventListener('timeupdate', handleTimeUpdate);
+      videoEl.removeEventListener('playing', handlePlaying);
+      videoEl.removeEventListener('waiting', handleWaiting);
+    };
+  }, [canalAtivo?.id, streamIndex, isCurrentlyProxied, latencyMode, emergencyOverrideUrl]);
 
   // Atalhos de teclado úteis
   useEffect(() => {
@@ -718,6 +828,10 @@ export function PlayerHero({
     setIsBuffering(true);
     setHasFirstFrame(false);
     setLoadSeconds(0);
+    setIsPlaybackStalled(false);
+    setStalledMessage(null);
+    lastProgressTimestampRef.current = Date.now();
+    lastPlayedSecondsRef.current = -1;
     setTimeout(() => onClearFailoverNotice(), 0);
   };
 
@@ -880,7 +994,7 @@ export function PlayerHero({
         >
           {/* REPRODUTOR DE VÍDEO */}
           <div className="w-full h-full">
-            {!isCinemaMode ? (
+            {!isCinemaMode && finalStreamUrl ? (
               React.createElement(
                 ReactPlayer as unknown as React.ComponentType<Record<string, unknown>>,
                 {
@@ -919,16 +1033,37 @@ export function PlayerHero({
                   onStart: () => {
                     setIsReady(true);
                     setIsBuffering(false);
-                    setHasFirstFrame(true);
+                    const isYt = activeRawStreamUrl.includes('youtube.com') || activeRawStreamUrl.includes('youtu.be');
+                    if (isYt) {
+                      setHasFirstFrame(true);
+                    }
                   },
                   onPlay: () => {
                     setIsBuffering(false);
-                    setHasFirstFrame(true);
+                    const isYt = activeRawStreamUrl.includes('youtube.com') || activeRawStreamUrl.includes('youtu.be');
+                    const videoEl = videoContainerRef.current?.querySelector('video');
+                    if (isYt || (videoEl && videoEl.videoWidth > 0)) {
+                      setHasFirstFrame(true);
+                    }
                   },
-                  onBuffer: () => setIsBuffering(true),
-                  onBufferEnd: () => {
+                  onProgress: (state: { played: number; playedSeconds: number; loaded: number; loadedSeconds: number }) => {
+                    if (state.playedSeconds > 0.05 && state.playedSeconds !== lastPlayedSecondsRef.current) {
+                      lastPlayedSecondsRef.current = state.playedSeconds;
+                      lastProgressTimestampRef.current = Date.now();
+                      setHasFirstFrame(true);
+                      setIsBuffering(false);
+                      setIsPlaybackStalled(false);
+                      setStalledMessage(null);
+                    }
+                  },
+                  onWaiting: () => setIsBuffering(true),
+                  onPlaying: () => {
                     setIsBuffering(false);
-                    setHasFirstFrame(true);
+                    const isYt = activeRawStreamUrl.includes('youtube.com') || activeRawStreamUrl.includes('youtu.be');
+                    const videoEl = videoContainerRef.current?.querySelector('video');
+                    if (isYt || (videoEl && videoEl.videoWidth > 0)) {
+                      setHasFirstFrame(true);
+                    }
                   },
                   onEnded: () => {
                     setTimeout(() => {
@@ -1174,6 +1309,16 @@ export function PlayerHero({
                       <span>Alternar Sinal ({streamIndex + 1}/{streamsDisponiveis.length})</span>
                     </button>
                   )}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEmergencyOverrideUrl(getEmergencyFallbackStream(canalAtivo.categoria));
+                    }}
+                    className="px-3 py-1.5 rounded-xl bg-emerald-950/60 hover:bg-emerald-900/80 text-emerald-300 text-xs font-semibold border border-emerald-700/60 flex items-center gap-1.5 cursor-pointer transition shadow-sm"
+                  >
+                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>Sinal Reserva HD</span>
+                  </button>
                   {onNextCanal && (
                     <button
                       type="button"
@@ -1196,6 +1341,69 @@ export function PlayerHero({
                   )}
                 </div>
               )}
+            </div>
+          )}
+
+          {/* AVISO E AÇÕES DE RESGATE QUANDO O SINAL TRAVA OU FICA EM TELA PRETA APÓS INÍCIO */}
+          {hasFirstFrame && isPlaybackStalled && (
+            <div
+              id="player-stalled-recovery-bar"
+              className="absolute bottom-4 left-4 right-4 z-30 p-3 rounded-2xl bg-black/85 backdrop-blur-md border border-amber-500/50 text-white shadow-2xl flex flex-col sm:flex-row items-center justify-between gap-3 animate-in fade-in duration-200"
+            >
+              <div className="flex items-center gap-2.5 text-left w-full sm:w-auto">
+                <div className="w-8 h-8 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400 shrink-0">
+                  <Zap className="w-4 h-4 text-amber-400 animate-pulse" />
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-white flex items-center gap-1.5">
+                    <span>{stalledMessage || 'Sinal sem resposta de imagem da emissora'}</span>
+                  </p>
+                  <p className="text-[11px] text-zinc-400">
+                    O sinal está demorando a responder. Você pode alternar o servidor ou acionar o sinal reserva abaixo:
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 shrink-0 flex-wrap justify-end w-full sm:w-auto">
+                {streamsDisponiveis.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => onStreamChange((streamIndex + 1) % streamsDisponiveis.length)}
+                    className="px-3 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 text-xs font-bold flex items-center gap-1.5 cursor-pointer transition shadow-sm"
+                  >
+                    <Zap className="w-3.5 h-3.5 text-amber-400" />
+                    <span>Trocar Servidor ({streamIndex + 1}/{streamsDisponiveis.length})</span>
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEmergencyOverrideUrl(getEmergencyFallbackStream(canalAtivo.categoria));
+                  }}
+                  className="px-3 py-1.5 rounded-xl bg-emerald-600/30 hover:bg-emerald-600/50 text-emerald-300 border border-emerald-500/40 text-xs font-bold flex items-center gap-1.5 cursor-pointer transition shadow-sm"
+                >
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>Sinal Reserva HD</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={handleReload}
+                  className="px-3 py-1.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 text-xs font-bold flex items-center gap-1.5 cursor-pointer transition shadow-sm"
+                >
+                  <RefreshCw className="w-3.5 h-3.5 text-zinc-300" />
+                  <span>Recarregar</span>
+                </button>
+                {onNextCanal && (
+                  <button
+                    type="button"
+                    onClick={onNextCanal}
+                    className="px-3 py-1.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 text-xs font-bold flex items-center gap-1.5 cursor-pointer transition shadow-sm"
+                  >
+                    <SkipForward className="w-3.5 h-3.5 text-[#FF2D55]" />
+                    <span>Próximo</span>
+                  </button>
+                )}
+              </div>
             </div>
           )}
 

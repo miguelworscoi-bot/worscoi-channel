@@ -28,6 +28,7 @@ function formatCurrencyPdf(value: number | string): string {
 
 /**
  * EXPORTAÇÃO OFICIAL DO RECIBO DA WORSCOI TV EM PDF
+ * Layout executivo, limpo e profissional sem blocos pesados de tinta.
  */
 export function exportReceiptToPdf(receipt: ReceiptData): void {
   const doc = new jsPDF({
@@ -41,272 +42,295 @@ export function exportReceiptToPdf(receipt: ReceiptData): void {
   const contentWidth = pageWidth - margin * 2; // 174mm
 
   // ==========================================
-  // 1. CABEÇALHO PRINCIPAL COM FAIXA SUPERIOR
+  // 1. CABEÇALHO EXECUTIVO E MINIMALISTA
   // ==========================================
+  let cursorY = 20;
+
+  // Marca / Logo Worscoi TV (Ícone escuro discreto e elegante)
   doc.setFillColor(15, 23, 42); // slate-900
-  doc.rect(0, 0, pageWidth, 38, 'F');
-
-  // Detalhe de acento esmeralda
-  doc.setFillColor(16, 185, 129); // emerald-500
-  doc.rect(0, 37, pageWidth, 2, 'F');
-
-  // Marca / Logo Worscoi TV
-  doc.setFillColor(255, 255, 255);
-  doc.roundedRect(margin, 9, 14, 14, 2, 2, 'F');
-  doc.setTextColor(15, 23, 42);
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(14);
-  doc.text('W', margin + 7, 18.5, { align: 'center' });
-
-  // Nome e subtítulo da empresa
+  doc.roundedRect(margin, cursorY - 3, 11, 11, 2, 2, 'F');
   doc.setTextColor(255, 255, 255);
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(16);
-  doc.text('WORSCOI TV', margin + 18, 16);
-
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(8.5);
-  doc.setTextColor(203, 213, 225); // slate-300
-  doc.text('Plataforma Digital de Streaming & Canais ao Vivo', margin + 18, 21);
-  doc.text('Luanda, Angola  |  Suporte WhatsApp: +244 942 472 983', margin + 18, 26);
-
-  // Selo de Comprovativo Oficial no topo direito
-  doc.setFont('helvetica', 'bold');
   doc.setFontSize(11);
-  doc.setTextColor(52, 211, 153); // emerald-400
-  doc.text('COMPROVATIVO OFICIAL', pageWidth - margin, 16, { align: 'right' });
+  doc.text('W', margin + 5.5, cursorY + 4.5, { align: 'center' });
+
+  // Nome da Empresa e Subtítulo
+  doc.setTextColor(15, 23, 42); // slate-900
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(14);
+  doc.text('WORSCOI TV', margin + 15, cursorY + 2);
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8);
+  doc.setTextColor(100, 116, 139); // slate-500
+  doc.text('Tecnologia de Transmissao & Streaming Digital', margin + 15, cursorY + 6.5);
+  doc.text('Luanda, Angola  |  Suporte Oficial: +244 942 472 983', margin + 15, cursorY + 10.5);
+
+  // Informações do Documento à Direita
+  doc.setTextColor(15, 23, 42);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(12);
+  doc.text('FATURA-RECIBO', pageWidth - margin, cursorY + 2, { align: 'right' });
 
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(8.5);
-  doc.setTextColor(226, 232, 240);
-  doc.text(`Recibo: ${cleanTextForPdf(receipt.receiptNumber)}`, pageWidth - margin, 21, { align: 'right' });
-  doc.text(`${cleanTextForPdf(receipt.date)} às ${cleanTextForPdf(receipt.time)}`, pageWidth - margin, 26, { align: 'right' });
+  doc.setTextColor(71, 85, 105);
+  doc.text(`No: ${cleanTextForPdf(receipt.receiptNumber)}`, pageWidth - margin, cursorY + 6.5, { align: 'right' });
+  doc.text(`Data: ${cleanTextForPdf(receipt.date)} as ${cleanTextForPdf(receipt.time)}`, pageWidth - margin, cursorY + 10.5, { align: 'right' });
 
-  let cursorY = 48;
+  // Badge de Status: PAGO & LIQUIDADO
+  doc.setFillColor(240, 253, 244); // emerald-50
+  doc.setDrawColor(187, 247, 208); // emerald-200
+  doc.roundedRect(pageWidth - margin - 42, cursorY + 13, 42, 6.5, 1.5, 1.5, 'FD');
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(7.5);
+  doc.setTextColor(21, 128, 61); // emerald-700
+  doc.text('STATUS: PAGO & LIQUIDADO', pageWidth - margin - 21, cursorY + 17.5, { align: 'center' });
+
+  cursorY += 25;
+
+  // Divisor sutil
+  doc.setDrawColor(226, 232, 240); // slate-200
+  doc.setLineWidth(0.3);
+  doc.line(margin, cursorY, pageWidth - margin, cursorY);
+
+  cursorY += 6;
 
   // ==========================================
-  // 2. STATUS DO PAGAMENTO (DISTINTIVO)
+  // 2. BLOCOS DE INFORMAÇÃO BENTO (CLIENTE & LIQUIDAÇÃO)
   // ==========================================
-  doc.setFillColor(236, 253, 245); // emerald-50
-  doc.setDrawColor(167, 243, 208); // emerald-200
-  doc.roundedRect(margin, cursorY, contentWidth, 14, 2, 2, 'FD');
+  const cardWidth = (contentWidth - 6) / 2; // 84mm
+  const cardHeight = 28;
+
+  // CARD ESQUERDO: DADOS DO CLIENTE
+  doc.setFillColor(248, 250, 252); // slate-50
+  doc.setDrawColor(226, 232, 240); // slate-200
+  doc.roundedRect(margin, cursorY, cardWidth, cardHeight, 2, 2, 'FD');
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(7.5);
+  doc.setTextColor(100, 116, 139); // slate-500
+  doc.text('FATURADO A (ASSINANTE)', margin + 5, cursorY + 6);
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(10);
+  doc.setTextColor(15, 23, 42); // slate-900
+  doc.text(cleanTextForPdf(receipt.customerName || 'Assinante Worscoi'), margin + 5, cursorY + 12);
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8);
+  doc.setTextColor(71, 85, 105);
+  doc.text(`Telefone / WhatsApp: ${cleanTextForPdf(receipt.customerPhone || 'Nao informado')}`, margin + 5, cursorY + 17.5);
+  doc.setTextColor(148, 163, 184);
+  doc.setFontSize(7.5);
+  doc.text(`ID Cliente: ${cleanTextForPdf(receipt.id || 'WRC-CLI')}`, margin + 5, cursorY + 23);
+
+  // CARD DIREITO: DETALHES DA LIQUIDAÇÃO
+  const rightCardX = margin + cardWidth + 6;
+  doc.setFillColor(248, 250, 252);
+  doc.setDrawColor(226, 232, 240);
+  doc.roundedRect(rightCardX, cursorY, cardWidth, cardHeight, 2, 2, 'FD');
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(7.5);
+  doc.setTextColor(100, 116, 139);
+  doc.text('FORMA DE LIQUIDACAO', rightCardX + 5, cursorY + 6);
 
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(9.5);
-  doc.setTextColor(6, 95, 70); // emerald-800
-  doc.text('STATUS: PAGO & VALIDADO COM SUCESSO', margin + 5, cursorY + 9);
-
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(8.5);
-  doc.setTextColor(4, 120, 87);
-  doc.text('Acesso liberado aos canais digitais', pageWidth - margin - 5, cursorY + 9, { align: 'right' });
-
-  cursorY += 20;
-
-  // ==========================================
-  // 3. BOX DE DADOS DO CLIENTE & PAGAMENTO
-  // ==========================================
-  const boxHeight = 32;
-  doc.setFillColor(248, 250, 252); // slate-50
-  doc.setDrawColor(226, 232, 240); // slate-200
-  doc.roundedRect(margin, cursorY, contentWidth, boxHeight, 2, 2, 'FD');
-
-  // Coluna 1: Dados do Assinante
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(8);
-  doc.setTextColor(100, 116, 139); // slate-500
-  doc.text('DADOS DO ASSINANTE', margin + 6, cursorY + 7);
-
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(11);
-  doc.setTextColor(15, 23, 42); // slate-900
-  doc.text(cleanTextForPdf(receipt.customerName || 'Assinante Worscoi'), margin + 6, cursorY + 14);
-
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(9);
-  doc.setTextColor(71, 85, 105);
-  doc.text(`Telefone / WhatsApp: ${cleanTextForPdf(receipt.customerPhone || 'Nao informado')}`, margin + 6, cursorY + 20);
-  doc.text(`Identificador: ${cleanTextForPdf(receipt.id || 'WRC-CLI')}`, margin + 6, cursorY + 26);
-
-  // Linha divisória vertical interna
-  doc.setDrawColor(226, 232, 240);
-  doc.line(margin + 90, cursorY + 4, margin + 90, cursorY + boxHeight - 4);
-
-  // Coluna 2: Dados do Pagamento
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(8);
-  doc.setTextColor(100, 116, 139);
-  doc.text('FORMA DE LIQUIDACAO', margin + 96, cursorY + 7);
-
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(10.5);
   doc.setTextColor(15, 23, 42);
   const paymentLabels: Record<string, string> = {
     mcx: 'Multicaixa Express (MCX)',
     paypay: 'PayPay Africa',
     transfer: 'Transferencia Bancaria (IBAN)',
-    cash: 'Dinheiro Direto / Balcao',
+    cash: 'Dinheiro / Balcao',
   };
-  doc.text(paymentLabels[receipt.paymentMethod] || 'Multicaixa Express', margin + 96, cursorY + 14);
+  doc.text(paymentLabels[receipt.paymentMethod] || 'Multicaixa Express', rightCardX + 5, cursorY + 12);
 
   doc.setFont('helvetica', 'normal');
-  doc.setFontSize(9);
+  doc.setFontSize(8);
   doc.setTextColor(71, 85, 105);
-  doc.text(`Ref. Transacao: ${cleanTextForPdf(receipt.paymentReference || 'TX-OFICIAL')}`, margin + 96, cursorY + 20);
-  doc.text(`Emissor: ${cleanTextForPdf(receipt.issuedBy || 'Administracao Worscoi TV')}`, margin + 96, cursorY + 26);
+  doc.text(`Ref. Transacao: ${cleanTextForPdf(receipt.paymentReference || 'TX-OFICIAL')}`, rightCardX + 5, cursorY + 17.5);
+  doc.setTextColor(148, 163, 184);
+  doc.setFontSize(7.5);
+  doc.text(`Emissor: ${cleanTextForPdf(receipt.issuedBy || 'Administracao Worscoi')}`, rightCardX + 5, cursorY + 23);
 
-  cursorY += boxHeight + 10;
+  cursorY += cardHeight + 8;
 
   // ==========================================
-  // 4. TABELA DE ITENS / DISCRIMINAÇÃO
+  // 3. TABELA DE ITENS / DISCRIMINAÇÃO
   // ==========================================
-  // Cabeçalho da tabela
-  doc.setFillColor(30, 41, 59); // slate-800
-  doc.rect(margin, cursorY, contentWidth, 8, 'F');
+  // Cabeçalho da tabela (suave e limpo)
+  doc.setFillColor(241, 245, 249); // slate-100
+  doc.setDrawColor(226, 232, 240);
+  doc.rect(margin, cursorY, contentWidth, 7.5, 'FD');
 
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(8.5);
-  doc.setTextColor(255, 255, 255);
-  doc.text('DESCRICAO DO SERVICO DIGITAL', margin + 4, cursorY + 5.5);
-  doc.text('QTD', margin + 115, cursorY + 5.5, { align: 'center' });
-  doc.text('DURACAO', margin + 140, cursorY + 5.5, { align: 'center' });
-  doc.text('VALOR', pageWidth - margin - 4, cursorY + 5.5, { align: 'right' });
+  doc.setFontSize(7.5);
+  doc.setTextColor(71, 85, 105); // slate-600
+  doc.text('DESCRICAO DO SERVICO', margin + 4, cursorY + 5);
+  doc.text('DURACAO', margin + 110, cursorY + 5, { align: 'center' });
+  doc.text('QTD', margin + 135, cursorY + 5, { align: 'center' });
+  doc.text('VALOR', pageWidth - margin - 4, cursorY + 5, { align: 'right' });
 
-  cursorY += 8;
+  cursorY += 7.5;
 
   // Linha da tabela
   doc.setFillColor(255, 255, 255);
   doc.setDrawColor(226, 232, 240);
-  doc.rect(margin, cursorY, contentWidth, 16, 'FD');
+  doc.rect(margin, cursorY, contentWidth, 14, 'FD');
 
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(9.5);
+  doc.setFontSize(9);
   doc.setTextColor(15, 23, 42);
-  doc.text(`Assinatura ${cleanTextForPdf(receipt.planName)}`, margin + 4, cursorY + 6);
+  doc.text(`Assinatura Worscoi TV ${cleanTextForPdf(receipt.planName)}`, margin + 4, cursorY + 5.5);
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(7.5);
+  doc.setTextColor(100, 116, 139);
+  doc.text('Acesso irrestrito a todos os canais esportivos, filmes e entretenimento HD', margin + 4, cursorY + 10.5);
 
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(8);
-  doc.setTextColor(100, 116, 139);
-  doc.text('Acesso ilimitado a todos os canais de esportes, filmes e entretenimento HD', margin + 4, cursorY + 11.5);
+  doc.setTextColor(15, 23, 42);
+  doc.text('Ativo', margin + 110, cursorY + 7.5, { align: 'center' });
+  doc.text('1', margin + 135, cursorY + 7.5, { align: 'center' });
 
-  doc.setFont('helvetica', 'normal');
+  doc.setFont('helvetica', 'bold');
   doc.setFontSize(9);
-  doc.setTextColor(15, 23, 42);
-  doc.text('1', margin + 115, cursorY + 8, { align: 'center' });
-  doc.text('Ativo', margin + 140, cursorY + 8, { align: 'center' });
+  doc.text(formatCurrencyPdf(receipt.planPriceFormatted || receipt.planPrice), pageWidth - margin - 4, cursorY + 7.5, { align: 'right' });
 
+  cursorY += 14;
+
+  // Bloco de Totais à direita
+  const totalsWidth = 65;
+  const totalsX = pageWidth - margin - totalsWidth;
+
+  cursorY += 4;
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8);
+  doc.setTextColor(100, 116, 139);
+  doc.text('Subtotal:', totalsX, cursorY);
+  doc.setTextColor(15, 23, 42);
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(9.5);
+  doc.text(formatCurrencyPdf(receipt.planPriceFormatted || receipt.planPrice), pageWidth - margin, cursorY, { align: 'right' });
+
+  cursorY += 4.5;
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(100, 116, 139);
+  doc.text('Impostos / IVA:', totalsX, cursorY);
   doc.setTextColor(15, 23, 42);
-  doc.text(formatCurrencyPdf(receipt.planPriceFormatted || receipt.planPrice), pageWidth - margin - 4, cursorY + 8, { align: 'right' });
+  doc.text('0,00 Kz (Isento)', pageWidth - margin, cursorY, { align: 'right' });
 
-  cursorY += 16;
-
-  // Linha de Total Geral
-  doc.setFillColor(241, 245, 249);
+  cursorY += 2;
   doc.setDrawColor(203, 213, 225);
-  doc.rect(margin, cursorY, contentWidth, 12, 'FD');
+  doc.line(totalsX, cursorY, pageWidth - margin, cursorY);
 
+  cursorY += 5;
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(10);
-  doc.setTextColor(51, 65, 85);
-  doc.text('TOTAL GERAL LIQUIDADO:', margin + 4, cursorY + 8);
+  doc.setFontSize(8.5);
+  doc.setTextColor(15, 23, 42);
+  doc.text('TOTAL LIQUIDADO:', totalsX, cursorY);
 
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(13);
-  doc.setTextColor(16, 185, 129); // emerald-600
-  doc.text(formatCurrencyPdf(receipt.planPriceFormatted || receipt.planPrice), pageWidth - margin - 4, cursorY + 8, { align: 'right' });
+  doc.setFontSize(11);
+  doc.setTextColor(15, 23, 42);
+  doc.text(formatCurrencyPdf(receipt.planPriceFormatted || receipt.planPrice), pageWidth - margin, cursorY, { align: 'right' });
 
-  cursorY += 18;
+  cursorY += 10;
 
   // ==========================================
-  // 5. BLOCO DESTACADO: CHAVE TOKEN DE ATIVAÇÃO
+  // 4. CHAVE TOKEN DE ATIVAÇÃO (DESIGN ELEGANTE E CLARO)
   // ==========================================
   if (receipt.tokenCode) {
     const tokenCodeClean = cleanTextForPdf(receipt.tokenCode).toUpperCase();
-    doc.setFillColor(15, 23, 42); // Fundo escuro premium slate-900
-    doc.setDrawColor(16, 185, 129); // Borda esmeralda
-    doc.roundedRect(margin, cursorY, contentWidth, 34, 3, 3, 'FD');
+    const tokenBoxHeight = 24;
+
+    doc.setFillColor(240, 253, 244); // emerald-50 suave
+    doc.setDrawColor(167, 243, 208); // emerald-200
+    doc.roundedRect(margin, cursorY, contentWidth, tokenBoxHeight, 2, 2, 'FD');
 
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(9);
-    doc.setTextColor(52, 211, 153); // emerald-400
-    doc.text('CHAVE TOKEN OFICIAL DE ATIVACAO (5 CARACTERES)', margin + 8, cursorY + 9);
+    doc.setFontSize(8.5);
+    doc.setTextColor(21, 128, 61); // emerald-700
+    doc.text('CHAVE TOKEN OFICIAL DE ATIVACAO IMEDIATA', margin + 6, cursorY + 7);
 
     doc.setFont('helvetica', 'normal');
-    doc.setFontSize(8);
-    doc.setTextColor(203, 213, 225);
-    doc.text('Insira este codigo na tela inicial da Worscoi TV para liberar o sinal imediatamente:', margin + 8, cursorY + 15);
+    doc.setFontSize(7.5);
+    doc.setTextColor(22, 101, 52); // emerald-800
+    doc.text('Insira este codigo na tela inicial da Worscoi TV para liberar o seu acesso:', margin + 6, cursorY + 12);
+    doc.setFontSize(7);
+    doc.setTextColor(74, 222, 128);
+    doc.setTextColor(100, 116, 139);
+    doc.text('Chave unica vinculada a este recibo e plano contratado.', margin + 6, cursorY + 18);
 
-    // Caixinha para o código
-    doc.setFillColor(2, 6, 23); // slate-950
-    doc.setDrawColor(52, 211, 153);
-    doc.roundedRect(margin + 8, cursorY + 18, 55, 11, 1.5, 1.5, 'FD');
+    // Box do Código Token (branca, nítida com letras espaçadas)
+    const tokenPillW = 50;
+    const tokenPillH = 12;
+    const tokenPillX = pageWidth - margin - tokenPillW - 6;
+    const tokenPillY = cursorY + 6;
+
+    doc.setFillColor(255, 255, 255);
+    doc.setDrawColor(187, 247, 208);
+    doc.roundedRect(tokenPillX, tokenPillY, tokenPillW, tokenPillH, 1.5, 1.5, 'FD');
 
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(15);
-    doc.setTextColor(52, 211, 153);
-    doc.text(tokenCodeClean, margin + 35.5, cursorY + 26, { align: 'center' });
+    doc.setFontSize(13);
+    doc.setTextColor(6, 95, 70); // emerald-800
+    doc.text(tokenCodeClean, tokenPillX + tokenPillW / 2, tokenPillY + 8, { align: 'center' });
 
-    doc.setFont('helvetica', 'italic');
-    doc.setFontSize(7.5);
-    doc.setTextColor(148, 163, 184);
-    doc.text('Aviso: esta chave e de uso unico. Uma vez resgatada, perde o poder de ativacao.', margin + 68, cursorY + 24.5);
-
-    cursorY += 40;
+    cursorY += tokenBoxHeight + 8;
   }
 
   // ==========================================
-  // 6. INSTRUÇÕES & TERMOS DE USO
+  // 5. INSTRUÇÕES DE ATIVAÇÃO
   // ==========================================
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(8.5);
-  doc.setTextColor(51, 65, 85);
-  doc.text('INSTRUCOES PARA ACESSO:', margin, cursorY);
-  cursorY += 5;
+  doc.setFontSize(8);
+  doc.setTextColor(71, 85, 105);
+  doc.text('INSTRUCOES DE ACESSO:', margin, cursorY);
+  cursorY += 4.5;
 
   doc.setFont('helvetica', 'normal');
-  doc.setFontSize(8);
+  doc.setFontSize(7.5);
   doc.setTextColor(100, 116, 139);
   doc.text('1. Acesse a plataforma oficial Worscoi TV no seu computador, celular ou Smart TV.', margin, cursorY);
   cursorY += 4;
-  doc.text('2. Clique no botao "Ativar Codigo" no topo da tela inicial.', margin, cursorY);
+  doc.text('2. Clique no botao "Ativar Codigo" no topo da tela inicial e introduza a Chave Token acima.', margin, cursorY);
   cursorY += 4;
-  doc.text('3. Digite a Chave Token informada acima para desbloquear todos os canais do seu plano.', margin, cursorY);
-  cursorY += 4;
-  doc.text('4. Em caso de duvidas ou suporte tecnico, envie mensagem para o WhatsApp Oficial: +244 942 472 983.', margin, cursorY);
-  cursorY += 12;
+  doc.text('3. A liberacao dos canais e automatica. Suporte tecnico oficial via WhatsApp: +244 942 472 983.', margin, cursorY);
+  cursorY += 9;
 
   // ==========================================
-  // 7. CARIMBO E AUTENTICIDADE DIGITAL
+  // 6. CARIMBO DE SEGURANÇA & VALIDAÇÃO DIGITAL
   // ==========================================
-  doc.setDrawColor(203, 213, 225);
+  doc.setDrawColor(226, 232, 240);
   doc.setLineDashPattern([2, 2], 0);
   doc.line(margin, cursorY, pageWidth - margin, cursorY);
   doc.setLineDashPattern([], 0); // reset
 
-  cursorY += 7;
+  cursorY += 6;
 
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(8);
+  doc.setFontSize(7.5);
   doc.setTextColor(71, 85, 105);
-  doc.text('AUTENTICACAO DIGITAL WORSCOI TV', margin, cursorY);
+  doc.text('AUTENTICACAO DIGITAL & SEGURANCA', margin, cursorY);
 
   doc.setFont('helvetica', 'normal');
-  doc.setFontSize(7.5);
+  doc.setFontSize(7);
   doc.setTextColor(148, 163, 184);
   const authCode = `AUTH-${receipt.receiptNumber.replace('WRC-', '')}-${Date.now().toString(36).toUpperCase()}`;
   doc.text(`Codigo de Seguranca: ${authCode}`, margin, cursorY + 4);
-  doc.text('Documento oficial emitido eletronicamente. Dispensa assinatura fisica.', margin, cursorY + 8);
+  doc.text('Comprovativo emitido digitalmente nos termos vigentes. Dispensa assinatura manuscrita.', margin, cursorY + 8);
 
-  // Rodapé da página
+  // Rodapé da página fixo na parte inferior
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(7);
   doc.setTextColor(148, 163, 184);
   doc.text(
     'Worscoi TV (c) Todos os direitos reservados. Plataforma de Streaming de Alta Definicao.',
     pageWidth / 2,
-    288,
+    286,
     { align: 'center' }
   );
 
@@ -321,19 +345,25 @@ export function exportReceiptToPdf(receipt: ReceiptData): void {
  */
 export interface ReportSubscriberItem {
   id: string;
-  name: string;
+  name?: string;
+  displayName?: string;
   email: string;
+  phone?: string;
   plan?: string;
+  planName?: string;
   planId?: string;
   planExpiresAt?: string;
   validity?: string;
   status?: string;
+  isActive?: boolean;
   role?: string;
   avatar?: string;
 }
 
+export type AnyReportSubscriber = SubscriberUser | ReportSubscriberItem;
+
 export function exportSubscribersReportToPdf(params: {
-  subscribers: (SubscriberUser | ReportSubscriberItem)[];
+  subscribers: ReportSubscriberItem[];
   tokens?: AccessTokenRecord[];
   title?: string;
   generatedBy?: string;
@@ -376,7 +406,7 @@ export function exportSubscribersReportToPdf(params: {
   let cursorY = 40;
 
   // 2. Cards de Métricas Rápidas
-  const activeSubs = subscribers.filter((s) => s.status === 'active' || s.isActive).length;
+  const activeSubs = subscribers.filter((s) => s.status === 'active' || s.isActive || s.validity === 'active').length;
   const activeTokens = tokens.filter((t) => t.status === 'active').length;
   const usedTokens = tokens.filter((t) => t.status === 'used').length;
 

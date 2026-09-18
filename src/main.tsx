@@ -1,6 +1,7 @@
 import {StrictMode} from 'react';
 import {createRoot} from 'react-dom/client';
 import '@/lib/firebase';
+import '@/lib/playerSetup';
 import App from './App.tsx';
 import './index.css';
 
@@ -77,7 +78,10 @@ function isSuppressedMediaError(errOrEvent: unknown): boolean {
     str.includes('debug_videoId') ||
     str.includes('"data":150') ||
     str.includes('"data":101') ||
-    str.includes('"errorCode":"auth"')
+    str.includes('"errorCode":"auth"') ||
+    str.includes('no supported source was found') ||
+    str.includes('Unknown event handler property') ||
+    str.includes('onBuffer')
   );
 }
 
@@ -108,6 +112,15 @@ window.onerror = function (message, source, lineno, colno, error) {
   }
   return false;
 };
+
+// Desativação global do botão direito (menu de contexto) silenciosamente, sem notificações
+if (typeof window !== 'undefined') {
+  const disableContextMenu = (e: MouseEvent) => {
+    e.preventDefault();
+  };
+  window.addEventListener('contextmenu', disableContextMenu, { capture: true });
+  document.addEventListener('contextmenu', disableContextMenu, { capture: true });
+}
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
