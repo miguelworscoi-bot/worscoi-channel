@@ -139,13 +139,26 @@ export default defineConfig(() => {
   return {
     plugins: [react(), tailwindcss(), apiRoutesPlugin()],
     optimizeDeps: {
-      include: ['firebase/app', 'firebase/auth', 'firebase/firestore', 'shaders/react'],
+      include: [
+        'react',
+        'react-dom',
+        'react-dom/client',
+        'react/jsx-runtime',
+        'react/jsx-dev-runtime',
+        'firebase/app',
+        'firebase/auth',
+        'firebase/firestore',
+        'shaders/react',
+      ],
     },
     resolve: {
       alias: {
         '@': path.resolve(__dirname, './src'),
         'next/server': path.resolve(__dirname, './src/shims/next-server.ts'),
+        react: path.resolve(__dirname, './node_modules/react'),
+        'react-dom': path.resolve(__dirname, './node_modules/react-dom'),
       },
+      dedupe: ['react', 'react-dom'],
     },
     server: {
       host: '0.0.0.0',

@@ -1,26 +1,160 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+
+    // =========================================================================
+    // FUNÇÕES AUXILIARES DE SEGURANÇA E CONTROLE DE ACESSO (ABAC/RBAC)
+    // =========================================================================
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        (request.auth.token.email != null && request.auth.token.email.lower() == 'miguelworscoi@gmail.com') ||
+        request.auth.token.role == 'admin'
+      );
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128;
+    }
+
+    // =========================================================================
+    // 1. COLEÇÃO: users (Perfis de Usuários)
+    // =========================================================================
     match /users/{userId} {
-      allow read, write: if true;
+      // O usuário pode visualizar seu próprio perfil; administradores podem ler qualquer perfil
+      allow get: if isOwner(userId) || isAdmin();
+      allow list: if isAdmin();
+
+      // Criação: usuário autenticado pode criar seu próprio registro de perfil.
+      // Impede que um usuário comum defina o papel de 'admin' para si mesmo.
+      allow create: if isOwner(userId) && isValidId(userId) && (
+        !('role' in request.resource.data) ||
+        request.resource.data.role == 'user' ||
+        isAdmin()
+      );
+
+      // Atualização: o próprio usuário pode atualizar suas preferências,
+      // mas não pode alterar o cargo 'role' para 'admin' nem trocar seu UID/e-mail.
+      allow update: if (isOwner(userId) && (
+        !('role' in request.resource.data) ||
+        request.resource.data.role == resource.data.role ||
+        isAdmin()
+      )) || isAdmin();
+
+      // Exclusão de perfil: reservada exclusivamente ao administrador
+      allow delete: if isAdmin();
     }
+
+    // =========================================================================
+    // 2. COLEÇÃO: subscriptions (Assinaturas e Pedidos)
+    // =========================================================================
+    match /subscriptions/{subscriptionId} {
+      // Leitura: O titular da assinatura pode ler seu documento, ou o administrador
+      allow get: if isSignedIn() && (
+        resource.data.userId == request.auth.uid ||
+        isAdmin()
+      );
+      allow list: if isSignedIn() && (
+        isAdmin() ||
+        resource.data.userId == request.auth.uid
+      );
+
+      // Criação: Usuário autenticado pode solicitar/registrar assinatura para seu próprio UID
+      allow create: if isSignedIn() && isValidId(subscriptionId) && (
+        request.resource.data.userId == request.auth.uid ||
+        isAdmin()
+      );
+
+      // Modificação de termos e exclusão: Somente administrador
+      allow update, delete: if isAdmin();
+    }
+
+    // =========================================================================
+    // 3. COLEÇÕES: tokens & access_tokens (Códigos de 5 Dígitos para Planos VIP)
+    // =========================================================================
+    match /tokens/{tokenId} {
+      // Leitura: Admin pode auditar tokens; usuário pode consultar para validação de ativação
+      allow get: if isSignedIn() && (
+        isAdmin() ||
+        resource.data.status == 'active'
+      );
+      allow list: if isAdmin();
+
+      // Criação: Apenas administradores oficiais podem emitir vouchers e tokens
+      allow create: if isAdmin();
+
+      // Atualização: Admin pode alterar status/notas.
+      // Usuário autenticado pode resgatar token se ativo (marcando como usado com seu UID)
+      allow update: if isAdmin() || (
+        isSignedIn() &&
+        resource.data.status == 'active' &&
+        request.resource.data.status == 'used' &&
+        request.resource.data.usedByUserId == request.auth.uid
+      );
+
+      // Exclusão: Apenas administradores
+      allow delete: if isAdmin();
+    }
+
     match /access_tokens/{tokenId} {
-      allow read, write: if true;
+      allow get: if isSignedIn() && (
+        isAdmin() ||
+        resource.data.status == 'active'
+      );
+      allow list: if isAdmin();
+
+      allow create: if isAdmin();
+
+      allow update: if isAdmin() || (
+        isSignedIn() &&
+        resource.data.status == 'active' &&
+        request.resource.data.status == 'used' &&
+        request.resource.data.usedByUserId == request.auth.uid
+      );
+
+      allow delete: if isAdmin();
     }
+
+    // =========================================================================
+    // 4. COLEÇÃO: device_trials (Prevenção de Abuso de Teste Gratuito de 24h)
+    // =========================================================================
     match /device_trials/{deviceId} {
-      allow read, write: if true;
+      allow read: if true;
+      allow create, update: if isValidId(deviceId);
+      allow delete: if isAdmin();
     }
+
+    // =========================================================================
+    // 5. INTERAÇÕES E ANUNCIOS: canais, comentários e notificações
+    // =========================================================================
     match /channel_stats/{channelId} {
-      allow read, write: if true;
+      allow read: if true;
+      allow write: if isSignedIn() || isAdmin();
     }
+
     match /channel_likes/{likeId} {
-      allow read, write: if true;
+      allow read: if true;
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow delete: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
     }
+
     match /channel_comments/{commentId} {
-      allow read, write: if true;
+      allow read: if true;
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
     }
+
     match /notifications/{notificationId} {
-      allow read, write: if true;
+      allow read: if true;
+      allow create, update, delete: if isAdmin() || isSignedIn();
     }
   }
 }

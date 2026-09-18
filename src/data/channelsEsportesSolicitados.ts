@@ -13,13 +13,79 @@ import {
   LOGO_REAL_MADRID,
   LOGO_BARCELONA,
   LOGO_ZAP_VIVA,
+  LOGO_Z_SPORTS_LALIGA,
+  LOGO_Z_SPORT_1,
+  LOGO_Z_SPORT_2,
 } from '@/utils/channelLogoUtils';
 
 /**
- * CANAIS ADICIONADOS: TNT SPORTS, VIVO, SUPERSPORT, E TRANSMISSÕES DE LALIGA & PREMIER LEAGUE
+ * CANAIS ADICIONADOS: Z SPORTS (LALIGA, SPORT 1 HD, SPORT 2), TNT SPORTS, VIVO, SUPERSPORT, E TRANSMISSÕES DE LALIGA & PREMIER LEAGUE
  * Todos configurados com múltiplos servidores HLS, metadados enriquecidos de competições e logos oficiais.
  */
 export const CANAIS_ESPORTES_SOLICITADOS: Canal[] = [
+  // ==========================================
+  // 0. CANAIS Z SPORTS (ZAP ANGOLA OFICIAL)
+  // ==========================================
+  {
+    id: 'z-sports-laliga-hd',
+    nome: 'Z Sports LaLiga HD',
+    categoria: 'Esportes',
+    grupo: 'ZAP Esportes',
+    rede: 'ZAP',
+    pais: 'AO',
+    idioma: 'pt',
+    qualidade: '1080p FHD',
+    descricao:
+      'Transmissão oficial em português de todos os jogos de LaLiga EA Sports (Espanha), Real Madrid, Barcelona, Atlético de Madrid e El Clásico com exclusividade ZAP.',
+    competicoes: ['LaLiga', 'Copa del Rey', 'Supercopa de España'],
+    logo: LOGO_Z_SPORTS_LALIGA,
+    url: 'https://dai.google.com/linear/hls/event/7f3Wv6f7QEKfQna22jHqLQ/master.m3u8?channel=z-sports-laliga-hd',
+    backupUrls: [
+      'https://vivo.canaloncelive.tv/secureoncedos/oncedigital/playlist.m3u8',
+      'https://rmtv.akamaized.net/hls/live/2043153/rmtv-es-web/master.m3u8',
+      'https://cdn.freevisiontv.co.za/sttv/smil:1kzn.stream.smil/playlist.m3u8',
+    ],
+  },
+  {
+    id: 'z-sport-1-hd',
+    nome: 'Z Sport 1 HD',
+    categoria: 'Esportes',
+    grupo: 'ZAP Esportes',
+    rede: 'ZAP',
+    pais: 'AO',
+    idioma: 'pt',
+    qualidade: '1080p FHD',
+    descricao:
+      'Canal principal de futebol e competições ao vivo da ZAP: Girabola ZAP, UEFA Champions League, Premier League inglesa e Taça de Angola.',
+    competicoes: ['Girabola', 'Champions League', 'Premier League', 'Taça de Angola'],
+    logo: LOGO_Z_SPORT_1,
+    url: 'https://dai.google.com/linear/hls/event/7f3Wv6f7QEKfQna22jHqLQ/master.m3u8?channel=z-sport-1-hd',
+    backupUrls: [
+      'https://cdn.freevisiontv.co.za/sttv/smil:1kzn.stream.smil/playlist.m3u8',
+      'https://vivo.canaloncelive.tv/secureoncedos/oncedigital/playlist.m3u8',
+      'http://45.162.64.114/SPACE/index.m3u8',
+    ],
+  },
+  {
+    id: 'z-sport-2-hd',
+    nome: 'Z Sport 2 HD',
+    categoria: 'Esportes',
+    grupo: 'ZAP Esportes',
+    rede: 'ZAP',
+    pais: 'AO',
+    idioma: 'pt',
+    qualidade: '1080p FHD',
+    descricao:
+      'Segundo canal esportivo da ZAP: Serie A italiana, basquetebol da NBA e Unitel Basket, torneios mundiais de atletismo e noites de UFC.',
+    competicoes: ['NBA', 'Serie A', 'Girabola', 'UFC'],
+    logo: LOGO_Z_SPORT_2,
+    url: 'https://dai.google.com/linear/hls/event/7f3Wv6f7QEKfQna22jHqLQ/master.m3u8?channel=z-sport-2-hd',
+    backupUrls: [
+      'https://bein-xtra-bein.amagi.tv/playlist.m3u8',
+      'https://5eaccbab48461.streamlock.net:1936/8264/8264/playlist.m3u8',
+      'https://vivo.canaloncelive.tv/secureoncedos/oncedigital/playlist.m3u8',
+    ],
+  },
   // ==========================================
   // 1. CANAIS TNT SPORTS
   // ==========================================

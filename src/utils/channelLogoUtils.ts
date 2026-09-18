@@ -370,6 +370,103 @@ export const LOGO_ZAP_NOVELAS = svgToUri(`
 </svg>
 `);
 
+// 12.1 Z SPORTS (Oficial ZAP Angola - Laranja dinâmico e tipografia esportiva premium)
+export const LOGO_Z_SPORTS = svgToUri(`
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+  <defs>
+    <linearGradient id="zSportBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ff6600"/>
+      <stop offset="100%" stop-color="#d93d00"/>
+    </linearGradient>
+    <linearGradient id="zSportDark" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#18181b"/>
+      <stop offset="100%" stop-color="#09090b"/>
+    </linearGradient>
+  </defs>
+  <rect width="120" height="120" rx="26" fill="url(#zSportDark)"/>
+  <rect x="8" y="8" width="104" height="104" rx="20" fill="none" stroke="url(#zSportBg)" stroke-width="2.5"/>
+  <path d="M38 34 L82 34 L48 64 L84 64 L84 74 L36 74 L70 44 L38 44 Z" fill="#ff6600"/>
+  <rect x="18" y="84" width="84" height="22" rx="6" fill="url(#zSportBg)"/>
+  <text x="60" y="99" font-family="'Arial Black',Impact,sans-serif" font-weight="900" font-size="11.5" fill="#ffffff" text-anchor="middle" letter-spacing="2">SPORTS</text>
+</svg>
+`);
+
+// 12.2 Z SPORTS LALIGA (Transmissões exclusivas de LaLiga EA Sports na ZAP)
+export const LOGO_Z_SPORTS_LALIGA = svgToUri(`
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+  <defs>
+    <linearGradient id="zLaligaBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1a0b1e"/>
+      <stop offset="100%" stop-color="#0d040f"/>
+    </linearGradient>
+    <linearGradient id="zapOrange" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ff6600"/>
+      <stop offset="100%" stop-color="#ff3300"/>
+    </linearGradient>
+    <linearGradient id="laligaRed" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ff0046"/>
+      <stop offset="100%" stop-color="#cc0033"/>
+    </linearGradient>
+  </defs>
+  <rect width="120" height="120" rx="26" fill="url(#zLaligaBg)"/>
+  <rect x="8" y="8" width="104" height="104" rx="20" fill="none" stroke="url(#zapOrange)" stroke-width="2.5"/>
+  <rect x="16" y="16" width="88" height="28" rx="8" fill="url(#zapOrange)"/>
+  <text x="60" y="35" font-family="'Arial Black',Impact,sans-serif" font-weight="900" font-size="12" fill="#ffffff" text-anchor="middle" letter-spacing="1">Z SPORTS</text>
+  <rect x="16" y="48" width="88" height="42" rx="10" fill="url(#laligaRed)"/>
+  <text x="60" y="74" font-family="'Arial Black',sans-serif" font-weight="900" font-size="16" fill="#ffffff" text-anchor="middle" letter-spacing="1">LALIGA</text>
+  <rect x="24" y="94" width="72" height="18" rx="6" fill="#ffffff"/>
+  <text x="60" y="106" font-family="'Arial Black',sans-serif" font-weight="900" font-size="8.5" fill="#cc0033" text-anchor="middle" letter-spacing="1">EA SPORTS</text>
+</svg>
+`);
+
+// 12.3 Z SPORT 1 HD (Canal principal ZAP Esportes: Champions League, Girabola e Premier)
+export const LOGO_Z_SPORT_1 = svgToUri(`
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+  <defs>
+    <linearGradient id="zSport1Bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#141419"/>
+      <stop offset="100%" stop-color="#08080b"/>
+    </linearGradient>
+    <linearGradient id="z1Orange" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ff7700"/>
+      <stop offset="100%" stop-color="#e64400"/>
+    </linearGradient>
+  </defs>
+  <rect width="120" height="120" rx="26" fill="url(#zSport1Bg)"/>
+  <rect x="8" y="8" width="104" height="104" rx="20" fill="none" stroke="url(#z1Orange)" stroke-width="2.5"/>
+  <circle cx="60" cy="46" r="28" fill="url(#z1Orange)"/>
+  <text x="60" y="58" font-family="'Arial Black',Impact,sans-serif" font-weight="900" font-size="34" fill="#ffffff" text-anchor="middle">1</text>
+  <rect x="16" y="82" width="88" height="24" rx="8" fill="#ffffff"/>
+  <text x="60" y="98" font-family="'Arial Black',sans-serif" font-weight="900" font-size="10.5" fill="#e64400" text-anchor="middle" letter-spacing="1">Z SPORT 1 HD</text>
+</svg>
+`);
+
+// 12.4 Z SPORT 2 HD (Canal secundário ZAP Esportes: Serie A, NBA, Ligas Europeias)
+export const LOGO_Z_SPORT_2 = svgToUri(`
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+  <defs>
+    <linearGradient id="zSport2Bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#141419"/>
+      <stop offset="100%" stop-color="#08080b"/>
+    </linearGradient>
+    <linearGradient id="z2Orange" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ff8800"/>
+      <stop offset="100%" stop-color="#d93600"/>
+    </linearGradient>
+    <linearGradient id="z2Cyan" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00e5ff"/>
+      <stop offset="100%" stop-color="#0088cc"/>
+    </linearGradient>
+  </defs>
+  <rect width="120" height="120" rx="26" fill="url(#zSport2Bg)"/>
+  <rect x="8" y="8" width="104" height="104" rx="20" fill="none" stroke="url(#z2Cyan)" stroke-width="2.5"/>
+  <circle cx="60" cy="46" r="28" fill="url(#z2Orange)"/>
+  <text x="60" y="58" font-family="'Arial Black',Impact,sans-serif" font-weight="900" font-size="34" fill="#ffffff" text-anchor="middle">2</text>
+  <rect x="16" y="82" width="88" height="24" rx="8" fill="url(#z2Cyan)"/>
+  <text x="60" y="98" font-family="'Arial Black',sans-serif" font-weight="900" font-size="10.5" fill="#002244" text-anchor="middle" letter-spacing="1">Z SPORT 2 HD</text>
+</svg>
+`);
+
 // 13. TPA ANGOLA (Televisão Pública de Angola)
 export const LOGO_TPA = svgToUri(`
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
@@ -1817,7 +1914,39 @@ export function getChannelLogo(canal?: Partial<Canal> | null): string {
     return LOGO_FOX_SPORTS;
   }
 
-  // 14. ZAP Angola (ZAP Viva, ZAP Novelas)
+  // 14. ZAP Angola (ZAP Viva, ZAP Novelas, Z Sports)
+  if (
+    name.includes('z sports laliga') ||
+    name.includes('z sport laliga') ||
+    id.includes('z-sports-laliga') ||
+    id.includes('z-sport-laliga')
+  ) {
+    return LOGO_Z_SPORTS_LALIGA;
+  }
+  if (
+    name.includes('z sport 1') ||
+    name.includes('z sports 1') ||
+    id.includes('z-sport-1') ||
+    id.includes('z-sports-1')
+  ) {
+    return LOGO_Z_SPORT_1;
+  }
+  if (
+    name.includes('z sport 2') ||
+    name.includes('z sports 2') ||
+    id.includes('z-sport-2') ||
+    id.includes('z-sports-2')
+  ) {
+    return LOGO_Z_SPORT_2;
+  }
+  if (
+    name.includes('z sports') ||
+    name.includes('z sport') ||
+    id.includes('z-sports') ||
+    id.includes('z-sport')
+  ) {
+    return LOGO_Z_SPORTS;
+  }
   if (name.includes('zap novelas') || id.includes('zap-novelas')) {
     return LOGO_ZAP_NOVELAS;
   }

@@ -1,5 +1,5 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   ArrowRight,
   KeyRound,
@@ -9,7 +9,6 @@ import {
   Tv,
   Plus,
   Trash2,
-  Settings,
   Shield,
   CreditCard,
   Phone,
@@ -18,13 +17,24 @@ import {
   TrendingUp,
   Layers,
   BellRing,
+  Play,
+  Search,
+  Zap,
+  Radio,
+  Copy,
 } from 'lucide-react';
-import { SubscriptionPlanId, Canal } from '@/types';
+import { SubscriptionPlanId, Canal, CategoriaCanalGeral } from '@/types';
 import { useAuth, UserRole } from '@/context/AuthContext';
 import { PAYMENT_CONFIG } from '@/services/subscriptionService';
 import { WorscoiAnalyticsDashboard } from './WorscoiAnalyticsDashboard';
 import { WeeklyMostWatchedChannelsBarChart } from './WeeklyMostWatchedChannelsBarChart';
 import { WorscoiReceiptModal } from './WorscoiReceiptModal';
+import { SupabaseStatusCard } from './SupabaseStatusCard';
+import {
+  LOGO_Z_SPORTS_LALIGA,
+  LOGO_Z_SPORT_1,
+  LOGO_Z_SPORT_2,
+} from '@/utils/channelLogoUtils';
 
 interface WorscoiControlPanelProps {
   onNavigateToSubscribers: () => void;
@@ -37,6 +47,7 @@ interface WorscoiControlPanelProps {
   onRemoveCustomChannel?: (channelId: string) => void;
   onOpenPlayerSettings?: () => void;
   onOpenCreateNotification?: () => void;
+  onPlayChannel?: (canal: Canal) => void;
 }
 
 export function WorscoiControlPanel({
@@ -50,6 +61,7 @@ export function WorscoiControlPanel({
   onRemoveCustomChannel,
   onOpenPlayerSettings,
   onOpenCreateNotification,
+  onPlayChannel,
 }: WorscoiControlPanelProps) {
   const { user, userProfile, role, switchRole } = useAuth();
   const [activeTab, setActiveTab] = useState<'overview' | 'settings'>('overview');
@@ -58,6 +70,132 @@ export function WorscoiControlPanel({
   const [receiptPlanId, setReceiptPlanId] = useState<SubscriptionPlanId>('vip');
   const [roleFeedback, setRoleFeedback] = useState<string | null>(null);
   const [isSwitchingRole, setIsSwitchingRole] = useState(false);
+  const [channelSearchQuery, setChannelSearchQuery] = useState('');
+  const [channelCategoryFilter, setChannelCategoryFilter] = useState<'Todos' | 'Z Sports' | 'Esportes' | 'Outros'>('Todos');
+  const [copiedChannelId, setCopiedChannelId] = useState<string | null>(null);
+
+  // Definição dos 3 canais Z Sports solicitados para o Painel de Controle
+  const zSportsChannels = useMemo(() => [
+    {
+      id: 'z-sports-laliga-hd',
+      nome: 'Z Sports LaLiga HD',
+      subtitulo: 'LaLiga EA Sports, Real Madrid, Barcelona & Copa del Rey',
+      categoria: 'Esportes',
+      qualidade: '1080p FHD',
+      competicoes: ['LaLiga', 'Copa del Rey', 'El Clásico'],
+      logo: LOGO_Z_SPORTS_LALIGA,
+      url: 'https://dai.google.com/linear/hls/event/7f3Wv6f7QEKfQna22jHqLQ/master.m3u8?channel=z-sports-laliga-hd',
+      backupUrls: [
+        'https://vivo.canaloncelive.tv/secureoncedos/oncedigital/playlist.m3u8',
+        'https://rmtv.akamaized.net/hls/live/2043153/rmtv-es-web/master.m3u8',
+        'https://cdn.freevisiontv.co.za/sttv/smil:1kzn.stream.smil/playlist.m3u8',
+      ],
+      rede: 'ZAP',
+      pais: 'AO',
+      descricao:
+        'Transmissão oficial em português com imagens exclusivas da LaLiga EA Sports na ZAP.',
+    },
+    {
+      id: 'z-sport-1-hd',
+      nome: 'Z Sport 1 HD',
+      subtitulo: 'UEFA Champions League, Girabola ZAP & Premier League',
+      categoria: 'Esportes',
+      qualidade: '1080p FHD',
+      competicoes: ['Girabola', 'Champions League', 'Premier League', 'Taça de Angola'],
+      logo: LOGO_Z_SPORT_1,
+      url: 'https://dai.google.com/linear/hls/event/7f3Wv6f7QEKfQna22jHqLQ/master.m3u8?channel=z-sport-1-hd',
+      backupUrls: [
+        'https://cdn.freevisiontv.co.za/sttv/smil:1kzn.stream.smil/playlist.m3u8',
+        'https://vivo.canaloncelive.tv/secureoncedos/oncedigital/playlist.m3u8',
+        'http://45.162.64.114/SPACE/index.m3u8',
+      ],
+      rede: 'ZAP',
+      pais: 'AO',
+      descricao:
+        'Principal sinal esportivo ZAP: todos os jogos do Girabola e noites européias.',
+    },
+    {
+      id: 'z-sport-2-hd',
+      nome: 'Z Sport 2 HD',
+      subtitulo: 'Serie A Italiana, NBA, Basquetebol Unitel Basket & UFC',
+      categoria: 'Esportes',
+      qualidade: '1080p FHD',
+      competicoes: ['NBA', 'Serie A', 'Girabola', 'UFC'],
+      logo: LOGO_Z_SPORT_2,
+      url: 'https://dai.google.com/linear/hls/event/7f3Wv6f7QEKfQna22jHqLQ/master.m3u8?channel=z-sport-2-hd',
+      backupUrls: [
+        'https://bein-xtra-bein.amagi.tv/playlist.m3u8',
+        'https://5eaccbab48461.streamlock.net:1936/8264/8264/playlist.m3u8',
+        'https://vivo.canaloncelive.tv/secureoncedos/oncedigital/playlist.m3u8',
+      ],
+      rede: 'ZAP',
+      pais: 'AO',
+      descricao:
+        'Sinal complementar de grandes ligas da Europa, basquetebol norte-americano e artes marciais.',
+    },
+  ], []);
+
+  const handleCopyUrl = (id: string, url: string) => {
+    try {
+      navigator.clipboard.writeText(url);
+      setCopiedChannelId(id);
+      setTimeout(() => setCopiedChannelId(null), 2200);
+    } catch {
+      // Ignora erro de clipboard
+    }
+  };
+
+  const handleTestPlay = (canalDef: {
+    id?: string;
+    nome: string;
+    categoria?: string;
+    url: string;
+    logo?: string;
+    backupUrls?: string[];
+    qualidade?: string;
+  }) => {
+    if (!onPlayChannel) return;
+    // Tenta achar o canal real da grade ou cria objeto Canal compatível
+    const encontrado = todosCanais.find((c) => (canalDef.id && c.id === canalDef.id) || c.nome.toLowerCase() === canalDef.nome.toLowerCase());
+    if (encontrado) {
+      onPlayChannel(encontrado);
+    } else {
+      onPlayChannel({
+        id: canalDef.id || canalDef.nome.toLowerCase().replace(/\s+/g, '-'),
+        nome: canalDef.nome,
+        categoria: (canalDef.categoria as CategoriaCanalGeral) || 'Esportes',
+        url: canalDef.url,
+        logo: canalDef.logo || '',
+        backupUrls: canalDef.backupUrls || [],
+        pais: 'AO',
+        rede: 'ZAP',
+        grupo: 'ZAP Angola',
+        qualidade: canalDef.qualidade || '1080p FHD',
+      });
+    }
+  };
+
+  // Filtragem dos canais no explorador do painel
+  const filteredCatalogChannels = useMemo(() => {
+    const q = channelSearchQuery.trim().toLowerCase();
+    return todosCanais.filter((canal) => {
+      const matchText = !q || canal.nome.toLowerCase().includes(q) || (canal.id && canal.id.toLowerCase().includes(q)) || (canal.grupo && canal.grupo.toLowerCase().includes(q)) || (canal.rede && canal.rede.toLowerCase().includes(q));
+      if (!matchText) return false;
+
+      if (channelCategoryFilter === 'Z Sports') {
+        const n = canal.nome.toLowerCase();
+        const id = canal.id.toLowerCase();
+        return n.includes('z sport') || n.includes('z sports') || id.includes('z-sport') || id.includes('z-sports');
+      }
+      if (channelCategoryFilter === 'Esportes') {
+        return canal.categoria === 'Esportes';
+      }
+      if (channelCategoryFilter === 'Outros') {
+        return canal.categoria !== 'Esportes';
+      }
+      return true;
+    }).slice(0, 30); // Limite de visualização para manter performance suave
+  }, [todosCanais, channelSearchQuery, channelCategoryFilter]);
 
   const handleOpenReceipt = (planId?: SubscriptionPlanId) => {
     if (planId) {
@@ -210,41 +348,22 @@ export function WorscoiControlPanel({
         </div>
       </div>
 
-      {/* SELETOR DE ABAS PRINCIPAIS: VISÃO GERAL vs CONFIGURAÇÕES */}
+      {/* SELETOR DE ABAS PRINCIPAIS: VISÃO GERAL */}
       <div className="flex items-center gap-2 p-1 bg-zinc-900/80 border border-zinc-800 rounded-xl w-full sm:w-fit">
         <button
           type="button"
           id="btn-tab-overview"
           onClick={() => setActiveTab('overview')}
-          className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-            activeTab === 'overview'
-              ? 'bg-zinc-800 text-white shadow-sm border border-zinc-700 font-bold'
-              : 'text-zinc-400 hover:text-white hover:bg-zinc-850/50'
-          }`}
+          className="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer bg-zinc-800 text-white shadow-sm border border-zinc-700 font-bold"
         >
           <TrendingUp className="w-3.5 h-3.5 text-emerald-400" />
           <span>Visão Geral & Métricas</span>
-        </button>
-
-        <button
-          type="button"
-          id="btn-tab-settings"
-          onClick={() => setActiveTab('settings')}
-          className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-            activeTab === 'settings'
-              ? 'bg-zinc-800 text-white shadow-sm border border-zinc-700 font-bold'
-              : 'text-zinc-400 hover:text-white hover:bg-zinc-850/50'
-          }`}
-        >
-          <Settings className="w-3.5 h-3.5 text-cyan-400" />
-          <span>Configurações do Sistema</span>
-          <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
         </button>
       </div>
 
       {/* ABA 1: VISÃO GERAL (MÉTRICAS, PLANOS E CARDS) */}
       {activeTab === 'overview' && (
-        <div className="space-y-8 animate-in fade-in duration-200">
+        <div className="space-y-6 animate-in fade-in duration-200">
           {/* SEÇÃO SUPERIOR: AÇÕES RÁPIDAS + PLANOS DE ASSINATURA */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
             {/* LADO ESQUERDO: AÇÕES RÁPIDAS (CRIAR NOTIFICAÇÃO, GERAR TOKEN & GERAR RECIBO) */}
@@ -399,17 +518,22 @@ export function WorscoiControlPanel({
           )}
 
           {/* 1. GESTÃO E CONFIGURAÇÃO DA GRADE DE CANAIS */}
-          <div className="p-5 rounded-2xl bg-zinc-900/50 border border-zinc-800 space-y-4 shadow-sm">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-zinc-800/80">
-              <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center text-cyan-400 shrink-0">
-                  <Tv className="w-4 h-4" />
+          <div className="p-5 sm:p-6 rounded-2xl bg-zinc-900/60 border border-zinc-800 space-y-6 shadow-sm">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-zinc-800/80">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center text-cyan-400 shrink-0">
+                  <Tv className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-white tracking-tight">
-                    Gestão da Grade de Canais
-                  </h3>
-                  <p className="text-xs text-zinc-400">
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-base font-bold text-white tracking-tight">
+                      Gestão da Grade de Canais
+                    </h3>
+                    <span className="px-2 py-0.5 rounded-full bg-orange-500/20 border border-orange-500/30 text-orange-400 text-[10px] font-bold uppercase tracking-wider">
+                      Z Sports Integrados
+                    </span>
+                  </div>
+                  <p className="text-xs text-zinc-400 mt-0.5">
                     {todosCanais.length} canais ativos na transmissão oficial da Worscoi TV
                   </p>
                 </div>
@@ -420,7 +544,7 @@ export function WorscoiControlPanel({
                   type="button"
                   id="settings-btn-add-channel"
                   onClick={onOpenAddChannel}
-                  className="px-3.5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-xs flex items-center gap-1.5 transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer shadow-sm self-start sm:self-auto"
+                  className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-xs flex items-center gap-1.5 transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer shadow-sm self-start sm:self-auto"
                 >
                   <Plus className="w-3.5 h-3.5" />
                   <span>Adicionar Novo Canal</span>
@@ -428,10 +552,199 @@ export function WorscoiControlPanel({
               )}
             </div>
 
-            {/* LISTA DE CANAIS PERSONALIZADOS */}
+            {/* DESTAQUE OFICIAL: CANAIS Z SPORTS (ZAP ANGOLA) */}
+            <div className="p-4 sm:p-5 rounded-xl bg-gradient-to-br from-orange-950/20 via-zinc-950/70 to-zinc-950/90 border border-orange-500/30 space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-orange-500/20">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-lg bg-orange-500/20 border border-orange-500/40 flex items-center justify-center text-orange-400 shrink-0">
+                    <Zap className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-bold text-white flex items-center gap-2">
+                      <span>Canais Z Sports (ZAP Angola) — Grade Ativa</span>
+                      <span className="px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] font-semibold flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+                        Online
+                      </span>
+                    </h4>
+                    <p className="text-[11px] text-zinc-400">
+                      Transmissão oficial de LaLiga EA Sports, Girabola ZAP, UEFA Champions League e Serie A italiana
+                    </p>
+                  </div>
+                </div>
+                <span className="text-[11px] text-orange-400 font-semibold self-start sm:self-auto">
+                  3 Canais Configurados
+                </span>
+              </div>
+
+              {/* GRID DOS 3 CANAIS Z SPORTS */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
+                {zSportsChannels.map((ch) => (
+                  <div
+                    key={ch.id}
+                    className="p-3.5 rounded-xl bg-zinc-900/90 border border-zinc-800 hover:border-orange-500/40 transition-all flex flex-col justify-between group shadow-sm"
+                  >
+                    <div>
+                      <div className="flex items-start justify-between gap-2.5 mb-2.5">
+                        <div className="flex items-center gap-2.5">
+                          <img
+                            src={ch.logo}
+                            alt={ch.nome}
+                            className="w-10 h-10 rounded-lg bg-zinc-950 object-contain p-0.5 border border-zinc-700/60 shadow-sm shrink-0"
+                          />
+                          <div>
+                            <h5 className="text-xs font-bold text-white group-hover:text-orange-400 transition-colors">
+                              {ch.nome}
+                            </h5>
+                            <span className="text-[10px] text-zinc-400 block">
+                              {ch.qualidade} • {ch.rede}
+                            </span>
+                          </div>
+                        </div>
+                        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse mt-1" title="Sinal Ao Vivo" />
+                      </div>
+
+                      <p className="text-[11px] text-zinc-400 line-clamp-2 leading-relaxed mb-3">
+                        {ch.descricao}
+                      </p>
+
+                      <div className="flex flex-wrap gap-1 mb-3">
+                        {ch.competicoes.slice(0, 3).map((comp) => (
+                          <span
+                            key={comp}
+                            className="px-1.5 py-0.5 rounded bg-zinc-800/80 border border-zinc-700/40 text-[9.5px] text-zinc-300"
+                          >
+                            {comp}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="pt-2.5 border-t border-zinc-800/80 flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleTestPlay(ch)}
+                        className="flex-1 py-1.5 px-2 rounded-lg bg-orange-500 hover:bg-orange-400 text-black font-bold text-[11px] flex items-center justify-center gap-1.5 transition-all duration-150 hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+                        title="Iniciar reprodução no player"
+                      >
+                        <Play className="w-3 h-3 fill-black" />
+                        <span>Testar / Assistir</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleCopyUrl(ch.id, ch.url)}
+                        className="p-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white transition-colors cursor-pointer text-[10px] shrink-0"
+                        title="Copiar URL HLS"
+                      >
+                        {copiedChannelId === ch.id ? (
+                          <Check className="w-3.5 h-3.5 text-emerald-400" />
+                        ) : (
+                          <Copy className="w-3.5 h-3.5" />
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* 2. EXPLORADOR E BUSCA DE TODOS OS CANAIS DA GRADE */}
+            <div className="p-4 rounded-xl bg-zinc-950/60 border border-zinc-800/70 space-y-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                <div>
+                  <h4 className="text-xs font-bold text-white flex items-center gap-1.5">
+                    <Radio className="w-3.5 h-3.5 text-cyan-400" />
+                    <span>Explorador de Transmissões da Grade ({todosCanais.length} canais)</span>
+                  </h4>
+                  <p className="text-[11px] text-zinc-400">
+                    Consulte, filtre e teste qualquer canal ativo em tempo real
+                  </p>
+                </div>
+
+                {/* FILTROS RÁPIDOS */}
+                <div className="flex items-center gap-1.5">
+                  {(['Todos', 'Z Sports', 'Esportes', 'Outros'] as const).map((cat) => (
+                    <button
+                      key={cat}
+                      type="button"
+                      onClick={() => setChannelCategoryFilter(cat)}
+                      className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all cursor-pointer ${
+                        channelCategoryFilter === cat
+                          ? 'bg-cyan-500 text-black font-bold shadow-sm'
+                          : 'bg-zinc-850 text-zinc-400 hover:text-white hover:bg-zinc-800'
+                      }`}
+                    >
+                      {cat}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* BARRA DE PESQUISA */}
+              <div className="relative">
+                <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" />
+                <input
+                  type="text"
+                  value={channelSearchQuery}
+                  onChange={(e) => setChannelSearchQuery(e.target.value)}
+                  placeholder="Pesquisar canal por nome, ID ou rede (ex: Z Sports, LaLiga, TNT, ESPN)..."
+                  className="w-full pl-9 pr-3 py-2 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-cyan-500 transition-colors"
+                />
+              </div>
+
+              {/* LISTAGEM DOS CANAIS FILTRADOS */}
+              <div className="space-y-1.5 max-h-64 overflow-y-auto pr-1">
+                {filteredCatalogChannels.length === 0 ? (
+                  <div className="p-3 text-center text-xs text-zinc-500">
+                    Nenhum canal encontrado com os filtros atuais.
+                  </div>
+                ) : (
+                  filteredCatalogChannels.map((c) => (
+                    <div
+                      key={c.id}
+                      className="flex items-center justify-between p-2.5 rounded-xl bg-zinc-900/70 border border-zinc-800/80 hover:border-zinc-700 text-xs transition-colors"
+                    >
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        {c.logo ? (
+                          <img
+                            src={c.logo}
+                            alt={c.nome}
+                            className="w-6 h-6 rounded bg-zinc-950 object-contain p-0.5 border border-zinc-800 shrink-0"
+                          />
+                        ) : (
+                          <div className="w-2 h-2 rounded-full bg-cyan-400 shrink-0" />
+                        )}
+                        <div className="min-w-0 truncate">
+                          <span className="font-semibold text-white mr-2 truncate">
+                            {c.nome}
+                          </span>
+                          <span className="px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-400 text-[10px]">
+                            {c.categoria || 'Geral'}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => handleTestPlay(c)}
+                          className="px-2.5 py-1 rounded-lg bg-zinc-800 hover:bg-cyan-500 hover:text-black text-cyan-400 font-semibold text-[10.5px] flex items-center gap-1 transition-colors cursor-pointer"
+                        >
+                          <Play className="w-2.5 h-2.5 fill-current" />
+                          <span>Assistir</span>
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+
+            {/* 3. LISTA DE CANAIS PERSONALIZADOS */}
             <div>
               <div className="text-xs font-semibold text-zinc-300 mb-2 flex items-center justify-between">
-                <span>Canais Personalizados Adicionados:</span>
+                <span>Canais Personalizados Adicionados pelo Painel:</span>
                 <span className="text-[11px] text-zinc-400">
                   {customChannels.length} canal(is) configurado(s)
                 </span>
@@ -439,7 +752,7 @@ export function WorscoiControlPanel({
 
               {customChannels.length === 0 ? (
                 <div className="p-4 rounded-xl bg-zinc-950/60 border border-zinc-800/60 text-center text-xs text-zinc-400">
-                  Nenhum canal personalizado foi criado. Todos os canais padrão estão transmitindo sem interrupções.
+                  Nenhum canal personalizado foi criado. Os canais oficiais da Worscoi TV e Z Sports estão transmitindo sem interrupções.
                 </div>
               ) : (
                 <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
@@ -458,16 +771,26 @@ export function WorscoiControlPanel({
                         </div>
                       </div>
 
-                      {onRemoveCustomChannel && (
+                      <div className="flex items-center gap-2">
                         <button
                           type="button"
-                          onClick={() => onRemoveCustomChannel(canal.id)}
-                          className="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 hover:text-rose-300 transition-colors cursor-pointer"
-                          title="Remover canal"
+                          onClick={() => handleTestPlay(canal)}
+                          className="px-2 py-1 rounded-lg bg-zinc-800 hover:bg-cyan-500 hover:text-black text-cyan-400 font-semibold text-[10.5px] flex items-center gap-1 transition-colors cursor-pointer"
                         >
-                          <Trash2 className="w-3.5 h-3.5" />
+                          <Play className="w-2.5 h-2.5 fill-current" />
+                          <span>Assistir</span>
                         </button>
-                      )}
+                        {onRemoveCustomChannel && canal.id && (
+                          <button
+                            type="button"
+                            onClick={() => onRemoveCustomChannel(canal.id!)}
+                            className="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 hover:text-rose-300 transition-colors cursor-pointer"
+                            title="Remover canal"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -534,7 +857,10 @@ export function WorscoiControlPanel({
             </div>
           </div>
 
-          {/* 3. CONFIGURAÇÕES DE REGRAS DE TOKENS & LIMITE CUMULATIVO */}
+          {/* 3. INTEGRAÇÃO COM BANCO DE DADOS SUPABASE (POSTGRESQL & REALTIME) */}
+          <SupabaseStatusCard />
+
+          {/* 4. CONFIGURAÇÕES DE REGRAS DE TOKENS & LIMITE CUMULATIVO */}
           <div className="p-5 rounded-2xl bg-zinc-900/50 border border-zinc-800 space-y-4 shadow-sm">
             <div className="flex items-center gap-2.5 pb-3 border-b border-zinc-800/80">
               <div className="w-9 h-9 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">

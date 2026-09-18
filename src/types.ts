@@ -69,6 +69,56 @@ export interface AccessTokenRecord {
   notes?: string;
 }
 
+export type SubscriptionStatus = 'pending' | 'active' | 'expired' | 'cancelled';
+export type SubscriptionPaymentMethod = 'multicaixa' | 'paypay' | 'token' | 'manual' | 'cortesia';
+
+/**
+ * Definição estrutural da coleção 'subscriptions' no Firestore
+ */
+export interface SubscriptionDocument {
+  id: string;
+  userId: string;
+  userEmail?: string;
+  plan: SubscriptionPlanId;
+  planName: string;
+  priceAOA: number;
+  status: SubscriptionStatus;
+  paymentMethod: SubscriptionPaymentMethod;
+  durationDays: number;
+  startsAt: string;
+  expiresAt: string;
+  tokenCode?: string;
+  receiptNumber?: string;
+  notes?: string;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+/**
+ * Definição estrutural da coleção 'users' no Firestore
+ */
+export interface UserDocument {
+  id: string;
+  email: string;
+  displayName: string;
+  photoURL?: string;
+  role: 'user' | 'admin';
+  plan: SubscriptionPlanId;
+  planName: string;
+  planExpiresAt?: string | null;
+  planActivatedAt?: string | null;
+  activatedToken?: string | null;
+  favorites?: string[];
+  createdAt: string;
+  updatedAt?: string;
+  lastActive?: string;
+}
+
+/**
+ * Definição estrutural da coleção 'tokens' no Firestore
+ */
+export type TokenDocument = AccessTokenRecord;
+
 export interface SubscriberUser {
   id: string;
   email: string;

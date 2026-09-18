@@ -2,42 +2,109 @@
   "entities": {
     "users": {
       "title": "User Profiles",
-      "description": "User profiles authenticated via Firebase Auth",
+      "description": "User profiles authenticated via Firebase Auth with roles and subscription states",
       "type": "object",
       "properties": {
         "id": { "type": "string" },
         "email": { "type": "string" },
         "displayName": { "type": "string" },
         "photoURL": { "type": "string" },
-        "createdAt": { "type": "string", "format": "date-time" },
         "role": {
           "type": "string",
           "enum": ["user", "admin"],
-          "description": "Session type: normal user or administrator"
+          "description": "Session type: standard user or platform administrator"
         },
         "plan": {
           "type": "string",
-          "enum": ["free", "basico", "vip", "premium", "anual"],
-          "description": "Active subscription plan"
+          "enum": ["free", "diario", "basico", "vip", "premium", "anual"],
+          "description": "Active subscription plan code"
         },
-        "planName": { "type": "string" },
-        "planExpiresAt": { "type": "string" },
-        "activatedToken": { "type": "string" },
+        "planName": { "type": "string", "description": "Readable display name of the plan" },
+        "planExpiresAt": { "type": "string", "description": "ISO timestamp when the active plan expires" },
+        "planActivatedAt": { "type": "string", "description": "ISO timestamp when the plan was last activated" },
+        "activatedToken": { "type": "string", "description": "Last 5-character token redeemed by user" },
         "favorites": {
           "type": "array",
-          "items": { "type": "string" }
-        }
+          "items": { "type": "string" },
+          "description": "Array of favorited channel IDs"
+        },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
       },
       "required": ["id", "email", "createdAt"]
     },
-    "access_tokens": {
+    "subscriptions": {
+      "title": "Subscriptions",
+      "description": "Subscription records tracking user subscription plans, payment terms, and active duration",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Subscription record unique identifier" },
+        "userId": { "type": "string", "description": "Firebase Auth UID of the subscriber" },
+        "userEmail": { "type": "string", "description": "Email address of the subscriber" },
+        "plan": {
+          "type": "string",
+          "enum": ["diario", "basico", "vip", "premium", "anual"],
+          "description": "Subscribed plan tier"
+        },
+        "planName": { "type": "string", "description": "Human-friendly plan name" },
+        "priceAOA": { "type": "number", "description": "Price in Angolan Kwanzas (AOA)" },
+        "status": {
+          "type": "string",
+          "enum": ["pending", "active", "expired", "cancelled"],
+          "description": "Current status of the subscription"
+        },
+        "paymentMethod": {
+          "type": "string",
+          "enum": ["multicaixa", "paypay", "token", "manual", "cortesia"],
+          "description": "Payment gateway or method used"
+        },
+        "durationDays": { "type": "number", "description": "Duration in days granted by this subscription" },
+        "startsAt": { "type": "string", "format": "date-time", "description": "Start timestamp of the plan" },
+        "expiresAt": { "type": "string", "format": "date-time", "description": "Expiration timestamp of the plan" },
+        "tokenCode": { "type": "string", "description": "Optional token code associated with this activation" },
+        "receiptNumber": { "type": "string", "description": "Transaction reference or receipt code" },
+        "notes": { "type": "string", "description": "Administrative notes or remarks" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "userId", "plan", "status", "createdAt"]
+    },
+    "tokens": {
       "title": "Access Tokens",
-      "description": "5-character generated access tokens for subscription plans",
+      "description": "5-character access voucher tokens for subscription plans with cumulative stacking support",
       "type": "object",
       "properties": {
         "id": { "type": "string" },
-        "code": { "type": "string", "description": "5-character alphanumeric token" },
-        "plan": { "type": "string", "enum": ["basico", "vip", "premium", "anual"] },
+        "code": { "type": "string", "description": "5-character alphanumeric uppercase token" },
+        "plan": {
+          "type": "string",
+          "enum": ["diario", "basico", "vip", "premium", "anual"],
+          "description": "Subscription plan tier unlocked by this token"
+        },
+        "planName": { "type": "string" },
+        "durationDays": { "type": "number", "description": "Days added to user's access limit" },
+        "status": {
+          "type": "string",
+          "enum": ["active", "used", "revoked"],
+          "description": "Token lifecycle status"
+        },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "createdBy": { "type": "string", "description": "Admin email who minted the token" },
+        "usedAt": { "type": "string", "description": "ISO timestamp when the token was redeemed" },
+        "usedByUserId": { "type": "string", "description": "UID of the user who redeemed the token" },
+        "usedByEmail": { "type": "string", "description": "Email of the user who redeemed the token" },
+        "notes": { "type": "string", "description": "Campaign or receipt notes" }
+      },
+      "required": ["code", "plan", "status", "createdAt"]
+    },
+    "access_tokens": {
+      "title": "Access Tokens (Alias)",
+      "description": "Direct collection alias for access token redemption indexed by token code",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "code": { "type": "string" },
+        "plan": { "type": "string", "enum": ["diario", "basico", "vip", "premium", "anual"] },
         "planName": { "type": "string" },
         "durationDays": { "type": "number" },
         "status": { "type": "string", "enum": ["active", "used", "revoked"] },
@@ -65,7 +132,7 @@
     },
     "channel_stats": {
       "title": "Channel Interaction Stats",
-      "description": "Real-time count of adoros (likes) and comments for each channel",
+      "description": "Real-time count of likes and comments for each channel",
       "type": "object",
       "properties": {
         "channelId": { "type": "string" },
@@ -100,25 +167,24 @@
         "userPlan": { "type": "string" },
         "text": { "type": "string" },
         "createdAt": { "type": "string", "format": "date-time" },
-        "parentId": { "type": "string", "description": "Parent comment ID for threaded replies" },
-        "replyToUserName": { "type": "string", "description": "Name of user being replied to" },
-        "replyToUserId": { "type": "string", "description": "ID of user being replied to" },
-        "adorosCount": { "type": "number", "description": "Number of adoro reactions on this comment" },
+        "parentId": { "type": "string" },
+        "replyToUserName": { "type": "string" },
+        "replyToUserId": { "type": "string" },
+        "adorosCount": { "type": "number" },
         "adorosBy": {
           "type": "array",
-          "items": { "type": "string" },
-          "description": "User IDs who liked/adoraram this comment"
+          "items": { "type": "string" }
         }
       },
       "required": ["channelId", "userId", "userName", "text", "createdAt"]
     },
     "notifications": {
       "title": "User Notifications",
-      "description": "System and admin notifications sent to users (bonus, activation, plan warnings, expiration)",
+      "description": "System and admin notifications sent to users",
       "type": "object",
       "properties": {
         "id": { "type": "string" },
-        "userId": { "type": "string", "description": "Target user ID, or 'all' for broadcast" },
+        "userId": { "type": "string" },
         "userEmail": { "type": "string" },
         "type": {
           "type": "string",
@@ -128,8 +194,8 @@
         "message": { "type": "string" },
         "read": { "type": "boolean" },
         "createdAt": { "type": "string", "format": "date-time" },
-        "activatedAt": { "type": "string", "description": "Date and time when plan was activated" },
-        "expiresAt": { "type": "string", "description": "Date when plan expires" },
+        "activatedAt": { "type": "string" },
+        "expiresAt": { "type": "string" },
         "planName": { "type": "string" },
         "bonusCode": { "type": "string" },
         "bonusDays": { "type": "number" },
@@ -138,30 +204,42 @@
       "required": ["userId", "type", "title", "message", "createdAt"]
     }
   },
-  "rules": {
-    "users": {
-      "read": "auth != null",
-      "write": "auth != null && auth.uid == resource.id"
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "users",
+      "description": "User profiles, roles, and plan limits indexed by Auth UID"
     },
-    "notifications": {
-      "read": "true",
-      "write": "true"
+    "/subscriptions/{subscriptionId}": {
+      "schema": "subscriptions",
+      "description": "User subscription purchases, activation history, and billing records"
     },
-    "device_trials": {
-      "read": "true",
-      "write": "true"
+    "/tokens/{tokenId}": {
+      "schema": "tokens",
+      "description": "5-character access voucher tokens for subscription plans"
     },
-    "channel_stats": {
-      "read": "true",
-      "write": "true"
+    "/access_tokens/{tokenId}": {
+      "schema": "access_tokens",
+      "description": "Active and redeemed access tokens indexed by token code"
     },
-    "channel_likes": {
-      "read": "true",
-      "write": "true"
+    "/device_trials/{deviceId}": {
+      "schema": "device_trials",
+      "description": "Anti-abuse hardware trial claims"
     },
-    "channel_comments": {
-      "read": "true",
-      "write": "true"
+    "/channel_stats/{channelId}": {
+      "schema": "channel_stats",
+      "description": "Aggregate statistics for channel interactions"
+    },
+    "/channel_likes/{likeId}": {
+      "schema": "channel_likes",
+      "description": "Individual channel likes"
+    },
+    "/channel_comments/{commentId}": {
+      "schema": "channel_comments",
+      "description": "Community comment threads per channel"
+    },
+    "/notifications/{notificationId}": {
+      "schema": "notifications",
+      "description": "Broadcast and targeted user notifications"
     }
   }
 }

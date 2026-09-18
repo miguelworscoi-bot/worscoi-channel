@@ -780,6 +780,23 @@ export default function Home() {
                   onOpenTokenGenerator={() => setIsSubscribersModalOpen(true)}
                   onSelectPlan={() => setIsPaymentModalOpen(true)}
                   onOpenCreateNotification={() => setIsCreateNotificationModalOpen(true)}
+                  todosCanais={todosCanais}
+                  customChannels={customChannels}
+                  onOpenAddChannel={() => setIsModalOpen(true)}
+                  onRemoveCustomChannel={(id) => {
+                    const atualizados = customChannels.filter((c) => c.id !== id);
+                    setCustomChannels(atualizados);
+                    try {
+                      localStorage.setItem(LOCAL_STORAGE_CUSTOM_KEY, JSON.stringify(atualizados));
+                    } catch {
+                      // Ignora
+                    }
+                  }}
+                  onPlayChannel={(canal) => {
+                    setCanalAtivo(canal);
+                    setStreamIndex(0);
+                    setCurrentView('explorar');
+                  }}
                 />
               </motion.div>
             )}
@@ -1037,6 +1054,12 @@ export default function Home() {
         onOpenSubscribers={() => setIsSubscribersModalOpen(true)}
         onOpenPaymentPlans={() => setIsPaymentModalOpen(true)}
         onOpenCreateNotification={() => setIsCreateNotificationModalOpen(true)}
+        onPlayChannel={(canal) => {
+          setCanalAtivo(canal);
+          setStreamIndex(0);
+          setCurrentView('explorar');
+          setIsAdminPanelOpen(false);
+        }}
       />
 
       {/* MODAL DE CRIAÇÃO E DISPARO DE NOTIFICAÇÃO GLOBAL */}

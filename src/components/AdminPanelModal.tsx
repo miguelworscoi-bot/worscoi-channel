@@ -20,6 +20,8 @@ import {
   Radio,
   Sparkles,
   History,
+  Play,
+  Zap,
 } from 'lucide-react';
 import { Canal, NotificationType, UserNotification } from '@/types';
 import { useAuth, UserRole } from '@/context/AuthContext';
@@ -31,6 +33,11 @@ import {
   formatFriendlyDateTime,
 } from '@/services/notificationService';
 import { useNotifications } from '@/context/NotificationContext';
+import {
+  LOGO_Z_SPORTS_LALIGA,
+  LOGO_Z_SPORT_1,
+  LOGO_Z_SPORT_2,
+} from '@/utils/channelLogoUtils';
 
 interface AdminPanelModalProps {
   isOpen: boolean;
@@ -42,6 +49,7 @@ interface AdminPanelModalProps {
   onOpenSubscribers: () => void;
   onOpenPaymentPlans?: () => void;
   onOpenCreateNotification?: () => void;
+  onPlayChannel?: (canal: Canal) => void;
 }
 
 export function AdminPanelModal({
@@ -54,6 +62,7 @@ export function AdminPanelModal({
   onOpenSubscribers,
   onOpenPaymentPlans,
   onOpenCreateNotification,
+  onPlayChannel,
 }: AdminPanelModalProps) {
   const { user, userProfile, role, isAdmin, switchRole } = useAuth();
   const { refreshNotifications } = useNotifications();
@@ -624,8 +633,88 @@ export function AdminPanelModal({
 
           {/* ABA 2: CANAIS */}
           {activeTab === 'channels' && (
-            <div className="space-y-3 animate-in fade-in duration-150">
-              <div className="flex items-center justify-between">
+            <div className="space-y-4 animate-in fade-in duration-150">
+              {/* DESTAQUE CANAIS Z SPORTS */}
+              <div className="p-3.5 rounded-xl bg-orange-950/20 border border-orange-500/30 space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Zap className="w-3.5 h-3.5 text-orange-400" />
+                    <span className="text-xs font-bold text-white">Canais Z Sports Ativos</span>
+                  </div>
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-semibold">
+                    1080p FHD
+                  </span>
+                </div>
+
+                <div className="space-y-1.5">
+                  {[
+                    {
+                      id: 'z-sports-laliga-hd',
+                      nome: 'Z Sports LaLiga HD',
+                      desc: 'LaLiga EA Sports, Real Madrid e Barcelona',
+                      logo: LOGO_Z_SPORTS_LALIGA,
+                      url: 'https://dai.google.com/linear/hls/event/7f3Wv6f7QEKfQna22jHqLQ/master.m3u8?channel=z-sports-laliga-hd',
+                    },
+                    {
+                      id: 'z-sport-1-hd',
+                      nome: 'Z Sport 1 HD',
+                      desc: 'Champions League, Girabola ZAP e Premier League',
+                      logo: LOGO_Z_SPORT_1,
+                      url: 'https://dai.google.com/linear/hls/event/7f3Wv6f7QEKfQna22jHqLQ/master.m3u8?channel=z-sport-1-hd',
+                    },
+                    {
+                      id: 'z-sport-2-hd',
+                      nome: 'Z Sport 2 HD',
+                      desc: 'Serie A Italiana, NBA, Unitel Basket e UFC',
+                      logo: LOGO_Z_SPORT_2,
+                      url: 'https://dai.google.com/linear/hls/event/7f3Wv6f7QEKfQna22jHqLQ/master.m3u8?channel=z-sport-2-hd',
+                    },
+                  ].map((zCh) => (
+                    <div
+                      key={zCh.id}
+                      className="flex items-center justify-between p-2 rounded-lg bg-zinc-900/80 border border-zinc-800 text-xs hover:border-orange-500/40 transition-colors"
+                    >
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <img
+                          src={zCh.logo}
+                          alt={zCh.nome}
+                          className="w-7 h-7 rounded bg-zinc-950 object-contain p-0.5 border border-zinc-700/60 shrink-0"
+                        />
+                        <div className="min-w-0 truncate">
+                          <p className="font-bold text-white text-[11px] truncate">{zCh.nome}</p>
+                          <p className="text-[9.5px] text-zinc-400 truncate">{zCh.desc}</p>
+                        </div>
+                      </div>
+
+                      {onPlayChannel && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const found = todosCanais.find((c) => c.id === zCh.id) || {
+                              id: zCh.id,
+                              nome: zCh.nome,
+                              categoria: 'Esportes',
+                              url: zCh.url,
+                              logo: zCh.logo,
+                              pais: 'AO',
+                              rede: 'ZAP',
+                              grupo: 'ZAP Angola',
+                            };
+                            onClose();
+                            onPlayChannel(found as Canal);
+                          }}
+                          className="px-2 py-1 rounded bg-orange-500 hover:bg-orange-400 text-black font-bold text-[10px] flex items-center gap-1 transition-colors cursor-pointer shrink-0"
+                        >
+                          <Play className="w-2.5 h-2.5 fill-black" />
+                          <span>Assistir</span>
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between pt-1">
                 <span className="text-xs font-bold text-zinc-400">
                   Grade Geral ({todosCanais.length} canais ativos)
                 </span>
