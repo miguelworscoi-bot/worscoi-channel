@@ -147,17 +147,9 @@ export function WorscoiControlPanel({
       {/* TÍTULO E AÇÕES SUPERIORES DO PAINEL DE CONTROLE */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pb-3 border-b border-zinc-900/90">
         <div className="text-center sm:text-left">
-          <div className="flex items-center justify-center sm:justify-start gap-2.5">
-            <h1 className="text-lg sm:text-xl font-bold text-white tracking-tight">
-              Painel de Controle
-            </h1>
-            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
-              {role === 'admin' ? 'Administrador' : 'Espectador'}
-            </span>
-          </div>
-          <p className="text-xs text-zinc-400 mt-1">
-            Gestão de canais, métricas de assinantes, configurações da plataforma e geração de recibos
-          </p>
+          <h1 className="text-lg sm:text-xl font-bold text-white tracking-tight">
+            Painel de Controle
+          </h1>
         </div>
 
         {/* BOTÕES DE AÇÃO NO CABEÇALHO */}

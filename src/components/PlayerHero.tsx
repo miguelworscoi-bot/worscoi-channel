@@ -25,6 +25,7 @@ import {
   Film,
   Heart,
   MessageCircle,
+  ExternalLink,
 } from 'lucide-react';
 import { Canal, LatencyMode } from '@/types';
 import { motion, AnimatePresence } from 'motion/react';
@@ -871,6 +872,7 @@ export function PlayerHero({
       >
         {/* CONTAINER DO VÍDEO COM CANTOS ARREDONDADOS E LINHA DE PROGRESSO */}
         <div
+          id="tour-player-screen"
           ref={videoContainerRef}
           className={
             isMiniMode
@@ -976,7 +978,7 @@ export function PlayerHero({
                         return;
                       }
 
-                      onPlayerError(err);
+                      onPlayerErrorRef.current?.(err);
                     }, 0);
                   },
                 }
@@ -1193,6 +1195,17 @@ export function PlayerHero({
                       <Film className="w-3.5 h-3.5" />
                       <span>Ver Vídeos</span>
                     </button>
+                  )}
+                  {isYouTubeChannel && hasYouTubeEmbedError && (
+                    <a
+                      href={activeRawStreamUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-3 py-1.5 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition shadow-sm"
+                    >
+                      <ExternalLink className="w-3.5 h-3.5" />
+                      <span>Assistir no YouTube</span>
+                    </a>
                   )}
                 </div>
               )}

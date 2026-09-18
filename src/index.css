@@ -57,9 +57,11 @@ span.text-secondary {
 /* Exceção explícita e única: Logomarca Worscoi com seu estilo cursivo original preservado */
 .font-logomark,
 .logomark-font,
+.font-brittany,
+.font-brittany-signature,
 [data-logomark="true"],
 [data-logomark="true"] * {
-  font-family: 'Brittany Signature', 'Caveat', 'Dancing Script', cursive !important;
+  font-family: 'Brittany Signature', 'Brittany', 'Caveat', 'Dancing Script', cursive !important;
 }
 
 @layer utilities {

@@ -46,25 +46,17 @@ export function exportReceiptToPdf(receipt: ReceiptData): void {
   // ==========================================
   let cursorY = 20;
 
-  // Marca / Logo Worscoi TV (Ícone escuro discreto e elegante)
-  doc.setFillColor(15, 23, 42); // slate-900
-  doc.roundedRect(margin, cursorY - 3, 11, 11, 2, 2, 'F');
-  doc.setTextColor(255, 255, 255);
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(11);
-  doc.text('W', margin + 5.5, cursorY + 4.5, { align: 'center' });
-
   // Nome da Empresa e Subtítulo
   doc.setTextColor(15, 23, 42); // slate-900
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(14);
-  doc.text('WORSCOI TV', margin + 15, cursorY + 2);
+  doc.text('WORSCOI TV', margin, cursorY + 2);
 
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(8);
   doc.setTextColor(100, 116, 139); // slate-500
-  doc.text('Tecnologia de Transmissao & Streaming Digital', margin + 15, cursorY + 6.5);
-  doc.text('Luanda, Angola  |  Suporte Oficial: +244 942 472 983', margin + 15, cursorY + 10.5);
+  doc.text('Tecnologia de Transmissao & Streaming Digital', margin, cursorY + 6.5);
+  doc.text('Luanda, Angola  |  Suporte Oficial: +244 942 472 983', margin, cursorY + 10.5);
 
   // Informações do Documento à Direita
   doc.setTextColor(15, 23, 42);
@@ -79,13 +71,13 @@ export function exportReceiptToPdf(receipt: ReceiptData): void {
   doc.text(`Data: ${cleanTextForPdf(receipt.date)} as ${cleanTextForPdf(receipt.time)}`, pageWidth - margin, cursorY + 10.5, { align: 'right' });
 
   // Badge de Status: PAGO & LIQUIDADO
-  doc.setFillColor(240, 253, 244); // emerald-50
-  doc.setDrawColor(187, 247, 208); // emerald-200
+  doc.setFillColor(254, 242, 244); // soft #ed3c5c tint
+  doc.setDrawColor(254, 205, 214); // soft #ed3c5c border
   doc.roundedRect(pageWidth - margin - 42, cursorY + 13, 42, 6.5, 1.5, 1.5, 'FD');
 
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(7.5);
-  doc.setTextColor(21, 128, 61); // emerald-700
+  doc.setTextColor(237, 60, 92); // #ed3c5c
   doc.text('STATUS: PAGO & LIQUIDADO', pageWidth - margin - 21, cursorY + 17.5, { align: 'center' });
 
   cursorY += 25;
@@ -246,21 +238,20 @@ export function exportReceiptToPdf(receipt: ReceiptData): void {
     const tokenCodeClean = cleanTextForPdf(receipt.tokenCode).toUpperCase();
     const tokenBoxHeight = 24;
 
-    doc.setFillColor(240, 253, 244); // emerald-50 suave
-    doc.setDrawColor(167, 243, 208); // emerald-200
+    doc.setFillColor(254, 242, 244); // soft #ed3c5c tint
+    doc.setDrawColor(254, 205, 214); // soft #ed3c5c border
     doc.roundedRect(margin, cursorY, contentWidth, tokenBoxHeight, 2, 2, 'FD');
 
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(8.5);
-    doc.setTextColor(21, 128, 61); // emerald-700
+    doc.setTextColor(237, 60, 92); // #ed3c5c
     doc.text('CHAVE TOKEN OFICIAL DE ATIVACAO IMEDIATA', margin + 6, cursorY + 7);
 
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(7.5);
-    doc.setTextColor(22, 101, 52); // emerald-800
+    doc.setTextColor(159, 18, 57); // dark #ed3c5c variant for readability
     doc.text('Insira este codigo na tela inicial da Worscoi TV para liberar o seu acesso:', margin + 6, cursorY + 12);
     doc.setFontSize(7);
-    doc.setTextColor(74, 222, 128);
     doc.setTextColor(100, 116, 139);
     doc.text('Chave unica vinculada a este recibo e plano contratado.', margin + 6, cursorY + 18);
 
@@ -271,12 +262,12 @@ export function exportReceiptToPdf(receipt: ReceiptData): void {
     const tokenPillY = cursorY + 6;
 
     doc.setFillColor(255, 255, 255);
-    doc.setDrawColor(187, 247, 208);
+    doc.setDrawColor(254, 205, 214);
     doc.roundedRect(tokenPillX, tokenPillY, tokenPillW, tokenPillH, 1.5, 1.5, 'FD');
 
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(13);
-    doc.setTextColor(6, 95, 70); // emerald-800
+    doc.setTextColor(237, 60, 92); // #ed3c5c
     doc.text(tokenCodeClean, tokenPillX + tokenPillW / 2, tokenPillY + 8, { align: 'center' });
 
     cursorY += tokenBoxHeight + 8;

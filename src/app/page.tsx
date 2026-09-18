@@ -1,9 +1,9 @@
 'use client';
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Canal, LatencyMode, WorscoiView, FiltroAtivo } from '@/types';
+import { Canal, LatencyMode, VideoQuality, WorscoiView, FiltroAtivo } from '@/types';
 import { Tv } from 'lucide-react';
-import { LOCAL_STORAGE_LATENCY_KEY, getEmergencyFallbackStream } from '@/utils/streamUtils';
+import { LOCAL_STORAGE_LATENCY_KEY, LOCAL_STORAGE_QUALITY_KEY, getEmergencyFallbackStream } from '@/utils/streamUtils';
 import { CANAIS_PADRAO } from '@/app/api/canais/route';
 import { WorscoiSidebar } from '@/components/WorscoiSidebar';
 import { WorscoiTopBar } from '@/components/WorscoiTopBar';
@@ -28,6 +28,7 @@ import { NotificationToast } from '@/components/NotificationToast';
 import { CookieConsentBanner } from '@/components/CookieConsentBanner';
 import { PrivacyPolicyModal } from '@/components/PrivacyPolicyModal';
 import { LandingScreen } from '@/components/LandingScreen';
+import { WorscoiFloatingTour } from '@/components/WorscoiFloatingTour';
 import { useAuth } from '@/context/AuthContext';
 import { useNotifications } from '@/context/NotificationContext';
 import { autoplayQueueService } from '@/services/autoplayQueueService';
@@ -46,6 +47,7 @@ const LOCAL_STORAGE_CUSTOM_KEY = 'playsports_custom_channels';
 export default function Home() {
   const {
     user,
+    userProfile,
     isAdmin,
     signOut,
     isAccountClosedDueToExpiration,
@@ -53,6 +55,9 @@ export default function Home() {
     isFreePlanBlocked,
     freePlanBlockedDetails,
     closeFreePlanBlockedAlert,
+    shouldShowFirstTimeTutorial,
+    closeTutorialModal,
+    openTutorialManually,
   } = useAuth();
   const {
     isOpen: isNotificationsOpen,
@@ -75,6 +80,7 @@ export default function Home() {
   const [failoverNotice, setFailoverNotice] = useState<string | null>(null);
   const [useProxy, setUseProxy] = useState(false);
   const [latencyMode, setLatencyMode] = useState<LatencyMode>('economy');
+  const [videoQuality, setVideoQuality] = useState<VideoQuality>('auto');
   const [isCinemaMode, setIsCinemaMode] = useState(false);
 
   // Modais do sistema
@@ -131,6 +137,17 @@ export default function Home() {
         storedLatency === 'low-latency'
       ) {
         setLatencyMode(storedLatency);
+      }
+
+      const storedQuality = localStorage.getItem(LOCAL_STORAGE_QUALITY_KEY);
+      if (
+        storedQuality === 'auto' ||
+        storedQuality === '360p' ||
+        storedQuality === '480p' ||
+        storedQuality === '720p' ||
+        storedQuality === '1080p'
+      ) {
+        setVideoQuality(storedQuality as VideoQuality);
       }
     } catch {
       // Ignora erro de acesso ao localStorage
@@ -247,7 +264,7 @@ export default function Home() {
       setRecentChannels(updated);
       recordChannelSelection(canalAtivo, user?.uid);
     }
-  }, [canalAtivo, user?.uid]);
+  }, [canalAtivo?.id, canalAtivo?.url, user?.uid]);
 
   const handleClearRecentChannels = useCallback(() => {
     clearStoredRecentChannels();
@@ -294,23 +311,40 @@ export default function Home() {
     setTimeout(() => {
       if (!canalAtivo) return;
       const streams = [canalAtivo.url, ...(canalAtivo.backupUrls || [])];
-      const isYouTube =
+      const currentStream = streams[streamIndex] || canalAtivo.url;
+      const isCurrentStreamYouTube =
         canalAtivo.categoria === 'YouTube' ||
         canalAtivo.rede === 'YouTube' ||
-        canalAtivo.url.includes('youtube.com') ||
-        canalAtivo.url.includes('youtu.be');
+        currentStream.includes('youtube.com') ||
+        currentStream.includes('youtu.be');
 
-      if (isYouTube) {
+      if (isCurrentStreamYouTube) {
         const nextIndex = streamIndex + 1;
         if (nextIndex < streams.length) {
           setFailoverNotice(
-            `Alternando para vídeo alternativo (${nextIndex + 1}/${streams.length})...`
+            `Alternando para sinal alternativo (${nextIndex + 1}/${streams.length})...`
           );
           setStreamIndex(nextIndex);
           setTimeout(() => setFailoverNotice(null), 4000);
-        } else {
-          setFailoverNotice('Vídeo com restrição no player.');
+          return;
         }
+
+        const emergencyFallback = getEmergencyFallbackStream(canalAtivo.categoria);
+        if (emergencyFallback && !streams.includes(emergencyFallback)) {
+          setFailoverNotice('Conectando ao sinal de contingência da categoria...');
+          const currentBackups = canalAtivo.backupUrls || [];
+          const updatedCanal: Canal = {
+            ...canalAtivo,
+            backupUrls: [...currentBackups, emergencyFallback],
+          };
+          setCanalAtivo(updatedCanal);
+          setStreamIndex(updatedCanal.backupUrls.length);
+          setTimeout(() => setFailoverNotice(null), 4000);
+          return;
+        }
+
+        setFailoverNotice('Vídeo com restrição no player.');
+        setTimeout(() => setFailoverNotice(null), 4000);
         return;
       }
 
@@ -394,6 +428,17 @@ export default function Home() {
         return nextMode;
       });
     }, 0);
+  }, []);
+
+  // Seleciona a qualidade do vídeo (auto, 360p, 480p, 720p, 1080p)
+  // O modo 360p garante reprodução resiliente mesmo com conexão fraca ou sinal ruim
+  const handleSelectVideoQuality = useCallback((quality: VideoQuality) => {
+    setVideoQuality(quality);
+    try {
+      localStorage.setItem(LOCAL_STORAGE_QUALITY_KEY, quality);
+    } catch {
+      // Ignora erro
+    }
   }, []);
 
   const handleDeleteCustomChannel = (id: string, e: React.MouseEvent) => {
@@ -480,6 +525,7 @@ export default function Home() {
   // Se o usuário estiver autenticado (não convidado espectador), avança para o app
   useEffect(() => {
     if (
+      isLandingOpen &&
       user &&
       user.email &&
       user.email !== 'espectador@worscoi.tv' &&
@@ -493,7 +539,7 @@ export default function Home() {
         // Ignora erro
       }
     }
-  }, [user]);
+  }, [user?.email, user?.isAnonymous, isLandingOpen]);
 
   // Se o usuário não for administrador, não tem acesso às telas de painel ou assinantes
   useEffect(() => {
@@ -951,6 +997,10 @@ export default function Home() {
           setPrivacyModalDefaultTab('terms');
           setIsPrivacyModalOpen(true);
         }}
+        onOpenTutorial={() => {
+          setIsUserProfileModalOpen(false);
+          openTutorialManually();
+        }}
       />
 
       {/* MODAL DE ADMIN */}
@@ -1032,6 +1082,13 @@ export default function Home() {
         isOpen={isPrivacyModalOpen}
         onClose={() => setIsPrivacyModalOpen(false)}
         defaultTab={privacyModalDefaultTab}
+      />
+
+      {/* GUIA / TUTORIAL FLUTUANTE NA PRÓPRIA PÁGINA: APRESENTADO NA PRIMEIRA SESSÃO DO USUÁRIO */}
+      <WorscoiFloatingTour
+        isOpen={shouldShowFirstTimeTutorial}
+        onClose={closeTutorialModal}
+        userName={userProfile?.displayName}
       />
     </main>
   );

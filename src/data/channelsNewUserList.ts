@@ -118,8 +118,9 @@ export const CANAIS_NOVOS_SOLICITADOS: Canal[] = [
     id: 'tpa-noticias-angola',
     nome: 'TPA Notícias',
     logo: LOGO_TPA_NOTICIAS,
-    url: 'https://www.youtube.com/watch?v=GZxNNcMv0GE',
+    url: 'https://www.youtube.com/watch?v=8JINyFt126M',
     backupUrls: [
+      'https://vivo.canaloncelive.tv/secureoncedos/oncedigital/playlist.m3u8',
       'https://streaming-live.rtp.pt/livetvhlsDVR/rtpnHDdvr.smil/playlist.m3u8',
       'https://streaming.tpa.ao/hls/tpanoticias.m3u8',
     ],

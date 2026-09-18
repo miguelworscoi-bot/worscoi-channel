@@ -62,6 +62,7 @@ export function WorscoiTopBar({
       <div className="flex items-center gap-2 sm:gap-3">
         <button
           type="button"
+          id="tour-mobile-menu-btn"
           onClick={onOpenMobileMenu}
           className="w-9 h-9 rounded-full flex items-center justify-center bg-zinc-900/90 border border-zinc-800 text-zinc-300 hover:text-white hover:bg-zinc-800 hover:scale-115 active:scale-90 lg:hidden transition-all duration-200 cursor-pointer shadow-sm"
           title="Abrir menu de canais"
@@ -72,40 +73,32 @@ export function WorscoiTopBar({
         <div className="lg:hidden">
           <WorscoiLogo size="sm" />
         </div>
-
-        {currentView !== 'explorar' && currentView !== 'filmoteca' && (
-          <div className="hidden lg:flex items-center gap-2 text-xs font-semibold text-zinc-400 px-3 py-1.5 rounded-full bg-zinc-900/80 border border-zinc-800/80 shadow-sm">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="capitalize text-zinc-200 font-bold">
-              {currentView === 'painel'
-                ? 'Painel de Gestão'
-                : 'Assinantes & Chaves'}
-            </span>
-          </div>
-        )}
       </div>
 
       {/* LADO DIREITO: CRONÔMETRO AO VIVO / PLANOS + ATALHO CHAVE + NOTIFICAÇÕES + AVATAR NO ESTILO TIKTOK */}
       <div className="flex items-center gap-2 sm:gap-2.5">
         {/* CRONÔMETRO DE ASSINATURA EM TEMPO REAL (OU PLANOS SE NÃO LOGADO) */}
-        {userProfile ? (
-          <SubscriptionCountdownBadge onClick={onOpenPlans} />
-        ) : (
-          <button
-            type="button"
-            onClick={onOpenPlans}
-            className="group flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-900/90 hover:bg-zinc-800 text-zinc-200 hover:text-white border border-zinc-800 hover:border-amber-400/50 text-xs font-bold transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer shadow-sm"
-          >
-            <div className="w-5 h-5 rounded-full bg-amber-400/15 border border-amber-400/40 flex items-center justify-center transition-all duration-200 group-hover:scale-120 group-hover:rotate-6">
-              <Crown className="w-3 h-3 text-amber-400" />
-            </div>
-            <span>Planos</span>
-          </button>
-        )}
+        <div id="tour-plans-btn" className="inline-flex">
+          {userProfile ? (
+            <SubscriptionCountdownBadge onClick={onOpenPlans} />
+          ) : (
+            <button
+              type="button"
+              onClick={onOpenPlans}
+              className="group flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-900/90 hover:bg-zinc-800 text-zinc-200 hover:text-white border border-zinc-800 hover:border-amber-400/50 text-xs font-bold transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer shadow-sm"
+            >
+              <div className="w-5 h-5 rounded-full bg-amber-400/15 border border-amber-400/40 flex items-center justify-center transition-all duration-200 group-hover:scale-120 group-hover:rotate-6">
+                <Crown className="w-3 h-3 text-amber-400" />
+              </div>
+              <span>Planos</span>
+            </button>
+          )}
+        </div>
 
         {/* BOTÃO RESGATAR TOKEN */}
         <button
           type="button"
+          id="tour-redeem-btn"
           onClick={onOpenRedeemToken}
           className="hidden sm:flex group items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-900/90 hover:bg-zinc-800 text-zinc-300 hover:text-white border border-zinc-800/80 hover:border-zinc-700 text-xs font-semibold transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer shadow-sm"
           title="Resgatar chave ou código de acesso"
@@ -120,6 +113,7 @@ export function WorscoiTopBar({
         {isAdmin && onOpenAdminPanel && (
           <button
             type="button"
+            id="tour-admin-btn"
             onClick={onOpenAdminPanel}
             className="hidden sm:flex group items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-900/90 hover:bg-zinc-800 text-zinc-300 hover:text-white border border-zinc-700/80 hover:border-emerald-400/50 text-xs font-semibold transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer shadow-sm"
             title="Painel Administrativo"
@@ -134,6 +128,7 @@ export function WorscoiTopBar({
         {/* BOTÃO CENTRAL DE NOTIFICAÇÕES (BÔNUS, EXPIRAÇÃO, ATIVAÇÃO) */}
         <button
           type="button"
+          id="tour-notifications-btn"
           onClick={() => {
             if (onOpenNotifications) {
               onOpenNotifications();
@@ -157,6 +152,7 @@ export function WorscoiTopBar({
         {/* AVATAR DO USUÁRIO OU ENTRAR */}
         {!isGuestOrNull ? (
           <div
+            id="tour-profile-btn"
             onClick={onOpenUserProfile}
             className="relative cursor-pointer group"
             title={`Perfil de ${displayName}`}
@@ -172,6 +168,7 @@ export function WorscoiTopBar({
         ) : (
           <button
             type="button"
+            id="tour-profile-btn"
             onClick={onOpenAuth}
             className="group flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white hover:bg-zinc-200 text-zinc-950 font-bold text-xs shadow-md transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer"
           >

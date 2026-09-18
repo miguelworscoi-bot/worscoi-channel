@@ -11,14 +11,20 @@ import {
   Leaf,
   Smartphone,
   Gauge,
+  Tv,
+  SignalLow,
+  Sparkles,
 } from 'lucide-react';
-import { LatencyMode } from '@/types';
+import { LatencyMode, VideoQuality } from '@/types';
+import { VIDEO_QUALITY_OPTIONS } from '@/utils/streamUtils';
 
 interface PlayerSettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
   latencyMode: LatencyMode;
   onSelectLatencyMode: (mode: LatencyMode) => void;
+  videoQuality?: VideoQuality;
+  onSelectVideoQuality?: (quality: VideoQuality) => void;
   useProxy: boolean;
   onToggleProxy: () => void;
   streamIndex?: number;
@@ -33,6 +39,8 @@ export function PlayerSettingsModal({
   onClose,
   latencyMode,
   onSelectLatencyMode,
+  videoQuality = 'auto',
+  onSelectVideoQuality,
   useProxy,
   onToggleProxy,
   streamIndex = 0,
@@ -51,26 +59,30 @@ export function PlayerSettingsModal({
     >
       <div
         id="player-settings-modal-content"
-        className="w-full max-w-xl bg-[#121214] border border-zinc-800/90 rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200"
+        className="w-full max-w-xl bg-[#121214] border border-zinc-800/90 rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]"
         onClick={(e) => e.stopPropagation()}
       >
         {/* HEADER */}
-        <div className="p-5 sm:p-6 border-b border-zinc-800/80 flex items-center justify-between">
+        <div className="p-5 sm:p-6 border-b border-zinc-800/80 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-zinc-900 border border-zinc-700/80 flex items-center justify-center text-[#00E676] shadow-md">
               <Sliders className="w-5 h-5" />
             </div>
             <div>
               <h3 className="text-base sm:text-lg font-bold text-white tracking-tight flex items-center gap-2">
-                <span>Conexão & Economia de Internet</span>
-                {quality && (
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-zinc-800 text-[#00E676] border border-[#00E676]/30">
-                    {quality}
+                <span>Qualidade & Sinal de Reprodução</span>
+                {videoQuality && videoQuality !== 'auto' ? (
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-[#00E676] border border-[#00E676]/30 uppercase">
+                    {videoQuality}
+                  </span>
+                ) : (
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-300 border border-zinc-700">
+                    {quality || 'Auto'}
                   </span>
                 )}
               </h3>
               <p className="text-xs text-zinc-400">
-                {canalNome ? `Canal: ${canalNome}` : 'Ajustes para evitar alto consumo de internet'}
+                {canalNome ? `Canal: ${canalNome}` : 'Ajustes para reproduzir sem travar mesmo com sinal ruim'}
               </p>
             </div>
           </div>
@@ -87,7 +99,96 @@ export function PlayerSettingsModal({
         </div>
 
         {/* BODY */}
-        <div className="p-5 sm:p-6 space-y-6 max-h-[75vh] overflow-y-auto">
+        <div className="p-5 sm:p-6 space-y-6 overflow-y-auto">
+          {/* SEÇÃO PRINCIPAL: QUALIDADE DE IMAGEM & SINAL RUIM */}
+          <div className="p-4 sm:p-5 bg-gradient-to-b from-zinc-900/90 to-zinc-950/90 rounded-2xl border border-zinc-800 space-y-3.5 shadow-lg">
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <label className="text-xs sm:text-sm font-bold text-white flex items-center gap-2">
+                <Tv className="w-4 h-4 text-[#00E676]" />
+                <span>Qualidade de Imagem (Resolução)</span>
+              </label>
+              <div className="flex items-center gap-1.5 text-[11px] text-amber-400 bg-amber-500/10 px-2.5 py-0.5 rounded-full border border-amber-500/20">
+                <SignalLow className="w-3.5 h-3.5" />
+                <span className="font-semibold">Sinal Ruim? Baixe para 360p</span>
+              </div>
+            </div>
+
+            <p className="text-xs text-zinc-400 leading-relaxed">
+              Se o seu sinal de internet estiver fraco, instável ou oscilando, selecione <strong className="text-[#00E676]">360p</strong>. A transmissão consome muito menos dados e continua reproduzindo sem travar!
+            </p>
+
+            {/* SELETOR DE QUALIDADE EM BOTÕES RÁPIDOS */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              {VIDEO_QUALITY_OPTIONS.map((opt) => {
+                const isSelected = videoQuality === opt.id;
+                return (
+                  <button
+                    key={opt.id}
+                    type="button"
+                    id={`quality-opt-${opt.id}`}
+                    onClick={() => onSelectVideoQuality?.(opt.id)}
+                    className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between gap-1.5 relative ${
+                      isSelected
+                        ? opt.id === '360p'
+                          ? 'bg-emerald-500/20 border-[#00E676] text-white ring-1 ring-[#00E676]/50 shadow-md shadow-emerald-950/40'
+                          : 'bg-zinc-800 border-zinc-500 text-white ring-1 ring-zinc-500/40 shadow-md'
+                        : 'bg-zinc-900/80 border-zinc-800/90 text-zinc-400 hover:border-zinc-700 hover:text-zinc-200'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between w-full">
+                      <span className="text-xs font-bold tracking-tight text-white flex items-center gap-1.5">
+                        {opt.id === '360p' && <SignalLow className="w-3.5 h-3.5 text-[#00E676]" />}
+                        {opt.id === 'auto' && <Sparkles className="w-3.5 h-3.5 text-cyan-400" />}
+                        {opt.shortLabel}
+                      </span>
+                      {isSelected ? (
+                        <CheckCircle2 className="w-3.5 h-3.5 text-[#00E676]" />
+                      ) : (
+                        <div className="w-3 h-3 rounded-full border border-zinc-700" />
+                      )}
+                    </div>
+                    
+                    <span className="text-[10px] text-zinc-400 truncate">
+                      {opt.id === '360p' ? 'Sinal Fraco / Leve' : opt.id === 'auto' ? 'Adaptativo Automático' : opt.resolution}
+                    </span>
+
+                    {opt.recommendedForLowSignal && (
+                      <span className="mt-0.5 text-[9px] font-extrabold px-1.5 py-0.2 rounded bg-emerald-500/20 text-[#00E676] border border-emerald-500/30 w-fit">
+                        Sinal Ruim
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* AVISO DO MODO 360P QUANDO ATIVO */}
+            {videoQuality === '360p' ? (
+              <div className="p-2.5 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-[11px] flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-[#00E676] shrink-0" />
+                <span>
+                  <strong>Qualidade 360p ativa:</strong> Otimizado para sinal oscilante. O player prioriza a fluidez contínua para você não perder nenhum momento.
+                </span>
+              </div>
+            ) : (
+              <div className="flex items-center justify-between pt-1">
+                <span className="text-[11px] text-zinc-400">
+                  Qualidade atual:{' '}
+                  <strong className="text-zinc-200 uppercase">
+                    {videoQuality === 'auto' ? 'Automática (ABR)' : videoQuality}
+                  </strong>
+                </span>
+                <button
+                  type="button"
+                  onClick={() => onSelectVideoQuality?.('360p')}
+                  className="text-[11px] text-[#00E676] hover:underline font-semibold flex items-center gap-1 cursor-pointer"
+                >
+                  <SignalLow className="w-3 h-3" />
+                  <span>Mudar para 360p agora</span>
+                </button>
+              </div>
+            )}
+          </div>
           {/* SELETOR RÁPIDO SOLICITADO: ALTERNAR ENTRE MODO ESTÁVEL E MODO BAIXA LATÊNCIA */}
           <div className="p-4 bg-zinc-950/90 rounded-2xl border border-zinc-800 space-y-3">
             <div className="flex items-center justify-between flex-wrap gap-2">

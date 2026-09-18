@@ -2,6 +2,17 @@ export type CurrencyCode = 'BRL' | 'USD' | 'EUR';
 
 export type LatencyMode = 'economy' | 'stable' | 'low-latency';
 
+export type VideoQuality = 'auto' | '360p' | '480p' | '720p' | '1080p';
+
+export interface VideoQualityOption {
+  id: VideoQuality;
+  label: string;
+  shortLabel: string;
+  resolution: string;
+  description: string;
+  recommendedForLowSignal?: boolean;
+}
+
 export type SubscriptionPlanId = 'free' | 'diario' | 'basico' | 'vip' | 'premium' | 'anual';
 
 export const PLAN_HIERARCHY: Record<SubscriptionPlanId, number> = {

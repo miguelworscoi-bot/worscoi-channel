@@ -11,6 +11,7 @@ import {
   LogOut,
   RefreshCw,
   ShieldCheck,
+  HelpCircle,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { PLANS } from '@/services/subscriptionService';
@@ -22,6 +23,7 @@ interface UserProfileModalProps {
   onOpenRedeemToken?: () => void;
   onOpenAuth?: () => void;
   onOpenPrivacyPolicy?: () => void;
+  onOpenTutorial?: () => void;
 }
 
 export function UserProfileModal({
@@ -31,6 +33,7 @@ export function UserProfileModal({
   onOpenRedeemToken,
   onOpenAuth,
   onOpenPrivacyPolicy,
+  onOpenTutorial,
 }: UserProfileModalProps) {
   const { user, userProfile, signOut, countdown, isAdmin } = useAuth();
 
@@ -235,6 +238,22 @@ export function UserProfileModal({
               >
                 <ShieldCheck className="w-3.5 h-3.5 text-zinc-500" />
                 <span>Privacidade & Cookies</span>
+              </button>
+            )}
+
+            {onOpenTutorial && (
+              <button
+                type="button"
+                id="profile-btn-tutorial"
+                onClick={() => {
+                  onClose();
+                  onOpenTutorial();
+                }}
+                className="text-zinc-400 hover:text-[#ed3c5c] flex items-center gap-1.5 transition-all cursor-pointer py-1"
+                title="Ver Tutorial do Sistema Worscoi"
+              >
+                <HelpCircle className="w-3.5 h-3.5 text-zinc-500" />
+                <span>Guia de Uso</span>
               </button>
             )}
           </div>

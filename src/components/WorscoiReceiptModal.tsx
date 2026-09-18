@@ -317,25 +317,8 @@ export function WorscoiReceiptModal({
           className="relative w-full max-w-5xl max-h-[92vh] bg-zinc-950 border border-zinc-800 rounded-3xl shadow-2xl flex flex-col overflow-hidden text-zinc-100 my-auto"
           onClick={(e) => e.stopPropagation()}
         >
-          {/* TOPO: CABEÇALHO LIMPO E PROFISSIONAL (CSS selector 1) */}
-          <div className="px-5 sm:px-6 py-3.5 border-b border-zinc-800/80 bg-zinc-900/70 flex items-center justify-between gap-3 shrink-0">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
-                <Receipt className="w-4 h-4" />
-              </div>
-              <div>
-                <h2 className="text-sm sm:text-base font-bold text-white tracking-tight flex items-center gap-2">
-                  <span>Emitir Recibo de Assinatura</span>
-                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-950/60 text-emerald-400 border border-emerald-800/60">
-                    Worscoi TV
-                  </span>
-                </h2>
-                <p className="text-[11px] text-zinc-400">
-                  Preenchimento direto com visualização em tempo real e comprovativo oficial
-                </p>
-              </div>
-            </div>
-
+          {/* TOPO: BARRA DE AÇÕES SUPERIOR */}
+          <div className="px-5 sm:px-6 py-3 border-b border-zinc-800/80 bg-zinc-900/70 flex items-center justify-end gap-2 shrink-0">
             <div className="flex items-center gap-2">
               <button
                 type="button"
@@ -377,7 +360,7 @@ export function WorscoiReceiptModal({
               <div className="space-y-4 max-w-2xl mx-auto py-2">
                 <div className="flex items-center justify-between pb-3 border-b border-zinc-800">
                   <div className="flex items-center gap-2">
-                    <History className="w-4 h-4 text-emerald-400" />
+                    <History className="w-4 h-4 text-[#ed3c5c]" />
                     <h3 className="text-xs font-bold text-white uppercase tracking-wider">
                       Recibos Emitidos Anteriores
                     </h3>
@@ -411,7 +394,7 @@ export function WorscoiReceiptModal({
                       >
                         <div className="space-y-1">
                           <div className="flex items-center gap-2">
-                            <span className="font-mono text-xs font-bold text-emerald-400">
+                            <span className="font-mono text-xs font-bold text-[#ed3c5c]">
                               {rec.receiptNumber}
                             </span>
                             <span className="text-[10px] px-2 py-0.5 rounded-md bg-zinc-800 text-zinc-300">
@@ -429,7 +412,7 @@ export function WorscoiReceiptModal({
 
                         <div className="flex items-center gap-3">
                           <div className="text-right">
-                            <div className="text-xs font-bold text-emerald-400">
+                            <div className="text-xs font-bold text-[#ed3c5c]">
                               {rec.planPriceFormatted}
                             </div>
                             {rec.tokenCode && (
@@ -441,10 +424,10 @@ export function WorscoiReceiptModal({
                           <button
                             type="button"
                             onClick={() => handleDownloadPdf(rec)}
-                            className="px-2.5 py-1.5 rounded-xl bg-zinc-800 hover:bg-emerald-950 hover:text-emerald-400 border border-zinc-700 hover:border-emerald-800/80 text-zinc-300 text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer"
+                            className="px-2.5 py-1.5 rounded-xl bg-zinc-800 hover:bg-[#ed3c5c]/20 hover:text-[#ed3c5c] border border-zinc-700 hover:border-[#ed3c5c]/50 text-zinc-300 text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer"
                             title="Baixar PDF deste recibo"
                           >
-                            <FileDown className="w-3.5 h-3.5 text-emerald-400" />
+                            <FileDown className="w-3.5 h-3.5 text-[#ed3c5c]" />
                             <span>PDF</span>
                           </button>
                           <button
@@ -477,7 +460,7 @@ export function WorscoiReceiptModal({
                   <div className="p-4 rounded-2xl bg-zinc-900/50 border border-zinc-800/80 space-y-3">
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-bold text-zinc-200 flex items-center gap-1.5">
-                        <User className="w-3.5 h-3.5 text-emerald-400" />
+                        <User className="w-3.5 h-3.5 text-[#ed3c5c]" />
                         <span>Dados do Assinante</span>
                       </span>
                     </div>
@@ -492,7 +475,7 @@ export function WorscoiReceiptModal({
                           placeholder="Ex: Manuel dos Santos"
                           value={customerName}
                           onChange={(e) => setCustomerName(e.target.value)}
-                          className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-xl text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-emerald-500 transition"
+                          className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-xl text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-[#ed3c5c] transition"
                         />
                       </div>
 
@@ -507,7 +490,7 @@ export function WorscoiReceiptModal({
                             placeholder="Ex: 942 472 983"
                             value={customerPhone}
                             onChange={(e) => setCustomerPhone(e.target.value)}
-                            className="w-full pl-9 pr-3 py-2 bg-zinc-950 border border-zinc-800 rounded-xl text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-emerald-500 transition"
+                            className="w-full pl-9 pr-3 py-2 bg-zinc-950 border border-zinc-800 rounded-xl text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-[#ed3c5c] transition"
                           />
                         </div>
                       </div>
@@ -517,7 +500,7 @@ export function WorscoiReceiptModal({
                   {/* 2. PLANO DE ASSINATURA */}
                   <div className="p-4 rounded-2xl bg-zinc-900/50 border border-zinc-800/80 space-y-2.5">
                     <span className="text-xs font-bold text-zinc-200 flex items-center gap-1.5">
-                      <Receipt className="w-3.5 h-3.5 text-emerald-400" />
+                      <Receipt className="w-3.5 h-3.5 text-[#ed3c5c]" />
                       <span>Plano de Assinatura</span>
                     </span>
 
@@ -537,12 +520,12 @@ export function WorscoiReceiptModal({
                             onClick={() => setSelectedPlan(p.id)}
                             className={`p-2.5 rounded-xl border text-left transition-all ${
                               isSelected
-                                ? 'border-emerald-500 bg-emerald-950/40 text-white shadow-sm'
+                                ? 'border-[#ed3c5c] bg-[#ed3c5c]/15 text-white shadow-sm'
                                 : 'border-zinc-800 bg-zinc-950 hover:bg-zinc-900 text-zinc-400 hover:text-zinc-200'
                             }`}
                           >
                             <div className="text-[11px] font-bold truncate">{p.label}</div>
-                            <div className="text-[10px] font-semibold text-emerald-400 mt-0.5">
+                            <div className="text-[10px] font-semibold text-[#ed3c5c] mt-0.5">
                               {p.price}
                             </div>
                           </button>
@@ -555,7 +538,7 @@ export function WorscoiReceiptModal({
                   <div className="p-4 rounded-2xl bg-zinc-900/50 border border-zinc-800/80 space-y-3">
                     <div>
                       <span className="text-xs font-bold text-zinc-200 flex items-center gap-1.5 mb-2">
-                        <CreditCard className="w-3.5 h-3.5 text-emerald-400" />
+                        <CreditCard className="w-3.5 h-3.5 text-[#ed3c5c]" />
                         <span>Forma de Pagamento</span>
                       </span>
 
@@ -572,7 +555,7 @@ export function WorscoiReceiptModal({
                             onClick={() => setPaymentMethod(m.id)}
                             className={`py-2 px-2.5 rounded-xl border text-xs font-medium transition text-center ${
                               paymentMethod === m.id
-                                ? 'border-emerald-500 bg-emerald-950/40 text-emerald-300 font-bold'
+                                ? 'border-[#ed3c5c] bg-[#ed3c5c]/15 text-[#ed3c5c] font-bold'
                                 : 'border-zinc-800 bg-zinc-950 hover:bg-zinc-900 text-zinc-400'
                             }`}
                           >
@@ -585,13 +568,13 @@ export function WorscoiReceiptModal({
                     <div className="pt-2 border-t border-zinc-800/60">
                       <div className="flex items-center justify-between mb-1">
                         <span className="text-[11px] font-semibold text-zinc-300 flex items-center gap-1">
-                          <KeyRound className="w-3 h-3 text-emerald-400" />
+                          <KeyRound className="w-3.5 h-3.5 text-[#ed3c5c]" />
                           <span>Chave Token de Acesso</span>
                         </span>
                         <button
                           type="button"
                           onClick={handleGenerateFastToken}
-                          className="text-[10px] text-emerald-400 hover:text-emerald-300 font-bold flex items-center gap-1 transition"
+                          className="text-[10px] text-[#ed3c5c] hover:text-[#ff4567] font-bold flex items-center gap-1 transition"
                         >
                           <Sparkles className="w-3 h-3" />
                           <span>Gerar Novo</span>
@@ -603,7 +586,7 @@ export function WorscoiReceiptModal({
                         value={tokenCode}
                         onChange={(e) => setTokenCode(e.target.value)}
                         placeholder="Ex: 84K9M (5 caracteres)"
-                        className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-xl text-xs font-mono font-bold text-emerald-400 focus:outline-none focus:border-emerald-500"
+                        className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-xl text-xs font-mono font-bold text-[#ed3c5c] focus:outline-none focus:border-[#ed3c5c]"
                       />
                     </div>
                   </div>
@@ -614,9 +597,9 @@ export function WorscoiReceiptModal({
                     <button
                       type="button"
                       onClick={() => handleDownloadPdf()}
-                      className="w-full py-2.5 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-black text-xs transition flex items-center justify-center gap-2 shadow-md hover:scale-[1.01] active:scale-[0.99] cursor-pointer"
+                      className="w-full py-2.5 px-4 rounded-xl bg-[#ed3c5c] hover:bg-[#ff4567] text-white font-black text-xs transition flex items-center justify-center gap-2 shadow-md shadow-[#ed3c5c]/25 hover:scale-[1.01] active:scale-[0.99] cursor-pointer"
                     >
-                      <FileDown className="w-4 h-4 text-zinc-950" />
+                      <FileDown className="w-4 h-4 text-white" />
                       <span>Baixar Recibo Oficial em PDF</span>
                     </button>
 
@@ -649,8 +632,8 @@ export function WorscoiReceiptModal({
                       >
                         {copiedText ? (
                           <>
-                            <Check className="w-3.5 h-3.5 text-emerald-400" />
-                            <span className="text-emerald-400">Copiado!</span>
+                            <Check className="w-3.5 h-3.5 text-[#ed3c5c]" />
+                            <span className="text-[#ed3c5c]">Copiado!</span>
                           </>
                         ) : (
                           <>
@@ -662,7 +645,7 @@ export function WorscoiReceiptModal({
                     </div>
 
                     {savedSuccess && (
-                      <p className="text-[10px] text-center text-emerald-400 flex items-center justify-center gap-1">
+                      <p className="text-[10px] text-center text-[#ed3c5c] flex items-center justify-center gap-1">
                         <CheckCircle2 className="w-3 h-3" />
                         <span>Recibo salvo no histórico com sucesso</span>
                       </p>
@@ -674,7 +657,7 @@ export function WorscoiReceiptModal({
                 <div className="lg:col-span-7 flex flex-col items-center">
                   <div className="w-full flex items-center justify-between mb-2 text-xs text-zinc-400 px-1">
                     <span className="font-medium flex items-center gap-1.5">
-                      <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                      <ShieldCheck className="w-3.5 h-3.5 text-[#ed3c5c]" />
                       <span>Visualização em Tempo Real</span>
                     </span>
                     <span className="font-mono text-[11px] text-zinc-500">
@@ -691,23 +674,22 @@ export function WorscoiReceiptModal({
                     {/* CABEÇALHO SUPERIOR ELEGANTE */}
                     <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 pb-5 border-b border-zinc-200">
                       <div className="space-y-1.5">
-                        <div className="flex items-center gap-2.5">
-                          <div className="w-8 h-8 rounded-lg bg-zinc-950 flex items-center justify-center text-white font-black text-sm tracking-tighter shadow-xs">
-                            W
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <h1
+                              data-logomark="true"
+                              style={{ fontFamily: "'Brittany Signature', 'Brittany', cursive" }}
+                              className="text-2xl sm:text-3xl font-normal tracking-wide text-zinc-950 leading-none font-brittany font-logomark logomark-font select-none"
+                            >
+                              Worscoi TV
+                            </h1>
+                            <span className="text-[9px] uppercase tracking-widest font-extrabold px-1.5 py-0.5 rounded bg-zinc-100 text-zinc-600 border border-zinc-200">
+                              FATURA-RECIBO
+                            </span>
                           </div>
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <h1 className="text-base font-black tracking-tight text-zinc-950 leading-none">
-                                WORSCOI TV
-                              </h1>
-                              <span className="text-[9px] uppercase tracking-widest font-extrabold px-1.5 py-0.5 rounded bg-zinc-100 text-zinc-600 border border-zinc-200">
-                                FATURA-RECIBO
-                              </span>
-                            </div>
-                            <p className="text-[11px] text-zinc-500 font-medium mt-0.5">
-                              Tecnologia de Transmissão & Streaming Digital
-                            </p>
-                          </div>
+                          <p className="text-[11px] text-zinc-500 font-medium mt-0.5">
+                            Tecnologia de Transmissão & Streaming Digital
+                          </p>
                         </div>
                         <div className="text-[10px] text-zinc-500 space-y-0.5 pt-0.5">
                           <p>Luanda, Angola • Suporte Oficial: +244 942 472 983</p>
@@ -716,8 +698,8 @@ export function WorscoiReceiptModal({
 
                       {/* STATUS & IDENTIFICAÇÃO DO RECIBO */}
                       <div className="sm:text-right space-y-1">
-                        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 text-[10px] font-bold tracking-wide">
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#ed3c5c]/10 text-[#ed3c5c] border border-[#ed3c5c]/25 text-[10px] font-bold tracking-wide">
+                          <span className="w-1.5 h-1.5 rounded-full bg-[#ed3c5c]" />
                           <span>PAGO & LIQUIDADO</span>
                         </div>
                         <div className="text-xs font-mono text-zinc-700">
@@ -801,17 +783,17 @@ export function WorscoiReceiptModal({
 
                     {/* TOKEN DE ATIVAÇÃO — DESIGN ELEGANTE INTEGRADO AO DOCUMENTO */}
                     {currentReceipt.tokenCode && (
-                      <div className="p-4 rounded-xl bg-emerald-50/70 border border-emerald-200/90 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                      <div className="p-4 rounded-xl bg-[#ed3c5c]/5 border border-[#ed3c5c]/25 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                         <div className="space-y-0.5">
-                          <div className="flex items-center gap-1.5 text-emerald-900 font-bold text-xs">
-                            <KeyRound className="w-3.5 h-3.5 text-emerald-700" />
+                          <div className="flex items-center gap-1.5 text-[#ed3c5c] font-bold text-xs">
+                            <KeyRound className="w-3.5 h-3.5 text-[#ed3c5c]" />
                             <span>Chave Token de Ativação do Assinante</span>
                           </div>
-                          <p className="text-[11px] text-emerald-800/80">
+                          <p className="text-[11px] text-zinc-600">
                             Insira este código na tela inicial da plataforma para liberar seu acesso imediatamente:
                           </p>
                         </div>
-                        <div className="self-start sm:self-auto px-4 py-1.5 rounded-lg bg-white border border-emerald-300 font-mono text-lg font-black tracking-[0.25em] text-emerald-900 shadow-xs">
+                        <div className="self-start sm:self-auto px-4 py-1.5 rounded-lg bg-white border border-[#ed3c5c]/30 font-mono text-lg font-black tracking-[0.25em] text-[#ed3c5c] shadow-xs">
                           {currentReceipt.tokenCode}
                         </div>
                       </div>
@@ -841,7 +823,7 @@ export function WorscoiReceiptModal({
 
                     {/* RODAPÉ & AUTENTICIDADE */}
                     <div className="border-t border-dashed border-zinc-200 pt-3 text-[10px] text-zinc-500 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                      <div className="flex items-center gap-1 text-emerald-700 font-semibold">
+                      <div className="flex items-center gap-1 text-[#ed3c5c] font-semibold">
                         <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
                         <span>Comprovativo emitido digitalmente • Dispensa assinatura física</span>
                       </div>

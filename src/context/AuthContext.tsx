@@ -47,6 +47,8 @@ export interface UserProfile {
   planExpiresAt?: string | null;
   planActivatedAt?: string | null;
   activatedToken?: string | null;
+  hasSeenTutorial?: boolean;
+  tutorialCompletedAt?: string | null;
 }
 
 export interface LocalUserRecord extends UserProfile {
@@ -120,6 +122,32 @@ interface AuthContextType {
       remainingDaysTotal?: number;
     }
   ) => void;
+  shouldShowFirstTimeTutorial: boolean;
+  completeTutorial: () => Promise<void>;
+  openTutorialManually: () => void;
+  closeTutorialModal: () => void;
+}
+
+export const TUTORIAL_STORAGE_KEY_PREFIX = 'worscoi_tutorial_seen_';
+
+export function isTutorialSeenForUser(userEmailOrId?: string | null): boolean {
+  if (!userEmailOrId) return false;
+  const key = (userEmailOrId || '').trim().toLowerCase();
+  try {
+    return localStorage.getItem(TUTORIAL_STORAGE_KEY_PREFIX + key) === 'true';
+  } catch {
+    return false;
+  }
+}
+
+export function setTutorialSeenForUser(userEmailOrId?: string | null) {
+  if (!userEmailOrId) return;
+  const key = (userEmailOrId || '').trim().toLowerCase();
+  try {
+    localStorage.setItem(TUTORIAL_STORAGE_KEY_PREFIX + key, 'true');
+  } catch {
+    // Ignora erro
+  }
 }
 
 export function normalizeIdentifier(raw: string): { email: string; displayName: string; isPhone: boolean } {
@@ -324,13 +352,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const [shouldShowFirstTimeTutorial, setShouldShowFirstTimeTutorial] = useState(false);
+
   const saveSession = (rawProfile: UserProfile) => {
     const isOfficialAdmin = (rawProfile.email || '').trim().toLowerCase() === OFFICIAL_ADMIN_EMAIL.toLowerCase();
+    const hasSeen = Boolean(
+      rawProfile.hasSeenTutorial ||
+      isTutorialSeenForUser(rawProfile.email) ||
+      isTutorialSeenForUser(rawProfile.id)
+    );
     const profile: UserProfile = {
       ...rawProfile,
       // Se não for miguelworscoi@gmail.com, o papel é FORÇADO a ser 'user'
       role: isOfficialAdmin ? rawProfile.role : 'user',
+      hasSeenTutorial: hasSeen,
     };
+    if (hasSeen) {
+      if (profile.email) setTutorialSeenForUser(profile.email);
+      if (profile.id) setTutorialSeenForUser(profile.id);
+    }
 
     if (profile.role === 'admin') {
       profile.plan = profile.plan || 'anual';
@@ -361,6 +401,49 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       photoURL: profile.photoURL || null,
     });
   };
+
+  const completeTutorial = useCallback(async () => {
+    setShouldShowFirstTimeTutorial(false);
+    if (userProfile && userProfile.email) {
+      setTutorialSeenForUser(userProfile.email);
+      setTutorialSeenForUser(userProfile.id);
+      const completedAt = new Date().toISOString();
+      const updated: UserProfile = {
+        ...userProfile,
+        hasSeenTutorial: true,
+        tutorialCompletedAt: completedAt,
+      };
+      saveSession(updated);
+      saveInRegistry(updated);
+      if (user?.uid) {
+        try {
+          await safeFirestoreCall(
+            () =>
+              setDoc(
+                doc(db, 'users', user.uid),
+                {
+                  hasSeenTutorial: true,
+                  tutorialCompletedAt: completedAt,
+                },
+                { merge: true }
+              ),
+            null,
+            2000
+          );
+        } catch {
+          // Ignora
+        }
+      }
+    }
+  }, [userProfile, user?.uid]);
+
+  const openTutorialManually = useCallback(() => {
+    setShouldShowFirstTimeTutorial(true);
+  }, []);
+
+  const closeTutorialModal = useCallback(() => {
+    completeTutorial();
+  }, [completeTutorial]);
 
   // Garante a existência do administrador oficial único no registro local
   useEffect(() => {
@@ -596,6 +679,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         throw new Error('Palavra-passe incorreta para a conta oficial de administrador.');
       }
 
+      const adminHasSeen = isTutorialSeenForUser(OFFICIAL_ADMIN_EMAIL);
       const adminProfile: UserProfile = {
         id: 'admin_miguelworscoi',
         email: OFFICIAL_ADMIN_EMAIL,
@@ -606,10 +690,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         plan: 'anual',
         planName: 'Acesso Total Administrador',
         planExpiresAt: null,
+        hasSeenTutorial: adminHasSeen,
       };
 
       saveSession(adminProfile);
       saveInRegistry({ ...adminProfile, password: OFFICIAL_ADMIN_PASSWORD });
+      if (!adminHasSeen) {
+        setShouldShowFirstTimeTutorial(true);
+      } else {
+        setShouldShowFirstTimeTutorial(false);
+      }
 
       try {
         await signInWithEmailAndPassword(auth, OFFICIAL_ADMIN_EMAIL, OFFICIAL_ADMIN_PASSWORD);
@@ -648,6 +738,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         let activatedToken: string | null = null;
         let createdAt = new Date().toISOString();
 
+        const hasSeenLocally = isTutorialSeenForUser(cleanEmail);
+        let hasSeenFirestore = false;
+        let tutorialCompletedAt: string | null = null;
+
         try {
           const userDocRef = doc(db, 'users', cred.user.uid);
           const snap = await safeFirestoreCall(() => getDoc(userDocRef), null, 2000);
@@ -658,10 +752,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             planExpiresAt = data.planExpiresAt ?? null;
             activatedToken = data.activatedToken ?? null;
             if (data.createdAt) createdAt = data.createdAt;
+            if (data.hasSeenTutorial) {
+              hasSeenFirestore = true;
+              tutorialCompletedAt = data.tutorialCompletedAt || null;
+            }
           }
         } catch {
           // Ignora se Firestore não responder
         }
+
+        const isTutorialAlreadySeen = hasSeenLocally || hasSeenFirestore;
 
         const isPaidActive =
           userPlan &&
@@ -706,9 +806,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           planName,
           planExpiresAt,
           activatedToken,
+          hasSeenTutorial: isTutorialAlreadySeen,
+          tutorialCompletedAt,
         };
         saveSession(profile);
         saveInRegistry({ ...profile, password: passClean });
+
+        if (!isTutorialAlreadySeen) {
+          setShouldShowFirstTimeTutorial(true);
+        } else {
+          setShouldShowFirstTimeTutorial(false);
+        }
         return;
       }
     } catch (err: unknown) {
@@ -764,6 +872,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       }
 
+      const localHasSeen = isTutorialSeenForUser(cleanEmail) || Boolean(existing.hasSeenTutorial);
       const profile: UserProfile = {
         id: existing.id,
         email: existing.email,
@@ -775,8 +884,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         planName: existing.planName,
         planExpiresAt: existing.planExpiresAt,
         activatedToken: existing.activatedToken,
+        hasSeenTutorial: localHasSeen,
+        tutorialCompletedAt: existing.tutorialCompletedAt,
       };
       saveSession(profile);
+      if (!localHasSeen) {
+        setShouldShowFirstTimeTutorial(true);
+      } else {
+        setShouldShowFirstTimeTutorial(false);
+      }
       return;
     }
 
@@ -805,6 +921,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       plan: 'free',
       planName: 'Plano Gratuito (Teste 24h)',
       planExpiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+      hasSeenTutorial: false,
     };
 
     await recordDeviceTrial(cleanEmail, newProfile.id, newProfile.planExpiresAt || undefined);
@@ -812,6 +929,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     saveInRegistry({ ...newProfile, password: passClean });
     saveSession(newProfile);
+    setShouldShowFirstTimeTutorial(true);
 
     try {
       await safeFirestoreCall(
@@ -919,10 +1037,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       planExpiresAt: resolvedExpiresAt ?? null,
       planActivatedAt: nowIso,
       activatedToken: tokenCode || null,
+      hasSeenTutorial: false,
     };
 
     saveInRegistry({ ...profileData, password: passClean });
     saveSession(profileData);
+    setShouldShowFirstTimeTutorial(true);
 
     if (assignedPlan) {
       notifyPlanActivation({
@@ -980,6 +1100,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           }
         }
 
+        const googleHasSeen = isTutorialSeenForUser(googleEmail);
         const profile: UserProfile = {
           id: res.user.uid,
           email: googleEmail,
@@ -987,8 +1108,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           photoURL: res.user.photoURL || '',
           role,
           createdAt: new Date().toISOString(),
+          hasSeenTutorial: googleHasSeen,
         };
         saveSession(profile);
+        if (!googleHasSeen) {
+          setShouldShowFirstTimeTutorial(true);
+        } else {
+          setShouldShowFirstTimeTutorial(false);
+        }
         return;
       }
     } catch (err: unknown) {
@@ -1014,6 +1141,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       );
     }
 
+    const fallbackHasSeen = isTutorialSeenForUser(googleEmail);
     const googleProfile: UserProfile = {
       id: 'google_' + Math.random().toString(36).substring(2, 9),
       email: googleEmail,
@@ -1021,8 +1149,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       photoURL: '',
       role: 'user',
       createdAt: new Date().toISOString(),
+      hasSeenTutorial: fallbackHasSeen,
     };
     saveSession(googleProfile);
+    if (!fallbackHasSeen) {
+      setShouldShowFirstTimeTutorial(true);
+    } else {
+      setShouldShowFirstTimeTutorial(false);
+    }
   };
 
   const signInAsGuest = async (_chosenRole: UserRole = 'user') => {
@@ -1145,6 +1279,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signOut = async () => {
+    setShouldShowFirstTimeTutorial(false);
     try {
       await firebaseSignOut(auth);
     } catch {
@@ -1189,6 +1324,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         signOut,
         switchRole,
         updateProfilePlan,
+        shouldShowFirstTimeTutorial,
+        completeTutorial,
+        openTutorialManually,
+        closeTutorialModal,
       }}
     >
       {children}

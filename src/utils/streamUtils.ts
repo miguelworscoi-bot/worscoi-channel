@@ -3,9 +3,49 @@
  * Evita bloqueios de Mixed Content (HTTP em HTTPS) e erros de CORS.
  */
 
-import { LatencyMode } from '@/types';
+import { LatencyMode, VideoQuality, VideoQualityOption } from '@/types';
 
 export const LOCAL_STORAGE_LATENCY_KEY = 'playsports_latency_mode';
+export const LOCAL_STORAGE_QUALITY_KEY = 'worscoi_video_quality';
+
+export const VIDEO_QUALITY_OPTIONS: VideoQualityOption[] = [
+  {
+    id: 'auto',
+    label: 'Automático (Adaptativo)',
+    shortLabel: 'Auto',
+    resolution: 'Dinâmica',
+    description: 'Ajusta a nitidez automaticamente de acordo com a velocidade e estabilidade da sua rede.',
+  },
+  {
+    id: '360p',
+    label: '360p • Sinal Fraco / Poupança',
+    shortLabel: '360p',
+    resolution: '640x360',
+    description: 'Ideal para conexões lentas, dados móveis ou sinal oscilante. Mantém o vídeo reproduzindo sem travar.',
+    recommendedForLowSignal: true,
+  },
+  {
+    id: '480p',
+    label: '480p • Definição Padrão (SD)',
+    shortLabel: '480p',
+    resolution: '854x480',
+    description: 'Equilíbrio sólido entre estabilidade e nitidez, com consumo moderado.',
+  },
+  {
+    id: '720p',
+    label: '720p • Alta Definição (HD)',
+    shortLabel: '720p',
+    resolution: '1280x720',
+    description: 'Imagem limpa e nítida para conexões residenciais estáveis.',
+  },
+  {
+    id: '1080p',
+    label: '1080p • Máxima Definição (Full HD)',
+    shortLabel: '1080p',
+    resolution: '1920x1080',
+    description: 'Máxima fidelidade visual para redes de alta velocidade e Fibra Óptica.',
+  },
+];
 
 export function getSafeStreamUrl(rawUrl: string, forceProxy = false): string {
   if (!rawUrl) return '';
@@ -41,14 +81,85 @@ export function isStreamAutoProxied(rawUrl: string, forceProxy = false): boolean
 }
 
 /**
- * Retorna as configurações otimizadas do HLS.js para o modo de reprodução escolhido.
- * - Modo Economia (Data Saver): Limita o buffer a 5s, descarta segmentos anteriores (backBuffer=0),
- *   prioriza rendições leves (startLevel=0) e capLevelToPlayerSize para economizar até 75% da franquia de dados
- *   e permitir carregamento ultrarrápido mesmo em redes móveis (3G/4G/Unitel/Movicel) ou conexões instáveis.
- * - Modo Estável: Buffer equilibrado de 14s (18MB máx) para conexões normais.
+ * Retorna as configurações otimizadas do HLS.js para o modo de reprodução e qualidade escolhidos.
+ * - Modo 360p / Sinal Fraco: Resolução leve, startLevel=0, timeouts e retries ampliados para garantir reprodução
+ *   ininterrupta mesmo com sinal ruim, conexões móveis lentas (3G/4G) ou redes oscilantes.
+ * - Modo Economia (Data Saver): Limita o buffer a 8s, descarta segmentos anteriores (backBuffer=0),
+ *   prioriza rendições leves (startLevel=0) e capLevelToPlayerSize para economizar até 75% da franquia de dados.
+ * - Modo Estável: Buffer equilibrado de 20s (24MB máx) para conexões normais.
  * - Modo Baixa Latência: Buffer curto e sincronização agressiva para transmissão ao vivo em tempo real.
  */
-export function getHlsOptionsForLatencyMode(mode: LatencyMode): Record<string, unknown> {
+export function getHlsOptionsForLatencyMode(
+  mode: LatencyMode,
+  quality: VideoQuality = 'auto'
+): Record<string, unknown> {
+  // Configuração específica para 360p (Sinal Ruim / Poupança Máxima):
+  // Mesmo com oscilação severa na rede, prioriza o stream mais leve e tolera atrasos de carregamento
+  if (quality === '360p') {
+    return {
+      enableWorker: true,
+      lowLatencyMode: false,
+      capLevelToPlayerSize: true,
+      startLevel: 0,
+      autoLevelCapping: 0,
+      backBufferLength: 0,
+      maxBufferLength: 8,
+      maxMaxBufferLength: 14,
+      maxBufferSize: 5 * 1024 * 1024, // 5MB
+      liveSyncDurationCount: 3,
+      liveMaxLatencyDurationCount: 8,
+      manifestLoadingTimeOut: 20000,
+      manifestLoadingMaxRetry: 6,
+      manifestLoadingRetryDelay: 1000,
+      levelLoadingTimeOut: 20000,
+      levelLoadingMaxRetry: 6,
+      levelLoadingRetryDelay: 1000,
+      fragLoadingTimeOut: 25000,
+      fragLoadingMaxRetry: 7,
+      fragLoadingRetryDelay: 1000,
+      nudgeOffset: 0.1,
+      nudgeMaxRetry: 8,
+      maxBufferHole: 0.8,
+      startFragPrefetch: true,
+      progressive: true,
+      testBandwidth: false,
+      abrEwmaDefaultEstimate: 350000,
+      abrBandWidthFactor: 0.65,
+    };
+  }
+
+  if (quality === '480p') {
+    return {
+      enableWorker: true,
+      lowLatencyMode: false,
+      capLevelToPlayerSize: true,
+      startLevel: 1,
+      backBufferLength: 8,
+      maxBufferLength: 12,
+      maxMaxBufferLength: 20,
+      maxBufferSize: 10 * 1024 * 1024,
+      liveSyncDurationCount: 3,
+      liveMaxLatencyDurationCount: 6,
+      manifestLoadingTimeOut: 15000,
+      manifestLoadingMaxRetry: 4,
+      manifestLoadingRetryDelay: 900,
+      levelLoadingTimeOut: 15000,
+      levelLoadingMaxRetry: 4,
+      levelLoadingRetryDelay: 900,
+      fragLoadingTimeOut: 18000,
+      fragLoadingMaxRetry: 5,
+      fragLoadingRetryDelay: 900,
+      nudgeOffset: 0.1,
+      nudgeMaxRetry: 6,
+      maxBufferHole: 0.5,
+      startFragPrefetch: true,
+      progressive: true,
+      testBandwidth: false,
+      abrEwmaDefaultEstimate: 750000,
+      abrBandWidthFactor: 0.75,
+    };
+  }
+
   if (mode === 'economy') {
     return {
       enableWorker: true,
@@ -61,21 +172,23 @@ export function getHlsOptionsForLatencyMode(mode: LatencyMode): Record<string, u
       maxBufferSize: 6 * 1024 * 1024, // 6MB
       liveSyncDurationCount: 3,
       liveMaxLatencyDurationCount: 6,
-      manifestLoadingTimeOut: 12000,
-      manifestLoadingMaxRetry: 3,
+      manifestLoadingTimeOut: 14000,
+      manifestLoadingMaxRetry: 4,
       manifestLoadingRetryDelay: 800,
-      levelLoadingTimeOut: 12000,
-      levelLoadingMaxRetry: 3,
+      levelLoadingTimeOut: 14000,
+      levelLoadingMaxRetry: 4,
       levelLoadingRetryDelay: 800,
-      fragLoadingTimeOut: 15000,
-      fragLoadingMaxRetry: 4,
+      fragLoadingTimeOut: 18000,
+      fragLoadingMaxRetry: 5,
       fragLoadingRetryDelay: 800,
       nudgeOffset: 0.1,
-      nudgeMaxRetry: 5,
-      maxBufferHole: 0.5,
+      nudgeMaxRetry: 6,
+      maxBufferHole: 0.6,
       startFragPrefetch: true,
       progressive: true,
       testBandwidth: false,
+      abrEwmaDefaultEstimate: 450000,
+      abrBandWidthFactor: 0.7,
     };
   }
 
@@ -136,6 +249,72 @@ export function getHlsOptionsForLatencyMode(mode: LatencyMode): Record<string, u
     testBandwidth: false,
     startLevel: -1,
   };
+}
+
+/**
+ * Aplica diretamente a resolução desejada na instância HLS.js ativa.
+ * Suporta auto, 360p, 480p, 720p, 1080p selecionando o nível correspondente de forma resiliente.
+ */
+export function applyQualityToHls(hlsInstance: unknown, quality: VideoQuality): boolean {
+  if (!hlsInstance || typeof hlsInstance !== 'object') return false;
+  const hls = hlsInstance as {
+    levels?: Array<{ height?: number; bitrate?: number }>;
+    currentLevel?: number;
+    autoLevelCapping?: number;
+    loadLevel?: number;
+  };
+
+  if (quality === 'auto') {
+    hls.currentLevel = -1;
+    hls.autoLevelCapping = -1;
+    return true;
+  }
+
+  if (!Array.isArray(hls.levels) || hls.levels.length === 0) {
+    return false;
+  }
+
+  const targetHeight =
+    quality === '360p'
+      ? 360
+      : quality === '480p'
+      ? 480
+      : quality === '720p'
+      ? 720
+      : 1080;
+
+  // Busca o nível mais próximo ou o menor nível disponível se for 360p
+  let bestIdx = 0;
+  let minDiff = Infinity;
+
+  hls.levels.forEach((lvl, idx) => {
+    const h = lvl.height || 0;
+    if (h > 0) {
+      const diff = Math.abs(h - targetHeight);
+      if (diff < minDiff) {
+        minDiff = diff;
+        bestIdx = idx;
+      }
+    }
+  });
+
+  // Se o usuário solicitou 360p para sinal ruim, garante que não escolha um nível 1080p se houver um menor
+  if (quality === '360p') {
+    let lowestIdx = 0;
+    let lowestHeight = Infinity;
+    hls.levels.forEach((lvl, idx) => {
+      const h = lvl.height || 0;
+      if (h > 0 && h < lowestHeight) {
+        lowestHeight = h;
+        lowestIdx = idx;
+      }
+    });
+    bestIdx = lowestIdx;
+  }
+
+  hls.currentLevel = bestIdx;
+  hls.autoLevelCapping = bestIdx;
+  return true;
 }
 
 export interface LatencyModeInfo {

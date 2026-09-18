@@ -427,7 +427,7 @@ export function WorscoiSidebar({
 
         {/* CAMPO DE BUSCA DE CANAIS COM ÍCONES NO ESTILO TIKTOK */}
         {!isCollapsed && (
-          <div className="px-3 pt-3 pb-2 shrink-0">
+          <div id="tour-sidebar-search" className="px-3 pt-3 pb-2 shrink-0">
             <div className="relative flex items-center group">
               <Search className="w-3.5 h-3.5 text-zinc-500 absolute left-3 pointer-events-none transition-transform duration-200 group-focus-within:scale-110 group-focus-within:text-[#FF2D55]" />
               <input
@@ -453,7 +453,7 @@ export function WorscoiSidebar({
 
         {/* PILLS DE CATEGORIA COM ÍCONES NO ESTILO TIKTOK & ANIMAÇÃO HOVER */}
         {!isCollapsed && (
-          <div className="px-3 pb-2.5 shrink-0 border-b border-zinc-900/80">
+          <div id="tour-categories-filter" className="px-3 pb-2.5 shrink-0 border-b border-zinc-900/80">
             <div className="flex items-center gap-1.5 overflow-x-auto custom-scrollbar pb-0.5 select-none">
               {FILTROS_CONFIG.filter((f) => f.id !== 'Meus Canais' || isAdmin).map((f) => {
                 const isSelected = filtroAtivo === f.id;
@@ -503,7 +503,7 @@ export function WorscoiSidebar({
         )}
 
         {/* LISTA DE CANAIS COM SCROLL VERTICAL */}
-        <div className="flex-1 overflow-y-auto custom-scrollbar px-2 py-2 space-y-3 min-h-0">
+        <div id="tour-channels-list" className="flex-1 overflow-y-auto custom-scrollbar px-2 py-2 space-y-3 min-h-0">
           {groupedCategories.length > 0 ? (
             groupedCategories.map((group) => {
               const isOpen = isCategoryExpanded(group.meta.key);
