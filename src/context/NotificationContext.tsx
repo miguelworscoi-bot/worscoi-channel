@@ -20,6 +20,8 @@ import {
   checkAndNotifyPlanExpired,
   sendBonusNotification,
   createNotification,
+  subscribeToLiveNotifications,
+  playNotificationSound,
 } from '@/services/notificationService';
 
 interface NotificationContextType {
@@ -142,8 +144,21 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     }
   }, [userId, isAdmin, userProfile?.planExpiresAt, userProfile?.planName, userProfile?.email, countdown.expired]);
 
-  // Escuta novos eventos de notificação em tempo real (mesma aba ou outras ações)
+  // Escuta novos eventos de notificação em tempo real via Firestore onSnapshot e eventos locais
   useEffect(() => {
+    // 1. Inscrição em tempo real no Firestore para o usuário atual e notificações globais ('all')
+    const unsubscribeFirestore = subscribeToLiveNotifications(
+      userId,
+      (liveNotifs, newIncoming) => {
+        setNotifications(liveNotifs);
+        if (newIncoming) {
+          setActiveToast(newIncoming);
+          playNotificationSound();
+        }
+      }
+    );
+
+    // 2. Fallback de eventos da mesma janela
     const handleNewNotif = (e: Event) => {
       const customEvent = e as CustomEvent<UserNotification>;
       if (customEvent.detail) {
@@ -151,6 +166,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
         if (notif.userId === userId || notif.userId === 'all') {
           setNotifications((prev) => [notif, ...prev.filter((n) => n.id !== notif.id)]);
           setActiveToast(notif);
+          playNotificationSound();
         }
       }
     };
@@ -163,6 +179,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     window.addEventListener('playsports_notifications_updated', handleUpdated);
 
     return () => {
+      unsubscribeFirestore();
       window.removeEventListener('playsports_new_notification', handleNewNotif);
       window.removeEventListener('playsports_notifications_updated', handleUpdated);
     };

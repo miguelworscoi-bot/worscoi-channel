@@ -7,13 +7,45 @@ import {
   deleteDoc,
   query,
   where,
+  onSnapshot,
 } from 'firebase/firestore';
 import { db, safeFirestoreCall } from '@/lib/firebase';
-import { UserNotification } from '@/types';
+import { UserNotification, NotificationType } from '@/types';
 
 const NOTIFICATIONS_COLLECTION = 'notifications';
 const LOCAL_STORAGE_PREFIX = 'playsports_notifications_';
 const NOTIFIED_CYCLES_KEY = 'playsports_notified_cycles_';
+
+/**
+ * Toca um som suave de sino/chime sintetizado para avisar o usuário sobre nova notificação
+ */
+export function playNotificationSound(): void {
+  if (typeof window === 'undefined') return;
+  try {
+    const AudioContextClass =
+      window.AudioContext ||
+      (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+    if (!AudioContextClass) return;
+    const ctx = new AudioContextClass();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(587.33, ctx.currentTime); // D5
+    osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.12); // A5
+
+    gain.gain.setValueAtTime(0.1, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc.start();
+    osc.stop(ctx.currentTime + 0.35);
+  } catch {
+    // Ignora restrições de autoplay silenciosamente
+  }
+}
 
 /**
  * Formata data de forma amigável em português: ex: "17 de setembro de 2026 às 14:30"
@@ -434,3 +466,141 @@ export async function sendBonusNotification(params: {
     actionLabel: params.actionLabel || (params.bonusCode ? 'Resgatar Bônus' : 'Aproveitar'),
   });
 }
+
+/**
+ * Cria e dispara uma Notificação Global (Broadcast) para TODOS os usuários da plataforma
+ */
+export async function createBroadcastNotification(params: {
+  title: string;
+  message: string;
+  type?: NotificationType;
+  actionUrl?: string;
+  actionLabel?: string;
+  bonusCode?: string;
+  bonusDays?: number;
+}): Promise<UserNotification> {
+  const notif = await createNotification({
+    userId: 'all',
+    type: params.type || 'system',
+    title: params.title,
+    message: params.message,
+    actionUrl: params.actionUrl,
+    actionLabel: params.actionLabel,
+    bonusCode: params.bonusCode,
+    bonusDays: params.bonusDays,
+  });
+
+  return notif;
+}
+
+/**
+ * Busca histórico de todas as notificações globais transmitidas para todos os usuários
+ */
+export async function fetchAllBroadcastNotifications(): Promise<UserNotification[]> {
+  try {
+    const colRef = collection(db, NOTIFICATIONS_COLLECTION);
+    const q = query(colRef, where('userId', '==', 'all'));
+    const snap = await getDocs(q);
+    const list: UserNotification[] = [];
+    snap.forEach((d) => {
+      list.push({ id: d.id, ...(d.data() as Omit<UserNotification, 'id'>) });
+    });
+    return list.sort(
+      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Inscreve o cliente em tempo real para receber instantaneamente notificações direcionadas ou globais ('all')
+ */
+export function subscribeToLiveNotifications(
+  userId: string,
+  onUpdate: (notifications: UserNotification[], newIncoming?: UserNotification) => void
+): () => void {
+  try {
+    const colRef = collection(db, NOTIFICATIONS_COLLECTION);
+    const targetUserIds = userId ? [userId, 'all'] : ['all'];
+    const q = query(colRef, where('userId', 'in', targetUserIds));
+
+    let isInitialSnapshot = true;
+
+    const unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        const itemsMap = new Map<string, UserNotification>();
+        let newlyAdded: UserNotification | undefined;
+
+        snapshot.forEach((docSnap) => {
+          const d = docSnap.data();
+          itemsMap.set(docSnap.id, {
+            id: docSnap.id,
+            userId: d.userId || 'all',
+            userEmail: d.userEmail,
+            type: d.type || 'system',
+            title: d.title || '',
+            message: d.message || '',
+            read: d.read ?? false,
+            createdAt: d.createdAt || new Date().toISOString(),
+            activatedAt: d.activatedAt,
+            expiresAt: d.expiresAt,
+            planName: d.planName,
+            bonusCode: d.bonusCode,
+            bonusDays: d.bonusDays,
+            actionUrl: d.actionUrl,
+            actionLabel: d.actionLabel,
+          });
+        });
+
+        // Identifica notificações recém-chegadas em tempo real para exibir o Toast com som
+        if (!isInitialSnapshot) {
+          snapshot.docChanges().forEach((change) => {
+            if (change.type === 'added') {
+              const d = change.doc.data();
+              newlyAdded = {
+                id: change.doc.id,
+                userId: d.userId || 'all',
+                userEmail: d.userEmail,
+                type: d.type || 'system',
+                title: d.title || '',
+                message: d.message || '',
+                read: d.read ?? false,
+                createdAt: d.createdAt || new Date().toISOString(),
+                activatedAt: d.activatedAt,
+                expiresAt: d.expiresAt,
+                planName: d.planName,
+                bonusCode: d.bonusCode,
+                bonusDays: d.bonusDays,
+                actionUrl: d.actionUrl,
+                actionLabel: d.actionLabel,
+              };
+            }
+          });
+        }
+
+        isInitialSnapshot = false;
+
+        const sorted = Array.from(itemsMap.values()).sort(
+          (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+
+        if (userId) {
+          saveLocalNotifications(userId, sorted);
+        }
+
+        onUpdate(sorted, newlyAdded);
+      },
+      (err) => {
+        console.warn('Falha no listener em tempo real de notificações:', err);
+      }
+    );
+
+    return unsubscribe;
+  } catch (err) {
+    console.warn('Erro ao assinar notificações em tempo real:', err);
+    return () => {};
+  }
+}
+

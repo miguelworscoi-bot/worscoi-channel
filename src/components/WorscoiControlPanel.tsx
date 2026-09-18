@@ -17,6 +17,7 @@ import {
   Sliders,
   TrendingUp,
   Layers,
+  BellRing,
 } from 'lucide-react';
 import { SubscriptionPlanId, Canal } from '@/types';
 import { useAuth, UserRole } from '@/context/AuthContext';
@@ -35,6 +36,7 @@ interface WorscoiControlPanelProps {
   onOpenAddChannel?: () => void;
   onRemoveCustomChannel?: (channelId: string) => void;
   onOpenPlayerSettings?: () => void;
+  onOpenCreateNotification?: () => void;
 }
 
 export function WorscoiControlPanel({
@@ -47,6 +49,7 @@ export function WorscoiControlPanel({
   onOpenAddChannel,
   onRemoveCustomChannel,
   onOpenPlayerSettings,
+  onOpenCreateNotification,
 }: WorscoiControlPanelProps) {
   const { user, userProfile, role, switchRole } = useAuth();
   const [activeTab, setActiveTab] = useState<'overview' | 'settings'>('overview');
@@ -154,6 +157,24 @@ export function WorscoiControlPanel({
 
         {/* BOTÕES DE AÇÃO NO CABEÇALHO */}
         <div className="flex items-center gap-2 flex-wrap justify-center">
+          {onOpenCreateNotification && (
+            <button
+              id="btn-criar-notificacao-header"
+              type="button"
+              onClick={onOpenCreateNotification}
+              className="group px-3.5 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs transition-all duration-200 cursor-pointer flex items-center gap-1.5 shadow-md shadow-purple-950/40 hover:scale-105 active:scale-95"
+              title="Transmitir notificação em tempo real para todos os usuários"
+            >
+              <div className="w-4 h-4 rounded-full bg-white/20 flex items-center justify-center">
+                <BellRing className="w-3 h-3 text-white animate-pulse" />
+              </div>
+              <span>Criar Notificação</span>
+              <span className="text-[10px] px-1.5 py-0.2 rounded bg-purple-900/80 font-bold uppercase tracking-wider text-purple-200">
+                Global
+              </span>
+            </button>
+          )}
+
           {onOpenAddChannel && (
             <button
               id="btn-adicionar-canal-header"
@@ -226,8 +247,29 @@ export function WorscoiControlPanel({
         <div className="space-y-8 animate-in fade-in duration-200">
           {/* SEÇÃO SUPERIOR: AÇÕES RÁPIDAS + PLANOS DE ASSINATURA */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-            {/* LADO ESQUERDO: AÇÕES RÁPIDAS (GERAR TOKEN & GERAR RECIBO) */}
+            {/* LADO ESQUERDO: AÇÕES RÁPIDAS (CRIAR NOTIFICAÇÃO, GERAR TOKEN & GERAR RECIBO) */}
             <div className="lg:col-span-3 flex flex-col gap-3.5">
+              {/* CARD TRANSMITIR NOTIFICAÇÃO GLOBAL */}
+              {onOpenCreateNotification && (
+                <button
+                  id="btn-card-criar-notificacao"
+                  type="button"
+                  onClick={onOpenCreateNotification}
+                  className="w-full h-36 rounded-2xl border border-purple-800/50 hover:border-purple-400 bg-gradient-to-b from-purple-950/40 via-zinc-900/60 to-zinc-900/40 hover:from-purple-950/60 hover:to-zinc-850/70 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] cursor-pointer flex flex-col items-center justify-center p-4 text-center group shadow-md shadow-purple-950/20"
+                >
+                  <div className="w-11 h-11 rounded-full bg-purple-950/90 border border-purple-500/60 flex items-center justify-center text-purple-400 group-hover:scale-110 group-hover:rotate-12 group-hover:border-purple-400 group-hover:text-white transition-all duration-200 mb-2 shadow-md">
+                    <BellRing className="w-5 h-5 animate-pulse" />
+                  </div>
+                  <span className="text-sm font-bold text-purple-200 group-hover:text-white transition tracking-tight flex items-center gap-1.5">
+                    <span>Criar Notificação</span>
+                    <span className="w-2 h-2 rounded-full bg-purple-400 animate-ping" />
+                  </span>
+                  <p className="text-[11px] text-zinc-400 mt-1 line-clamp-2">
+                    Transmitir alertas em tempo real para todos os usuários
+                  </p>
+                </button>
+              )}
+
               {/* CARD GERAR CHAVE TOKEN */}
               <button
                 id="btn-card-gerar-token"

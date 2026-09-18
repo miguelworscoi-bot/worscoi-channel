@@ -15,10 +15,22 @@ import {
   Gauge,
   ShieldCheck,
   RefreshCw,
+  BellRing,
+  Send,
+  Radio,
+  Sparkles,
+  History,
 } from 'lucide-react';
-import { Canal } from '@/types';
+import { Canal, NotificationType, UserNotification } from '@/types';
 import { useAuth, UserRole } from '@/context/AuthContext';
 import { SubscriberGrowthChart } from '@/components/SubscriberGrowthChart';
+import {
+  createBroadcastNotification,
+  fetchAllBroadcastNotifications,
+  deleteNotification,
+  formatFriendlyDateTime,
+} from '@/services/notificationService';
+import { useNotifications } from '@/context/NotificationContext';
 
 interface AdminPanelModalProps {
   isOpen: boolean;
@@ -29,6 +41,7 @@ interface AdminPanelModalProps {
   onRemoveCustomChannel: (channelId: string) => void;
   onOpenSubscribers: () => void;
   onOpenPaymentPlans?: () => void;
+  onOpenCreateNotification?: () => void;
 }
 
 export function AdminPanelModal({
@@ -40,11 +53,21 @@ export function AdminPanelModal({
   onRemoveCustomChannel,
   onOpenSubscribers,
   onOpenPaymentPlans,
+  onOpenCreateNotification,
 }: AdminPanelModalProps) {
   const { user, userProfile, role, isAdmin, switchRole } = useAuth();
+  const { refreshNotifications } = useNotifications();
   const [switching, setSwitching] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'analytics' | 'channels' | 'limits' | 'session'>('analytics');
+  const [activeTab, setActiveTab] = useState<'analytics' | 'channels' | 'notifications' | 'limits' | 'session'>('analytics');
+
+  // Estados rápidos de envio de notificação na aba
+  const [quickNotifTitle, setQuickNotifTitle] = useState('');
+  const [quickNotifMessage, setQuickNotifMessage] = useState('');
+  const [quickNotifType, setQuickNotifType] = useState<NotificationType>('system');
+  const [quickSending, setQuickSending] = useState(false);
+  const [broadcastList, setBroadcastList] = useState<UserNotification[]>([]);
+  const [loadingBroadcasts, setLoadingBroadcasts] = useState(false);
   const [rateLimitData, setRateLimitData] = useState<{
     enabled: boolean;
     totalRequestsTracked: number;
@@ -97,6 +120,57 @@ export function AdminPanelModal({
     }
   };
 
+  const loadBroadcasts = async () => {
+    try {
+      setLoadingBroadcasts(true);
+      const list = await fetchAllBroadcastNotifications();
+      setBroadcastList(list);
+    } catch {
+      // Ignora erro
+    } finally {
+      setLoadingBroadcasts(false);
+    }
+  };
+
+  useEffect(() => {
+    if (isOpen && activeTab === 'notifications') {
+      loadBroadcasts();
+    }
+  }, [isOpen, activeTab]);
+
+  const handleQuickSend = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!quickNotifTitle.trim() || !quickNotifMessage.trim()) return;
+    try {
+      setQuickSending(true);
+      await createBroadcastNotification({
+        title: quickNotifTitle.trim(),
+        message: quickNotifMessage.trim(),
+        type: quickNotifType,
+      });
+      setFeedback('Notificação transmitida com sucesso para todos os usuários!');
+      setQuickNotifTitle('');
+      setQuickNotifMessage('');
+      await loadBroadcasts();
+      await refreshNotifications();
+    } catch {
+      setFeedback('Erro ao disparar notificação.');
+    } finally {
+      setQuickSending(false);
+    }
+  };
+
+  const handleDeleteBroadcastItem = async (id: string) => {
+    try {
+      await deleteNotification(id, 'all');
+      setBroadcastList((prev) => prev.filter((n) => n.id !== id));
+      setFeedback('Notificação removida do feed global.');
+      refreshNotifications();
+    } catch {
+      setFeedback('Falha ao remover notificação.');
+    }
+  };
+
   if (!isOpen) return null;
   if (!isAdmin) return null;
 
@@ -145,14 +219,33 @@ export function AdminPanelModal({
             </div>
           </div>
 
-          <button
-            type="button"
-            onClick={onClose}
-            className="p-2 rounded-xl bg-zinc-900/80 hover:bg-zinc-800 text-zinc-400 hover:text-white border border-zinc-800 transition-all duration-200 hover:scale-110 active:scale-95 cursor-pointer shrink-0 group"
-            title="Fechar"
-          >
-            <X className="w-4 h-4 transition-transform duration-200 group-hover:rotate-90" />
-          </button>
+          <div className="flex items-center gap-2">
+            {onOpenCreateNotification && (
+              <button
+                type="button"
+                id="admin-header-create-notif-btn"
+                onClick={() => {
+                  onClose();
+                  onOpenCreateNotification();
+                }}
+                className="px-3 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs flex items-center gap-1.5 transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer shadow-md shadow-purple-950/40 shrink-0"
+                title="Criar e transmitir notificação global para todos os usuários"
+              >
+                <BellRing className="w-3.5 h-3.5 animate-pulse" />
+                <span className="hidden sm:inline">Criar Notificação</span>
+                <span className="sm:hidden">Notificar</span>
+              </button>
+            )}
+
+            <button
+              type="button"
+              onClick={onClose}
+              className="p-2 rounded-xl bg-zinc-900/80 hover:bg-zinc-800 text-zinc-400 hover:text-white border border-zinc-800 transition-all duration-200 hover:scale-110 active:scale-95 cursor-pointer shrink-0 group"
+              title="Fechar"
+            >
+              <X className="w-4 h-4 transition-transform duration-200 group-hover:rotate-90" />
+            </button>
+          </div>
         </div>
 
         {/* FEEDBACK DE AÇÃO */}
@@ -164,12 +257,12 @@ export function AdminPanelModal({
         )}
 
         {/* BARRA DE NAVEGAÇÃO ENTRE ABAS */}
-        <div className="mt-3.5 flex items-center gap-1.5 p-1 rounded-xl bg-zinc-900/90 border border-zinc-800/80 shrink-0">
+        <div className="mt-3.5 flex items-center gap-1.5 p-1 rounded-xl bg-zinc-900/90 border border-zinc-800/80 shrink-0 overflow-x-auto">
           <button
             type="button"
             id="admin-tab-growth"
             onClick={() => setActiveTab('analytics')}
-            className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-semibold transition-all duration-200 cursor-pointer ${
+            className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-lg text-xs font-semibold transition-all duration-200 cursor-pointer whitespace-nowrap ${
               activeTab === 'analytics'
                 ? 'bg-emerald-500 text-black shadow-sm font-bold'
                 : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'
@@ -181,9 +274,30 @@ export function AdminPanelModal({
 
           <button
             type="button"
+            id="admin-tab-notifications"
+            onClick={() => setActiveTab('notifications')}
+            className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-lg text-xs font-semibold transition-all duration-200 cursor-pointer whitespace-nowrap ${
+              activeTab === 'notifications'
+                ? 'bg-purple-600 text-white shadow-sm font-bold'
+                : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'
+            }`}
+          >
+            <BellRing className="w-3.5 h-3.5" />
+            <span>Notificações</span>
+            <span
+              className={`text-[9px] px-1.5 py-0.2 rounded font-bold uppercase ${
+                activeTab === 'notifications' ? 'bg-black/30 text-white' : 'bg-purple-500/20 text-purple-300'
+              }`}
+            >
+              Global
+            </span>
+          </button>
+
+          <button
+            type="button"
             id="admin-tab-channels"
             onClick={() => setActiveTab('channels')}
-            className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-semibold transition-all duration-200 cursor-pointer ${
+            className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-lg text-xs font-semibold transition-all duration-200 cursor-pointer whitespace-nowrap ${
               activeTab === 'channels'
                 ? 'bg-emerald-500 text-black shadow-sm font-bold'
                 : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'
@@ -204,14 +318,14 @@ export function AdminPanelModal({
             type="button"
             id="admin-tab-limits"
             onClick={() => setActiveTab('limits')}
-            className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-semibold transition-all duration-200 cursor-pointer ${
+            className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-lg text-xs font-semibold transition-all duration-200 cursor-pointer whitespace-nowrap ${
               activeTab === 'limits'
                 ? 'bg-emerald-500 text-black shadow-sm font-bold'
                 : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'
             }`}
           >
             <Gauge className="w-3.5 h-3.5" />
-            <span>Limits of Requests</span>
+            <span>Limits</span>
             <span
               className={`text-[9px] px-1.5 py-0.2 rounded font-bold uppercase ${
                 rateLimitData?.enabled !== false
@@ -227,7 +341,7 @@ export function AdminPanelModal({
             type="button"
             id="admin-tab-session"
             onClick={() => setActiveTab('session')}
-            className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-semibold transition-all duration-200 cursor-pointer ${
+            className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-lg text-xs font-semibold transition-all duration-200 cursor-pointer whitespace-nowrap ${
               activeTab === 'session'
                 ? 'bg-emerald-500 text-black shadow-sm font-bold'
                 : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'
@@ -245,6 +359,44 @@ export function AdminPanelModal({
             <div className="space-y-3.5 animate-in fade-in duration-150">
               {/* ATALHOS RÁPIDOS E DIRETOS */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                <button
+                  type="button"
+                  id="admin-btn-open-create-notification"
+                  onClick={() => {
+                    if (onOpenCreateNotification) {
+                      onClose();
+                      onOpenCreateNotification();
+                    } else {
+                      setActiveTab('notifications');
+                    }
+                  }}
+                  className="p-3 rounded-xl bg-purple-950/25 hover:bg-purple-900/35 border border-purple-500/40 hover:border-purple-400/70 flex items-center justify-between text-left transition-all duration-200 hover:scale-[1.01] active:scale-99 cursor-pointer group col-span-1 sm:col-span-2 shadow-lg shadow-purple-950/20"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-lg bg-purple-500/20 border border-purple-500/40 flex items-center justify-center text-purple-400 shrink-0 shadow-sm">
+                      <BellRing className="w-4 h-4 animate-pulse" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-bold text-white group-hover:text-purple-300 transition-colors">
+                          Criar Notificação Global
+                        </span>
+                        <span className="text-[10px] px-2 py-0.2 rounded-full font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center gap-1">
+                          <Radio className="w-2.5 h-2.5 text-emerald-400 animate-ping" />
+                          Todos os Usuários
+                        </span>
+                      </div>
+                      <div className="text-[11px] text-zinc-400">
+                        Dispare avisos ao vivo, alertas ou bônus que todos os espectadores recebem na tela instantaneamente
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center text-purple-400 group-hover:text-purple-300 transition-colors">
+                    <span className="text-[11px] font-bold mr-1 hidden sm:inline">Criar</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </div>
+                </button>
+
                 <button
                   type="button"
                   id="admin-btn-open-subscribers"
@@ -309,6 +461,163 @@ export function AdminPanelModal({
                     onOpenSubscribers();
                   }}
                 />
+              </div>
+            </div>
+          )}
+
+          {/* ABA NOTIFICAÇÕES GLOBAIS */}
+          {activeTab === 'notifications' && (
+            <div className="space-y-4 animate-in fade-in duration-150">
+              {/* BANNER DE TRANSMISSÃO */}
+              <div className="p-4 rounded-xl bg-purple-950/20 border border-purple-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-purple-500/20 border border-purple-500/40 flex items-center justify-center text-purple-400 shrink-0">
+                    <BellRing className="w-5 h-5 animate-pulse" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-sm font-bold text-white">Transmissão Global de Notificações</h3>
+                      <span className="text-[10px] px-2 py-0.2 rounded-full font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center gap-1">
+                        <Radio className="w-2.5 h-2.5 text-emerald-400 animate-ping" />
+                        100% dos Usuários
+                      </span>
+                    </div>
+                    <p className="text-xs text-zinc-400 mt-0.5">
+                      Qualquer notificação criada aqui chega instantaneamente na tela de todos os usuários em tempo real.
+                    </p>
+                  </div>
+                </div>
+
+                {onOpenCreateNotification && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onClose();
+                      onOpenCreateNotification();
+                    }}
+                    className="px-3.5 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs flex items-center gap-2 transition shrink-0 cursor-pointer shadow-md shadow-purple-950/40"
+                  >
+                    <Sparkles className="w-3.5 h-3.5" />
+                    <span>Abrir Criador Completo</span>
+                  </button>
+                )}
+              </div>
+
+              {/* FORMULÁRIO RÁPIDO DE DISPARO */}
+              <form onSubmit={handleQuickSend} className="p-4 rounded-xl bg-zinc-900/60 border border-zinc-800/80 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-zinc-300 flex items-center gap-1.5">
+                    <Send className="w-3.5 h-3.5 text-purple-400" />
+                    Disparo Rápido para Todos os Usuários
+                  </span>
+                  <div className="flex items-center gap-1.5">
+                    {(['system', 'bonus', 'activation', 'plan_warning'] as NotificationType[]).map((t) => (
+                      <button
+                        key={t}
+                        type="button"
+                        onClick={() => setQuickNotifType(t)}
+                        className={`text-[10px] px-2 py-1 rounded-md font-semibold transition cursor-pointer ${
+                          quickNotifType === t
+                            ? 'bg-purple-600 text-white font-bold'
+                            : 'bg-zinc-800 text-zinc-400 hover:text-white'
+                        }`}
+                      >
+                        {t === 'system' ? 'Geral' : t === 'bonus' ? 'Bônus' : t === 'activation' ? 'Novidade' : 'Alerta'}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <input
+                    type="text"
+                    value={quickNotifTitle}
+                    onChange={(e) => setQuickNotifTitle(e.target.value)}
+                    placeholder="Título (ex: Grande Jogo Ao Vivo Agora! ⚽)"
+                    className="w-full px-3 py-2 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-purple-500"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <textarea
+                    value={quickNotifMessage}
+                    onChange={(e) => setQuickNotifMessage(e.target.value)}
+                    placeholder="Mensagem (ex: A transmissão começou! Acesse agora para assistir em alta definição sem travar)..."
+                    rows={2}
+                    className="w-full px-3 py-2 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-purple-500 resize-none"
+                    required
+                  />
+                </div>
+
+                <div className="flex items-center justify-between pt-1">
+                  <span className="text-[11px] text-zinc-500">
+                    O popup aparecerá imediatamente na tela de todos os espectadores.
+                  </span>
+                  <button
+                    type="submit"
+                    disabled={quickSending || !quickNotifTitle.trim() || !quickNotifMessage.trim()}
+                    className="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 disabled:opacity-50 text-white font-bold text-xs flex items-center gap-1.5 transition cursor-pointer"
+                  >
+                    <Send className="w-3.5 h-3.5" />
+                    <span>{quickSending ? 'Transmitindo...' : 'Disparar Agora'}</span>
+                  </button>
+                </div>
+              </form>
+
+              {/* HISTÓRICO DE TRANSMISSÕES */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-xs font-bold text-zinc-400">
+                  <span className="flex items-center gap-1.5">
+                    <History className="w-3.5 h-3.5" />
+                    Últimas Transmissões Globais ({broadcastList.length})
+                  </span>
+                  <button
+                    type="button"
+                    onClick={loadBroadcasts}
+                    className="text-[11px] text-purple-400 hover:text-purple-300 cursor-pointer"
+                  >
+                    Atualizar
+                  </button>
+                </div>
+
+                {loadingBroadcasts ? (
+                  <div className="p-4 text-center text-xs text-zinc-500">Carregando...</div>
+                ) : broadcastList.length === 0 ? (
+                  <div className="p-4 rounded-xl bg-zinc-900/40 border border-zinc-800/60 text-center text-xs text-zinc-500">
+                    Nenhuma notificação global transmitida recentemente.
+                  </div>
+                ) : (
+                  <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
+                    {broadcastList.map((item) => (
+                      <div
+                        key={item.id}
+                        className="p-2.5 rounded-xl bg-zinc-900/70 border border-zinc-800/70 text-xs flex items-center justify-between gap-3 hover:border-zinc-700 transition"
+                      >
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2">
+                            <span className="font-bold text-white truncate">{item.title}</span>
+                            <span className="text-[9px] px-1.5 py-0.2 rounded font-bold uppercase bg-purple-500/20 text-purple-300">
+                              {item.type}
+                            </span>
+                          </div>
+                          <p className="text-[11px] text-zinc-400 truncate mt-0.5">{item.message}</p>
+                          <span className="text-[10px] text-zinc-500 mt-1 block">
+                            {formatFriendlyDateTime(item.createdAt)}
+                          </span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteBroadcastItem(item.id)}
+                          className="p-1.5 rounded-lg text-zinc-500 hover:text-rose-400 hover:bg-zinc-800 transition cursor-pointer shrink-0"
+                          title="Excluir notificação do feed"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           )}

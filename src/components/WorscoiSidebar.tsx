@@ -52,6 +52,7 @@ interface WorscoiSidebarProps {
   isAdmin?: boolean;
   isCollapsed?: boolean;
   onToggleCollapse?: () => void;
+  onOpenCreateNotification?: () => void;
 }
 
 const FILTROS_CONFIG: Array<{
@@ -194,6 +195,7 @@ export function WorscoiSidebar({
   isAdmin = false,
   isCollapsed = false,
   onToggleCollapse,
+  onOpenCreateNotification: _onOpenCreateNotification,
 }: WorscoiSidebarProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({});

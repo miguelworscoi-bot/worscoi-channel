@@ -260,61 +260,81 @@ export function applyQualityToHls(hlsInstance: unknown, quality: VideoQuality): 
   const hls = hlsInstance as {
     levels?: Array<{ height?: number; bitrate?: number }>;
     currentLevel?: number;
-    autoLevelCapping?: number;
+    nextLevel?: number;
     loadLevel?: number;
+    autoLevelCapping?: number;
+    on?: (event: string, callback: (...args: unknown[]) => void) => void;
+    off?: (event: string, callback: (...args: unknown[]) => void) => void;
   };
 
-  if (quality === 'auto') {
-    hls.currentLevel = -1;
-    hls.autoLevelCapping = -1;
-    return true;
-  }
-
-  if (!Array.isArray(hls.levels) || hls.levels.length === 0) {
-    return false;
-  }
-
-  const targetHeight =
-    quality === '360p'
-      ? 360
-      : quality === '480p'
-      ? 480
-      : quality === '720p'
-      ? 720
-      : 1080;
-
-  // Busca o nível mais próximo ou o menor nível disponível se for 360p
-  let bestIdx = 0;
-  let minDiff = Infinity;
-
-  hls.levels.forEach((lvl, idx) => {
-    const h = lvl.height || 0;
-    if (h > 0) {
-      const diff = Math.abs(h - targetHeight);
-      if (diff < minDiff) {
-        minDiff = diff;
-        bestIdx = idx;
-      }
+  const apply = (): boolean => {
+    if (quality === 'auto') {
+      hls.currentLevel = -1;
+      if ('nextLevel' in hls) hls.nextLevel = -1;
+      hls.autoLevelCapping = -1;
+      return true;
     }
-  });
 
-  // Se o usuário solicitou 360p para sinal ruim, garante que não escolha um nível 1080p se houver um menor
-  if (quality === '360p') {
-    let lowestIdx = 0;
-    let lowestHeight = Infinity;
+    if (!Array.isArray(hls.levels) || hls.levels.length === 0) {
+      return false;
+    }
+
+    const targetHeight =
+      quality === '360p'
+        ? 360
+        : quality === '480p'
+        ? 480
+        : quality === '720p'
+        ? 720
+        : 1080;
+
+    // Busca o nível mais próximo ou o menor nível disponível se for 360p
+    let bestIdx = 0;
+    let minDiff = Infinity;
+
     hls.levels.forEach((lvl, idx) => {
       const h = lvl.height || 0;
-      if (h > 0 && h < lowestHeight) {
-        lowestHeight = h;
-        lowestIdx = idx;
+      if (h > 0) {
+        const diff = Math.abs(h - targetHeight);
+        if (diff < minDiff) {
+          minDiff = diff;
+          bestIdx = idx;
+        }
       }
     });
-    bestIdx = lowestIdx;
-  }
 
-  hls.currentLevel = bestIdx;
-  hls.autoLevelCapping = bestIdx;
-  return true;
+    // Se o usuário solicitou 360p para sinal ruim, garante que não escolha um nível 1080p se houver um menor
+    if (quality === '360p') {
+      let lowestIdx = 0;
+      let lowestHeight = Infinity;
+      hls.levels.forEach((lvl, idx) => {
+        const h = lvl.height || 0;
+        if (h > 0 && h < lowestHeight) {
+          lowestHeight = h;
+          lowestIdx = idx;
+        }
+      });
+      bestIdx = lowestIdx;
+    }
+
+    hls.currentLevel = bestIdx;
+    if ('nextLevel' in hls) hls.nextLevel = bestIdx;
+    if ('loadLevel' in hls) hls.loadLevel = bestIdx;
+    hls.autoLevelCapping = bestIdx;
+    return true;
+  };
+
+  const applied = apply();
+  if (!applied && typeof hls.on === 'function') {
+    const onParsed = () => {
+      apply();
+      if (typeof hls.off === 'function') {
+        hls.off('hlsManifestParsed', onParsed);
+      }
+    };
+    hls.on('hlsManifestParsed', onParsed);
+  }
+  return applied;
 }
 
 export interface LatencyModeInfo {

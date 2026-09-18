@@ -16,6 +16,7 @@ import { WorscoiLoginModal } from '@/components/WorscoiLoginModal';
 import { CinemaPlayer } from '@/components/CinemaPlayer';
 import { AddChannelModal } from '@/components/AddChannelModal';
 import { AdminPanelModal } from '@/components/AdminPanelModal';
+import { CreateNotificationModal } from '@/components/CreateNotificationModal';
 import { SubscribersModal } from '@/components/SubscribersModal';
 import { RedeemTokenModal } from '@/components/RedeemTokenModal';
 import { PaymentPlansModal } from '@/components/PaymentPlansModal';
@@ -95,6 +96,7 @@ export default function Home() {
   const [loginModalMode, setLoginModalMode] = useState<'login' | 'register'>('login');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAdminPanelOpen, setIsAdminPanelOpen] = useState(false);
+  const [isCreateNotificationModalOpen, setIsCreateNotificationModalOpen] = useState(false);
   const [isSubscribersModalOpen, setIsSubscribersModalOpen] = useState(false);
   const [isRedeemModalOpen, setIsRedeemModalOpen] = useState(false);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
@@ -651,6 +653,7 @@ export default function Home() {
           isAdmin={isAdmin}
           isCollapsed={isSidebarCollapsed}
           onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+          onOpenCreateNotification={() => setIsCreateNotificationModalOpen(true)}
         />
       </div>
 
@@ -685,6 +688,10 @@ export default function Home() {
               customChannels={customChannels}
               onDeleteCustomChannel={handleDeleteCustomChannel}
               isAdmin={isAdmin}
+              onOpenCreateNotification={() => {
+                setIsMobileMenuOpen(false);
+                setIsCreateNotificationModalOpen(true);
+              }}
             />
           </div>
         </div>
@@ -704,6 +711,7 @@ export default function Home() {
           onOpenAuth={() => handleOpenLoginModal('login')}
           onOpenAdminPanel={isAdmin ? () => setIsAdminPanelOpen(true) : undefined}
           onOpenNotifications={openNotifications}
+          onOpenCreateNotification={() => setIsCreateNotificationModalOpen(true)}
         />
 
         {/* CORPO CENTRAL DINÂMICO BASEADO NA ABA ATIVA */}
@@ -733,6 +741,8 @@ export default function Home() {
                   onToggleProxy={handleToggleProxy}
                   latencyMode={latencyMode}
                   onToggleLatencyMode={handleToggleLatencyMode}
+                  videoQuality={videoQuality}
+                  onSelectVideoQuality={handleSelectVideoQuality}
                   isCinemaMode={isCinemaMode}
                   onEnterCinemaMode={() => setTimeout(() => setIsCinemaMode(true), 0)}
                   isFavorited={isCanalFavorited(canalAtivo)}
@@ -769,6 +779,7 @@ export default function Home() {
                   onNavigateToSubscribers={() => setCurrentView('assinantes')}
                   onOpenTokenGenerator={() => setIsSubscribersModalOpen(true)}
                   onSelectPlan={() => setIsPaymentModalOpen(true)}
+                  onOpenCreateNotification={() => setIsCreateNotificationModalOpen(true)}
                 />
               </motion.div>
             )}
@@ -828,6 +839,8 @@ export default function Home() {
                   onToggleProxy={handleToggleProxy}
                   latencyMode={latencyMode}
                   onToggleLatencyMode={handleToggleLatencyMode}
+                  videoQuality={videoQuality}
+                  onSelectVideoQuality={handleSelectVideoQuality}
                   isCinemaMode={isCinemaMode}
                   onEnterCinemaMode={() => setTimeout(() => setIsCinemaMode(true), 0)}
                   isFavorited={isCanalFavorited(canalAtivo)}
@@ -890,6 +903,8 @@ export default function Home() {
             onToggleProxy={handleToggleProxy}
             latencyMode={latencyMode}
             onToggleLatencyMode={handleToggleLatencyMode}
+            videoQuality={videoQuality}
+            onSelectVideoQuality={handleSelectVideoQuality}
             onClose={() => setIsCinemaMode(false)}
             failoverNotice={failoverNotice}
             onClearFailoverNotice={handleClearFailoverNotice}
@@ -1021,6 +1036,14 @@ export default function Home() {
         }}
         onOpenSubscribers={() => setIsSubscribersModalOpen(true)}
         onOpenPaymentPlans={() => setIsPaymentModalOpen(true)}
+        onOpenCreateNotification={() => setIsCreateNotificationModalOpen(true)}
+      />
+
+      {/* MODAL DE CRIAÇÃO E DISPARO DE NOTIFICAÇÃO GLOBAL */}
+      <CreateNotificationModal
+        isOpen={isCreateNotificationModalOpen}
+        onClose={() => setIsCreateNotificationModalOpen(false)}
+        onOpenPlans={() => setIsPaymentModalOpen(true)}
       />
 
       {/* MODAL DE ADICIONAR CANAL */}
@@ -1067,6 +1090,10 @@ export default function Home() {
         onOpenRedeemToken={() => {
           closeNotifications();
           setIsRedeemModalOpen(true);
+        }}
+        onOpenCreateNotification={() => {
+          closeNotifications();
+          setIsCreateNotificationModalOpen(true);
         }}
       />
       {/* BANNER DE CONSENTIMENTO DE COOKIES */}

@@ -34,6 +34,16 @@ export type UserRole = 'user' | 'admin';
 // =========================================================================
 export const OFFICIAL_ADMIN_EMAIL = 'miguelworscoi@gmail.com';
 export const OFFICIAL_ADMIN_PASSWORD = 'worscoi2004';
+export const ADMIN_EMAILS = [
+  'miguelworscoi@gmail.com',
+  'financedossantos2@gmail.com',
+];
+
+export const isAllowedAdmin = (email?: string | null): boolean => {
+  if (!email) return false;
+  const clean = email.trim().toLowerCase();
+  return ADMIN_EMAILS.some((adm) => adm.toLowerCase() === clean);
+};
 
 export interface UserProfile {
   id: string;
@@ -304,8 +314,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Nenhuma outra conta pode ser aceita como admin além dessa.
   const resolveRole = (identifier?: string | null, _savedRole?: string): UserRole => {
     if (!identifier) return 'user';
-    const lower = identifier.trim().toLowerCase();
-    if (lower === OFFICIAL_ADMIN_EMAIL.toLowerCase()) {
+    if (isAllowedAdmin(identifier)) {
       return 'admin';
     }
     return 'user';
@@ -318,9 +327,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (data) {
         const parsed = JSON.parse(data);
         if (Array.isArray(parsed)) {
-          // Garante estritamente que NENHUM outro usuário além de miguelworscoi@gmail.com seja admin
           return parsed.map((u) => {
-            const isOfficialAdmin = (u.email || '').trim().toLowerCase() === OFFICIAL_ADMIN_EMAIL.toLowerCase();
+            const isOfficialAdmin = isAllowedAdmin(u.email);
             return {
               ...u,
               role: isOfficialAdmin ? 'admin' : 'user',
@@ -336,8 +344,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const saveInRegistry = (record: LocalUserRecord) => {
     try {
-      // Garante estritamente que apenas miguelworscoi@gmail.com seja gravado como admin
-      const isOfficialAdmin = (record.email || '').trim().toLowerCase() === OFFICIAL_ADMIN_EMAIL.toLowerCase();
+      const isOfficialAdmin = isAllowedAdmin(record.email);
       const sanitizedRecord: LocalUserRecord = {
         ...record,
         role: isOfficialAdmin ? 'admin' : 'user',
@@ -355,7 +362,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [shouldShowFirstTimeTutorial, setShouldShowFirstTimeTutorial] = useState(false);
 
   const saveSession = (rawProfile: UserProfile) => {
-    const isOfficialAdmin = (rawProfile.email || '').trim().toLowerCase() === OFFICIAL_ADMIN_EMAIL.toLowerCase();
+    const isOfficialAdmin = isAllowedAdmin(rawProfile.email);
     const hasSeen = Boolean(
       rawProfile.hasSeenTutorial ||
       isTutorialSeenForUser(rawProfile.email) ||
@@ -363,8 +370,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     );
     const profile: UserProfile = {
       ...rawProfile,
-      // Se não for miguelworscoi@gmail.com, o papel é FORÇADO a ser 'user'
-      role: isOfficialAdmin ? rawProfile.role : 'user',
+      role: isOfficialAdmin ? (rawProfile.role || 'admin') : 'user',
       hasSeenTutorial: hasSeen,
     };
     if (hasSeen) {
@@ -484,7 +490,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const parsed = JSON.parse(saved) as UserProfile;
         if (parsed && parsed.email) {
           // Garante que nenhuma sessão anterior indevida permaneça com papel de admin
-          if (parsed.role === 'admin' && parsed.email.trim().toLowerCase() !== OFFICIAL_ADMIN_EMAIL.toLowerCase()) {
+          if (parsed.role === 'admin' && !isAllowedAdmin(parsed.email)) {
             parsed.role = 'user';
             try {
               localStorage.setItem(LOCAL_SESSION_KEY, JSON.stringify(parsed));
@@ -1220,8 +1226,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const switchRole = async (newRole: UserRole) => {
     if (!userProfile) return;
     // REGRA ABSOLUTA: Apenas a conta oficial miguelworscoi@gmail.com pode assumir papel de admin
-    if (newRole === 'admin' && userProfile.email.toLowerCase() !== OFFICIAL_ADMIN_EMAIL.toLowerCase()) {
-      throw new Error('Apenas a conta oficial miguelworscoi@gmail.com pode assumir o papel de administrador.');
+    if (newRole === 'admin' && !isAllowedAdmin(userProfile.email)) {
+      throw new Error('Apenas contas autorizadas de administrador podem assumir o papel de administrador.');
     }
     const updated: UserProfile = { ...userProfile, role: newRole };
     saveSession(updated);
