@@ -32,138 +32,8 @@ export interface CustomPage {
 
 const LOCAL_STORAGE_CUSTOM_PAGES_KEY = 'worscoi_custom_pages_v1';
 
-// Páginas padrão ativadas automaticamente para enriquecer a experiência
-export const PAGINAS_PERSONALIZADAS_PADRAO: CustomPage[] = [
-  {
-    id: 'page_jogos_hoje',
-    slug: 'jogos-do-dia',
-    titulo: 'Jogos do Dia & Agenda',
-    descricao: 'Guia completo com os principais confrontos de futebol e links diretos para assistir',
-    icone: 'calendar',
-    badge: 'AO VIVO',
-    badgeCor: 'rose',
-    ativoNoMenu: true,
-    ordem: 1,
-    tipoConteudo: 'links_list',
-    links: [
-      {
-        id: 'link_zap1',
-        titulo: 'ZAP Sports 1 — LaLiga & Girabola',
-        url: '/?canal=zap-sports-1',
-        descricao: 'Cobertura ao vivo em HD dos maiores clássicos',
-        categoria: 'Futebol Ao Vivo',
-        icone: 'tv',
-        destaque: true,
-      },
-      {
-        id: 'link_zap2',
-        titulo: 'ZAP Sports 2 — Transmissão Simultânea',
-        url: '/?canal=zap-sports-2',
-        descricao: 'Segunda tela com jogos simultâneos',
-        categoria: 'Futebol Ao Vivo',
-        icone: 'tv',
-        destaque: false,
-      },
-      {
-        id: 'link_tnt',
-        titulo: 'TNT Sports & Champions League',
-        url: '/?canal=tnt-sports',
-        descricao: 'Os maiores clubes da Europa ao vivo',
-        categoria: 'UEFA Champions League',
-        icone: 'star',
-        destaque: true,
-      },
-      {
-        id: 'link_espn',
-        titulo: 'ESPN & Premier League Inglesa',
-        url: '/?canal=espn',
-        descricao: 'Campeonato Inglês e ligas internacionais',
-        categoria: 'Futebol Internacional',
-        icone: 'globe',
-        destaque: false,
-      },
-    ],
-    criadoEm: new Date().toISOString(),
-    atualizadoEm: new Date().toISOString(),
-  },
-  {
-    id: 'page_canais_vip',
-    slug: 'canais-vip',
-    titulo: 'Canais VIP & Premium',
-    descricao: 'Acesso rápido e direto às transmissões de alta performance da rede',
-    icone: 'sparkles',
-    badge: 'PRO',
-    badgeCor: 'cyan',
-    ativoNoMenu: true,
-    ordem: 2,
-    tipoConteudo: 'links_list',
-    links: [
-      {
-        id: 'link_premiere',
-        titulo: 'Premiere Clubes — Multijogos',
-        url: '/?canal=premiere',
-        descricao: 'Transmissão contínua com qualidade adaptativa',
-        categoria: 'Assinatura',
-        icone: 'tv',
-        destaque: true,
-      },
-      {
-        id: 'link_sportv',
-        titulo: 'SporTV HD — Cobertura Esportiva 24h',
-        url: '/?canal=sportv',
-        descricao: 'Notícias, debates e transmissões ao vivo',
-        categoria: 'Esportes Gerais',
-        icone: 'tv',
-        destaque: false,
-      },
-      {
-        id: 'link_ge',
-        titulo: 'Portal de Resultados & Tabelas GE',
-        url: 'https://ge.globo.com/',
-        descricao: 'Acompanhe a tabela oficial, classificação e estatísticas',
-        categoria: 'Estatísticas',
-        icone: 'external',
-        destaque: false,
-      },
-    ],
-    criadoEm: new Date().toISOString(),
-    atualizadoEm: new Date().toISOString(),
-  },
-  {
-    id: 'page_parceiros',
-    slug: 'parceiros',
-    titulo: 'Central de Parceiros & Links',
-    descricao: 'Portais esportivos oficiais, suporte da comunidade e comunidades de transmissão',
-    icone: 'share-2',
-    badge: 'LINKS',
-    badgeCor: 'emerald',
-    ativoNoMenu: true,
-    ordem: 3,
-    tipoConteudo: 'links_list',
-    links: [
-      {
-        id: 'link_suporte_zap',
-        titulo: 'Suporte Oficial Worscoi no WhatsApp',
-        url: 'https://wa.me/244900000000?text=Ol%C3%A1%2C%20gostaria%20de%20ajuda%20com%20o%20Worscoi%20PRO',
-        descricao: 'Atendimento rápido e ativação de chaves de assinatura',
-        categoria: 'Suporte',
-        icone: 'globe',
-        destaque: true,
-      },
-      {
-        id: 'link_zap_ao',
-        titulo: 'Guia de Programação ZAP TV',
-        url: 'https://www.zap.co.ao/',
-        descricao: 'Consulte a grade completa da ZAP Angola e Moçambique',
-        categoria: 'Oficial',
-        icone: 'external',
-        destaque: false,
-      },
-    ],
-    criadoEm: new Date().toISOString(),
-    atualizadoEm: new Date().toISOString(),
-  },
-];
+// Páginas padrão (inicia vazio para não poluir o menu)
+export const PAGINAS_PERSONALIZADAS_PADRAO: CustomPage[] = [];
 
 /**
  * Normaliza qualquer texto para um slug de URL seguro
@@ -181,22 +51,23 @@ export function formatSlug(text: string): string {
  * Carrega todas as páginas personalizadas do localStorage (com fallback para as padrões)
  */
 export function getCustomPages(): CustomPage[] {
-  if (typeof window === 'undefined') return PAGINAS_PERSONALIZADAS_PADRAO;
+  if (typeof window === 'undefined') return [];
   try {
     const raw = localStorage.getItem(LOCAL_STORAGE_CUSTOM_PAGES_KEY);
     if (!raw) {
-      // Salva as padrões no primeiro acesso
-      localStorage.setItem(LOCAL_STORAGE_CUSTOM_PAGES_KEY, JSON.stringify(PAGINAS_PERSONALIZADAS_PADRAO));
-      return PAGINAS_PERSONALIZADAS_PADRAO;
+      return [];
     }
     const parsed = JSON.parse(raw);
-    if (Array.isArray(parsed) && parsed.length > 0) {
-      return parsed;
+    if (Array.isArray(parsed)) {
+      // Filtra páginas de exemplo eliminadas
+      return parsed.filter(
+        (p: CustomPage) => p.id !== 'page_jogos_hoje' && p.id !== 'page_canais_vip' && p.id !== 'page_parceiros'
+      );
     }
   } catch (err) {
     console.error('Erro ao ler páginas personalizadas:', err);
   }
-  return PAGINAS_PERSONALIZADAS_PADRAO;
+  return [];
 }
 
 /**

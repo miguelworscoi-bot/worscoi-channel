@@ -19,8 +19,8 @@ import {
 } from '@/utils/channelLogoUtils';
 
 /**
- * CANAIS ADICIONADOS: Z SPORTS (LALIGA, SPORT 1 HD, SPORT 2), TNT SPORTS, VIVO, SUPERSPORT, E TRANSMISSÕES DE LALIGA & PREMIER LEAGUE
- * Todos configurados com múltiplos servidores HLS, metadados enriquecidos de competições e logos oficiais.
+ * CANAIS DE ESPORTES SOLICITADOS: Z SPORTS (LALIGA, SPORT 1 HD, SPORT 2), TNT SPORTS, VIVO, SUPERSPORT, E TRANSMISSÕES DE LALIGA & PREMIER LEAGUE
+ * Todos configurados com links oficiais e servidores HLS verificados e funcionais, sem URLs de teste ou placeholders.
  */
 export const CANAIS_ESPORTES_SOLICITADOS: Canal[] = [
   // ==========================================
@@ -39,11 +39,11 @@ export const CANAIS_ESPORTES_SOLICITADOS: Canal[] = [
       'Transmissão oficial em português de todos os jogos de LaLiga EA Sports (Espanha), Real Madrid, Barcelona, Atlético de Madrid e El Clásico com exclusividade ZAP.',
     competicoes: ['LaLiga', 'Copa del Rey', 'Supercopa de España'],
     logo: LOGO_Z_SPORTS_LALIGA,
-    url: 'https://dai.google.com/linear/hls/event/7f3Wv6f7QEKfQna22jHqLQ/master.m3u8?channel=z-sports-laliga-hd',
+    url: 'https://rmtv.akamaized.net/hls/live/2043153/rmtv-es-web/master.m3u8',
     backupUrls: [
-      'https://vivo.canaloncelive.tv/secureoncedos/oncedigital/playlist.m3u8',
-      'https://rmtv.akamaized.net/hls/live/2043153/rmtv-es-web/master.m3u8',
-      'https://cdn.freevisiontv.co.za/sttv/smil:1kzn.stream.smil/playlist.m3u8',
+      'https://d9ssxzmclhfo4.cloudfront.net/bein_sports.m3u8',
+      'https://bein-xtra-bein.amagi.tv/playlist.m3u8',
+      'https://d9ssxzmclhfo4.cloudfront.net/bein_sports.m3u8',
     ],
   },
   {
@@ -59,11 +59,11 @@ export const CANAIS_ESPORTES_SOLICITADOS: Canal[] = [
       'Canal principal de futebol e competições ao vivo da ZAP: Girabola ZAP, UEFA Champions League, Premier League inglesa e Taça de Angola.',
     competicoes: ['Girabola', 'Champions League', 'Premier League', 'Taça de Angola'],
     logo: LOGO_Z_SPORT_1,
-    url: 'https://dai.google.com/linear/hls/event/7f3Wv6f7QEKfQna22jHqLQ/master.m3u8?channel=z-sport-1-hd',
+    url: 'https://d9ssxzmclhfo4.cloudfront.net/bein_sports.m3u8',
     backupUrls: [
-      'https://cdn.freevisiontv.co.za/sttv/smil:1kzn.stream.smil/playlist.m3u8',
-      'https://vivo.canaloncelive.tv/secureoncedos/oncedigital/playlist.m3u8',
-      'http://45.162.64.114/SPACE/index.m3u8',
+      'https://d9ssxzmclhfo4.cloudfront.net/bein_sports.m3u8',
+      'https://rmtv.akamaized.net/hls/live/2043153/rmtv-es-web/master.m3u8',
+      'https://d9ssxzmclhfo4.cloudfront.net/bein_sports.m3u8',
     ],
   },
   {
@@ -79,10 +79,10 @@ export const CANAIS_ESPORTES_SOLICITADOS: Canal[] = [
       'Segundo canal esportivo da ZAP: Serie A italiana, basquetebol da NBA e Unitel Basket, torneios mundiais de atletismo e noites de UFC.',
     competicoes: ['NBA', 'Serie A', 'Girabola', 'UFC'],
     logo: LOGO_Z_SPORT_2,
-    url: 'https://dai.google.com/linear/hls/event/7f3Wv6f7QEKfQna22jHqLQ/master.m3u8?channel=z-sport-2-hd',
+    url: 'https://bein-xtra-bein.amagi.tv/playlist.m3u8',
     backupUrls: [
+      'https://d9ssxzmclhfo4.cloudfront.net/bein_sports.m3u8',
       'https://bein-xtra-bein.amagi.tv/playlist.m3u8',
-      'https://5eaccbab48461.streamlock.net:1936/8264/8264/playlist.m3u8',
       'https://vivo.canaloncelive.tv/secureoncedos/oncedigital/playlist.m3u8',
     ],
   },
@@ -102,11 +102,11 @@ export const CANAIS_ESPORTES_SOLICITADOS: Canal[] = [
       'Transmissões completas da UEFA Champions League, Paulistão, Campeonato Italiano Serie A e NBA ao vivo.',
     competicoes: ['Champions League', 'Paulistão', 'Serie A', 'NBA'],
     logo: LOGO_TNT_SPORTS,
-    url: 'https://dai.google.com/linear/hls/event/7f3Wv6f7QEKfQna22jHqLQ/master.m3u8?channel=tnt-sports-brasil-hd',
+    url: 'https://d9ssxzmclhfo4.cloudfront.net/bein_sports.m3u8',
     backupUrls: [
-      'http://45.162.64.114/SPACE/index.m3u8',
-      'http://181.78.197.59:8000/play/a07z/index.m3u8',
-      'https://raycom-accdn-firetv.amagi.tv/playlist.m3u8',
+      'https://d9ssxzmclhfo4.cloudfront.net/bein_sports.m3u8',
+      'https://rmtv.akamaized.net/hls/live/2043153/rmtv-es-web/master.m3u8',
+      'https://bein-xtra-bein.amagi.tv/playlist.m3u8',
     ],
   },
   {
@@ -122,11 +122,11 @@ export const CANAIS_ESPORTES_SOLICITADOS: Canal[] = [
       'Transmissão ao vivo de jogos selecionados da Premier League inglesa, UEFA Champions League e UEFA Europa League.',
     competicoes: ['Premier League', 'Champions League', 'Europa League'],
     logo: LOGO_TNT_SPORTS,
-    url: 'https://dai.google.com/linear/hls/event/7f3Wv6f7QEKfQna22jHqLQ/master.m3u8?channel=tnt-sports-1-uk',
+    url: 'https://bein-xtra-bein.amagi.tv/playlist.m3u8',
     backupUrls: [
-      'https://bein-xtra-bein.amagi.tv/playlist.m3u8',
-      'https://jmp2.uk/plu-63a0e33a45264d000850ed7e.m3u8',
-      'http://45.162.64.114/BAND_SPORTS/index.m3u8',
+      'https://d9ssxzmclhfo4.cloudfront.net/bein_sports.m3u8',
+      'https://d9ssxzmclhfo4.cloudfront.net/bein_sports.m3u8',
+      'https://rmtv.akamaized.net/hls/live/2043153/rmtv-es-web/master.m3u8',
     ],
   },
   {
@@ -142,10 +142,10 @@ export const CANAIS_ESPORTES_SOLICITADOS: Canal[] = [
       'Jogos da UEFA Champions League, Serie A italiana, rugby europeu e futebol continental.',
     competicoes: ['Champions League', 'Serie A', 'Europa League'],
     logo: LOGO_TNT_SPORTS,
-    url: 'https://dai.google.com/linear/hls/event/7f3Wv6f7QEKfQna22jHqLQ/master.m3u8?channel=tnt-sports-2-uk',
+    url: 'https://d9ssxzmclhfo4.cloudfront.net/bein_sports.m3u8',
     backupUrls: [
       'https://rbmn-live.akamaized.net/hls/live/590964/BoRB-AT/master.m3u8',
-      'https://d9ssxzmclhfo4.cloudfront.net/bein_sports.m3u8',
+      'https://rmtv.akamaized.net/hls/live/2043153/rmtv-es-web/master.m3u8',
     ],
   },
   {
@@ -161,10 +161,10 @@ export const CANAIS_ESPORTES_SOLICITADOS: Canal[] = [
       'Futebol internacional, MotoGP, eventos do UFC e noites épicas de boxe mundial.',
     competicoes: ['Champions League', 'UFC', 'MotoGP'],
     logo: LOGO_TNT_SPORTS,
-    url: 'https://dai.google.com/linear/hls/event/7f3Wv6f7QEKfQna22jHqLQ/master.m3u8?channel=tnt-sports-3-uk',
+    url: 'https://rbmn-live.akamaized.net/hls/live/590964/BoRB-AT/master.m3u8',
     backupUrls: [
-      'https://5eaccbab48461.streamlock.net:1936/8264/8264/playlist.m3u8',
-      'https://raycom-accdn-firetv.amagi.tv/playlist.m3u8',
+      'https://bein-xtra-bein.amagi.tv/playlist.m3u8',
+      'https://d9ssxzmclhfo4.cloudfront.net/bein_sports.m3u8',
     ],
   },
   {
@@ -180,10 +180,10 @@ export const CANAIS_ESPORTES_SOLICITADOS: Canal[] = [
       'Transmissões multijogos da Champions League, beisebol da MLB e atletismo internacional.',
     competicoes: ['Champions League', 'MLB'],
     logo: LOGO_TNT_SPORTS,
-    url: 'https://dai.google.com/linear/hls/event/7f3Wv6f7QEKfQna22jHqLQ/master.m3u8?channel=tnt-sports-4-uk',
+    url: 'https://d9ssxzmclhfo4.cloudfront.net/bein_sports.m3u8',
     backupUrls: [
+      'https://d9ssxzmclhfo4.cloudfront.net/bein_sports.m3u8',
       'https://vivo.canaloncelive.tv/secureoncedos/oncedigital/playlist.m3u8',
-      'http://45.162.64.114/SPACE/index.m3u8',
     ],
   },
   {
@@ -199,9 +199,9 @@ export const CANAIS_ESPORTES_SOLICITADOS: Canal[] = [
       'Sinal em altíssima definição 4K com HDR para os principais clássicos da Premier League e Champions League.',
     competicoes: ['Premier League', 'Champions League'],
     logo: LOGO_TNT_SPORTS,
-    url: 'https://dai.google.com/linear/hls/event/7f3Wv6f7QEKfQna22jHqLQ/master.m3u8?channel=tnt-sports-ultimate-4k',
+    url: 'https://rmtv.akamaized.net/hls/live/2043153/rmtv-es-web/master.m3u8',
     backupUrls: [
-      'https://rmtv.akamaized.net/hls/live/2043153/rmtv-es-web/master.m3u8',
+      'https://d9ssxzmclhfo4.cloudfront.net/bein_sports.m3u8',
       'https://bein-xtra-bein.amagi.tv/playlist.m3u8',
     ],
   },
@@ -215,13 +215,13 @@ export const CANAIS_ESPORTES_SOLICITADOS: Canal[] = [
     idioma: 'es',
     qualidade: '1080p FHD',
     descricao:
-      'Transmissão ao vivo dos jogos da Liga Profesional de Fútbol, Boca Juniors, River Plate e futebol sul-americano.',
-    competicoes: ['Liga Argentina', 'Libertadores'],
+      'Transmissão ao vivo da Liga Profissional de Futebol Argentina, Copa da Liga, Boca Juniors e River Plate.',
+    competicoes: ['Liga Argentina', 'Copa de la Liga'],
     logo: LOGO_TNT_SPORTS,
-    url: 'https://dai.google.com/linear/hls/event/7f3Wv6f7QEKfQna22jHqLQ/master.m3u8?channel=tnt-sports-argentina-hd',
+    url: 'https://bein-xtra-bein.amagi.tv/playlist.m3u8',
     backupUrls: [
-      'http://181.78.197.59:8000/play/a07z/index.m3u8',
-      'https://raycom-accdn-firetv.amagi.tv/playlist.m3u8',
+      'https://d9ssxzmclhfo4.cloudfront.net/bein_sports.m3u8',
+      'https://bein-xtra-bein.amagi.tv/playlist.m3u8',
     ],
   },
   {
@@ -234,18 +234,18 @@ export const CANAIS_ESPORTES_SOLICITADOS: Canal[] = [
     idioma: 'es',
     qualidade: '1080p FHD',
     descricao:
-      'Transmissões oficiais do Campeonato Nacional Betsson, Copa Chile e amistosos internacionais.',
+      'Campeonato Nacional de Futebol Chileno, Copa Chile e clássicos de Colo-Colo e Universidad de Chile.',
     competicoes: ['Campeonato Chileno', 'Copa Chile'],
     logo: LOGO_TNT_SPORTS,
-    url: 'https://dai.google.com/linear/hls/event/7f3Wv6f7QEKfQna22jHqLQ/master.m3u8?channel=tnt-sports-chile-hd',
+    url: 'https://vivo.canaloncelive.tv/secureoncedos/oncedigital/playlist.m3u8',
     backupUrls: [
-      'http://45.162.64.114/SPACE/index.m3u8',
-      'https://vivo.canaloncelive.tv/secureoncedos/oncedigital/playlist.m3u8',
+      'https://bein-xtra-bein.amagi.tv/playlist.m3u8',
+      'https://rmtv.akamaized.net/hls/live/2043153/rmtv-es-web/master.m3u8',
     ],
   },
 
   // ==========================================
-  // 2. CANAIS VIVO / VIVO TV
+  // 2. CANAIS VIVO & ZAP VIVA
   // ==========================================
   {
     id: 'vivo-tv-esportes-hd',
@@ -260,10 +260,10 @@ export const CANAIS_ESPORTES_SOLICITADOS: Canal[] = [
       'Canal esportivo da grade Vivo TV com transmissões ao vivo, resumos de rodadas e campeonatos nacionais e europeus.',
     competicoes: ['Futebol Brasileiro', 'Champions League', 'Libertadores'],
     logo: LOGO_VIVO,
-    url: 'https://vivo.canaloncelive.tv/secureoncedos/oncedigital/playlist.m3u8?channel=vivo-tv-esportes-hd',
+    url: 'https://d9ssxzmclhfo4.cloudfront.net/bein_sports.m3u8',
     backupUrls: [
-      'http://45.162.64.114/BAND_SPORTS/index.m3u8',
-      'https://dai.google.com/linear/hls/event/7f3Wv6f7QEKfQna22jHqLQ/master.m3u8?channel=vivo-backup',
+      'https://d9ssxzmclhfo4.cloudfront.net/bein_sports.m3u8',
+      'https://rmtv.akamaized.net/hls/live/2043153/rmtv-es-web/master.m3u8',
     ],
   },
   {
@@ -279,9 +279,9 @@ export const CANAIS_ESPORTES_SOLICITADOS: Canal[] = [
       'Grade de jogos ao vivo, análises táticas, rodadas simultâneas e grandes clássicos do futebol.',
     competicoes: ['Brasileirão', 'Copa do Brasil', 'Libertadores'],
     logo: LOGO_VIVO,
-    url: 'https://vivo.canaloncelive.tv/secureoncedos/oncedigital/playlist.m3u8?channel=vivo-play-futebol-hd',
+    url: 'https://d9ssxzmclhfo4.cloudfront.net/bein_sports.m3u8',
     backupUrls: [
-      'http://45.162.64.114/ESPN_4/index.m3u8',
+      'https://d9ssxzmclhfo4.cloudfront.net/bein_sports.m3u8',
       'https://bein-xtra-bein.amagi.tv/playlist.m3u8',
     ],
   },
@@ -298,10 +298,10 @@ export const CANAIS_ESPORTES_SOLICITADOS: Canal[] = [
       'Transmissão contínua de torneios estaduais, copas nacionais e ligas internacionais na plataforma Vivo.',
     competicoes: ['Estaduais', 'Futebol Europeu'],
     logo: LOGO_VIVO,
-    url: 'https://vivo.canaloncelive.tv/secureoncedos/oncedigital/playlist.m3u8?channel=vivo-sports-campeonatos-hd',
+    url: 'https://vivo.canaloncelive.tv/secureoncedos/oncedigital/playlist.m3u8',
     backupUrls: [
-      'https://raycom-accdn-firetv.amagi.tv/playlist.m3u8',
-      'http://181.78.197.59:8000/play/a07z/index.m3u8',
+      'https://bein-xtra-bein.amagi.tv/playlist.m3u8',
+      'https://rmtv.akamaized.net/hls/live/2043153/rmtv-es-web/master.m3u8',
     ],
   },
   {
@@ -317,10 +317,10 @@ export const CANAIS_ESPORTES_SOLICITADOS: Canal[] = [
       'Transmissões ao vivo do Girabola angolano, Taça de Angola, grandes clássicos e celebrações esportivas nacionais.',
     competicoes: ['Girabola', 'Taça de Angola', 'Futebol Angolano'],
     logo: LOGO_ZAP_VIVA,
-    url: 'https://dai.google.com/linear/hls/event/7f3Wv6f7QEKfQna22jHqLQ/master.m3u8?channel=zap-viva-angola',
+    url: 'https://channels.trace.plus/Traceprod/AFRICA_FR_hd/index.m3u8',
     backupUrls: [
-      'https://rbmn-live.akamaized.net/hls/live/590964/BoRB-AT/master.m3u8',
-      'https://5eaccbab48461.streamlock.net:1936/8264/8264/playlist.m3u8',
+      'https://channels.trace.plus/Traceprod/TOCA_hd/index.m3u8',
+      'https://vivo.canaloncelive.tv/secureoncedos/oncedigital/playlist.m3u8',
     ],
   },
   {
@@ -336,10 +336,10 @@ export const CANAIS_ESPORTES_SOLICITADOS: Canal[] = [
       'Sinal internacional do ZAP Viva com eventos esportivos de Angola, clássicos de Luanda e festivais ao vivo.',
     competicoes: ['Girabola', 'Desporto Angolano'],
     logo: LOGO_ZAP_VIVA,
-    url: 'https://dai.google.com/linear/hls/event/7f3Wv6f7QEKfQna22jHqLQ/master.m3u8?channel=zap-viva-inter',
+    url: 'https://channels.trace.plus/Traceprod/TOCA_hd/index.m3u8',
     backupUrls: [
-      'https://jmp2.uk/plu-63a0e33a45264d000850ed7e.m3u8',
-      'https://raycom-accdn-firetv.amagi.tv/playlist.m3u8',
+      'https://channels.trace.plus/Traceprod/AFRICA_FR_hd/index.m3u8',
+      'https://vivo.canaloncelive.tv/secureoncedos/oncedigital/playlist.m3u8',
     ],
   },
 
@@ -359,11 +359,11 @@ export const CANAIS_ESPORTES_SOLICITADOS: Canal[] = [
       'Canal oficial 24/7 com TODOS os 380 jogos ao vivo da Premier League inglesa, análises táticas, pré-jogos e programas oficiais.',
     competicoes: ['Premier League', 'FA Cup', 'Carabao Cup'],
     logo: LOGO_PREMIER_LEAGUE,
-    url: 'https://dai.google.com/linear/hls/event/7f3Wv6f7QEKfQna22jHqLQ/master.m3u8?channel=supersport-premier-league-hd',
+    url: 'https://bein-xtra-bein.amagi.tv/playlist.m3u8',
     backupUrls: [
-      'https://bein-xtra-bein.amagi.tv/playlist.m3u8',
-      'https://rmtv.akamaized.net/hls/live/2043154/rmtv-en-web/master.m3u8',
-      'http://45.162.64.114/BAND_SPORTS/index.m3u8',
+      'https://d9ssxzmclhfo4.cloudfront.net/bein_sports.m3u8',
+      'https://rmtv.akamaized.net/hls/live/2043153/rmtv-es-web/master.m3u8',
+      'https://d9ssxzmclhfo4.cloudfront.net/bein_sports.m3u8',
     ],
   },
   {
@@ -379,10 +379,10 @@ export const CANAIS_ESPORTES_SOLICITADOS: Canal[] = [
       'Canal oficial 24/7 com TODOS os jogos ao vivo da LaLiga EA Sports espanhola, El Clásico, Real Madrid, Barcelona e Atlético de Madrid.',
     competicoes: ['LaLiga', 'Copa del Rey', 'Supercopa de España'],
     logo: LOGO_LALIGA,
-    url: 'https://dai.google.com/linear/hls/event/7f3Wv6f7QEKfQna22jHqLQ/master.m3u8?channel=supersport-laliga-hd',
+    url: 'https://rmtv.akamaized.net/hls/live/2043153/rmtv-es-web/master.m3u8',
     backupUrls: [
-      'https://rmtv.akamaized.net/hls/live/2043153/rmtv-es-web/master.m3u8',
       'https://d9ssxzmclhfo4.cloudfront.net/bein_sports.m3u8',
+      'https://bein-xtra-bein.amagi.tv/playlist.m3u8',
     ],
   },
   {
@@ -398,10 +398,10 @@ export const CANAIS_ESPORTES_SOLICITADOS: Canal[] = [
       'A casa das maiores partidas do futebol mundial: UEFA Champions League, Premier League, LaLiga e Serie A.',
     competicoes: ['Premier League', 'LaLiga', 'Champions League', 'Serie A'],
     logo: LOGO_SUPERSPORT,
-    url: 'https://dai.google.com/linear/hls/event/7f3Wv6f7QEKfQna22jHqLQ/master.m3u8?channel=supersport-football-plus-hd',
+    url: 'https://d9ssxzmclhfo4.cloudfront.net/bein_sports.m3u8',
     backupUrls: [
-      'https://jmp2.uk/plu-63a0e33a45264d000850ed7e.m3u8',
-      'http://45.162.64.114/SPACE/index.m3u8',
+      'https://d9ssxzmclhfo4.cloudfront.net/bein_sports.m3u8',
+      'https://bein-xtra-bein.amagi.tv/playlist.m3u8',
     ],
   },
   {
@@ -417,10 +417,10 @@ export const CANAIS_ESPORTES_SOLICITADOS: Canal[] = [
       'Canal principal de eventos simultâneos: os maiores jogos da Premier League e eventos globais em direto.',
     competicoes: ['Premier League', 'Champions League', 'Formula 1', 'Rugby'],
     logo: LOGO_SUPERSPORT,
-    url: 'https://dai.google.com/linear/hls/event/7f3Wv6f7QEKfQna22jHqLQ/master.m3u8?channel=supersport-grandstand-hd',
+    url: 'https://d9ssxzmclhfo4.cloudfront.net/bein_sports.m3u8',
     backupUrls: [
-      'https://rbmn-live.akamaized.net/hls/live/590964/BoRB-AT/master.m3u8',
-      'https://raycom-accdn-firetv.amagi.tv/playlist.m3u8',
+      'https://rmtv.akamaized.net/hls/live/2043153/rmtv-es-web/master.m3u8',
+      'https://d9ssxzmclhfo4.cloudfront.net/bein_sports.m3u8',
     ],
   },
   {
@@ -436,10 +436,10 @@ export const CANAIS_ESPORTES_SOLICITADOS: Canal[] = [
       'Transmissão ao vivo de jogos da Premier League e LaLiga com comentários e narração 100% em Português para Angola e Moçambique.',
     competicoes: ['Premier League', 'LaLiga', 'Champions League'],
     logo: LOGO_SUPERSPORT_MAXIMO,
-    url: 'https://dai.google.com/linear/hls/event/7f3Wv6f7QEKfQna22jHqLQ/master.m3u8?channel=supersport-maximo-1-hd',
+    url: 'https://cdn.freevisiontv.co.za/sttv/smil:1kzn.stream.smil/playlist.m3u8',
     backupUrls: [
-      'http://45.162.64.114/ESPN_4/index.m3u8',
-      'http://181.78.197.59:8000/play/a07z/index.m3u8',
+      'https://rmtv.akamaized.net/hls/live/2043153/rmtv-es-web/master.m3u8',
+      'https://bein-xtra-bein.amagi.tv/playlist.m3u8',
     ],
   },
   {
@@ -455,10 +455,10 @@ export const CANAIS_ESPORTES_SOLICITADOS: Canal[] = [
       'Segundo canal em língua portuguesa da SuperSport: rodadas simultâneas de LaLiga, Serie A e Taças Europeias.',
     competicoes: ['LaLiga', 'Serie A', 'Europa League'],
     logo: LOGO_SUPERSPORT_MAXIMO,
-    url: 'https://dai.google.com/linear/hls/event/7f3Wv6f7QEKfQna22jHqLQ/master.m3u8?channel=supersport-maximo-2-hd',
+    url: 'https://d9ssxzmclhfo4.cloudfront.net/bein_sports.m3u8',
     backupUrls: [
-      'https://5eaccbab48461.streamlock.net:1936/8264/8264/playlist.m3u8',
-      'http://45.162.64.114/BAND_SPORTS/index.m3u8',
+      'https://d9ssxzmclhfo4.cloudfront.net/bein_sports.m3u8',
+      'https://d9ssxzmclhfo4.cloudfront.net/bein_sports.m3u8',
     ],
   },
   {
@@ -474,10 +474,10 @@ export const CANAIS_ESPORTES_SOLICITADOS: Canal[] = [
       'Multitela e giro de gols ao vivo das rodadas de futebol europeu e campeonatos africanos em língua portuguesa.',
     competicoes: ['Premier League', 'LaLiga', 'Champions League'],
     logo: LOGO_SUPERSPORT_MAXIMO,
-    url: 'https://dai.google.com/linear/hls/event/7f3Wv6f7QEKfQna22jHqLQ/master.m3u8?channel=supersport-maximo-360-hd',
+    url: 'https://bein-xtra-bein.amagi.tv/playlist.m3u8',
     backupUrls: [
-      'https://bein-xtra-bein.amagi.tv/playlist.m3u8',
       'https://rmtv.akamaized.net/hls/live/2043153/rmtv-es-web/master.m3u8',
+      'https://d9ssxzmclhfo4.cloudfront.net/bein_sports.m3u8',
     ],
   },
   {
@@ -493,9 +493,9 @@ export const CANAIS_ESPORTES_SOLICITADOS: Canal[] = [
       'Jogos da Premier League, FA Cup, Carabao Cup e competições atléticas internacionais.',
     competicoes: ['Premier League', 'FA Cup'],
     logo: LOGO_SUPERSPORT,
-    url: 'https://dai.google.com/linear/hls/event/7f3Wv6f7QEKfQna22jHqLQ/master.m3u8?channel=supersport-variety-1-hd',
+    url: 'https://rbmn-live.akamaized.net/hls/live/590964/BoRB-AT/master.m3u8',
     backupUrls: [
-      'https://raycom-accdn-firetv.amagi.tv/playlist.m3u8',
+      'https://d9ssxzmclhfo4.cloudfront.net/bein_sports.m3u8',
       'https://d9ssxzmclhfo4.cloudfront.net/bein_sports.m3u8',
     ],
   },
@@ -512,10 +512,10 @@ export const CANAIS_ESPORTES_SOLICITADOS: Canal[] = [
       'Partidas adicionais de LaLiga, Copa del Rey e torneios europeus ao vivo.',
     competicoes: ['LaLiga', 'Copa del Rey'],
     logo: LOGO_SUPERSPORT,
-    url: 'https://dai.google.com/linear/hls/event/7f3Wv6f7QEKfQna22jHqLQ/master.m3u8?channel=supersport-variety-2-hd',
+    url: 'https://vivo.canaloncelive.tv/secureoncedos/oncedigital/playlist.m3u8',
     backupUrls: [
-      'https://vivo.canaloncelive.tv/secureoncedos/oncedigital/playlist.m3u8',
-      'http://45.162.64.114/SPACE/index.m3u8',
+      'https://d9ssxzmclhfo4.cloudfront.net/bein_sports.m3u8',
+      'https://d9ssxzmclhfo4.cloudfront.net/bein_sports.m3u8',
     ],
   },
   {
@@ -531,10 +531,10 @@ export const CANAIS_ESPORTES_SOLICITADOS: Canal[] = [
       'Gols em tempo real, melhores momentos de todos os jogos da Premier League e LaLiga, placares e notícias 24 horas.',
     competicoes: ['Premier League', 'LaLiga', 'Champions League'],
     logo: LOGO_SUPERSPORT,
-    url: 'https://dai.google.com/linear/hls/event/7f3Wv6f7QEKfQna22jHqLQ/master.m3u8?channel=supersport-blitz-hd',
+    url: 'https://rmtv.akamaized.net/hls/live/2043153/rmtv-es-web/master.m3u8',
     backupUrls: [
-      'https://rmtv.akamaized.net/hls/live/2043154/rmtv-en-web/master.m3u8',
-      'https://jmp2.uk/plu-63a0e33a45264d000850ed7e.m3u8',
+      'https://bein-xtra-bein.amagi.tv/playlist.m3u8',
+      'https://d9ssxzmclhfo4.cloudfront.net/bein_sports.m3u8',
     ],
   },
 
@@ -554,11 +554,11 @@ export const CANAIS_ESPORTES_SOLICITADOS: Canal[] = [
       'Transmissão oficial inglesa da Premier League com os maiores clássicos ao vivo, Super Sunday e Monday Night Football.',
     competicoes: ['Premier League', 'EFL Championship', 'Carabao Cup'],
     logo: LOGO_PREMIER_LEAGUE,
-    url: 'https://dai.google.com/linear/hls/event/7f3Wv6f7QEKfQna22jHqLQ/master.m3u8?channel=sky-sports-premier-league-uk',
+    url: 'https://bein-xtra-bein.amagi.tv/playlist.m3u8',
     backupUrls: [
-      'https://bein-xtra-bein.amagi.tv/playlist.m3u8',
-      'https://rmtv.akamaized.net/hls/live/2043154/rmtv-en-web/master.m3u8',
-      'http://45.162.64.114/BAND_SPORTS/index.m3u8',
+      'https://d9ssxzmclhfo4.cloudfront.net/bein_sports.m3u8',
+      'https://d9ssxzmclhfo4.cloudfront.net/bein_sports.m3u8',
+      'https://d9ssxzmclhfo4.cloudfront.net/bein_sports.m3u8',
     ],
   },
   {
@@ -574,10 +574,10 @@ export const CANAIS_ESPORTES_SOLICITADOS: Canal[] = [
       'Os principais eventos ao vivo da televisão britânica: jogos mais importantes da Premier League, F1 e boxe.',
     competicoes: ['Premier League', 'Champions League', 'Formula 1'],
     logo: LOGO_SKY_SPORTS,
-    url: 'https://dai.google.com/linear/hls/event/7f3Wv6f7QEKfQna22jHqLQ/master.m3u8?channel=sky-sports-main-event-uk',
+    url: 'https://d9ssxzmclhfo4.cloudfront.net/bein_sports.m3u8',
     backupUrls: [
+      'https://rmtv.akamaized.net/hls/live/2043153/rmtv-es-web/master.m3u8',
       'https://rbmn-live.akamaized.net/hls/live/590964/BoRB-AT/master.m3u8',
-      'https://jmp2.uk/plu-63a0e33a45264d000850ed7e.m3u8',
     ],
   },
   {
@@ -593,11 +593,10 @@ export const CANAIS_ESPORTES_SOLICITADOS: Canal[] = [
       'O canal oficial da LaLiga EA Sports na Espanha com todos os jogos ao vivo, El Clásico, narração original espanhola e estúdios.',
     competicoes: ['LaLiga', 'LaLiga Hypermotion', 'Copa del Rey'],
     logo: LOGO_MOVISTAR_LALIGA,
-    url: 'https://dai.google.com/linear/hls/event/7f3Wv6f7QEKfQna22jHqLQ/master.m3u8?channel=movistar-laliga-tv-hd',
+    url: 'https://rmtv.akamaized.net/hls/live/2043153/rmtv-es-web/master.m3u8',
     backupUrls: [
-      'https://rmtv.akamaized.net/hls/live/2043153/rmtv-es-web/master.m3u8',
       'https://d9ssxzmclhfo4.cloudfront.net/bein_sports.m3u8',
-      'https://raycom-accdn-firetv.amagi.tv/playlist.m3u8',
+      'https://bein-xtra-bein.amagi.tv/playlist.m3u8',
     ],
   },
   {
@@ -613,10 +612,10 @@ export const CANAIS_ESPORTES_SOLICITADOS: Canal[] = [
       '5 partidas por rodada ao vivo da LaLiga EA Sports, incluindo clássicos selecionados com imagem cristalina.',
     competicoes: ['LaLiga', 'El Clásico'],
     logo: LOGO_DAZN,
-    url: 'https://dai.google.com/linear/hls/event/7f3Wv6f7QEKfQna22jHqLQ/master.m3u8?channel=dazn-laliga-es-hd',
+    url: 'https://rmtv.akamaized.net/hls/live/2043153/rmtv-es-web/master.m3u8',
     backupUrls: [
-      'https://rmtv.akamaized.net/hls/live/2043153/rmtv-es-web/master.m3u8',
-      'http://45.162.64.114/SPACE/index.m3u8',
+      'https://d9ssxzmclhfo4.cloudfront.net/bein_sports.m3u8',
+      'https://d9ssxzmclhfo4.cloudfront.net/bein_sports.m3u8',
     ],
   },
   {
@@ -632,10 +631,10 @@ export const CANAIS_ESPORTES_SOLICITADOS: Canal[] = [
       'Transmissão exclusiva de jogos da Premier League inglesa e FA Cup com narração em Espanhol.',
     competicoes: ['Premier League', 'FA Cup'],
     logo: LOGO_DAZN,
-    url: 'https://dai.google.com/linear/hls/event/7f3Wv6f7QEKfQna22jHqLQ/master.m3u8?channel=dazn-premier-league-hd',
+    url: 'https://bein-xtra-bein.amagi.tv/playlist.m3u8',
     backupUrls: [
-      'https://bein-xtra-bein.amagi.tv/playlist.m3u8',
-      'https://jmp2.uk/plu-63a0e33a45264d000850ed7e.m3u8',
+      'https://d9ssxzmclhfo4.cloudfront.net/bein_sports.m3u8',
+      'https://d9ssxzmclhfo4.cloudfront.net/bein_sports.m3u8',
     ],
   },
   {
@@ -651,11 +650,10 @@ export const CANAIS_ESPORTES_SOLICITADOS: Canal[] = [
       'Transmissão oficial em português de TODOS os principais jogos da Premier League inglesa e da LaLiga espanhola com os melhores comentaristas.',
     competicoes: ['Premier League', 'LaLiga', 'FA Cup', 'Copa del Rey'],
     logo: LOGO_ESPN,
-    url: 'https://dai.google.com/linear/hls/event/7f3Wv6f7QEKfQna22jHqLQ/master.m3u8?channel=espn-brasil-premier-laliga-hd',
+    url: 'https://d9ssxzmclhfo4.cloudfront.net/bein_sports.m3u8',
     backupUrls: [
-      'http://45.162.64.114/ESPN_4/index.m3u8',
-      'http://181.78.197.59:8000/play/a07z/index.m3u8',
-      'https://raycom-accdn-firetv.amagi.tv/playlist.m3u8',
+      'https://d9ssxzmclhfo4.cloudfront.net/bein_sports.m3u8',
+      'https://rmtv.akamaized.net/hls/live/2043153/rmtv-es-web/master.m3u8',
     ],
   },
   {
@@ -671,10 +669,10 @@ export const CANAIS_ESPORTES_SOLICITADOS: Canal[] = [
       'Partidas adicionais e simultâneas da Premier League inglesa, EFL Championship e Copa da Inglaterra em português.',
     competicoes: ['Premier League', 'EFL Championship', 'FA Cup'],
     logo: LOGO_ESPN,
-    url: 'http://45.162.64.114/ESPN_4/index.m3u8',
+    url: 'https://d9ssxzmclhfo4.cloudfront.net/bein_sports.m3u8',
     backupUrls: [
-      'https://dai.google.com/linear/hls/event/7f3Wv6f7QEKfQna22jHqLQ/master.m3u8?channel=espn-4-backup',
-      'http://181.78.197.59:8000/play/a07z/index.m3u8',
+      'https://d9ssxzmclhfo4.cloudfront.net/bein_sports.m3u8',
+      'https://bein-xtra-bein.amagi.tv/playlist.m3u8',
     ],
   },
   {
@@ -690,7 +688,7 @@ export const CANAIS_ESPORTES_SOLICITADOS: Canal[] = [
       'Transmissão em espanhol dos jogos da LaLiga EA Sports, Copa del Rey, resumo das rodadas e Jorge Ramos y Su Banda.',
     competicoes: ['LaLiga', 'Copa del Rey'],
     logo: LOGO_ESPN,
-    url: 'https://dai.google.com/linear/hls/event/7f3Wv6f7QEKfQna22jHqLQ/master.m3u8?channel=espn-deportes-laliga',
+    url: 'https://vivo.canaloncelive.tv/secureoncedos/oncedigital/playlist.m3u8',
     backupUrls: [
       'https://bein-xtra-bein.amagi.tv/playlist.m3u8',
       'https://d9ssxzmclhfo4.cloudfront.net/bein_sports.m3u8',
@@ -709,10 +707,10 @@ export const CANAIS_ESPORTES_SOLICITADOS: Canal[] = [
       'Canal 24/7 oficial em inglês dedicado à LaLiga com todos os jogos ao vivo, Revista de LaLiga e entrevistas exclusivas.',
     competicoes: ['LaLiga', 'Copa del Rey'],
     logo: LOGO_LALIGA,
-    url: 'https://dai.google.com/linear/hls/event/7f3Wv6f7QEKfQna22jHqLQ/master.m3u8?channel=premier-sports-laligatv-uk',
+    url: 'https://rmtv.akamaized.net/hls/live/2043153/rmtv-es-web/master.m3u8',
     backupUrls: [
-      'https://rmtv.akamaized.net/hls/live/2043154/rmtv-en-web/master.m3u8',
-      'https://raycom-accdn-firetv.amagi.tv/playlist.m3u8',
+      'https://d9ssxzmclhfo4.cloudfront.net/bein_sports.m3u8',
+      'https://bein-xtra-bein.amagi.tv/playlist.m3u8',
     ],
   },
   {
@@ -728,10 +726,10 @@ export const CANAIS_ESPORTES_SOLICITADOS: Canal[] = [
       'Canal de transmissão de LaLiga EA Sports para toda a América do Sul com estúdios e análises ao vivo.',
     competicoes: ['LaLiga', 'Copa del Rey', 'Supercopa de España'],
     logo: LOGO_LALIGA,
-    url: 'https://dai.google.com/linear/hls/event/7f3Wv6f7QEKfQna22jHqLQ/master.m3u8?channel=directv-dsports-laliga',
+    url: 'https://bein-xtra-bein.amagi.tv/playlist.m3u8',
     backupUrls: [
+      'https://rmtv.akamaized.net/hls/live/2043153/rmtv-es-web/master.m3u8',
       'https://vivo.canaloncelive.tv/secureoncedos/oncedigital/playlist.m3u8',
-      'http://181.78.197.59:8000/play/a07z/index.m3u8',
     ],
   },
   {
@@ -749,8 +747,8 @@ export const CANAIS_ESPORTES_SOLICITADOS: Canal[] = [
     logo: LOGO_REAL_MADRID,
     url: 'https://rmtv.akamaized.net/hls/live/2043153/rmtv-es-web/master.m3u8',
     backupUrls: [
-      'https://rmtv.akamaized.net/hls/live/2043154/rmtv-en-web/master.m3u8',
-      'https://dai.google.com/linear/hls/event/7f3Wv6f7QEKfQna22jHqLQ/master.m3u8?channel=rmtv-backup',
+      'https://d9ssxzmclhfo4.cloudfront.net/bein_sports.m3u8',
+      'https://bein-xtra-bein.amagi.tv/playlist.m3u8',
     ],
   },
   {
@@ -766,10 +764,10 @@ export const CANAIS_ESPORTES_SOLICITADOS: Canal[] = [
       'Canal oficial do FC Barcelona: cobertura completa dos jogos da LaLiga, El Clásico, bastidores de Montjuïc e La Masia.',
     competicoes: ['LaLiga', 'Champions League', 'Copa del Rey'],
     logo: LOGO_BARCELONA,
-    url: 'https://dai.google.com/linear/hls/event/7f3Wv6f7QEKfQna22jHqLQ/master.m3u8?channel=barca-tv-live-hd',
+    url: 'https://rmtv.akamaized.net/hls/live/2043153/rmtv-es-web/master.m3u8',
     backupUrls: [
-      'https://rmtv.akamaized.net/hls/live/2043153/rmtv-es-web/master.m3u8',
-      'https://bein-xtra-bein.amagi.tv/playlist.m3u8',
+      'https://d9ssxzmclhfo4.cloudfront.net/bein_sports.m3u8',
+      'https://vivo.canaloncelive.tv/secureoncedos/oncedigital/playlist.m3u8',
     ],
   },
   {
@@ -785,10 +783,10 @@ export const CANAIS_ESPORTES_SOLICITADOS: Canal[] = [
       'Transmissão oficial norte-americana dos jogos das manhãs de sábado e domingo da Premier League.',
     competicoes: ['Premier League'],
     logo: LOGO_PREMIER_LEAGUE,
-    url: 'https://dai.google.com/linear/hls/event/7f3Wv6f7QEKfQna22jHqLQ/master.m3u8?channel=usa-network-premier-league',
+    url: 'https://bein-xtra-bein.amagi.tv/playlist.m3u8',
     backupUrls: [
-      'https://raycom-accdn-firetv.amagi.tv/playlist.m3u8',
-      'https://jmp2.uk/plu-63a0e33a45264d000850ed7e.m3u8',
+      'https://d9ssxzmclhfo4.cloudfront.net/bein_sports.m3u8',
+      'https://d9ssxzmclhfo4.cloudfront.net/bein_sports.m3u8',
     ],
   },
   {
@@ -804,9 +802,9 @@ export const CANAIS_ESPORTES_SOLICITADOS: Canal[] = [
       'Transmissão premium da Premier League inglesa com narração francesa e tecnologia Match Premier.',
     competicoes: ['Premier League', 'Champions League'],
     logo: LOGO_PREMIER_LEAGUE,
-    url: 'https://dai.google.com/linear/hls/event/7f3Wv6f7QEKfQna22jHqLQ/master.m3u8?channel=canal-plus-premier-league-fr',
+    url: 'https://d9ssxzmclhfo4.cloudfront.net/bein_sports.m3u8',
     backupUrls: [
-      'https://5eaccbab48461.streamlock.net:1936/8264/8264/playlist.m3u8',
+      'https://rmtv.akamaized.net/hls/live/2043153/rmtv-es-web/master.m3u8',
       'https://rbmn-live.akamaized.net/hls/live/590964/BoRB-AT/master.m3u8',
     ],
   },

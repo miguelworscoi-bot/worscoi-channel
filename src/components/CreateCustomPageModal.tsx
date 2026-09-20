@@ -3,9 +3,8 @@ import {
   CustomPage,
   upsertCustomPage,
   formatSlug,
-  PAGINAS_PERSONALIZADAS_PADRAO,
 } from '@/services/customPagesService';
-import { X, Globe, Plus, AlertCircle, Sparkles, Layers, Link as LinkIcon, ExternalLink } from 'lucide-react';
+import { X, Globe, AlertCircle } from 'lucide-react';
 
 interface CreateCustomPageModalProps {
   isOpen: boolean;

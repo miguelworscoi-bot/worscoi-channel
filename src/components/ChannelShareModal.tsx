@@ -1,22 +1,13 @@
 import React, { useState } from 'react';
-import { CustomPage, CustomLinkItem } from '@/services/customPagesService';
+import { CustomPage } from '@/services/customPagesService';
 import { Canal } from '@/types';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
 import {
   Share2,
   Copy,
   Check,
   Tv,
   ExternalLink,
-  QrCode,
   Globe,
-  Sparkles,
-  Link as LinkIcon,
 } from 'lucide-react';
 
 interface ChannelShareModalProps {
@@ -143,13 +134,11 @@ export const ChannelShareModal: React.FC<ChannelShareModalProps> = ({
             </div>
 
             <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
-              {customPages.map((page) => {
-                const pageUrl = `${origin}/pagina/${page.slug}`;
-                return (
-                  <div
-                    key={page.id}
-                    className="p-3 rounded-xl bg-zinc-950/70 border border-zinc-800/80 hover:border-zinc-700 flex items-center justify-between gap-3 text-xs transition"
-                  >
+              {customPages.map((page) => (
+                <div
+                  key={page.id}
+                  className="p-3 rounded-xl bg-zinc-950/70 border border-zinc-800/80 hover:border-zinc-700 flex items-center justify-between gap-3 text-xs transition"
+                >
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">
                         <span className="font-bold text-white truncate">{page.titulo}</span>
@@ -192,8 +181,8 @@ export const ChannelShareModal: React.FC<ChannelShareModalProps> = ({
                       )}
                     </div>
                   </div>
-                );
-              })}
+                ))
+              }
             </div>
           </div>
         )}

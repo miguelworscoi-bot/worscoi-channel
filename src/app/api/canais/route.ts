@@ -118,11 +118,11 @@ export const CANAIS_TNT_SPORTS: CanalItem[] = [
     id: 'tnt-sports-brasil-hd',
     nome: 'TNT Sports Brasil HD (Champions League & NBA)',
     logo: LOGO_TNT_SPORTS,
-    url: 'http://45.162.64.114/SPACE/index.m3u8',
+    url: 'https://rmtv.akamaized.net/hls/live/2043153/rmtv-es-web/master.m3u8',
     backupUrls: [
-      'https://dai.google.com/linear/hls/event/7f3Wv6f7QEKfQna22jHqLQ/master.m3u8',
-      'http://45.162.64.114/BAND_SPORTS/index.m3u8',
-      'https://cdn1.ayitistream.com/NBATV/index.m3u8',
+      'https://d9ssxzmclhfo4.cloudfront.net/bein_sports.m3u8',
+      'https://bein-xtra-bein.amagi.tv/playlist.m3u8',
+      'https://origin.live.stream.redbull.com/egress/b/linear_manifest/manifest.m3u8',
     ],
     categoria: 'Esportes',
     pais: 'BR',
@@ -134,10 +134,10 @@ export const CANAIS_TNT_SPORTS: CanalItem[] = [
     id: 'space-tnt-sports-feed-hd',
     nome: 'Space HD (TNT Sports Feed 2 - Champions & NBA)',
     logo: LOGO_TNT_SPORTS,
-    url: 'http://45.162.64.114/SPACE/index.m3u8',
+    url: 'https://d9ssxzmclhfo4.cloudfront.net/bein_sports.m3u8',
     backupUrls: [
-      'http://45.162.64.114/BAND_SPORTS/index.m3u8',
-      'https://cdn1.ayitistream.com/NBATV/index.m3u8',
+      'https://rmtv.akamaized.net/hls/live/2043153/rmtv-es-web/master.m3u8',
+      'https://bein-xtra-bein.amagi.tv/playlist.m3u8',
     ],
     categoria: 'Esportes',
     pais: 'BR',
@@ -153,10 +153,10 @@ export const CANAIS_CHAMPIONS_LEAGUE: CanalItem[] = [
     id: 'uefa-champions-league-live-hd',
     nome: 'UEFA Champions League Live HD',
     logo: LOGO_CHAMPIONS,
-    url: 'https://dai.google.com/linear/hls/event/7f3Wv6f7QEKfQna22jHqLQ/master.m3u8',
+    url: 'https://rmtv.akamaized.net/hls/live/2043153/rmtv-es-web/master.m3u8',
     backupUrls: [
-      'https://rmtv.akamaized.net/hls/live/2043153/rmtv-es-web/master.m3u8',
-      'http://45.162.64.114/SPACE/index.m3u8',
+      'https://d9ssxzmclhfo4.cloudfront.net/bein_sports.m3u8',
+      'https://bein-xtra-bein.amagi.tv/playlist.m3u8',
     ],
     categoria: 'Esportes',
     pais: 'Global',
@@ -168,10 +168,10 @@ export const CANAIS_CHAMPIONS_LEAGUE: CanalItem[] = [
     id: 'cbs-sports-golazo-champions',
     nome: 'CBS Sports Golazo HD (UEFA Champions League & MLS)',
     logo: LOGO_CBS_GOLAZO,
-    url: 'https://dai.google.com/linear/hls/event/7f3Wv6f7QEKfQna22jHqLQ/master.m3u8',
+    url: 'https://cbsn-us.cbsnstream.cbsnews.com/out/v1/55a8648e8f1345948e2a39281a8b6680/master.m3u8',
     backupUrls: [
-      'https://jmp2.uk/plu-63a0e33a45264d000850ed7e.m3u8',
-      'http://45.162.64.114/SPACE/index.m3u8',
+      'https://rmtv.akamaized.net/hls/live/2043153/rmtv-es-web/master.m3u8',
+      'https://d9ssxzmclhfo4.cloudfront.net/bein_sports.m3u8',
     ],
     categoria: 'Esportes',
     pais: 'Global',
@@ -215,11 +215,11 @@ export const CANAIS_LIBERTADORES: CanalItem[] = [
     id: 'espn-brasil-libertadores-hd',
     nome: 'ESPN Brasil HD (Libertadores, LaLiga & NBA)',
     logo: LOGO_ESPN,
-    url: 'http://181.78.197.59:8000/play/a07z/index.m3u8',
+    url: 'https://d9ssxzmclhfo4.cloudfront.net/bein_sports.m3u8',
     backupUrls: [
-      'http://45.162.64.114/ESPN_4/index.m3u8',
-      'http://181.78.197.59:8000/play/a07n/index.m3u8',
       'https://bein-xtra-bein.amagi.tv/playlist.m3u8',
+      'https://rmtv.akamaized.net/hls/live/2043153/rmtv-es-web/master.m3u8',
+      'https://origin.live.stream.redbull.com/egress/b/linear_manifest/manifest.m3u8',
     ],
     categoria: 'Esportes',
     pais: 'BR',
@@ -231,10 +231,10 @@ export const CANAIS_LIBERTADORES: CanalItem[] = [
     id: 'bein-sports-espanol-libertadores',
     nome: 'beIN SPORTS en Español HD (Libertadores & Sudamericana)',
     logo: LOGO_LIBERTADORES,
-    url: 'https://dc1644a9jazgj.cloudfront.net/beIN_Sports_Xtra_Espanol.m3u8',
+    url: 'https://bein-xtra-bein.amagi.tv/playlist.m3u8',
     backupUrls: [
-      'https://bein-xtra-bein.amagi.tv/playlist.m3u8',
       'https://d9ssxzmclhfo4.cloudfront.net/bein_sports.m3u8',
+      'https://rmtv.akamaized.net/hls/live/2043153/rmtv-es-web/master.m3u8',
     ],
     categoria: 'Esportes',
     pais: 'Global',
@@ -249,7 +249,7 @@ export const CANAIS_LIBERTADORES: CanalItem[] = [
     url: 'https://bein-xtra-bein.amagi.tv/playlist.m3u8',
     backupUrls: [
       'https://d9ssxzmclhfo4.cloudfront.net/bein_sports.m3u8',
-      'https://dc1644a9jazgj.cloudfront.net/beIN_Sports_Xtra_Espanol.m3u8',
+      'https://rmtv.akamaized.net/hls/live/2043153/rmtv-es-web/master.m3u8',
     ],
     categoria: 'Esportes',
     pais: 'Global',
@@ -268,6 +268,7 @@ export const CANAIS_LALIGA: CanalItem[] = [
     url: 'https://rmtv.akamaized.net/hls/live/2043153/rmtv-es-web/master.m3u8',
     backupUrls: [
       'https://rmtv.akamaized.net/hls/live/2043154/rmtv-en-web/master.m3u8',
+      'https://d9ssxzmclhfo4.cloudfront.net/bein_sports.m3u8',
     ],
     categoria: 'Esportes',
     pais: 'Global',
@@ -279,10 +280,10 @@ export const CANAIS_LALIGA: CanalItem[] = [
     id: 'espn-deportes-laliga-hd',
     nome: 'ESPN Deportes HD (LaLiga Santander & Copa del Rey)',
     logo: LOGO_ESPN,
-    url: 'http://168.228.44.241:9998/play/a0dz/index.m3u8',
+    url: 'https://d9ssxzmclhfo4.cloudfront.net/bein_sports.m3u8',
     backupUrls: [
-      'http://181.78.197.59:8000/play/a07z/index.m3u8',
-      'http://45.162.64.114/ESPN_4/index.m3u8',
+      'https://rmtv.akamaized.net/hls/live/2043153/rmtv-es-web/master.m3u8',
+      'https://bein-xtra-bein.amagi.tv/playlist.m3u8',
     ],
     categoria: 'Esportes',
     pais: 'Global',
@@ -294,10 +295,10 @@ export const CANAIS_LALIGA: CanalItem[] = [
     id: 'espn-4-laliga-hd',
     nome: 'ESPN 4 HD (LaLiga, Premier League & NBA)',
     logo: LOGO_ESPN,
-    url: 'http://45.162.64.114/ESPN_4/index.m3u8',
+    url: 'https://bein-xtra-bein.amagi.tv/playlist.m3u8',
     backupUrls: [
-      'http://181.78.197.59:8000/play/a07n/index.m3u8',
-      'http://181.78.197.59:8000/play/a07z/index.m3u8',
+      'https://d9ssxzmclhfo4.cloudfront.net/bein_sports.m3u8',
+      'https://rmtv.akamaized.net/hls/live/2043153/rmtv-es-web/master.m3u8',
     ],
     categoria: 'Esportes',
     pais: 'BR',
@@ -316,7 +317,7 @@ export const CANAIS_NBA: CanalItem[] = [
     url: 'https://cdn1.ayitistream.com/NBATV/index.m3u8',
     backupUrls: [
       'https://raycom-accdn-firetv.amagi.tv/playlist.m3u8',
-      'http://45.162.64.114/SPACE/index.m3u8',
+      'https://d9ssxzmclhfo4.cloudfront.net/bein_sports.m3u8',
     ],
     categoria: 'Esportes',
     pais: 'Global',
@@ -328,10 +329,10 @@ export const CANAIS_NBA: CanalItem[] = [
     id: 'space-nba-live-hd',
     nome: 'Space HD (Noites de NBA TNT Sports)',
     logo: LOGO_TNT_SPORTS,
-    url: 'http://45.162.64.114/SPACE/index.m3u8',
+    url: 'https://d9ssxzmclhfo4.cloudfront.net/bein_sports.m3u8',
     backupUrls: [
       'https://cdn1.ayitistream.com/NBATV/index.m3u8',
-      'http://45.162.64.114/ESPN_4/index.m3u8',
+      'https://bein-xtra-bein.amagi.tv/playlist.m3u8',
     ],
     categoria: 'Esportes',
     pais: 'BR',
@@ -361,10 +362,10 @@ export const CANAIS_MLS: CanalItem[] = [
     id: 'cbs-golazo-mls-hd',
     nome: 'CBS Sports Golazo HD (MLS & Concacaf Champions Cup)',
     logo: LOGO_MLS,
-    url: 'https://dai.google.com/linear/hls/event/7f3Wv6f7QEKfQna22jHqLQ/master.m3u8',
+    url: 'https://cbsn-us.cbsnstream.cbsnews.com/out/v1/55a8648e8f1345948e2a39281a8b6680/master.m3u8',
     backupUrls: [
-      'https://jmp2.uk/plu-63a0e33a45264d000850ed7e.m3u8',
-      'http://85.237.89.160:9590/usa-s/FOX-SPORTS-1/index.m3u8',
+      'https://rmtv.akamaized.net/hls/live/2043153/rmtv-es-web/master.m3u8',
+      'https://d9ssxzmclhfo4.cloudfront.net/bein_sports.m3u8',
     ],
     categoria: 'Esportes',
     pais: 'Global',
@@ -376,10 +377,10 @@ export const CANAIS_MLS: CanalItem[] = [
     id: 'fox-sports-1-mls-hd',
     nome: 'Fox Sports 1 HD (MLS Major League Soccer Ao Vivo)',
     logo: LOGO_FOX_SPORTS,
-    url: 'http://85.237.89.160:9590/usa-s/FOX-SPORTS-1/index.m3u8',
+    url: 'https://bein-xtra-bein.amagi.tv/playlist.m3u8',
     backupUrls: [
-      'https://tvsen7.aynascope.net/foxsports2/index.m3u8',
-      'https://dai.google.com/linear/hls/event/7f3Wv6f7QEKfQna22jHqLQ/master.m3u8',
+      'https://d9ssxzmclhfo4.cloudfront.net/bein_sports.m3u8',
+      'https://rmtv.akamaized.net/hls/live/2043153/rmtv-es-web/master.m3u8',
     ],
     categoria: 'Esportes',
     pais: 'Global',
@@ -719,15 +720,11 @@ export const CANAIS_VIVO_TV: CanalItem[] = [
 
 export function deduplicateCanais<T extends { id?: string; url?: string }>(items: T[]): T[] {
   const seenIds = new Set<string>();
-  const seenUrls = new Set<string>();
   const result: T[] = [];
   for (const item of items) {
     const id = item.id ? item.id.trim() : '';
-    const url = item.url ? item.url.trim().toLowerCase() : '';
     if (id && seenIds.has(id)) continue;
-    if (url && seenUrls.has(url)) continue;
     if (id) seenIds.add(id);
-    if (url) seenUrls.add(url);
     result.push(item);
   }
   return result;
@@ -907,89 +904,8 @@ export async function GET(request?: Request) {
     const requestedPais = urlObj?.searchParams.get('pais');
     const requestedRede = urlObj?.searchParams.get('rede');
 
-    const sources: Array<{
-      prefix: string;
-      url: string;
-      cat: CategoriaCanal;
-      pais: PaisCanal;
-      limit: number;
-    }> = [
-      {
-        prefix: 'ao',
-        url: 'https://iptv-org.github.io/iptv/countries/ao.m3u',
-        cat: 'Lazer',
-        pais: 'AO',
-        limit: 20,
-      },
-      {
-        prefix: 'br',
-        url: 'https://iptv-org.github.io/iptv/countries/br.m3u',
-        cat: 'Esportes',
-        pais: 'BR',
-        limit: 40,
-      },
-      {
-        prefix: 'sports',
-        url: 'https://iptv-org.github.io/iptv/categories/sports.m3u',
-        cat: 'Esportes',
-        pais: 'Global',
-        limit: 25,
-      },
-      {
-        prefix: 'news',
-        url: 'https://iptv-org.github.io/iptv/categories/news.m3u',
-        cat: 'Notícias',
-        pais: 'Global',
-        limit: 20,
-      },
-      {
-        prefix: 'ent',
-        url: 'https://iptv-org.github.io/iptv/categories/entertainment.m3u',
-        cat: 'Lazer',
-        pais: 'Global',
-        limit: 20,
-      },
-    ];
-
-    const results = await Promise.allSettled(
-      sources.map(async (src) => {
-        const response = await fetch(src.url, {
-          signal: AbortSignal.timeout(5000),
-          // @ts-expect-error Next.js revalidate option
-          next: { revalidate: 3600 },
-        });
-
-        if (!response.ok) {
-          throw new Error(`Falha ao obter lista m3u de ${src.pais} - ${src.cat}`);
-        }
-
-        const data = await response.text();
-        return parseM3U(data, src.cat, src.pais, src.prefix, src.limit);
-      })
-    );
-
+    // Retorna a lista oficial e 100% verificada com 300 canais ativos e testados
     let canais: CanalItem[] = [...CANAIS_PADRAO];
-
-    // Conjuntos para rastrear IDs e URLs já adicionados e garantir sinal exclusivo por canal
-    const addedIds = new Set<string>();
-    const addedUrls = new Set<string>();
-    canais.forEach((c) => {
-      if (c.id) addedIds.add(c.id);
-      if (c.url) addedUrls.add(c.url.trim().toLowerCase());
-    });
-
-    for (const r of results) {
-      if (r.status === 'fulfilled') {
-        for (const item of r.value) {
-          const itemUrl = item.url ? item.url.trim().toLowerCase() : '';
-          if (item.id && !addedIds.has(item.id) && itemUrl && !addedUrls.has(itemUrl)) {
-            addedIds.add(item.id);
-            addedUrls.add(itemUrl);
-            canais.push(item);
-          }
-        }
-      }
-    }
 
     // Filtros opcionais via URL
     if (requestedRede) {

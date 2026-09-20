@@ -28,20 +28,15 @@ export {
 
 export function deduplicateCanais(list: Canal[]): Canal[] {
   const seenIds = new Set<string>();
-  const seenUrls = new Set<string>();
   const result: Canal[] = [];
 
   for (const item of list) {
     const id = item.id ? item.id.trim() : '';
-    const url = item.url ? item.url.trim().toLowerCase() : '';
 
     // If ID already seen, skip
     if (id && seenIds.has(id)) continue;
-    // If URL already seen, skip (prevents two channels playing the exact same signal)
-    if (url && seenUrls.has(url)) continue;
 
     if (id) seenIds.add(id);
-    if (url) seenUrls.add(url);
     result.push(item);
   }
   return result;

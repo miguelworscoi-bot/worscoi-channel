@@ -22,8 +22,6 @@ import {
   Music,
   Radio,
   Clock,
-  Layers,
-  Link as LinkIcon,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Canal, FiltroAtivo, WorscoiView } from '@/types';
@@ -200,7 +198,7 @@ export function WorscoiSidebar({
   isCollapsed = false,
   onToggleCollapse,
   onOpenCreateNotification: _onOpenCreateNotification,
-  customPages = [],
+  customPages: _customPages = [],
 }: WorscoiSidebarProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({});
@@ -818,60 +816,6 @@ export function WorscoiSidebar({
             </div>
           )}
         </button>
-
-        {/* PÁGINAS COM LINKS PERSONALIZADOS ATIVAS */}
-        {customPages
-          .filter((p) => p.ativoNoMenu)
-          .map((page) => {
-            const pageViewKey = `custom_${page.slug}` as const;
-            const isSelected = currentView === pageViewKey;
-            return (
-              <button
-                key={page.id}
-                type="button"
-                onClick={() => onNavigate(pageViewKey)}
-                className={`w-full group flex items-center ${
-                  isCollapsed ? 'justify-center p-2' : 'gap-3 px-3 py-2.5'
-                } rounded-2xl text-xs font-bold transition-all duration-200 cursor-pointer ${
-                  isSelected
-                    ? 'bg-zinc-800/90 text-white ring-1 ring-cyan-500/50 shadow-md'
-                    : 'text-zinc-400 hover:text-white hover:bg-zinc-900/80 border border-transparent'
-                }`}
-                title={page.titulo}
-              >
-                <div
-                  className={`tiktok-icon-badge relative w-8 h-8 rounded-full flex items-center justify-center shrink-0 transition-all duration-200 ease-out group-hover:scale-115 group-hover:rotate-6 ${
-                    isSelected
-                      ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/50 shadow-[0_0_12px_rgba(0,242,254,0.35)]'
-                      : 'bg-zinc-900/90 text-zinc-400 border border-zinc-800/90 group-hover:text-cyan-400 group-hover:border-cyan-500/50 group-hover:bg-cyan-500/10'
-                  }`}
-                >
-                  <Layers className="w-4 h-4 transition-transform duration-200 group-hover:scale-110" />
-                </div>
-                {!isCollapsed && (
-                  <div className="flex flex-col text-left min-w-0 flex-1">
-                    <div className="flex items-center justify-between gap-1">
-                      <span
-                        className={`text-xs font-bold tracking-tight transition-colors truncate ${
-                          isSelected ? 'text-white' : 'text-zinc-300 group-hover:text-white'
-                        }`}
-                      >
-                        {page.titulo}
-                      </span>
-                      {page.badge && (
-                        <span className="px-1.5 py-0.2 rounded text-[8.5px] font-extrabold uppercase bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 shrink-0">
-                          {page.badge}
-                        </span>
-                      )}
-                    </div>
-                    <span className="text-[10px] text-zinc-500 font-medium truncate">
-                      {page.links?.length || 0} links disponíveis
-                    </span>
-                  </div>
-                )}
-              </button>
-            );
-          })}
 
         {/* BOTÃO PAINEL DE CONTROLE (TIKTOK CREATOR STUDIO STYLE - EXCLUSIVO ADMINISTRADOR) */}
         {isAdmin && (

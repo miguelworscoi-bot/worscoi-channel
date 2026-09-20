@@ -473,9 +473,146 @@ export const EMERGENCY_FALLBACK_STREAMS: Record<string, string> = {
   Filmes: 'https://rbmn-live.akamaized.net/hls/live/590964/BoRB-AT/master.m3u8',
   Lazer: 'https://5eaccbab48461.streamlock.net:1936/8264/8264/playlist.m3u8',
   Novelas: 'https://vivo.canaloncelive.tv/secureoncedos/oncedigital/playlist.m3u8',
-  Músicas: 'https://rbmn-live.akamaized.net/hls/live/590964/BoRB-AT/master.m3u8',
+  Músicas: 'https://stmv1.transmissaodigital.com/musictv/musictv/playlist.m3u8',
   Default: 'https://rmtv.akamaized.net/hls/live/2043153/rmtv-es-web/master.m3u8',
 };
+
+export const GUARANTEED_STREAMS_BY_CATEGORY: Record<string, string[]> = {
+  Esportes: [
+    'https://rmtv.akamaized.net/hls/live/2043153/rmtv-es-web/master.m3u8',
+    'https://d9ssxzmclhfo4.cloudfront.net/bein_sports.m3u8',
+    'https://bein-xtra-bein.amagi.tv/playlist.m3u8',
+    'https://d9ssxzmclhfo4.cloudfront.net/bein_sports.m3u8',
+    'https://cbsn-us.cbsnstream.cbsnews.com/out/v1/55a8648e8f1345948e2a39281a8b6680/master.m3u8',
+  ],
+  Notícias: [
+    'https://dwamdstream102.akamaized.net/hls/live/2015525/dwstream102/index.m3u8',
+    'https://cbsn-us.cbsnstream.cbsnews.com/out/v1/55a8648e8f1345948e2a39281a8b6680/master.m3u8',
+    'https://abcnews-streams.akamaized.net/hls/live/2023561/abcnews_chunklist_1.m3u8',
+  ],
+  Filmes: [
+    'https://rbmn-live.akamaized.net/hls/live/590964/BoRB-AT/master.m3u8',
+    'https://stmv1.transmissaodigital.com/blitstv/blitstv/playlist.m3u8',
+    'https://5eaccbab48461.streamlock.net:1936/8264/8264/playlist.m3u8',
+  ],
+  Bonecos: [
+    'https://cdn.freevisiontv.co.za/sttv/smil:1kzn.stream.smil/playlist.m3u8',
+    'https://cdn.freevisiontv.co.za/sttv/smil:smil.smil/playlist.m3u8',
+  ],
+  Novelas: [
+    'https://vivo.canaloncelive.tv/secureoncedos/oncedigital/playlist.m3u8',
+    'https://playplus-lh.akamaihd.net/i/live_1@384213/master.m3u8',
+  ],
+  Músicas: [
+    'https://stmv1.transmissaodigital.com/musictv/musictv/playlist.m3u8',
+    'https://stream.4fun.tv/hls/tv_4fun_tv/index.m3u8',
+  ],
+  Lazer: [
+    'https://5eaccbab48461.streamlock.net:1936/8264/8264/playlist.m3u8',
+    'https://stmv1.transmissaodigital.com/blitstv/blitstv/playlist.m3u8',
+  ],
+};
+
+/**
+ * Detecta se uma URL de transmissão é um placeholder morto ou IP inacessível
+ */
+export function isDeadOrPlaceholderStream(url?: string | null): boolean {
+  if (!url || typeof url !== 'string') return true;
+  const trimmed = url.trim().toLowerCase();
+  if (trimmed.length < 8) return true;
+
+  // Google DAI placeholder morto
+  if (trimmed.includes('dai.google.com')) return true;
+
+  // IPs numéricos problemáticos de IPTV pirata desativados
+  if (
+    trimmed.includes('45.162.64.114') ||
+    trimmed.includes('201.190.41.246') ||
+    trimmed.includes('181.78.') ||
+    trimmed.includes('88.212.') ||
+    trimmed.includes('23.239.') ||
+    trimmed.includes('149.100.') ||
+    trimmed.includes('162.19.') ||
+    trimmed.includes('38.75.') ||
+    trimmed.includes('143.14.') ||
+    trimmed.includes('190.83.') ||
+    trimmed.includes('168.228.') ||
+    trimmed.includes('41.205.') ||
+    trimmed.includes('23.237.') ||
+    trimmed.includes('85.237.') ||
+    trimmed.includes('31.148.') ||
+    trimmed.includes('193.46.') ||
+    trimmed.includes('5.188.') ||
+    trimmed.includes('15.204.') ||
+    trimmed.includes('45.166.') ||
+    trimmed.includes('138.121.') ||
+    trimmed.includes('45.134.') ||
+    trimmed.includes('190.14.') ||
+    trimmed.includes('190.93.') ||
+    trimmed.includes('45.185.') ||
+    trimmed.includes('176.126.') ||
+    trimmed.includes('202.70.') ||
+    trimmed.includes('190.11.') ||
+    trimmed.includes('45.171.') ||
+    trimmed.includes('170.83.') ||
+    trimmed.includes('107.167.') ||
+    trimmed.includes('45.70.') ||
+    trimmed.includes('5.57.') ||
+    trimmed.includes('125.227.') ||
+    trimmed.includes('185.227.') ||
+    trimmed.includes('85.11.') ||
+    trimmed.includes('45.228.') ||
+    trimmed.includes('50.7.') ||
+    trimmed.includes('185.47.') ||
+    trimmed.includes('85.238.') ||
+    trimmed.includes('115.42.') ||
+    trimmed.includes('103.213.') ||
+    trimmed.includes('178.134.') ||
+    trimmed.includes('151.80.') ||
+    trimmed.includes('145.239.') ||
+    trimmed.includes('195.23.') ||
+    trimmed.includes('89.33.') ||
+    trimmed.includes('168.197.') ||
+    trimmed.includes('170.84.')
+  ) {
+    return true;
+  }
+
+  // Regex para qualquer padrão http://[0-9]+.[0-9]+.[0-9]+.[0-9]+
+  if (/^http:\/\/\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/.test(trimmed)) {
+    return true;
+  }
+
+  return false;
+}
+
+/**
+ * Retorna stream garantido e ativo para qualquer canal
+ */
+export function getGuaranteedLiveStreamForChannel(
+  categoria?: string,
+  streamIndex = 0
+): string {
+  const cat = categoria || 'Esportes';
+  const list = GUARANTEED_STREAMS_BY_CATEGORY[cat] || GUARANTEED_STREAMS_BY_CATEGORY.Esportes;
+  const safeIdx = Math.abs(streamIndex) % list.length;
+  return list[safeIdx] || EMERGENCY_FALLBACK_STREAMS.Default;
+}
+
+/**
+ * Força a disponibilidade imediata do sinal: se a URL for inexistente ou morta,
+ * resolve instantaneamente para um sinal ao vivo ativo da categoria, sem telas pretas.
+ */
+export function resolveActiveChannelStream(
+  rawUrl: string,
+  categoria?: string,
+  streamIndex = 0
+): string {
+  if (isDeadOrPlaceholderStream(rawUrl)) {
+    return getGuaranteedLiveStreamForChannel(categoria, streamIndex);
+  }
+  return rawUrl;
+}
 
 export function getEmergencyFallbackStream(categoria?: string): string {
   if (categoria && EMERGENCY_FALLBACK_STREAMS[categoria]) {

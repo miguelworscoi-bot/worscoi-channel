@@ -22,6 +22,7 @@ import {
   Zap,
   Radio,
   Copy,
+  Globe,
 } from 'lucide-react';
 import { SubscriptionPlanId, Canal, CategoriaCanalGeral } from '@/types';
 import { useAuth, UserRole } from '@/context/AuthContext';
@@ -47,6 +48,7 @@ interface WorscoiControlPanelProps {
   onRemoveCustomChannel?: (channelId: string) => void;
   onOpenPlayerSettings?: () => void;
   onOpenCreateNotification?: () => void;
+  onOpenCreateCustomPage?: () => void;
   onPlayChannel?: (canal: Canal) => void;
 }
 
@@ -61,6 +63,7 @@ export function WorscoiControlPanel({
   onRemoveCustomChannel,
   onOpenPlayerSettings,
   onOpenCreateNotification,
+  onOpenCreateCustomPage,
   onPlayChannel,
 }: WorscoiControlPanelProps) {
   const { user, userProfile, role, switchRole } = useAuth();
@@ -84,10 +87,10 @@ export function WorscoiControlPanel({
       qualidade: '1080p FHD',
       competicoes: ['LaLiga', 'Copa del Rey', 'El Clásico'],
       logo: LOGO_Z_SPORTS_LALIGA,
-      url: 'https://dai.google.com/linear/hls/event/7f3Wv6f7QEKfQna22jHqLQ/master.m3u8?channel=z-sports-laliga-hd',
+      url: 'https://rmtv.akamaized.net/hls/live/2043153/rmtv-es-web/master.m3u8',
       backupUrls: [
-        'https://vivo.canaloncelive.tv/secureoncedos/oncedigital/playlist.m3u8',
-        'https://rmtv.akamaized.net/hls/live/2043153/rmtv-es-web/master.m3u8',
+        'https://d9ssxzmclhfo4.cloudfront.net/bein_sports.m3u8',
+        'https://bein-xtra-bein.amagi.tv/playlist.m3u8',
         'https://cdn.freevisiontv.co.za/sttv/smil:1kzn.stream.smil/playlist.m3u8',
       ],
       rede: 'ZAP',
@@ -103,11 +106,11 @@ export function WorscoiControlPanel({
       qualidade: '1080p FHD',
       competicoes: ['Girabola', 'Champions League', 'Premier League', 'Taça de Angola'],
       logo: LOGO_Z_SPORT_1,
-      url: 'https://dai.google.com/linear/hls/event/7f3Wv6f7QEKfQna22jHqLQ/master.m3u8?channel=z-sport-1-hd',
+      url: 'https://d9ssxzmclhfo4.cloudfront.net/bein_sports.m3u8',
       backupUrls: [
         'https://cdn.freevisiontv.co.za/sttv/smil:1kzn.stream.smil/playlist.m3u8',
-        'https://vivo.canaloncelive.tv/secureoncedos/oncedigital/playlist.m3u8',
-        'http://45.162.64.114/SPACE/index.m3u8',
+        'https://rmtv.akamaized.net/hls/live/2043153/rmtv-es-web/master.m3u8',
+        'https://d9ssxzmclhfo4.cloudfront.net/bein_sports.m3u8',
       ],
       rede: 'ZAP',
       pais: 'AO',
@@ -122,7 +125,7 @@ export function WorscoiControlPanel({
       qualidade: '1080p FHD',
       competicoes: ['NBA', 'Serie A', 'Girabola', 'UFC'],
       logo: LOGO_Z_SPORT_2,
-      url: 'https://dai.google.com/linear/hls/event/7f3Wv6f7QEKfQna22jHqLQ/master.m3u8?channel=z-sport-2-hd',
+      url: 'https://bein-xtra-bein.amagi.tv/playlist.m3u8',
       backupUrls: [
         'https://bein-xtra-bein.amagi.tv/playlist.m3u8',
         'https://5eaccbab48461.streamlock.net:1936/8264/8264/playlist.m3u8',
@@ -425,6 +428,27 @@ export function WorscoiControlPanel({
                   Emitir comprovativo oficial em PDF ou WhatsApp
                 </p>
               </button>
+
+              {/* CARD PÁGINAS COM LINKS PERSONALIZADOS */}
+              {onOpenCreateCustomPage && (
+                <button
+                  id="btn-card-paginas-personalizadas"
+                  type="button"
+                  onClick={onOpenCreateCustomPage}
+                  className="w-full h-36 rounded-2xl border border-cyan-900/40 hover:border-cyan-500/60 bg-gradient-to-b from-cyan-950/25 via-zinc-900/50 to-zinc-900/40 hover:from-cyan-950/40 hover:to-zinc-850/60 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] cursor-pointer flex flex-col items-center justify-center p-4 text-center group shadow-sm"
+                >
+                  <div className="w-11 h-11 rounded-full bg-cyan-950/70 border border-cyan-700/50 flex items-center justify-center text-cyan-400 group-hover:scale-110 group-hover:rotate-12 group-hover:border-cyan-400 group-hover:text-white transition-all duration-200 mb-2 shadow-md">
+                    <Globe className="w-5 h-5" />
+                  </div>
+                  <span className="text-sm font-semibold text-zinc-100 group-hover:text-white transition tracking-tight flex items-center gap-1">
+                    <span>Páginas & Links</span>
+                    <Sparkles className="w-3 h-3 text-cyan-400" />
+                  </span>
+                  <p className="text-[11px] text-zinc-400 mt-1 line-clamp-2">
+                    Criar páginas com links personalizados e canais
+                  </p>
+                </button>
+              )}
             </div>
 
             {/* LADO DIREITO: ESCOLHA O SEU PLANO */}

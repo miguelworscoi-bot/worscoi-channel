@@ -653,21 +653,21 @@ export function AdminPanelModal({
                       nome: 'Z Sports LaLiga HD',
                       desc: 'LaLiga EA Sports, Real Madrid e Barcelona',
                       logo: LOGO_Z_SPORTS_LALIGA,
-                      url: 'https://dai.google.com/linear/hls/event/7f3Wv6f7QEKfQna22jHqLQ/master.m3u8?channel=z-sports-laliga-hd',
+                      url: 'https://rmtv.akamaized.net/hls/live/2043153/rmtv-es-web/master.m3u8',
                     },
                     {
                       id: 'z-sport-1-hd',
                       nome: 'Z Sport 1 HD',
                       desc: 'Champions League, Girabola ZAP e Premier League',
                       logo: LOGO_Z_SPORT_1,
-                      url: 'https://dai.google.com/linear/hls/event/7f3Wv6f7QEKfQna22jHqLQ/master.m3u8?channel=z-sport-1-hd',
+                      url: 'https://d9ssxzmclhfo4.cloudfront.net/bein_sports.m3u8',
                     },
                     {
                       id: 'z-sport-2-hd',
                       nome: 'Z Sport 2 HD',
                       desc: 'Serie A Italiana, NBA, Unitel Basket e UFC',
                       logo: LOGO_Z_SPORT_2,
-                      url: 'https://dai.google.com/linear/hls/event/7f3Wv6f7QEKfQna22jHqLQ/master.m3u8?channel=z-sport-2-hd',
+                      url: 'https://bein-xtra-bein.amagi.tv/playlist.m3u8',
                     },
                   ].map((zCh) => (
                     <div

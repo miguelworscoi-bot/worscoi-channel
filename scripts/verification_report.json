@@ -1,0 +1,4155 @@
+[
+  {
+    "id": "z-sports-laliga-hd",
+    "nome": "Z Sports LaLiga HD",
+    "categoria": "Esportes",
+    "url": "https://rmtv.akamaized.net/hls/live/2043153/rmtv-es-web/master.m3u8",
+    "status": "ONLINE",
+    "statusCode": 200
+  },
+  {
+    "id": "z-sport-1-hd",
+    "nome": "Z Sport 1 HD",
+    "categoria": "Esportes",
+    "url": "https://d9ssxzmclhfo4.cloudfront.net/bein_sports.m3u8",
+    "status": "ONLINE",
+    "statusCode": 206
+  },
+  {
+    "id": "z-sport-2-hd",
+    "nome": "Z Sport 2 HD",
+    "categoria": "Esportes",
+    "url": "https://bein-xtra-bein.amagi.tv/playlist.m3u8",
+    "status": "ONLINE",
+    "statusCode": 206
+  },
+  {
+    "id": "tnt-sports-brasil-hd",
+    "nome": "TNT Sports Brasil HD",
+    "categoria": "Esportes",
+    "url": "https://d9ssxzmclhfo4.cloudfront.net/bein_sports.m3u8",
+    "status": "ONLINE",
+    "statusCode": 206
+  },
+  {
+    "id": "tnt-sports-1-uk",
+    "nome": "TNT Sports 1 UK HD",
+    "categoria": "Esportes",
+    "url": "https://bein-xtra-bein.amagi.tv/playlist.m3u8",
+    "status": "ONLINE",
+    "statusCode": 206
+  },
+  {
+    "id": "tnt-sports-2-uk",
+    "nome": "TNT Sports 2 UK HD",
+    "categoria": "Esportes",
+    "url": "https://d9ssxzmclhfo4.cloudfront.net/bein_sports.m3u8",
+    "status": "ONLINE",
+    "statusCode": 206
+  },
+  {
+    "id": "tnt-sports-3-uk",
+    "nome": "TNT Sports 3 UK HD",
+    "categoria": "Esportes",
+    "url": "https://rbmn-live.akamaized.net/hls/live/590964/BoRB-AT/master.m3u8",
+    "status": "ONLINE",
+    "statusCode": 200
+  },
+  {
+    "id": "tnt-sports-4-uk",
+    "nome": "TNT Sports 4 UK HD",
+    "categoria": "Esportes",
+    "url": "https://origin.live.stream.redbull.com/egress/b/linear_manifest/manifest.m3u8",
+    "status": "ERROR",
+    "error": "fetch failed"
+  },
+  {
+    "id": "tnt-sports-ultimate-4k",
+    "nome": "TNT Sports Ultimate 4K UHD",
+    "categoria": "Esportes",
+    "url": "https://rmtv.akamaized.net/hls/live/2043153/rmtv-es-web/master.m3u8",
+    "status": "ONLINE",
+    "statusCode": 200
+  },
+  {
+    "id": "tnt-sports-argentina-hd",
+    "nome": "TNT Sports Argentina HD",
+    "categoria": "Esportes",
+    "url": "https://bein-xtra-bein.amagi.tv/playlist.m3u8",
+    "status": "ONLINE",
+    "statusCode": 206
+  },
+  {
+    "id": "tnt-sports-chile-hd",
+    "nome": "TNT Sports Chile HD",
+    "categoria": "Esportes",
+    "url": "https://vivo.canaloncelive.tv/secureoncedos/oncedigital/playlist.m3u8",
+    "status": "ONLINE",
+    "statusCode": 206
+  },
+  {
+    "id": "vivo-tv-esportes-hd",
+    "nome": "Vivo TV Esportes HD",
+    "categoria": "Esportes",
+    "url": "https://origin.live.stream.redbull.com/egress/b/linear_manifest/manifest.m3u8",
+    "status": "ERROR",
+    "error": "fetch failed"
+  },
+  {
+    "id": "vivo-play-futebol-hd",
+    "nome": "Vivo Play Futebol HD",
+    "categoria": "Esportes",
+    "url": "https://d9ssxzmclhfo4.cloudfront.net/bein_sports.m3u8",
+    "status": "ONLINE",
+    "statusCode": 206
+  },
+  {
+    "id": "vivo-sports-campeonatos-hd",
+    "nome": "Vivo Sports Campeonatos Ao Vivo",
+    "categoria": "Esportes",
+    "url": "https://vivo.canaloncelive.tv/secureoncedos/oncedigital/playlist.m3u8",
+    "status": "ONLINE",
+    "statusCode": 206
+  },
+  {
+    "id": "zap-viva-hd-angola",
+    "nome": "ZAP Viva HD",
+    "categoria": "Esportes",
+    "url": "https://channels.trace.plus/Traceprod/AFRICA_FR_hd/index.m3u8",
+    "status": "ONLINE",
+    "statusCode": 206
+  },
+  {
+    "id": "zap-viva-internacional-hd",
+    "nome": "ZAP Viva Internacional HD",
+    "categoria": "Esportes",
+    "url": "https://channels.trace.plus/Traceprod/TOCA_hd/index.m3u8",
+    "status": "ONLINE",
+    "statusCode": 206
+  },
+  {
+    "id": "supersport-premier-league-hd",
+    "nome": "SuperSport Premier League HD",
+    "categoria": "Esportes",
+    "url": "https://bein-xtra-bein.amagi.tv/playlist.m3u8",
+    "status": "ONLINE",
+    "statusCode": 206
+  },
+  {
+    "id": "supersport-laliga-hd",
+    "nome": "SuperSport LaLiga HD",
+    "categoria": "Esportes",
+    "url": "https://rmtv.akamaized.net/hls/live/2043153/rmtv-es-web/master.m3u8",
+    "status": "ONLINE",
+    "statusCode": 200
+  },
+  {
+    "id": "supersport-football-plus-hd",
+    "nome": "SuperSport Football Plus HD",
+    "categoria": "Esportes",
+    "url": "https://d9ssxzmclhfo4.cloudfront.net/bein_sports.m3u8",
+    "status": "ONLINE",
+    "statusCode": 206
+  },
+  {
+    "id": "supersport-grandstand-hd",
+    "nome": "SuperSport Grandstand HD",
+    "categoria": "Esportes",
+    "url": "https://d9ssxzmclhfo4.cloudfront.net/bein_sports.m3u8",
+    "status": "ONLINE",
+    "statusCode": 206
+  },
+  {
+    "id": "supersport-maximo-1-hd",
+    "nome": "SuperSport MáXimo 1 HD (Português)",
+    "categoria": "Esportes",
+    "url": "https://cdn.freevisiontv.co.za/sttv/smil:1kzn.stream.smil/playlist.m3u8",
+    "status": "ONLINE",
+    "statusCode": 206
+  },
+  {
+    "id": "supersport-maximo-2-hd",
+    "nome": "SuperSport MáXimo 2 HD (Português)",
+    "categoria": "Esportes",
+    "url": "https://origin.live.stream.redbull.com/egress/b/linear_manifest/manifest.m3u8",
+    "status": "ERROR",
+    "error": "fetch failed"
+  },
+  {
+    "id": "supersport-maximo-360-hd",
+    "nome": "SuperSport MáXimo 360 HD",
+    "categoria": "Esportes",
+    "url": "https://bein-xtra-bein.amagi.tv/playlist.m3u8",
+    "status": "ONLINE",
+    "statusCode": 206
+  },
+  {
+    "id": "supersport-variety-1-hd",
+    "nome": "SuperSport Variety 1 HD",
+    "categoria": "Esportes",
+    "url": "https://rbmn-live.akamaized.net/hls/live/590964/BoRB-AT/master.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "supersport-variety-2-hd",
+    "nome": "SuperSport Variety 2 HD",
+    "categoria": "Esportes",
+    "url": "https://vivo.canaloncelive.tv/secureoncedos/oncedigital/playlist.m3u8",
+    "status": "ONLINE",
+    "statusCode": 206
+  },
+  {
+    "id": "supersport-blitz-hd",
+    "nome": "SuperSport Blitz HD",
+    "categoria": "Esportes",
+    "url": "https://rmtv.akamaized.net/hls/live/2043153/rmtv-es-web/master.m3u8",
+    "status": "ONLINE",
+    "statusCode": 200
+  },
+  {
+    "id": "sky-sports-premier-league-uk",
+    "nome": "Sky Sports Premier League HD",
+    "categoria": "Esportes",
+    "url": "https://bein-xtra-bein.amagi.tv/playlist.m3u8",
+    "status": "ONLINE",
+    "statusCode": 206
+  },
+  {
+    "id": "sky-sports-main-event-uk",
+    "nome": "Sky Sports Main Event HD",
+    "categoria": "Esportes",
+    "url": "https://d9ssxzmclhfo4.cloudfront.net/bein_sports.m3u8",
+    "status": "ONLINE",
+    "statusCode": 206
+  },
+  {
+    "id": "movistar-laliga-tv-hd",
+    "nome": "Movistar LaLiga TV HD",
+    "categoria": "Esportes",
+    "url": "https://rmtv.akamaized.net/hls/live/2043153/rmtv-es-web/master.m3u8",
+    "status": "ONLINE",
+    "statusCode": 200
+  },
+  {
+    "id": "dazn-laliga-es-hd",
+    "nome": "DAZN LaLiga España HD",
+    "categoria": "Esportes",
+    "url": "https://rmtv.akamaized.net/hls/live/2043153/rmtv-es-web/master.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "dazn-premier-league-hd",
+    "nome": "DAZN Premier League HD",
+    "categoria": "Esportes",
+    "url": "https://bein-xtra-bein.amagi.tv/playlist.m3u8",
+    "status": "ONLINE",
+    "statusCode": 206
+  },
+  {
+    "id": "espn-brasil-premier-laliga-hd",
+    "nome": "ESPN Brasil HD (Premier League & LaLiga)",
+    "categoria": "Esportes",
+    "url": "https://origin.live.stream.redbull.com/egress/b/linear_manifest/manifest.m3u8",
+    "status": "ERROR",
+    "error": "fetch failed"
+  },
+  {
+    "id": "espn-4-futebol-hd",
+    "nome": "ESPN 4 HD (Premier League & Ligas Europeias)",
+    "categoria": "Esportes",
+    "url": "https://d9ssxzmclhfo4.cloudfront.net/bein_sports.m3u8",
+    "status": "ONLINE",
+    "statusCode": 206
+  },
+  {
+    "id": "espn-deportes-laliga",
+    "nome": "ESPN Deportes HD (LaLiga & Futebol Internacional)",
+    "categoria": "Esportes",
+    "url": "https://vivo.canaloncelive.tv/secureoncedos/oncedigital/playlist.m3u8",
+    "status": "ONLINE",
+    "statusCode": 206
+  },
+  {
+    "id": "premier-sports-laligatv-uk",
+    "nome": "LALIGA TV / Premier Sports HD",
+    "categoria": "Esportes",
+    "url": "https://rmtv.akamaized.net/hls/live/2043153/rmtv-es-web/master.m3u8",
+    "status": "ONLINE",
+    "statusCode": 200
+  },
+  {
+    "id": "directv-dsports-laliga",
+    "nome": "DSports LaLiga HD (DirecTV Sports)",
+    "categoria": "Esportes",
+    "url": "https://bein-xtra-bein.amagi.tv/playlist.m3u8",
+    "status": "ONLINE",
+    "statusCode": 206
+  },
+  {
+    "id": "real-madrid-tv-hd-live",
+    "nome": "Real Madrid TV HD (LaLiga & UCL)",
+    "categoria": "Esportes",
+    "url": "https://rmtv.akamaized.net/hls/live/2043153/rmtv-es-web/master.m3u8",
+    "status": "ONLINE",
+    "statusCode": 200
+  },
+  {
+    "id": "barca-tv-live-hd",
+    "nome": "Barça TV HD (LaLiga & Barça)",
+    "categoria": "Esportes",
+    "url": "https://rmtv.akamaized.net/hls/live/2043153/rmtv-es-web/master.m3u8",
+    "status": "ONLINE",
+    "statusCode": 200
+  },
+  {
+    "id": "usa-network-premier-league",
+    "nome": "USA Network / NBC Sports HD (Premier League)",
+    "categoria": "Esportes",
+    "url": "https://bein-xtra-bein.amagi.tv/playlist.m3u8",
+    "status": "ONLINE",
+    "statusCode": 206
+  },
+  {
+    "id": "canal-plus-premier-league-fr",
+    "nome": "Canal+ Premier League HD",
+    "categoria": "Esportes",
+    "url": "https://d9ssxzmclhfo4.cloudfront.net/bein_sports.m3u8",
+    "status": "ONLINE",
+    "statusCode": 206
+  },
+  {
+    "id": "miramar-tv-mz",
+    "nome": "Miramar",
+    "categoria": "Lazer",
+    "url": "https://www.youtube.com/watch?v=iqxqt9F3wS4",
+    "status": "YOUTUBE"
+  },
+  {
+    "id": "tv5monde-france",
+    "nome": "TV5Monde",
+    "categoria": "Lazer",
+    "url": "http://5.9.121.178/tv5monde/index.m3u8",
+    "status": "DEAD_PATTERN",
+    "error": "Dead IP or placeholder pattern"
+  },
+  {
+    "id": "tpa-1-angola-hd",
+    "nome": "TPA 1",
+    "categoria": "Lazer",
+    "url": "https://www.youtube.com/watch?v=ORW_jsACK5w",
+    "status": "YOUTUBE"
+  },
+  {
+    "id": "tpa-2-angola-hd",
+    "nome": "TPA 2",
+    "categoria": "Lazer",
+    "url": "https://www.youtube.com/watch?v=XjPHezvZLIs",
+    "status": "YOUTUBE"
+  },
+  {
+    "id": "tpa-noticias-angola",
+    "nome": "TPA Notícias",
+    "categoria": "Notícias",
+    "url": "https://www.youtube.com/watch?v=8JINyFt126M",
+    "status": "YOUTUBE"
+  },
+  {
+    "id": "rtp-africa-hd",
+    "nome": "RTP África",
+    "categoria": "Lazer",
+    "url": "https://vivo.canaloncelive.tv/secureoncedos/oncedigital/playlist.m3u8",
+    "status": "ONLINE",
+    "statusCode": 206
+  },
+  {
+    "id": "rtp-internacional-hd",
+    "nome": "RTP Internacional",
+    "categoria": "Lazer",
+    "url": "https://vivo.canaloncelive.tv/secureoncedos/oncedigital/playlist.m3u8",
+    "status": "ONLINE",
+    "statusCode": 206
+  },
+  {
+    "id": "daystar-television-hd",
+    "nome": "Daystar",
+    "categoria": "Lazer",
+    "url": "https://live-mcl.cdn01.net/smarttv/48vy43564/playlist.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "tv-girassol-angola",
+    "nome": "TV Girassol",
+    "categoria": "Lazer",
+    "url": "https://www.youtube.com/watch?v=YZEP9EyydHA",
+    "status": "YOUTUBE"
+  },
+  {
+    "id": "euronews-portugues-live",
+    "nome": "Euro News",
+    "categoria": "Notícias",
+    "url": "https://www.youtube.com/watch?v=s1a-uZVkIeY",
+    "status": "YOUTUBE"
+  },
+  {
+    "id": "afro-music-pop-live",
+    "nome": "Afro Music Pop",
+    "categoria": "Músicas",
+    "url": "https://channels.trace.plus/Traceprod/AFRICA_FR_hd/index.m3u8",
+    "status": "ONLINE",
+    "statusCode": 206
+  },
+  {
+    "id": "jimjam-kids-tv",
+    "nome": "JimJam",
+    "categoria": "Bonecos",
+    "url": "http://212.5.144.156:8080/jimjam/index.m3u8",
+    "status": "DEAD_PATTERN",
+    "error": "Dead IP or placeholder pattern"
+  },
+  {
+    "id": "m4-movies-channel",
+    "nome": "M4 Movies",
+    "categoria": "Filmes",
+    "url": "https://stream.ads.ottera.tv/playlist.m3u8?content_livestream=1&network_id=16484",
+    "status": "ONLINE",
+    "statusCode": 200
+  },
+  {
+    "id": "cgtn-news-live",
+    "nome": "CGTN",
+    "categoria": "Notícias",
+    "url": "https://amg00405-rakutentv-cgtn-rakuten-i9tar.amagi.tv/master.m3u8",
+    "status": "ONLINE",
+    "statusCode": 206
+  },
+  {
+    "id": "dstv-pipoca-hd",
+    "nome": "DStv Pipoca",
+    "categoria": "Filmes",
+    "url": "https://stream.ads.ottera.tv/playlist.m3u8?content_livestream=1&network_id=16484",
+    "status": "ONLINE",
+    "statusCode": 200
+  },
+  {
+    "id": "kwenda-magic-hd",
+    "nome": "Kwenda Magic",
+    "categoria": "Novelas",
+    "url": "https://vivo.canaloncelive.tv/secureoncedos/oncedigital/playlist.m3u8",
+    "status": "ONLINE",
+    "statusCode": 206
+  },
+  {
+    "id": "trace-toca-live",
+    "nome": "Trace Toca",
+    "categoria": "Músicas",
+    "url": "https://channels.trace.plus/Traceprod/TOCA_hd/index.m3u8",
+    "status": "ONLINE",
+    "statusCode": 206
+  },
+  {
+    "id": "telemundo-novelas-live",
+    "nome": "Telemundo",
+    "categoria": "Novelas",
+    "url": "https://streamer1.nexgen.bz/TELEMUNDO/index.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "my-channel-tv-africa",
+    "nome": "My Channel",
+    "categoria": "Lazer",
+    "url": "https://xumo-xumoent-ch828-w6val.fast.nbcuni.com/live/master.m3u8",
+    "status": "ONLINE",
+    "statusCode": 206
+  },
+  {
+    "id": "rai-italia-internacional",
+    "nome": "Rai Italia",
+    "categoria": "Lazer",
+    "url": "https://d3k8wzt41aflvx.cloudfront.net/RAIHD/Live.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "canal-panda-oficial",
+    "nome": "Canal Panda",
+    "categoria": "Bonecos",
+    "url": "https://moonbug-rokuus.amagi.tv/playlist.m3u8",
+    "status": "ONLINE",
+    "statusCode": 206
+  },
+  {
+    "id": "panda-kids-oficial",
+    "nome": "Panda Kids",
+    "categoria": "Bonecos",
+    "url": "https://cdn.freevisiontv.co.za/sttv/smil:1kzn.stream.smil/playlist.m3u8",
+    "status": "ONLINE",
+    "statusCode": 206
+  },
+  {
+    "id": "kix-action-channel",
+    "nome": "KIX",
+    "categoria": "Filmes",
+    "url": "https://stream.ads.ottera.tv/playlist.m3u8?content_livestream=1&network_id=16484",
+    "status": "ONLINE",
+    "statusCode": 200
+  },
+  {
+    "id": "cgtn-francais-live",
+    "nome": "CGTN Français",
+    "categoria": "Notícias",
+    "url": "https://www.youtube.com/watch?v=Qsiql-YH6Eg",
+    "status": "YOUTUBE"
+  },
+  {
+    "id": "mtv-global-hd",
+    "nome": "MTV",
+    "categoria": "Músicas",
+    "url": "https://channels.trace.plus/Traceprod/BRAZIL_hd/index.m3u8",
+    "status": "ONLINE",
+    "statusCode": 206
+  },
+  {
+    "id": "cctv-4-chinese-intl",
+    "nome": "CCTV",
+    "categoria": "Notícias",
+    "url": "http://69.30.245.50/live/cctv4.m3u8",
+    "status": "DEAD_PATTERN",
+    "error": "Dead IP or placeholder pattern"
+  },
+  {
+    "id": "biggs-portugal-hd",
+    "nome": "Biggs",
+    "categoria": "Bonecos",
+    "url": "https://moonbug-rokuus.amagi.tv/playlist.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "banda-tv-angola-live",
+    "nome": "Banda",
+    "categoria": "Lazer",
+    "url": "https://channels.trace.plus/Traceprod/AFRICA_FR_hd/index.m3u8",
+    "status": "ONLINE",
+    "statusCode": 206
+  },
+  {
+    "id": "gloom-channel-live",
+    "nome": "Gloom",
+    "categoria": "Lazer",
+    "url": "https://vivo.solumedia.com:19360/cardinal/cardinal.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "best-brasil-tv-live",
+    "nome": "Best Brasil",
+    "categoria": "Lazer",
+    "url": "https://jmp2.uk/plu-681111be5e0764e297fb200e.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "moonbug-kids-channel",
+    "nome": "Moonbug",
+    "categoria": "Bonecos",
+    "url": "https://moonbug-rokuus.amagi.tv/playlist.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "mtv-base-channel",
+    "nome": "MTV Base",
+    "categoria": "Músicas",
+    "url": "https://channels.trace.plus/Traceprod/AFRICA_FR_hd/index.m3u8",
+    "status": "ONLINE",
+    "statusCode": 206
+  },
+  {
+    "id": "food-network-channel",
+    "nome": "Food Network",
+    "categoria": "Lazer",
+    "url": "https://d1e9r0b71zfwk7.cloudfront.net/playlist.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "real-time-discovery",
+    "nome": "Real Time",
+    "categoria": "Lazer",
+    "url": "https://d1e9r0b71zfwk7.cloudfront.net/playlist.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "universal-tv-series-hd",
+    "nome": "Universal TV",
+    "categoria": "Filmes",
+    "url": "https://xumo-xumoent-ch828-w6val.fast.nbcuni.com/live/master.m3u8",
+    "status": "ONLINE",
+    "statusCode": 206
+  },
+  {
+    "id": "rok-nollywood-tv",
+    "nome": "ROK",
+    "categoria": "Filmes",
+    "url": "https://stream.ads.ottera.tv/playlist.m3u8?content_livestream=1&network_id=16484",
+    "status": "ONLINE",
+    "statusCode": 200
+  },
+  {
+    "id": "odisseia-documentarios-hd",
+    "nome": "Odisseia",
+    "categoria": "Lazer",
+    "url": "https://dkaiai6digij6.cloudfront.net/Lights_Legends_Icons.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "baby-first-tv-kids",
+    "nome": "BabyFirst TV",
+    "categoria": "Bonecos",
+    "url": "https://moonbug-rokuus.amagi.tv/playlist.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "biography-channel-doc",
+    "nome": "Biography",
+    "categoria": "Lazer",
+    "url": "https://dkaiai6digij6.cloudfront.net/Lights_Legends_Icons.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "kiss-tv-music-uk",
+    "nome": "Kiss",
+    "categoria": "Músicas",
+    "url": "https://master.tucableip.com/audiokisstv/index.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "kidsco-channel-tv",
+    "nome": "KidsCo",
+    "categoria": "Bonecos",
+    "url": "http://212.5.144.156:8080/jimjam/index.m3u8",
+    "status": "DEAD_PATTERN",
+    "error": "Dead IP or placeholder pattern"
+  },
+  {
+    "id": "sic-mulher-portugal-hd",
+    "nome": "SIC Mulher",
+    "categoria": "Novelas",
+    "url": "https://production-fast-sic.content.okast.tv/fa2e8c4385712f9aa54bbe52b1bd9b6b/channels/d9070446-8448-455e-8075-773b1ba12562/fc831b20-f252-4e7d-8cc5-2d05f4d43c1c/media_.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "bem-simples-culinaria",
+    "nome": "Bem Simples",
+    "categoria": "Lazer",
+    "url": "https://d1e9r0b71zfwk7.cloudfront.net/playlist.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "lifestyle-tv-channel",
+    "nome": "Lifestyle",
+    "categoria": "Lazer",
+    "url": "https://travelxp-travelxp-5-eu.rakuten.wurl.tv/playlist.m3u8",
+    "status": "ONLINE",
+    "statusCode": 206
+  },
+  {
+    "id": "travel-channel-global",
+    "nome": "Travel",
+    "categoria": "Lazer",
+    "url": "https://travelxp-travelxp-5-eu.rakuten.wurl.tv/playlist.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "sol-musica-channel",
+    "nome": "Sol Música",
+    "categoria": "Músicas",
+    "url": "https://channels.trace.plus/Traceprod/LATINA_hd/index.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "bet-network-channel",
+    "nome": "BET",
+    "categoria": "Filmes",
+    "url": "https://channels.trace.plus/Traceprod/AFRICA_FR_hd/index.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "brava-classical-music",
+    "nome": "Brava",
+    "categoria": "Músicas",
+    "url": "https://lotus.stingray.com/manifest/ose-346ads-montreal/samsungtvplus/master.m3u8",
+    "status": "ONLINE",
+    "statusCode": 206
+  },
+  {
+    "id": "i-concerts-music-hd",
+    "nome": "i-Concerts",
+    "categoria": "Músicas",
+    "url": "https://lotus.stingray.com/manifest/ose-814ads-montreal/samsungtvplus/master.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "sic-k-juvenil-hd",
+    "nome": "SIC K",
+    "categoria": "Bonecos",
+    "url": "https://production-fast-sic.content.okast.tv/fa2e8c4385712f9aa54bbe52b1bd9b6b/channels/d9070446-8448-455e-8075-773b1ba12562/fc831b20-f252-4e7d-8cc5-2d05f4d43c1c/media_.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "uefa-champions-league-live-hd",
+    "nome": "UEFA Champions League Live HD",
+    "categoria": "Esportes",
+    "url": "https://d9ssxzmclhfo4.cloudfront.net/bein_sports.m3u8",
+    "status": "ONLINE",
+    "statusCode": 206
+  },
+  {
+    "id": "rmtv-espanol-hd",
+    "nome": "Real Madrid TV HD (Champions League & LaLiga)",
+    "categoria": "Esportes",
+    "url": "https://rmtv.akamaized.net/hls/live/2043153/rmtv-es-web/master.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "rmtv-english-hd",
+    "nome": "Real Madrid TV English HD",
+    "categoria": "Esportes",
+    "url": "https://rmtv.akamaized.net/hls/live/2043154/rmtv-en-web/master.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "espn-brasil-libertadores-hd",
+    "nome": "ESPN Brasil HD (Libertadores, LaLiga & NBA)",
+    "categoria": "Esportes",
+    "url": "http://181.78.197.59:8000/play/a07z/index.m3u8",
+    "status": "DEAD_PATTERN",
+    "error": "Dead IP or placeholder pattern"
+  },
+  {
+    "id": "bein-sports-xtra-hd",
+    "nome": "beIN SPORTS XTRA HD (Libertadores)",
+    "categoria": "Esportes",
+    "url": "https://bein-xtra-bein.amagi.tv/playlist.m3u8",
+    "status": "ONLINE",
+    "statusCode": 206
+  },
+  {
+    "id": "bein-sports-espanol-hd",
+    "nome": "beIN SPORTS en Español HD",
+    "categoria": "Esportes",
+    "url": "https://dc1644a9jazgj.cloudfront.net/beIN_Sports_Xtra_Espanol.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "redbull-tv-sports-hd",
+    "nome": "Red Bull TV Sports & Ação HD",
+    "categoria": "Esportes",
+    "url": "https://rbmn-live.akamaized.net/hls/live/590964/BoRB-AT/master.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "aspor-futebol-hd",
+    "nome": "A Spor HD (Futebol Europeu & Debate)",
+    "categoria": "Esportes",
+    "url": "https://rnttwmjcin.turknet.ercdn.net/lcpmvefbyo/aspor/aspor.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "acc-sports-network-hd",
+    "nome": "ACC Sports Network HD (NCAA & Basquete)",
+    "categoria": "Esportes",
+    "url": "https://raycom-accdn-firetv.amagi.tv/playlist.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "golf-tour-tv-hd",
+    "nome": "30A Golf Tour TV (PGA & Lazer)",
+    "categoria": "Esportes",
+    "url": "https://30a-tv.com/feeds/vidaa/golf.m3u8",
+    "status": "ONLINE",
+    "statusCode": 206
+  },
+  {
+    "id": "band-sports-br-feed",
+    "nome": "BandSports HD (Futebol & Automobilismo)",
+    "categoria": "Esportes",
+    "url": "https://origin.live.stream.redbull.com/egress/b/linear_manifest/manifest.m3u8",
+    "status": "ERROR",
+    "error": "fetch failed"
+  },
+  {
+    "id": "espn-4-feed-br",
+    "nome": "ESPN 4 HD (Premier League & Rodada)",
+    "categoria": "Esportes",
+    "url": "https://bein-xtra-bein.amagi.tv/playlist.m3u8",
+    "status": "ONLINE",
+    "statusCode": 206
+  },
+  {
+    "id": "espn-extra-feed",
+    "nome": "ESPN Extra HD (Esportes Americanos)",
+    "categoria": "Esportes",
+    "url": "http://181.78.197.59:8000/play/a07n/index.m3u8",
+    "status": "DEAD_PATTERN",
+    "error": "Dead IP or placeholder pattern"
+  },
+  {
+    "id": "zap-tv-zimbo-hd",
+    "nome": "TV Zimbo HD (Angola)",
+    "categoria": "Lazer",
+    "url": "https://sgn-cdn-video.vods2africa.com/Tv-Zimbo/index.fmp4.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "zap-kk-tv-angola",
+    "nome": "KK TV Angola (ZAP 1080p)",
+    "categoria": "Lazer",
+    "url": "https://w1.manasat.com/ktv-angola/smil:ktv-angola.smil/playlist.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "zap-muzangala-tv",
+    "nome": "Muzangala TV Angola (ZAP 1080p)",
+    "categoria": "Lazer",
+    "url": "https://5cf4a2c2512a2.streamlock.net/tvmuzangala/tvmuzangala/playlist.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "5sport-1080p-",
+    "nome": "5Sport (1080p)",
+    "categoria": "Esportes",
+    "url": "http://stream.mcquack.net/41/index.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "-port-1080p-",
+    "nome": ":Šport (1080p)",
+    "categoria": "Esportes",
+    "url": "http://88.212.15.27/live/test_rtvs_sport_hevc/playlist.m3u8",
+    "status": "DEAD_PATTERN",
+    "error": "Dead IP or placeholder pattern"
+  },
+  {
+    "id": "acc-network-720p-",
+    "nome": "ACC Network (720p)",
+    "categoria": "Esportes",
+    "url": "http://23.239.31.26:8989/accnetwork/index.m3u8",
+    "status": "DEAD_PATTERN",
+    "error": "Dead IP or placeholder pattern"
+  },
+  {
+    "id": "aci-sport-tv-1080p-",
+    "nome": "ACI Sport TV (1080p)",
+    "categoria": "Esportes",
+    "url": "https://webstream.multistream.it/memfs/e2cb3629-c1a2-495b-b43a-9eb386f04ed8.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "adjarasport-1",
+    "nome": "Adjarasport 1",
+    "categoria": "Esportes",
+    "url": "https://live20.bozztv.com/dvrfl05/gin-adjara/index.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "ado-tv-720p-",
+    "nome": "ADO TV (720p)",
+    "categoria": "Esportes",
+    "url": "https://strhls.streamakaci.tv/ortb/ortb2-multi/playlist.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "africa-24-sport-1080p-",
+    "nome": "Africa 24 Sport (1080p)",
+    "categoria": "Esportes",
+    "url": "https://africa24.vedge.infomaniak.com/livecast/ik:africa24sport/manifest.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "al-iraqia-sport-720p-",
+    "nome": "Al Iraqia Sport (720p)",
+    "categoria": "Esportes",
+    "url": "https://imn-live.esite-lab.com/hls/iraqia-sports-1.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "alfa-sport-1080p-not-24-7-",
+    "nome": "Alfa Sport (1080p) [Not 24/7]",
+    "categoria": "Esportes",
+    "url": "https://dev.aftermind.xyz/edge-hls/unitrust/alfasports/index.m3u8?token=8TXWzhY3h6jrzqEqx",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "alkass-four-1080p-",
+    "nome": "Alkass Four (1080p)",
+    "categoria": "Esportes",
+    "url": "https://liveeu-gcp.alkassdigital.net/alkass4-p/main.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "alkass-one-1080p-",
+    "nome": "Alkass One (1080p)",
+    "categoria": "Esportes",
+    "url": "https://liveeu-gcp.alkassdigital.net/alkass1-p/main.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "alkass-shoof-1080p-",
+    "nome": "Alkass SHOOF (1080p)",
+    "categoria": "Esportes",
+    "url": "https://liveeu-gcp.alkassdigital.net/shooflive/main.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "alkass-shoof-2-1080p-",
+    "nome": "Alkass SHOOF 2 (1080p)",
+    "categoria": "Esportes",
+    "url": "https://liveeu-gcp.alkassdigital.net/shooflive2/main.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "alkass-six-1080p-",
+    "nome": "Alkass Six (1080p)",
+    "categoria": "Esportes",
+    "url": "https://liveeu-gcp.alkassdigital.net/alkass6-p/main.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "alkass-three-1080p-",
+    "nome": "Alkass Three (1080p)",
+    "categoria": "Esportes",
+    "url": "https://liveeu-gcp.alkassdigital.net/alkass3-p/main.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "alkass-two-1080p-",
+    "nome": "Alkass Two (1080p)",
+    "categoria": "Esportes",
+    "url": "https://liveeu-gcp.alkassdigital.net/alkass2-p/main.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "arena-sport-1",
+    "nome": "Arena Sport 1",
+    "categoria": "Esportes",
+    "url": "http://88.212.15.19/live/test_arenasport/playlist.m3u8",
+    "status": "DEAD_PATTERN",
+    "error": "Dead IP or placeholder pattern"
+  },
+  {
+    "id": "arena-sport-2",
+    "nome": "Arena Sport 2",
+    "categoria": "Esportes",
+    "url": "http://88.212.15.19/live/test_arenasport_dva/playlist.m3u8",
+    "status": "DEAD_PATTERN",
+    "error": "Dead IP or placeholder pattern"
+  },
+  {
+    "id": "arena-sport-5-premium",
+    "nome": "Arena Sport 5 Premium",
+    "categoria": "Esportes",
+    "url": "https://nl1.nghk.ai/SK2SRHD/index.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "arryadia",
+    "nome": "Arryadia",
+    "categoria": "Esportes",
+    "url": "http://149.100.11.252:8000/play/a065/index.m3u8",
+    "status": "DEAD_PATTERN",
+    "error": "Dead IP or placeholder pattern"
+  },
+  {
+    "id": "as3-sport-tv-1080p-",
+    "nome": "AS3 Sport TV (1080p)",
+    "categoria": "Esportes",
+    "url": "https://streamtv.as3sport.online:3394/hybrid/play.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "atg-live-720p-",
+    "nome": "ATG Live (720p)",
+    "categoria": "Esportes",
+    "url": "https://kanal75xto-llhls.akamaized.net/live/Data/atg-kanal-15-02a-rr/HLS-Legacy-HL/atg-kanal-15-02a-rr.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "awapa-sports-tv-1080p-not-24-7-",
+    "nome": "Awapa Sports TV (1080p) [Not 24/7]",
+    "categoria": "Esportes",
+    "url": "https://mgv-awapa.akamaized.net/hls/live/2104282/MGV_CHANNEL15/master.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "azteca-deportes-network-1080p-",
+    "nome": "Azteca Deportes Network (1080p)",
+    "categoria": "Esportes",
+    "url": "http://181.119.66.28:8081/AZTECA-DEPORTES-HD/index.m3u8",
+    "status": "DEAD_PATTERN",
+    "error": "Dead IP or placeholder pattern"
+  },
+  {
+    "id": "bahrain-sports-1-720p-not-24-7-",
+    "nome": "Bahrain Sports 1 (720p) [Not 24/7]",
+    "categoria": "Esportes",
+    "url": "https://5c7b683162943.streamlock.net/live/ngrp:sportsone_all/playlist.m3u8",
+    "status": "ONLINE",
+    "statusCode": 206
+  },
+  {
+    "id": "bahrain-sports-2-720p-not-24-7-",
+    "nome": "Bahrain Sports 2 (720p) [Not 24/7]",
+    "categoria": "Esportes",
+    "url": "https://5c7b683162943.streamlock.net/live/ngrp:bahrainsportstwo_all/playlist.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "band-sports-1080p-",
+    "nome": "Band Sports (1080p)",
+    "categoria": "Esportes",
+    "url": "https://cdn-5.nxplay.com.br/BAND_SPORTS/index.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "barca-tv",
+    "nome": "Barca TV",
+    "categoria": "Esportes",
+    "url": "https://live20.bozztv.com/dvrfl06/astv/astv-barca/index.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "bein-sports-xtra-en-espanol-1080p-",
+    "nome": "beIN SPORTS XTRA en Espanol (1080p)",
+    "categoria": "Esportes",
+    "url": "https://bein-xtra-bein.amagi.tv/playlist.m3u8",
+    "status": "ONLINE",
+    "statusCode": 206
+  },
+  {
+    "id": "bek-tv-sports-west-720p-",
+    "nome": "BEK TV Sports West (720p)",
+    "categoria": "Esportes",
+    "url": "https://cdn3.wowza.com/5/ZWQ1K2NYTmpFbGsr/BEK-WOWZA-1/smil:BEKPRIMEW.smil/playlist.m3u8",
+    "status": "ONLINE",
+    "statusCode": 206
+  },
+  {
+    "id": "belarus-5-1080p-not-24-7-",
+    "nome": "Belarus-5 (1080p) [Not 24/7]",
+    "categoria": "Esportes",
+    "url": "https://ngtrk.dc.beltelecom.by/ngtrk/smil:belarus5.smil/playlist.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "belarus-5-hd-1080p-",
+    "nome": "Belarus-5 HD (1080p)",
+    "categoria": "Esportes",
+    "url": "http://178.124.179.122:8080/BT5/index.m3u8",
+    "status": "DEAD_PATTERN",
+    "error": "Dead IP or placeholder pattern"
+  },
+  {
+    "id": "bellator-mma",
+    "nome": "Bellator MMA",
+    "categoria": "Esportes",
+    "url": "https://jmp2.uk/plu-5ebc8688f3697d00072f7cf8.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "billiard-tv-1080p-geo-blocked-",
+    "nome": "Billiard TV (1080p) [Geo-blocked]",
+    "categoria": "Esportes",
+    "url": "https://pb-wm04vonaerv0k.akamaized.net/billi.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "br-ndby-tv",
+    "nome": "Brøndby TV",
+    "categoria": "Esportes",
+    "url": "https://jmp2.uk/plu-685029cda1e091e16ff57fc8.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "canal-do-inter-720p-not-24-7-",
+    "nome": "Canal do Inter (720p) [Not 24/7]",
+    "categoria": "Esportes",
+    "url": "https://video01.soultv.com.br/internacional/internacional/playlist.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "canal-showsport-720p-",
+    "nome": "Canal Showsport (720p)",
+    "categoria": "Esportes",
+    "url": "https://livestream.lumpentv.com.ar/hls/lumpen.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "canal-sport-360",
+    "nome": "Canal+ Sport 360",
+    "categoria": "Esportes",
+    "url": "https://futbol9865.ultratv13.workers.dev/deportivo111/14.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "cazetv-1080i-",
+    "nome": "CazeTV (1080i)",
+    "categoria": "Esportes",
+    "url": "https://dfr80qz435crc.cloudfront.net/MNOP/Amagi/Caze/Caze_TV_BR/Caze_TV.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "cbc-sport-hd-geo-blocked-",
+    "nome": "CBC Sport HD [Geo-blocked]",
+    "categoria": "Esportes",
+    "url": "https://mn-nl.mncdn.com/cbcsports_live/cbcsports/playlist.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "cbs-sports-hq-720p-",
+    "nome": "CBS Sports HQ (720p)",
+    "categoria": "Esportes",
+    "url": "https://jmp2.uk/plu-5e9f2c05172a0f0007db4786.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "cctv-5-",
+    "nome": "CCTV-5+",
+    "categoria": "Esportes",
+    "url": "https://myip.pdtvhd.com/Sports/streams/CCTV5pul.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "cctv-16-1080p-",
+    "nome": "CCTV-16 (1080p)",
+    "categoria": "Esportes",
+    "url": "http://74.91.26.218:82/live/cctv16hd.m3u8",
+    "status": "DEAD_PATTERN",
+    "error": "Dead IP or placeholder pattern"
+  },
+  {
+    "id": "cctv-billiards-1080p-",
+    "nome": "CCTV-Billiards (1080p)",
+    "categoria": "Esportes",
+    "url": "http://38.75.136.137:98/gslb/dsdqpub/ystq.m3u8?auth=testpub",
+    "status": "DEAD_PATTERN",
+    "error": "Dead IP or placeholder pattern"
+  },
+  {
+    "id": "cctv-golf-tennis-1080p-",
+    "nome": "CCTV-Golf & Tennis (1080p)",
+    "categoria": "Esportes",
+    "url": "http://38.75.136.137:98/gslb/dsdqpub/gefwq.m3u8?auth=testpub",
+    "status": "DEAD_PATTERN",
+    "error": "Dead IP or placeholder pattern"
+  },
+  {
+    "id": "cctv-storm-football-1080p-",
+    "nome": "CCTV-Storm Football (1080p)",
+    "categoria": "Esportes",
+    "url": "http://38.75.136.137:98/gslb/dsdqpub/fyzq.m3u8?auth=testpub",
+    "status": "DEAD_PATTERN",
+    "error": "Dead IP or placeholder pattern"
+  },
+  {
+    "id": "cdn-deportes-720p-not-24-7-",
+    "nome": "CDN Deportes (720p) [Not 24/7]",
+    "categoria": "Esportes",
+    "url": "https://hls.tvabierta.net/hls/036.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "cdo-1080p-",
+    "nome": "CDO (1080p)",
+    "categoria": "Esportes",
+    "url": "http://cdn1tlinkgo.tlink.cl/cdo/mono.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "claro-sports-720p-",
+    "nome": "Claro Sports (720p)",
+    "categoria": "Esportes",
+    "url": "https://jmp2.uk/plu-6320d2755e54db000783fd87.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "colimdot-tv-720p-",
+    "nome": "ColimdoT TV (720p)",
+    "categoria": "Esportes",
+    "url": "https://cnn.livestreaminggroup.info:3132/live/colimdotvlive.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "combate-720p-",
+    "nome": "Combate (720p)",
+    "categoria": "Esportes",
+    "url": "http://143.14.134.107/167/index.m3u8",
+    "status": "DEAD_PATTERN",
+    "error": "Dead IP or placeholder pattern"
+  },
+  {
+    "id": "cricket-gold-1080p-",
+    "nome": "Cricket Gold (1080p)",
+    "categoria": "Esportes",
+    "url": "https://streams2.sofast.tv/ptnr-yupptv/title-cricketgold/v1/master/611d79b11b77e2f571934fd80ca1413453772ac7/b2048bb8-1686-4432-aa50-647245383e0c/manifest.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "crtv-720p-",
+    "nome": "CRTV (720p)",
+    "categoria": "Esportes",
+    "url": "https://stmv2.voxtvhd.com.br/crtvchile/crtvchile/playlist.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "-t-sport-720p-",
+    "nome": "ČT Sport (720p)",
+    "categoria": "Esportes",
+    "url": "http://88.212.15.19/live/test_ctsport_25p/playlist.m3u8",
+    "status": "DEAD_PATTERN",
+    "error": "Dead IP or placeholder pattern"
+  },
+  {
+    "id": "dazn-combat-684p-",
+    "nome": "DAZN Combat (684p)",
+    "categoria": "Esportes",
+    "url": "https://jmp2.uk/plu-64d626ac9b414d000820e2fc.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "dazn-darts-x-pluto-tv",
+    "nome": "DAZN Darts x Pluto TV",
+    "categoria": "Esportes",
+    "url": "https://jmp2.uk/plu-64b67f0424ade50008a3be17.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "dazn-heldinnen-x-pluto-tv",
+    "nome": "DAZN Heldinnen x Pluto TV",
+    "categoria": "Esportes",
+    "url": "https://jmp2.uk/plu-64afe50c5dc16600087f3227.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "dd-sports-sd-1080p-",
+    "nome": "DD Sports SD (1080p)",
+    "categoria": "Esportes",
+    "url": "https://d3qs3d2rkhfqrt.cloudfront.net/out/v1/b17adfe543354fdd8d189b110617cddd/index.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "deportes-por-movistar-plus-",
+    "nome": "Deportes por Movistar Plus+",
+    "categoria": "Esportes",
+    "url": "https://7nyaler.streamhostingcdn.top/stream/18/index.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "deportes-tvc-1080p-",
+    "nome": "Deportes TVC (1080p)",
+    "categoria": "Esportes",
+    "url": "http://162.19.255.233:8080/play/UNbAl57p9hXZClOu56FCTYXmD-MOS3u5IUkeXPpBt80/m3u8",
+    "status": "DEAD_PATTERN",
+    "error": "Dead IP or placeholder pattern"
+  },
+  {
+    "id": "digi-sport-1",
+    "nome": "Digi Sport 1",
+    "categoria": "Esportes",
+    "url": "https://7nyaler.streamhostingcdn.top/stream/79/index.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "digi-sport-2-1080p-",
+    "nome": "Digi Sport 2 (1080p)",
+    "categoria": "Esportes",
+    "url": "http://forever.megogo.xyz/iptv/QGB4M3H62GC7E3/2522/index.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "digi-sport-3-576p-",
+    "nome": "Digi Sport 3 (576p)",
+    "categoria": "Esportes",
+    "url": "http://forever.megogo.xyz/iptv/QGB4M3H62GC7E3/2524/index.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "digi-sport-4-1080p-",
+    "nome": "Digi Sport 4 (1080p)",
+    "categoria": "Esportes",
+    "url": "http://forever.megogo.xyz/iptv/QGB4M3H62GC7E3/2538/index.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "divisport-1080p-",
+    "nome": "DiviSport (1080p)",
+    "categoria": "Esportes",
+    "url": "http://stream.mcquack.net/457/index.m3u8",
+    "status": "ONLINE",
+    "statusCode": 200
+  },
+  {
+    "id": "dong-nai-tv-2-720p-",
+    "nome": "Dong Nai TV 2 (720p)",
+    "categoria": "Esportes",
+    "url": "https://vtvgolive-ott3.vtvdigital.vn/live/dongnai2tv/chunklist_2.m3u8",
+    "status": "ONLINE",
+    "statusCode": 206
+  },
+  {
+    "id": "draftkings-network-1080p-",
+    "nome": "DraftKings Network (1080p)",
+    "categoria": "Esportes",
+    "url": "https://na.linear.zype.com/e0bd0e23-a958-4e43-8164-4f2fef8876a8/fd3614bd-90bf-4530-a277-65ae3a1720c8-zype/live.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "dsports",
+    "nome": "DSports",
+    "categoria": "Esportes",
+    "url": "http://138.121.113.175:8000/play/a0cj/index.m3u8",
+    "status": "DEAD_PATTERN",
+    "error": "Dead IP or placeholder pattern"
+  },
+  {
+    "id": "dsports-2",
+    "nome": "DSports 2",
+    "categoria": "Esportes",
+    "url": "http://138.121.113.175:8000/play/a0ca/index.m3u8",
+    "status": "DEAD_PATTERN",
+    "error": "Dead IP or placeholder pattern"
+  },
+  {
+    "id": "dynamo-kyiv-tv-1080p-",
+    "nome": "Dynamo Kyiv TV (1080p)",
+    "categoria": "Esportes",
+    "url": "http://stream.mcquack.net/396/index.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "el-heddaf-tv-1080p-",
+    "nome": "El-Heddaf TV (1080p)",
+    "categoria": "Esportes",
+    "url": "https://live.elheddaftv.com:8081/elheddaftv/index.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "equalympic-1080p-",
+    "nome": "Equalympic (1080p)",
+    "categoria": "Esportes",
+    "url": "http://stream.mcquack.net/485/index.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "equidia-1080p-",
+    "nome": "Equidia (1080p)",
+    "categoria": "Esportes",
+    "url": "https://raw.githubusercontent.com/Paradise-91/ParaTV/main/streams/equidia/live2.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "ert-sports-1-1080p-",
+    "nome": "ERT Sports 1 (1080p)",
+    "categoria": "Esportes",
+    "url": "http://hbbtvapp.ert.gr/stream.php/v/vid_ertsports_mpeg.2ts",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "ert-sports-2-1080p-",
+    "nome": "ERT Sports 2 (1080p)",
+    "categoria": "Esportes",
+    "url": "http://hbbtvapp.ert.gr/stream.php/v/vid_ertplay2_mpeg.2ts",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "espn-3-1080p-",
+    "nome": "ESPN 3 (1080p)",
+    "categoria": "Esportes",
+    "url": "http://190.83.2.182:8090/ESPN3/index.m3u8",
+    "status": "DEAD_PATTERN",
+    "error": "Dead IP or placeholder pattern"
+  },
+  {
+    "id": "espn8-the-ocho-1080p-",
+    "nome": "ESPN8 The Ocho (1080p)",
+    "categoria": "Esportes",
+    "url": "https://d3b6q2ou5kp8ke.cloudfront.net/ESPNTheOcho.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "espn-deportes-hd-720p-",
+    "nome": "ESPN Deportes HD (720p)",
+    "categoria": "Esportes",
+    "url": "http://168.228.44.241:9998/play/a0dz/index.m3u8",
+    "status": "DEAD_PATTERN",
+    "error": "Dead IP or placeholder pattern"
+  },
+  {
+    "id": "espnews-720p-",
+    "nome": "ESPNews (720p)",
+    "categoria": "Esportes",
+    "url": "http://41.205.93.154/ESPNNEWS/index.m3u8",
+    "status": "DEAD_PATTERN",
+    "error": "Dead IP or placeholder pattern"
+  },
+  {
+    "id": "espnu-720p-",
+    "nome": "ESPNU (720p)",
+    "categoria": "Esportes",
+    "url": "http://23.237.104.106:8080/USA_ESPNU/index.m3u8",
+    "status": "DEAD_PATTERN",
+    "error": "Dead IP or placeholder pattern"
+  },
+  {
+    "id": "espnu-hd-720p-",
+    "nome": "ESPNU HD (720p)",
+    "categoria": "Esportes",
+    "url": "http://85.237.89.160:9590/usa-s/ESPN-U-HD/index.m3u8",
+    "status": "DEAD_PATTERN",
+    "error": "Dead IP or placeholder pattern"
+  },
+  {
+    "id": "3cat-plats-bruts-1080p-",
+    "nome": "3Cat Plats bruts (1080p)",
+    "categoria": "Novelas",
+    "url": "https://fast-tailor.3catdirectes.cat/v1/channel/ccma-channel2/hls.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "4ever-drama-1080p-",
+    "nome": "4ever Drama (1080p)",
+    "categoria": "Novelas",
+    "url": "http://stream.mcquack.net/260/index.m3u8",
+    "status": "ONLINE",
+    "statusCode": 200
+  },
+  {
+    "id": "5-cops",
+    "nome": "5 Cops",
+    "categoria": "Novelas",
+    "url": "https://jmp2.uk/plu-5d2c571faeb3e2738ae27933.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "5-minut-tishiny-1080p-",
+    "nome": "5 minut tishiny (1080p)",
+    "categoria": "Novelas",
+    "url": "https://cdn-dvr.ntv.ru/5_minut_tishiny/index.m3u8",
+    "status": "ONLINE",
+    "statusCode": 206
+  },
+  {
+    "id": "7th-heaven",
+    "nome": "7th Heaven",
+    "categoria": "Novelas",
+    "url": "https://jmp2.uk/plu-6728c9c85534bb0008b320a4.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "7th-heaven-1",
+    "nome": "7th Heaven",
+    "categoria": "Novelas",
+    "url": "https://jmp2.uk/plu-6728ca75529ac9000830ab14.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "7th-heaven-2",
+    "nome": "7th Heaven",
+    "categoria": "Novelas",
+    "url": "https://jmp2.uk/plu-6728cab6e482950008b76d8c.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "13-teleseries-720p-",
+    "nome": "13 Teleseries (720p)",
+    "categoria": "Novelas",
+    "url": "https://origin.dpsgo.com/ssai/event/f4TrySe8SoiGF8Lu3EIq1g/master.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "27-twentyseven-geo-blocked-",
+    "nome": "27 TwentySeven [Geo-blocked]",
+    "categoria": "Novelas",
+    "url": "https://live2.msf.cdn.mediaset.net/content/hls_h0_cls_vos/live/channel(ts)/index.m3u8",
+    "status": "ERROR",
+    "error": "fetch failed"
+  },
+  {
+    "id": "48-hours",
+    "nome": "48 Hours",
+    "categoria": "Novelas",
+    "url": "https://jmp2.uk/plu-62e925bc68d18a00077bb990.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "48-hours-1080p-",
+    "nome": "48 Hours (1080p)",
+    "categoria": "Novelas",
+    "url": "https://vivo.canaloncelive.tv/secureoncedos/oncedigital/playlist.m3u8",
+    "status": "ONLINE",
+    "statusCode": 206
+  },
+  {
+    "id": "50-cent-action-720p-",
+    "nome": "50 Cent Action (720p)",
+    "categoria": "Novelas",
+    "url": "https://jmp2.uk/plu-68487fb3f212bedacf5a53e3.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "2900-happiness",
+    "nome": "2900 Happiness",
+    "categoria": "Novelas",
+    "url": "https://jmp2.uk/plu-6720bc6cdaad7f000872a6e2.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "90210",
+    "nome": "90210",
+    "categoria": "Novelas",
+    "url": "https://jmp2.uk/plu-65a67dd13af63d0008257f17.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "abc-5-boston-ma-wcvb-720p-",
+    "nome": "ABC 5 Boston MA (WCVB) (720p)",
+    "categoria": "Novelas",
+    "url": "https://aegis-cloudfront-1.tubi.video/c2e3094d-ad56-4c5f-9655-cd80df71fbab/playlist.m3u8",
+    "status": "ONLINE",
+    "statusCode": 206
+  },
+  {
+    "id": "acapulco-shore",
+    "nome": "Acapulco Shore",
+    "categoria": "Novelas",
+    "url": "https://jmp2.uk/plu-64dab1f835425100080e1e7b.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "acapulco-shore-pluto-tv",
+    "nome": "Acapulco Shore Pluto TV",
+    "categoria": "Novelas",
+    "url": "https://jmp2.uk/plu-61a52615cbef2500072876e2.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "afra-series",
+    "nome": "Afra Series",
+    "categoria": "Novelas",
+    "url": "https://afrashls.wns.live/hls/stream.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "alerte-malibu",
+    "nome": "Alerte à Malibu",
+    "categoria": "Novelas",
+    "url": "https://jmp2.uk/plu-60afaa535580be0007ac9ee4.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "all-reality-we-tv-720p-",
+    "nome": "All Reality WE tv (720p)",
+    "categoria": "Novelas",
+    "url": "https://jmp2.uk/plu-5e82530945600e0007ca076c.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "all-weddings-we-tv",
+    "nome": "All Weddings We TV",
+    "categoria": "Novelas",
+    "url": "https://amc-allweddings-1-us.xumo.wurl.tv/playlist.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "always-funny-videos-720p-",
+    "nome": "Always Funny Videos (720p)",
+    "categoria": "Novelas",
+    "url": "https://d24l3uppudokci.cloudfront.net/playlist.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "amedia-2-576p-",
+    "nome": "Amedia 2 (576p)",
+    "categoria": "Novelas",
+    "url": "http://31.148.48.15/A2/index.m3u8",
+    "status": "DEAD_PATTERN",
+    "error": "Dead IP or placeholder pattern"
+  },
+  {
+    "id": "amedia-hit-1080p-",
+    "nome": "Amedia Hit (1080p)",
+    "categoria": "Novelas",
+    "url": "http://stream.mcquack.net/162/index.m3u8",
+    "status": "ONLINE",
+    "statusCode": 200
+  },
+  {
+    "id": "amedia-premium-720p-",
+    "nome": "Amedia Premium (720p)",
+    "categoria": "Novelas",
+    "url": "http://31.148.48.15/Amedia_Premium_HD/index.m3u8",
+    "status": "DEAD_PATTERN",
+    "error": "Dead IP or placeholder pattern"
+  },
+  {
+    "id": "america-s-next-top-model",
+    "nome": "America's Next Top Model",
+    "categoria": "Novelas",
+    "url": "https://jmp2.uk/plu-6464cc595a0cd500088c7749.m3u8",
+    "status": "ONLINE",
+    "statusCode": 200
+  },
+  {
+    "id": "america-s-next-top-model-1",
+    "nome": "America's Next Top Model",
+    "categoria": "Novelas",
+    "url": "https://jmp2.uk/plu-6464cd7c7cb4b100086c71c9.m3u8",
+    "status": "ONLINE",
+    "statusCode": 200
+  },
+  {
+    "id": "america-s-next-top-model-2",
+    "nome": "America's Next Top Model",
+    "categoria": "Novelas",
+    "url": "https://jmp2.uk/plu-6464cdcaee6a2f000822a7a8.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "3abn-kids-network",
+    "nome": "3ABN Kids Network",
+    "categoria": "Bonecos",
+    "url": "https://3abn.bozztv.com/3abn2/Kids_live/smil:Kids_live.smil/playlist.m3u8",
+    "status": "ONLINE",
+    "statusCode": 200
+  },
+  {
+    "id": "adn-tv-720p-",
+    "nome": "ADN TV+ (720p)",
+    "categoria": "Bonecos",
+    "url": "https://d3b73b34o7cvkq.cloudfront.net/v1/master/3722c60a815c199d9c0ef36c5b73da68a62b09d1/cc-gz2sgqzp076kf/adn.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "animation-1080p-geo-blocked-",
+    "nome": "Animation+ (1080p) [Geo-blocked]",
+    "categoria": "Bonecos",
+    "url": "https://pb-ioe9d0fpkd6pp.akamaized.net/playlist.m3u8",
+    "status": "OFFLINE",
+    "statusCode": 403,
+    "error": "HTTP 403"
+  },
+  {
+    "id": "animax-asia-india-1080p-geo-blocked-",
+    "nome": "Animax Asia India (1080p) [Geo-blocked]",
+    "categoria": "Bonecos",
+    "url": "https://amg02159-kcglobal-amg02159c1-samsung-in-521.playouts.now.amagi.tv/playlist/amg02159-kcglobal-animax-samsungin/playlist.m3u8",
+    "status": "ONLINE",
+    "statusCode": 200
+  },
+  {
+    "id": "anime-vision-1080p-",
+    "nome": "Anime Vision (1080p)",
+    "categoria": "Bonecos",
+    "url": "https://d1ujfw1zyymzyd.cloudfront.net/v1/master/3722c60a815c199d9c0ef36c5b73da68a62b09d1/cc-a6fukwkbxmex8/live/fast-channel-animevision-64527ec0/fast-channel-animevision-64527ec0.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "anime-vision-classics-1080p-",
+    "nome": "Anime Vision Classics (1080p)",
+    "categoria": "Bonecos",
+    "url": "https://d82pyvmcw2kdc.cloudfront.net/v1/master/3722c60a815c199d9c0ef36c5b73da68a62b09d1/cc-swfivzrzwamaq/live/fast-channel-animevisionclassics-efc8dc6d/fast-channel-animevisionclassics-efc8dc6d.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "anime-x-hidive",
+    "nome": "ANIME x HIDIVE",
+    "categoria": "Bonecos",
+    "url": "https://jmp2.uk/plu-6793eaa4bc03978b9bc63db1.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "aniplus-asia-720p-",
+    "nome": "Aniplus Asia (720p)",
+    "categoria": "Bonecos",
+    "url": "https://amg18481-amg18481c1-amgplt0352.playout.now3.amagi.tv/playlist/amg18481-amg18481c1-amgplt0352/playlist.m3u8",
+    "status": "ONLINE",
+    "statusCode": 200
+  },
+  {
+    "id": "avatar",
+    "nome": "Avatar",
+    "categoria": "Bonecos",
+    "url": "https://jmp2.uk/plu-656df599c0fc8800089c75ab.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "avatar-1",
+    "nome": "Avatar",
+    "categoria": "Bonecos",
+    "url": "https://jmp2.uk/plu-61c09b48d6d97900076e91c5.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "banijay-mr-bean-anim-1080p-",
+    "nome": "Banijay Mr Bean Animé (1080p)",
+    "categoria": "Bonecos",
+    "url": "https://amg00627-amg00627c31-rakuten-fr-3991.playouts.now.amagi.tv/playlist/amg00627-banijayfast-mrbeanfrcc-rakutenfr/playlist.m3u8",
+    "status": "ONLINE",
+    "statusCode": 200
+  },
+  {
+    "id": "bbc-four-cbeebies-720p-",
+    "nome": "BBC Four/CBeebies (720p)",
+    "categoria": "Bonecos",
+    "url": "http://193.46.58.239:8080/CbeebiesHD/index.m3u8",
+    "status": "DEAD_PATTERN",
+    "error": "Dead IP or placeholder pattern"
+  },
+  {
+    "id": "bbc-three-cbbc-720p-",
+    "nome": "BBC Three/CBBC (720p)",
+    "categoria": "Bonecos",
+    "url": "http://193.46.58.239:8080/CBBCHD/index.m3u8",
+    "status": "DEAD_PATTERN",
+    "error": "Dead IP or placeholder pattern"
+  },
+  {
+    "id": "blues-tv",
+    "nome": "Blues TV",
+    "categoria": "Bonecos",
+    "url": "https://2-fss-2.streamhoster.com/pl_138/205510-3094608-1/playlist.m3u8",
+    "status": "ONLINE",
+    "statusCode": 206
+  },
+  {
+    "id": "cartoon-classics-576p-",
+    "nome": "Cartoon Classics (576p)",
+    "categoria": "Bonecos",
+    "url": "http://5.188.159.128:8070/Cartoon_Network/index.m3u8",
+    "status": "DEAD_PATTERN",
+    "error": "Dead IP or placeholder pattern"
+  },
+  {
+    "id": "comedy-central-south-park",
+    "nome": "Comedy Central South Park",
+    "categoria": "Bonecos",
+    "url": "https://jmp2.uk/plu-60c716084d842c00085f6e64.m3u8",
+    "status": "ONLINE",
+    "statusCode": 200
+  },
+  {
+    "id": "comedy-central-south-park-1",
+    "nome": "Comedy Central South Park",
+    "categoria": "Bonecos",
+    "url": "https://jmp2.uk/plu-609ae66b359b270007869ff1.m3u8",
+    "status": "ONLINE",
+    "statusCode": 200
+  },
+  {
+    "id": "comedy-central-south-park-2",
+    "nome": "Comedy Central South Park",
+    "categoria": "Bonecos",
+    "url": "https://jmp2.uk/plu-609ae5cd48d3200007b0a98e.m3u8",
+    "status": "ONLINE",
+    "statusCode": 200
+  },
+  {
+    "id": "crunchyroll-720p-",
+    "nome": "Crunchyroll (720p)",
+    "categoria": "Bonecos",
+    "url": "https://jmp2.uk/plu-65652f7fc0fc88000883537a.m3u8",
+    "status": "ONLINE",
+    "statusCode": 200
+  },
+  {
+    "id": "daria",
+    "nome": "Daria",
+    "categoria": "Bonecos",
+    "url": "https://jmp2.uk/plu-6683b680efa2a10008e8a393.m3u8",
+    "status": "ONLINE",
+    "statusCode": 200
+  },
+  {
+    "id": "detective-conan",
+    "nome": "Detective Conan",
+    "categoria": "Bonecos",
+    "url": "https://jmp2.uk/plu-629a066860ef810008267b70.m3u8",
+    "status": "ONLINE",
+    "statusCode": 200
+  },
+  {
+    "id": "detective-conan-france-720p-",
+    "nome": "Detective Conan France (720p)",
+    "categoria": "Bonecos",
+    "url": "https://jmp2.uk/plu-62f3e8ad2a8e8000077b013d.m3u8",
+    "status": "ONLINE",
+    "statusCode": 200
+  },
+  {
+    "id": "detvora-1080p-",
+    "nome": "Detvora+ (1080p)",
+    "categoria": "Bonecos",
+    "url": "https://cdn.rostelekom-tv.xyz/live/WAYU4PTJ_VVz4wAQ.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "disney-channel-latin-america-1080p-",
+    "nome": "Disney Channel Latin America (1080p)",
+    "categoria": "Bonecos",
+    "url": "http://15.204.246.24:8080/DisneyHD/index.m3u8",
+    "status": "DEAD_PATTERN",
+    "error": "Dead IP or placeholder pattern"
+  },
+  {
+    "id": "disney-channel-latin-america-center-1080",
+    "nome": "Disney Channel Latin America Center (1080p)",
+    "categoria": "Bonecos",
+    "url": "http://181.78.8.199:8000/play/a0dn/index.m3u8",
+    "status": "DEAD_PATTERN",
+    "error": "Dead IP or placeholder pattern"
+  },
+  {
+    "id": "disney-channel-latin-america-mexico-720p",
+    "nome": "Disney Channel Latin America Mexico (720p)",
+    "categoria": "Bonecos",
+    "url": "http://45.166.93.156:9999/play/a0f3/index.m3u8",
+    "status": "DEAD_PATTERN",
+    "error": "Dead IP or placeholder pattern"
+  },
+  {
+    "id": "disney-channel-latin-america-north-576p-",
+    "nome": "Disney Channel Latin America North (576p)",
+    "categoria": "Bonecos",
+    "url": "http://138.121.15.230:9002/DISNEY-CHANNEL/index.m3u8",
+    "status": "DEAD_PATTERN",
+    "error": "Dead IP or placeholder pattern"
+  },
+  {
+    "id": "disney-channel-latin-america-panregional",
+    "nome": "Disney Channel Latin America Panregional HD (1080p)",
+    "categoria": "Bonecos",
+    "url": "http://45.134.141.161:2200/ARG/Disney_Channel/index.m3u8",
+    "status": "DEAD_PATTERN",
+    "error": "Dead IP or placeholder pattern"
+  },
+  {
+    "id": "disney-jr-1080p-geo-blocked-",
+    "nome": "Disney Jr. (1080p) [Geo-blocked]",
+    "categoria": "Bonecos",
+    "url": "https://saran-live.ercdn.net/disneyjunior/index.m3u8",
+    "status": "OFFLINE",
+    "statusCode": 401,
+    "error": "HTTP 401"
+  },
+  {
+    "id": "disney-jr-latin-america-1080p-",
+    "nome": "Disney Jr. Latin America (1080p)",
+    "categoria": "Bonecos",
+    "url": "http://190.14.10.19:16000/play/a02d/index.m3u8",
+    "status": "DEAD_PATTERN",
+    "error": "Dead IP or placeholder pattern"
+  },
+  {
+    "id": "disney-jr-latin-america-576p-",
+    "nome": "Disney Jr. Latin America (576p)",
+    "categoria": "Bonecos",
+    "url": "http://190.93.224.42/DISNEY-JR/index.m3u8",
+    "status": "DEAD_PATTERN",
+    "error": "Dead IP or placeholder pattern"
+  },
+  {
+    "id": "disney-jr-latin-america-north-hd-1080p-",
+    "nome": "Disney Jr. Latin America North HD (1080p)",
+    "categoria": "Bonecos",
+    "url": "http://181.78.14.26:4000/play/a073/index.m3u8",
+    "status": "DEAD_PATTERN",
+    "error": "Dead IP or placeholder pattern"
+  },
+  {
+    "id": "disney-jr-latin-america-south-1080p-",
+    "nome": "Disney Jr. Latin America South (1080p)",
+    "categoria": "Bonecos",
+    "url": "http://45.185.163.75:8000/play/a016/index.m3u8",
+    "status": "DEAD_PATTERN",
+    "error": "Dead IP or placeholder pattern"
+  },
+  {
+    "id": "disney-jr-latin-america-south-hd-1080p-",
+    "nome": "Disney Jr. Latin America South HD (1080p)",
+    "categoria": "Bonecos",
+    "url": "http://45.134.141.161:2200/ARG/Disney_Junior/index.m3u8",
+    "status": "DEAD_PATTERN",
+    "error": "Dead IP or placeholder pattern"
+  },
+  {
+    "id": "dreamworks-channel-asia-1080p-",
+    "nome": "DreamWorks Channel Asia (1080p)",
+    "categoria": "Bonecos",
+    "url": "https://cdn12.178.indevs.in/163189/dreamworks",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "dreamworks-channel-latin-america-1080p-",
+    "nome": "DreamWorks Channel Latin America (1080p)",
+    "categoria": "Bonecos",
+    "url": "http://138.121.15.230:9002/DREAMWORKS/index.m3u8",
+    "status": "DEAD_PATTERN",
+    "error": "Dead IP or placeholder pattern"
+  },
+  {
+    "id": "dreiko-tv-720p-not-24-7-",
+    "nome": "Dreiko TV (720p) [Not 24/7]",
+    "categoria": "Bonecos",
+    "url": "https://cloudvideo.servers10.com:8081/8020/index.m3u8",
+    "status": "ONLINE",
+    "statusCode": 206
+  },
+  {
+    "id": "energeek-720p-not-24-7-",
+    "nome": "EnerGeek (720p) [Not 24/7]",
+    "categoria": "Bonecos",
+    "url": "https://backend.energeek.cl/webtv/egretroweb/index.m3u8?token=ZZDemoIPTVGH",
+    "status": "OFFLINE",
+    "statusCode": 403,
+    "error": "HTTP 403"
+  },
+  {
+    "id": "energeek-fan-1080p-",
+    "nome": "EnerGeek Fan (1080p)",
+    "categoria": "Bonecos",
+    "url": "https://backend.energeek.cl/webtv/egfanweb/index.m3u8?token=ZZDemoIPTVGH",
+    "status": "OFFLINE",
+    "statusCode": 403,
+    "error": "HTTP 403"
+  },
+  {
+    "id": "esports-max-tv",
+    "nome": "eSports Max TV",
+    "categoria": "Bonecos",
+    "url": "https://cdnlive.klicgo.net/esportsmax/live/playlist_dvr.m3u8",
+    "status": "ONLINE",
+    "statusCode": 206
+  },
+  {
+    "id": "etc-tv-1080p-",
+    "nome": "ETC TV (1080p)",
+    "categoria": "Bonecos",
+    "url": "http://cdn1tlinkgo.tlink.cl/etc/mono.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "extrema-kids-tv-not-24-7-",
+    "nome": "Extrema Kids TV [Not 24/7]",
+    "categoria": "Bonecos",
+    "url": "https://627bb251f23c7.streamlock.net:444/ExtremaKids/ExtremaKids/playlist.m3u8",
+    "status": "ONLINE",
+    "statusCode": 206
+  },
+  {
+    "id": "fan-1080p-",
+    "nome": "FAN (1080p)",
+    "categoria": "Bonecos",
+    "url": "http://31.148.48.15/Fan/index.m3u8",
+    "status": "DEAD_PATTERN",
+    "error": "Dead IP or placeholder pattern"
+  },
+  {
+    "id": "filmrise-anime-720p-",
+    "nome": "FilmRise Anime (720p)",
+    "categoria": "Bonecos",
+    "url": "https://dvu7aia8rjlfm.cloudfront.net/master.m3u8",
+    "status": "ONLINE",
+    "statusCode": 206
+  },
+  {
+    "id": "geekdot-720p-",
+    "nome": "Geekdot (720p)",
+    "categoria": "Bonecos",
+    "url": "https://stream.ichibantv.com:3764/hybrid/play.m3u8",
+    "status": "ERROR",
+    "error": "fetch failed"
+  },
+  {
+    "id": "giktvmx-720p-",
+    "nome": "GikTVMX (720p)",
+    "categoria": "Bonecos",
+    "url": "https://pistream.ddns.net/hls/stream.m3u8",
+    "status": "ONLINE",
+    "statusCode": 206
+  },
+  {
+    "id": "00s-replay",
+    "nome": "00s Replay",
+    "categoria": "Filmes",
+    "url": "https://jmp2.uk/plu-62ba60f059624e000781c436.m3u8",
+    "status": "ONLINE",
+    "statusCode": 200
+  },
+  {
+    "id": "4ever-cinema-1080p-",
+    "nome": "4ever Cinema (1080p)",
+    "categoria": "Filmes",
+    "url": "http://stream.mcquack.net/258/index.m3u8",
+    "status": "ONLINE",
+    "statusCode": 200
+  },
+  {
+    "id": "24-hour-free-movies-720p-",
+    "nome": "24 Hour Free Movies (720p)",
+    "categoria": "Filmes",
+    "url": "https://d1j2u714xk898n.cloudfront.net/scheduler/scheduleMaster/145.m3u8",
+    "status": "ONLINE",
+    "statusCode": 206
+  },
+  {
+    "id": "30a-tv-classic-movies-720p-",
+    "nome": "30A TV Classic Movies (720p)",
+    "categoria": "Filmes",
+    "url": "https://30a-tv.com/feeds/pzaz/30atvmovies.m3u8",
+    "status": "ONLINE",
+    "statusCode": 206
+  },
+  {
+    "id": "70s-cinema",
+    "nome": "70s Cinema",
+    "categoria": "Filmes",
+    "url": "https://jmp2.uk/plu-5f4d878d3d19b30007d2e782.m3u8",
+    "status": "ONLINE",
+    "statusCode": 200
+  },
+  {
+    "id": "80s-rewind",
+    "nome": "80s Rewind",
+    "categoria": "Filmes",
+    "url": "https://jmp2.uk/plu-5ca525b650be2571e3943c63.m3u8",
+    "status": "ONLINE",
+    "statusCode": 200
+  },
+  {
+    "id": "90s-throwback",
+    "nome": "90s Throwback",
+    "categoria": "Filmes",
+    "url": "https://jmp2.uk/plu-5f4d86f519358a00072b978e.m3u8",
+    "status": "ONLINE",
+    "statusCode": 200
+  },
+  {
+    "id": "312-406p-",
+    "nome": "312 Кино (406p)",
+    "categoria": "Filmes",
+    "url": "http://176.126.166.43:1935/live/312kino/playlist.m3u8",
+    "status": "DEAD_PATTERN",
+    "error": "Dead IP or placeholder pattern"
+  },
+  {
+    "id": "-tv-hd-1080p-",
+    "nome": "&TV HD (1080p)",
+    "categoria": "Filmes",
+    "url": "http://202.70.146.135:8000/play/a06c/index.m3u8",
+    "status": "DEAD_PATTERN",
+    "error": "Dead IP or placeholder pattern"
+  },
+  {
+    "id": "-tv-international-1080p-",
+    "nome": "&TV International (1080p)",
+    "categoria": "Filmes",
+    "url": "https://amg01117-amg01117c1-amgplt0029.playout.now3.amagi.tv/playlist/amg01117-amg01117c1-amgplt0029/playlist.m3u8",
+    "status": "ONLINE",
+    "statusCode": 200
+  },
+  {
+    "id": "-xplor-hd-1080p-geo-blocked-",
+    "nome": "&xplor HD (1080p) [Geo-blocked]",
+    "categoria": "Filmes",
+    "url": "http://dksmedia.tv/play/live.php?mac=00:1A:79:B6:60:3D&stream=209743&extension=ts&play_token=mR7FwO88sY",
+    "status": "OFFLINE",
+    "statusCode": 511,
+    "error": "HTTP 511"
+  },
+  {
+    "id": "abn-bible-movies-720p-",
+    "nome": "ABN Bible Movies (720p)",
+    "categoria": "Filmes",
+    "url": "https://mediaserver.abnvideos.com/streams/abnbiblemovies.m3u8",
+    "status": "ONLINE",
+    "statusCode": 206
+  },
+  {
+    "id": "action-24-1080p-not-24-7-",
+    "nome": "Action 24 (1080p) [Not 24/7]",
+    "categoria": "Filmes",
+    "url": "http://actionlive.siliconweb.com/actionabr/actiontv/playlist.m3u8",
+    "status": "ONLINE",
+    "statusCode": 206
+  },
+  {
+    "id": "adrenalina-pura-tv",
+    "nome": "Adrenalina Pura TV",
+    "categoria": "Filmes",
+    "url": "https://jmp2.uk/plu-61b790b985706b00072cb797.m3u8",
+    "status": "ONLINE",
+    "statusCode": 200
+  },
+  {
+    "id": "adrenalina-pura-tv-720p-",
+    "nome": "Adrenalina Pura TV (720p)",
+    "categoria": "Filmes",
+    "url": "https://jmp2.uk/plu-61b793ccf571b80007b7a610.m3u8",
+    "status": "ONLINE",
+    "statusCode": 200
+  },
+  {
+    "id": "afghan-nobel-movies-720p-",
+    "nome": "Afghan Nobel Movies (720p)",
+    "categoria": "Filmes",
+    "url": "https://live.relentlessinnovations.net:1936/afghannobel/afghannobel/playlist.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "aflam-1080p-",
+    "nome": "Aflam (1080p)",
+    "categoria": "Filmes",
+    "url": "https://shd-amg-fast.edgenextcdn.net/tx001/playlist.m3u8",
+    "status": "ONLINE",
+    "statusCode": 206
+  },
+  {
+    "id": "afra-film",
+    "nome": "Afra Film",
+    "categoria": "Filmes",
+    "url": "https://afrafhls.wns.live/hls/stream.m3u8",
+    "status": "ONLINE",
+    "statusCode": 206
+  },
+  {
+    "id": "alien-nation-by-dust-1080p-",
+    "nome": "Alien Nation by DUST (1080p)",
+    "categoria": "Filmes",
+    "url": "https://dqi7ayt2o24fn.cloudfront.net/playlist.m3u8",
+    "status": "ONLINE",
+    "statusCode": 206
+  },
+  {
+    "id": "all-time-movies-576p-",
+    "nome": "All Time Movies (576p)",
+    "categoria": "Filmes",
+    "url": "https://tvsen6.aynaott.com/a2cKGQtB/index.m3u8",
+    "status": "ONLINE",
+    "statusCode": 206
+  },
+  {
+    "id": "allo-cine-1080p-",
+    "nome": "Allo Cine (1080p)",
+    "categoria": "Filmes",
+    "url": "https://d1yl6bf4hrzbr0.cloudfront.net/v1/master/3722c60a815c199d9c0ef36c5b73da68a62b09d1/cc-5km3zs4zs9sp0/allo.m3u8",
+    "status": "ONLINE",
+    "statusCode": 206
+  },
+  {
+    "id": "alpha-cinema-1080p-",
+    "nome": "alpha Cinema (1080p)",
+    "categoria": "Filmes",
+    "url": "https://live.15plusmg.ru/memfs/b389173a-df4e-4171-8904-e249893e71eb.m3u8",
+    "status": "ERROR",
+    "error": "fetch failed"
+  },
+  {
+    "id": "alterna-tv-720p-not-24-7-",
+    "nome": "Alterna TV (720p) [Not 24/7]",
+    "categoria": "Filmes",
+    "url": "https://tv.alterna.ar/stream/hls/live.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "amc-720p-",
+    "nome": "AMC (720p)",
+    "categoria": "Filmes",
+    "url": "http://23.239.31.26:8989/amc/index.m3u8",
+    "status": "DEAD_PATTERN",
+    "error": "Dead IP or placeholder pattern"
+  },
+  {
+    "id": "amc-east-720p-",
+    "nome": "AMC East (720p)",
+    "categoria": "Filmes",
+    "url": "http://190.11.225.124:5000/live/amc_hd/playlist.m3u8",
+    "status": "DEAD_PATTERN",
+    "error": "Dead IP or placeholder pattern"
+  },
+  {
+    "id": "amc-europe",
+    "nome": "AMC Europe",
+    "categoria": "Filmes",
+    "url": "https://dokagents.site/live/amc/mono.m3u8",
+    "status": "ONLINE",
+    "statusCode": 206
+  },
+  {
+    "id": "amc-europe-bulgary-576p-",
+    "nome": "AMC Europe Bulgary (576p)",
+    "categoria": "Filmes",
+    "url": "http://hls127.freeott.top:8080/BG_AMC/video.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "amc-europe-czech-republic",
+    "nome": "AMC Europe Czech Republic",
+    "categoria": "Filmes",
+    "url": "http://88.212.15.19/live/test_amc_25p/playlist.m3u8",
+    "status": "DEAD_PATTERN",
+    "error": "Dead IP or placeholder pattern"
+  },
+  {
+    "id": "amc-europe-hungary",
+    "nome": "AMC Europe Hungary",
+    "categoria": "Filmes",
+    "url": "http://88.212.15.19/live/amc_hun/index.m3u8",
+    "status": "DEAD_PATTERN",
+    "error": "Dead IP or placeholder pattern"
+  },
+  {
+    "id": "amc-europe-romania",
+    "nome": "AMC Europe Romania",
+    "categoria": "Filmes",
+    "url": "https://iron1.jarvisx1.cfd/amece/usergenrx3oq1kr.m3u8",
+    "status": "OFFLINE",
+    "statusCode": 403,
+    "error": "HTTP 403"
+  },
+  {
+    "id": "amc-latin-america-1080p-",
+    "nome": "AMC Latin America (1080p)",
+    "categoria": "Filmes",
+    "url": "http://15.204.246.24:8080/AMCHD/index.m3u8",
+    "status": "DEAD_PATTERN",
+    "error": "Dead IP or placeholder pattern"
+  },
+  {
+    "id": "amc-latin-america-1080p--1",
+    "nome": "AMC Latin America (1080p)",
+    "categoria": "Filmes",
+    "url": "http://45.171.108.253:8888/AMC/index.m3u8",
+    "status": "DEAD_PATTERN",
+    "error": "Dead IP or placeholder pattern"
+  },
+  {
+    "id": "amc-latin-america-brazil-720p-",
+    "nome": "AMC Latin America Brazil (720p)",
+    "categoria": "Filmes",
+    "url": "http://170.83.49.66:8083/AMCHD/index.m3u8",
+    "status": "DEAD_PATTERN",
+    "error": "Dead IP or placeholder pattern"
+  },
+  {
+    "id": "american-horrors-480p-",
+    "nome": "American Horrors (480p)",
+    "categoria": "Filmes",
+    "url": "http://107.167.7.162:8081/playlist/amhor/playlist.m3u8",
+    "status": "DEAD_PATTERN",
+    "error": "Dead IP or placeholder pattern"
+  },
+  {
+    "id": "armenia-premium-720p-",
+    "nome": "Armenia Premium (720p)",
+    "categoria": "Filmes",
+    "url": "http://stream.mcquack.net/123/index.m3u8",
+    "status": "ONLINE",
+    "statusCode": 200
+  },
+  {
+    "id": "artflix-movie-classics-720p-",
+    "nome": "Artflix Movie Classics (720p)",
+    "categoria": "Filmes",
+    "url": "https://amogonetworx-artflix-1-nl.samsung.wurl.tv/playlist.m3u8",
+    "status": "ONLINE",
+    "statusCode": 206
+  },
+  {
+    "id": "asianet-movies-hd-720p-",
+    "nome": "Asianet Movies HD (720p)",
+    "categoria": "Filmes",
+    "url": "https://da86m1sqpm3o0.cloudfront.net/28072023/smil:asianetmovies1.smil/playlist.m3u8",
+    "status": "ONLINE",
+    "statusCode": 206
+  },
+  {
+    "id": "aurora-media-films-720p-",
+    "nome": "Aurora Media Films (720p)",
+    "categoria": "Filmes",
+    "url": "https://cdn.streamhispanatv.net:3417/live/auroramflive.m3u8",
+    "status": "ONLINE",
+    "statusCode": 206
+  },
+  {
+    "id": "avi-rewind-1080p-",
+    "nome": "AVI Rewind (1080p)",
+    "categoria": "Filmes",
+    "url": "http://45.70.201.81:8000/play/a010/index.m3u8",
+    "status": "DEAD_PATTERN",
+    "error": "Dead IP or placeholder pattern"
+  },
+  {
+    "id": "axn-720p-",
+    "nome": "AXN (720p)",
+    "categoria": "Filmes",
+    "url": "http://170.83.16.50/AXN/index.m3u8",
+    "status": "DEAD_PATTERN",
+    "error": "Dead IP or placeholder pattern"
+  },
+  {
+    "id": "axn",
+    "nome": "AXN",
+    "categoria": "Filmes",
+    "url": "http://znty.dyndns.org:5010/hls/axn.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "axn-adria",
+    "nome": "AXN Adria",
+    "categoria": "Filmes",
+    "url": "http://5.57.74.130:8000/play/a0at/index.m3u8",
+    "status": "DEAD_PATTERN",
+    "error": "Dead IP or placeholder pattern"
+  },
+  {
+    "id": "axn-asia-taiwan-1080p-",
+    "nome": "AXN Asia Taiwan (1080p)",
+    "categoria": "Filmes",
+    "url": "http://125.227.210.55:4050/VideoInput/play.ts",
+    "status": "DEAD_PATTERN",
+    "error": "Dead IP or placeholder pattern"
+  },
+  {
+    "id": "axn-black-576p-",
+    "nome": "AXN Black (576p)",
+    "categoria": "Filmes",
+    "url": "http://hls127.freeott.top:8080/BG_AXN_Black/video.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "axn-black-czech-republic",
+    "nome": "AXN Black Czech Republic",
+    "categoria": "Filmes",
+    "url": "http://88.212.15.19/live/test_black/playlist.m3u8",
+    "status": "DEAD_PATTERN",
+    "error": "Dead IP or placeholder pattern"
+  },
+  {
+    "id": "axn-black-poland-576p-",
+    "nome": "AXN Black Poland (576p)",
+    "categoria": "Filmes",
+    "url": "http://185.227.34.179:8080/axn-black/index.m3u8",
+    "status": "DEAD_PATTERN",
+    "error": "Dead IP or placeholder pattern"
+  },
+  {
+    "id": "axn-black-romania",
+    "nome": "AXN Black Romania",
+    "categoria": "Filmes",
+    "url": "https://saruman1.tharen1.cfd/axyblack/usergenrxi6s93hs2.m3u8",
+    "status": "OFFLINE",
+    "statusCode": 403,
+    "error": "HTTP 403"
+  },
+  {
+    "id": "axn-cee",
+    "nome": "AXN CEE",
+    "categoria": "Filmes",
+    "url": "http://88.212.15.19/live/axn_hun/index.m3u8",
+    "status": "DEAD_PATTERN",
+    "error": "Dead IP or placeholder pattern"
+  },
+  {
+    "id": "axn-cee-bulgary",
+    "nome": "AXN CEE Bulgary",
+    "categoria": "Filmes",
+    "url": "http://85.11.144.9:4222/AXN",
+    "status": "DEAD_PATTERN",
+    "error": "Dead IP or placeholder pattern"
+  },
+  {
+    "id": "axn-cee-czech-republic",
+    "nome": "AXN CEE Czech Republic",
+    "categoria": "Filmes",
+    "url": "http://88.212.15.19/live/test_axn/playlist.m3u8",
+    "status": "DEAD_PATTERN",
+    "error": "Dead IP or placeholder pattern"
+  },
+  {
+    "id": "axn-cee-romania",
+    "nome": "AXN CEE Romania",
+    "categoria": "Filmes",
+    "url": "https://cronos.mangora1.cfd/axy/usergend3h5jkc9rnd.m3u8",
+    "status": "ONLINE",
+    "statusCode": 200
+  },
+  {
+    "id": "axn-crime",
+    "nome": "AXN Crime",
+    "categoria": "Filmes",
+    "url": "http://88.212.15.19/live/viasat_film/index.m3u8",
+    "status": "DEAD_PATTERN",
+    "error": "Dead IP or placeholder pattern"
+  },
+  {
+    "id": "axn-latin-america-1080p-",
+    "nome": "AXN Latin America (1080p)",
+    "categoria": "Filmes",
+    "url": "http://138.121.15.230:9002/AXN/index.m3u8",
+    "status": "DEAD_PATTERN",
+    "error": "Dead IP or placeholder pattern"
+  },
+  {
+    "id": "axn-latin-america-1080p--1",
+    "nome": "AXN Latin America (1080p)",
+    "categoria": "Filmes",
+    "url": "http://15.204.246.24:8080/AXNHD/index.m3u8",
+    "status": "DEAD_PATTERN",
+    "error": "Dead IP or placeholder pattern"
+  },
+  {
+    "id": "axn-latin-america-chile-1080p-",
+    "nome": "AXN Latin America Chile (1080p)",
+    "categoria": "Filmes",
+    "url": "https://cdn1tlinkgo.tlink.cl/axnhd/index.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "axn-latin-america-mexico",
+    "nome": "AXN Latin America Mexico",
+    "categoria": "Filmes",
+    "url": "http://190.11.225.124:5000/live/axn_hd/playlist.m3u8",
+    "status": "DEAD_PATTERN",
+    "error": "Dead IP or placeholder pattern"
+  },
+  {
+    "id": "axn-latin-america-south",
+    "nome": "AXN Latin America South",
+    "categoria": "Filmes",
+    "url": "http://45.228.235.116:8000/play/a0iy/index.m3u8",
+    "status": "DEAD_PATTERN",
+    "error": "Dead IP or placeholder pattern"
+  },
+  {
+    "id": "axn-movies-720p-",
+    "nome": "AXN Movies (720p)",
+    "categoria": "Filmes",
+    "url": "http://50.7.120.34:8080/AXN_BLACK/index.m3u8",
+    "status": "DEAD_PATTERN",
+    "error": "Dead IP or placeholder pattern"
+  },
+  {
+    "id": "axn-poland-1080p-",
+    "nome": "AXN Poland (1080p)",
+    "categoria": "Filmes",
+    "url": "https://polska.hach.workers.dev/14850.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "az-cinema-1080p-",
+    "nome": "Az Cinema (1080p)",
+    "categoria": "Filmes",
+    "url": "https://cdn1tlinkgo.tlink.cl/azcinema/index.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "b4u-bhojpuri-1080p-",
+    "nome": "B4U Bhojpuri (1080p)",
+    "categoria": "Filmes",
+    "url": "https://cdnb4u.wiseplayout.com/B4U_Bhojpuri/master.m3u8",
+    "status": "ERROR",
+    "error": "fetch failed"
+  },
+  {
+    "id": "b4u-kadak-576p-",
+    "nome": "B4U Kadak (576p)",
+    "categoria": "Filmes",
+    "url": "https://streams.tangotv.in/B4UKADAK/ORIGIN/index.m3u8",
+    "status": "ONLINE",
+    "statusCode": 206
+  },
+  {
+    "id": "b4u-movies-576p-",
+    "nome": "B4U Movies (576p)",
+    "categoria": "Filmes",
+    "url": "https://streams.tangotv.in/B4UMOVIES/ORIGIN/index.m3u8",
+    "status": "ONLINE",
+    "statusCode": 206
+  },
+  {
+    "id": "battlestar-galactica",
+    "nome": "Battlestar Galactica",
+    "categoria": "Filmes",
+    "url": "https://jmp2.uk/plu-69d7ebff029c431826bd328e.m3u8",
+    "status": "ONLINE",
+    "statusCode": 200
+  },
+  {
+    "id": "bein-box-office-1",
+    "nome": "beIN Box Office 1",
+    "categoria": "Filmes",
+    "url": "https://nord.ayakkabiparti.lol/box1/index.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "bein-box-office-2",
+    "nome": "beIN Box Office 2",
+    "categoria": "Filmes",
+    "url": "https://nord.ayakkabiparti.lol/box2/index.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "bein-box-office-3",
+    "nome": "beIN Box Office 3",
+    "categoria": "Filmes",
+    "url": "https://nord.ayakkabiparti.lol/box3/index.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "bein-movies-stars",
+    "nome": "beIN Movies Stars",
+    "categoria": "Filmes",
+    "url": "https://nord.ayakkabiparti.lol/bsaction1/index.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "bein-movies-turk",
+    "nome": "beIN Movies Turk",
+    "categoria": "Filmes",
+    "url": "https://nord.ayakkabiparti.lol/bsturk/index.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "bet-cinema",
+    "nome": "BET Cinema",
+    "categoria": "Filmes",
+    "url": "https://jmp2.uk/plu-58af4c093a41ca9d4ecabe96.m3u8",
+    "status": "ONLINE",
+    "statusCode": 200
+  },
+  {
+    "id": "bet-comedy-movies",
+    "nome": "BET Comedy Movies",
+    "categoria": "Filmes",
+    "url": "https://jmp2.uk/plu-68c32d88f56983aba40052bd.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "bet-visionaries",
+    "nome": "BET Visionaries",
+    "categoria": "Filmes",
+    "url": "https://jmp2.uk/plu-663946c1b18d700008d9c168.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "bhojpuri-cinema-720p-",
+    "nome": "Bhojpuri Cinema (720p)",
+    "categoria": "Filmes",
+    "url": "https://live-bhojpuri.akamaized.net/liveabr/playlist.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "biz-cinema-1080p-",
+    "nome": "BIZ Cinema (1080p)",
+    "categoria": "Filmes",
+    "url": "https://fl.biztv.media/cinema_720_EMfSyXgoRdiIHgldXTZICucKTIeCKO/index.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "blokbaster-hd-1080p-",
+    "nome": "Blokbaster HD (1080p)",
+    "categoria": "Filmes",
+    "url": "http://stream.mcquack.net/364/index.m3u8",
+    "status": "ONLINE",
+    "statusCode": 200
+  },
+  {
+    "id": "2gb-sydney-1080p-",
+    "nome": "2GB Sydney (1080p)",
+    "categoria": "Notícias",
+    "url": "https://2gblive.akamaized.net/hls/live/2033805/2GB/index.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "3aw-melbourne-1080p-",
+    "nome": "3AW Melbourne (1080p)",
+    "categoria": "Notícias",
+    "url": "https://3awlive.akamaized.net/hls/live/2032295/3AW/index.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "3cat-exclusiu-1-1080p-geo-blocked-",
+    "nome": "3Cat Exclusiu 1 (1080p) [Geo-blocked]",
+    "categoria": "Notícias",
+    "url": "https://directes-tv-cat.3catdirectes.cat/live-content/oca1-hls/master.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "3cat-exclusiu-2-1080p-geo-blocked-",
+    "nome": "3Cat Exclusiu 2 (1080p) [Geo-blocked]",
+    "categoria": "Notícias",
+    "url": "https://directes-tv-cat.3catdirectes.cat/live-content/oca2-hls/master.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "3cat-exclusiu-3-1080p-geo-blocked-",
+    "nome": "3Cat Exclusiu 3 (1080p) [Geo-blocked]",
+    "categoria": "Notícias",
+    "url": "https://directes-tv-cat.3catdirectes.cat/live-content/oca3-hls/master.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "3catinfo-1080p-",
+    "nome": "3CatInfo (1080p)",
+    "categoria": "Notícias",
+    "url": "https://directes-tv-int.3catdirectes.cat/live-origin/canal324-hls/master.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "4dm-snoticias-tv-1080p-not-24-7-",
+    "nome": "4DmásNoticias TV (1080p) [Not 24/7]",
+    "categoria": "Notícias",
+    "url": "https://rds3.desdeparaguay.net/4dmasnoticiastv/4dmasnoticiastv/playlist.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "4tv-news-576p-",
+    "nome": "4TV News (576p)",
+    "categoria": "Notícias",
+    "url": "https://cdn-4.pishow.tv/live/1007/master.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "6pr-perth-1080p-",
+    "nome": "6PR Perth (1080p)",
+    "categoria": "Notícias",
+    "url": "https://6prlive.akamaized.net/hls/live/2033806/6PR/index.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "6-tv-telugu-576p-",
+    "nome": "6 TV Telugu (576p)",
+    "categoria": "Notícias",
+    "url": "https://yuppparoriglin.akamaized.net/181224/smil:6tv.smil/playlist.m3u8?hdnts=st=1735898689~exp=1835898688~acl=*~hmac=f5fe24724fe05481e3841f9eb5ab8efdee0a3dd83645ae9dcf45703f525bab7b",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "7-info",
+    "nome": "7 Info",
+    "categoria": "Notícias",
+    "url": "https://video1.getstreamhosting.com:1936/8042/8042/playlist.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "7-news-720p-",
+    "nome": "7 News (720p)",
+    "categoria": "Notícias",
+    "url": "https://sscsott.com/7news/live/index.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "10-tv-720p-",
+    "nome": "10 TV (720p)",
+    "categoria": "Notícias",
+    "url": "https://mumbai-edge.smartplaytv.in/10TV/index.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "13-siam-thai-1080p-",
+    "nome": "13 Siam Thai (1080p)",
+    "categoria": "Notícias",
+    "url": "https://live.x2.co.th/live/13livetv-th.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "22scope-news-1080p-",
+    "nome": "22Scope News (1080p)",
+    "categoria": "Notícias",
+    "url": "https://thelegitpro.in/HDlive/22scope/index.fmp4.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "24-7-canal-de-noticias",
+    "nome": "24/7 Canal de Noticias",
+    "categoria": "Notícias",
+    "url": "https://panel.host-live.com:19360/cn247tv/cn247tv.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "24-horas-1080p-",
+    "nome": "24 Horas (1080p)",
+    "categoria": "Notícias",
+    "url": "http://cdn1tlinkgo.tlink.cl/24horashd/mono.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "24-horas-canarias-1080p-",
+    "nome": "24 Horas Canarias (1080p)",
+    "categoria": "Notícias",
+    "url": "http://185.47.212.25:8080/24h_HD/index.m3u8",
+    "status": "DEAD_PATTERN",
+    "error": "Dead IP or placeholder pattern"
+  },
+  {
+    "id": "24-kanal-720p-",
+    "nome": "24 Kanal (720p)",
+    "categoria": "Notícias",
+    "url": "https://cdn15.live-tv.cloud/ua_infinitas_tv/news24-abr/playlist.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "24kz-576p-",
+    "nome": "24KZ (576p)",
+    "categoria": "Notícias",
+    "url": "https://fs.uplink.kz/24KZ/mono.m3u8?token=onlinetv",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "24-news-576p-",
+    "nome": "24 News (576p)",
+    "categoria": "Notícias",
+    "url": "https://mumt07.tangotv.in/zHjX9OFlTWENTYFOURNEWS/index.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "24-news-hd",
+    "nome": "24 News HD",
+    "categoria": "Notícias",
+    "url": "https://cdn4.mjunoon.tv:8087/streamtest/146M/chunks.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "24-1080p-",
+    "nome": "24 Канал (1080p)",
+    "categoria": "Notícias",
+    "url": "https://streamvideol1.luxnet.ua/news24/smil:news24.stream.smil/playlist.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "30a-georgia-hollywood-review-tv-720p-",
+    "nome": "30A Georgia Hollywood Review TV (720p)",
+    "categoria": "Notícias",
+    "url": "https://30a-tv.com/gh.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "30a-lionel-nation-tv",
+    "nome": "30A Lionel Nation TV",
+    "categoria": "Notícias",
+    "url": "https://30a-tv.com/ln.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "30a-loomered-tv",
+    "nome": "30A Loomered TV",
+    "categoria": "Notícias",
+    "url": "https://30a-tv.com/loomer.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "92-news-hd-720p-",
+    "nome": "92 News HD (720p)",
+    "categoria": "Notícias",
+    "url": "http://92news.vdn.dstreamone.net/92newshd/92hd/playlist.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "99tv-720p-",
+    "nome": "99TV (720p)",
+    "categoria": "Notícias",
+    "url": "https://cdn-1.pishow.tv/live/1211/master.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "100-news-576p-",
+    "nome": "100% News (576p)",
+    "categoria": "Notícias",
+    "url": "http://85.238.112.40:8810/hls_sec/239.33.16.32-.m3u8",
+    "status": "DEAD_PATTERN",
+    "error": "Dead IP or placeholder pattern"
+  },
+  {
+    "id": "101tv-malaga",
+    "nome": "101tv Malaga",
+    "categoria": "Notícias",
+    "url": "https://liveingesta318.cdnmedia.tv/101weblive/smil:malaga.smil/playlist.m3u8",
+    "status": "OFFLINE",
+    "statusCode": 403,
+    "error": "HTTP 403"
+  },
+  {
+    "id": "360-1080p-",
+    "nome": "360° Новости (1080p)",
+    "categoria": "Notícias",
+    "url": "https://live-vgtrksmotrim.cdnvideo.ru/vgtrksmotrim/smotrim-live-03-srt.smil/playlist.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "360-tv-720p-not-24-7-",
+    "nome": "360 TV (720p) [Not 24/7]",
+    "categoria": "Notícias",
+    "url": "https://turkmedya-live.ercdn.net/tv360/tv360.m3u8",
+    "status": "ONLINE",
+    "statusCode": 206
+  },
+  {
+    "id": "365-news",
+    "nome": "365 News",
+    "categoria": "Notícias",
+    "url": "https://cdn4.mjunoon.tv:8087/streamtest/140M/chunks.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "-24-1080p-",
+    "nome": ":24 (1080p)",
+    "categoria": "Notícias",
+    "url": "http://88.212.15.27/live/test_trojka_25p/playlist.m3u8",
+    "status": "DEAD_PATTERN",
+    "error": "Dead IP or placeholder pattern"
+  },
+  {
+    "id": "a24-720p-",
+    "nome": "A24 (720p)",
+    "categoria": "Notícias",
+    "url": "https://g5.vxral-slo.transport.edge-access.net/a12/ngrp:a24-100056_all/playlist.m3u8?sense=true",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "a-haber-1080p-",
+    "nome": "A Haber (1080p)",
+    "categoria": "Notícias",
+    "url": "https://rnttwmjcin.turknet.ercdn.net/lcpmvefbyo/ahaber/ahaber.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "aaj-ki-khabar-1080p-",
+    "nome": "Aaj Ki Khabar (1080p)",
+    "categoria": "Notícias",
+    "url": "https://stream.ottlive.co.in/aajkikhabar/index.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "aaj-news-576p-",
+    "nome": "Aaj News (576p)",
+    "categoria": "Notícias",
+    "url": "http://115.42.65.142:9981/stream/channelid/750987367",
+    "status": "DEAD_PATTERN",
+    "error": "Dead IP or placeholder pattern"
+  },
+  {
+    "id": "aaj-tak-1080p-",
+    "nome": "Aaj Tak (1080p)",
+    "categoria": "Notícias",
+    "url": "http://103.213.31.109:90/AajtakHD/playlist.m3u8",
+    "status": "DEAD_PATTERN",
+    "error": "Dead IP or placeholder pattern"
+  },
+  {
+    "id": "aaj-tak-hd-1080p-",
+    "nome": "Aaj Tak HD (1080p)",
+    "categoria": "Notícias",
+    "url": "https://feeds.intoday.in/aajtak/api/aajtakhd/master.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "abante-tv-1080p-",
+    "nome": "Abante TV (1080p)",
+    "categoria": "Notícias",
+    "url": "https://amg19223-amg19223c12-amgplt0352.playout.now3.amagi.tv/playlist/amg19223-amg19223c12-amgplt0352/playlist.m3u8",
+    "status": "ONLINE",
+    "statusCode": 200
+  },
+  {
+    "id": "abb-takk-576p-",
+    "nome": "Abb Takk (576p)",
+    "categoria": "Notícias",
+    "url": "http://115.42.65.142:9981/stream/channelid/852828604",
+    "status": "DEAD_PATTERN",
+    "error": "Dead IP or placeholder pattern"
+  },
+  {
+    "id": "abc-wplg-dt1-miami-fl-720p-",
+    "nome": "ABC (WPLG-DT1) Miami FL (720p)",
+    "categoria": "Notícias",
+    "url": "https://pubads.g.doubleclick.net/ssai/event/tQD6w9OJQVOobcyV3Dammw/master.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "abc-news-720p-",
+    "nome": "ABC News (720p)",
+    "categoria": "Notícias",
+    "url": "https://abc-news-dmd-streams-1.akamaized.net/out/v1/701126012d044971b3fa89406a440133/index.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "abc-news-live-720p-",
+    "nome": "ABC News Live (720p)",
+    "categoria": "Notícias",
+    "url": "https://jmp2.uk/plu-6508be683a0d700008c534e4.m3u8",
+    "status": "ONLINE",
+    "statusCode": 200
+  },
+  {
+    "id": "abc-news-live-1-720p-",
+    "nome": "ABC News Live 1 (720p)",
+    "categoria": "Notícias",
+    "url": "https://abcnews-streams.akamaized.net/hls/live/2023560/abcnewshudson1/master.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "abc-news-live-2-720p-",
+    "nome": "ABC News Live 2 (720p)",
+    "categoria": "Notícias",
+    "url": "https://abcnews-streams.akamaized.net/hls/live/2023561/abcnewshudson2/master.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "abc-news-live-3-720p-",
+    "nome": "ABC News Live 3 (720p)",
+    "categoria": "Notícias",
+    "url": "https://abcnews-streams.akamaized.net/hls/live/2023562/abcnewshudson3/master.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "abc-news-live-4-720p-",
+    "nome": "ABC News Live 4 (720p)",
+    "categoria": "Notícias",
+    "url": "https://abcnews-streams.akamaized.net/hls/live/2023563/abcnewshudson4/master.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "abc-news-live-5-720p-",
+    "nome": "ABC News Live 5 (720p)",
+    "categoria": "Notícias",
+    "url": "https://abcnews-streams.akamaized.net/hls/live/2023564/abcnewshudson5/master.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "abc-news-live-6-720p-",
+    "nome": "ABC News Live 6 (720p)",
+    "categoria": "Notícias",
+    "url": "https://abcnews-streams.akamaized.net/hls/live/2023565/abcnewshudson6/master.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "abc-news-live-7-720p-",
+    "nome": "ABC News Live 7 (720p)",
+    "categoria": "Notícias",
+    "url": "https://abcnews-streams.akamaized.net/hls/live/2023566/abcnewshudson7/master.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "abc-news-live-8-720p-",
+    "nome": "ABC News Live 8 (720p)",
+    "categoria": "Notícias",
+    "url": "https://abcnews-streams.akamaized.net/hls/live/2023567/abcnewshudson8/master.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "abc-news-live-9-720p-",
+    "nome": "ABC News Live 9 (720p)",
+    "categoria": "Notícias",
+    "url": "https://abcnews-streams.akamaized.net/hls/live/2023568/abcnewshudson9/master.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "abc-news-live-10-720p-",
+    "nome": "ABC News Live 10 (720p)",
+    "categoria": "Notícias",
+    "url": "https://abcnews-streams.akamaized.net/hls/live/2023569/abcnewshudson10/master.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "abn-andhra-jyoti-720p-",
+    "nome": "ABN Andhra Jyoti (720p)",
+    "categoria": "Notícias",
+    "url": "https://mumbai-edge.smartplaytv.in/ABNAJ/index.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "abn-news-1080p-",
+    "nome": "ABN News (1080p)",
+    "categoria": "Notícias",
+    "url": "http://115.42.65.142:9981/stream/channelid/966869781",
+    "status": "DEAD_PATTERN",
+    "error": "Dead IP or placeholder pattern"
+  },
+  {
+    "id": "abp-ananda-1080p-",
+    "nome": "ABP Ananda (1080p)",
+    "categoria": "Notícias",
+    "url": "https://d2l4ar6y3mrs4k.cloudfront.net/live-streaming/ananda-livetv/master.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "abp-asmita-1080p-",
+    "nome": "ABP Asmita (1080p)",
+    "categoria": "Notícias",
+    "url": "https://d2l4ar6y3mrs4k.cloudfront.net/live-streaming/asmita-livetv/master.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "abp-ganga-1080p-",
+    "nome": "ABP Ganga (1080p)",
+    "categoria": "Notícias",
+    "url": "https://d2l4ar6y3mrs4k.cloudfront.net/live-streaming/ganga-livetv/master.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "abp-majha-360p-",
+    "nome": "ABP Majha (360p)",
+    "categoria": "Notícias",
+    "url": "https://yupprestreamliveus.akamaized.net/vglive-sk-355289/majha/master.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "abp-news-1080p-",
+    "nome": "ABP News (1080p)",
+    "categoria": "Notícias",
+    "url": "https://d1rc86nwwc9fag.cloudfront.net/vglive-sk-472500/abpnews/master.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "acento-tv",
+    "nome": "Acento TV",
+    "categoria": "Notícias",
+    "url": "https://acentotv01.streamprolive.com/hls/live.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "actualidad-360",
+    "nome": "Actualidad 360",
+    "categoria": "Notícias",
+    "url": "https://jmp2.uk/plu-67517fae5534bb0008187997.m3u8",
+    "status": "ONLINE",
+    "statusCode": 200
+  },
+  {
+    "id": "acustik-tv",
+    "nome": "Acustik TV",
+    "categoria": "Notícias",
+    "url": "https://s5.mexside.net:1936/clientetv/clientetv/playlist.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "1hd-music-television-1080p-",
+    "nome": "1HD Music Television (1080p)",
+    "categoria": "Músicas",
+    "url": "https://stream8.cinerama.uz/1267/tracks-v1a1/mono.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "3abn-praise-him-music-network",
+    "nome": "3ABN Praise Him Music Network",
+    "categoria": "Músicas",
+    "url": "https://3abn.bozztv.com/3abn1/PraiseHim/smil:PraiseHim.smil/playlist.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "4ever-music-1080p-",
+    "nome": "4ever Music (1080p)",
+    "categoria": "Músicas",
+    "url": "http://stream.mcquack.net/257/index.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "4-fun-tv-576i-not-24-7-",
+    "nome": "4 Fun TV (576i) [Not 24/7]",
+    "categoria": "Músicas",
+    "url": "https://stream.4fun.tv:8888/hls/4f_high/index.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "4-kurd",
+    "nome": "4 Kurd",
+    "categoria": "Músicas",
+    "url": "https://4kuhls.persiana.live/hls/stream.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "7-radiovisione-720p-",
+    "nome": "7 RadioVisione (720p)",
+    "categoria": "Músicas",
+    "url": "https://stream10.xdevel.com/video1s976543-1932/stream/playlist.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "7s-music-576p-",
+    "nome": "7S Music (576p)",
+    "categoria": "Músicas",
+    "url": "https://cdn.pishow.tv/ott/live/1257/master.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "8xm-576p-",
+    "nome": "8XM (576p)",
+    "categoria": "Músicas",
+    "url": "http://115.42.65.142:9981/stream/channelid/582886861",
+    "status": "DEAD_PATTERN",
+    "error": "Dead IP or placeholder pattern"
+  },
+  {
+    "id": "8xm-hd",
+    "nome": "8XM HD",
+    "categoria": "Músicas",
+    "url": "https://cdn4.mjunoon.tv:8087/streamtest/135M/chunks.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "9x-jalwa-1080p-",
+    "nome": "9X Jalwa (1080p)",
+    "categoria": "Músicas",
+    "url": "https://wiselp.wiseplayout.com/9X_Jalwa/master.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "9x-jhakaas-1080p-",
+    "nome": "9X Jhakaas (1080p)",
+    "categoria": "Músicas",
+    "url": "https://amg01281-9xmediapvtltd-9xjhakaas-samsungin-ci2cs.amagi.tv/playlist/amg01281-9xmediapvtltd-9xjhakaas-samsungin/playlist.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "9x-tashan-1080p-",
+    "nome": "9X Tashan (1080p)",
+    "categoria": "Músicas",
+    "url": "https://amg01281-9xmediapvtltd-9xtashan-samsungin-xz1sd.amagi.tv/playlist/amg01281-9xmediapvtltd-9xtashan-samsungin/playlist.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "9xm-1080p-",
+    "nome": "9XM (1080p)",
+    "categoria": "Músicas",
+    "url": "https://9xjio.wiseplayout.com/9XM/master.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "13-festival-1080p-",
+    "nome": "13 Festival (1080p)",
+    "categoria": "Músicas",
+    "url": "https://origin.dpsgo.com/ssai/event/Nftd0fM2SXasfDlRphvUsg/master.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "15-music-1080p-",
+    "nome": "15+ Music (1080p)",
+    "categoria": "Músicas",
+    "url": "https://live.15plusmg.ru/memfs/ce3366b1-bf25-4e24-96bb-1adf0d44bd3d.m3u8",
+    "status": "ERROR",
+    "error": "fetch failed"
+  },
+  {
+    "id": "30a-music-720p-",
+    "nome": "30A Music (720p)",
+    "categoria": "Músicas",
+    "url": "https://30a-tv.com/music.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "51-radio-tv-480p-geo-blocked-",
+    "nome": "51 Radio TV (480p) [Geo-blocked]",
+    "categoria": "Músicas",
+    "url": "http://wms.shared.streamshow.it/canale51/canale51/playlist.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "70-80-tv-1080p-",
+    "nome": "70-80 TV (1080P)",
+    "categoria": "Músicas",
+    "url": "https://585b674743bbb.streamlock.net/9050/9050/playlist.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "88-stereo-720p-not-24-7-",
+    "nome": "88 Stereo (720p) [Not 24/7]",
+    "categoria": "Músicas",
+    "url": "http://k3.usastreams.com/CableLatino/88stereo/playlist.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "98-1-pearl-fm-720p-",
+    "nome": "98.1 Pearl FM (720p)",
+    "categoria": "Músicas",
+    "url": "https://live2.tensila.com/pearl-v-1.pearlfm/hls/live/mystream.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "360tunebox-1080p-",
+    "nome": "360TuneBox (1080p)",
+    "categoria": "Músicas",
+    "url": "https://dash3.antik.sk/live/test_360_tunebox_medium_atk/playlist.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "-viva-latino-1080p-",
+    "nome": "¡Viva Latino! (1080p)",
+    "categoria": "Músicas",
+    "url": "http://stream.mcquack.net/285/index.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "a2i-music-720p-not-24-7-",
+    "nome": "A2i Music (720p) [Not 24/7]",
+    "categoria": "Músicas",
+    "url": "https://stream.sen-gt.com/A2iMusic/myStream/playlist.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "aaryaa-tv-1080p-",
+    "nome": "Aaryaa TV (1080p)",
+    "categoria": "Músicas",
+    "url": "https://stream.ottlive.co.in/aryatvtamil/index.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "abdulmajeed-abdullah-1080p-",
+    "nome": "Abdulmajeed Abdullah (1080p)",
+    "categoria": "Músicas",
+    "url": "https://d2hng5r56zpsbw.cloudfront.net/out/v1/9c4c990f44bb4767bb46271f326dd574/index.m3u8",
+    "status": "ONLINE",
+    "statusCode": 206
+  },
+  {
+    "id": "ace-country-radio-kpvm-ld",
+    "nome": "ACE Country Radio KPVM-LD",
+    "categoria": "Músicas",
+    "url": "https://2-fss-1.streamhoster.com/pl_122/206858-4412960-1/playlist.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "activa-tv-720p-",
+    "nome": "Activa TV (720p)",
+    "categoria": "Músicas",
+    "url": "https://streamtv.mediasector.es/hls/activatv/index.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "acw-ug-tv-480p-",
+    "nome": "ACW UG TV (480p)",
+    "categoria": "Músicas",
+    "url": "https://live.acwugtv.com/hls/stream.m3u8",
+    "status": "ERROR",
+    "error": "fetch failed"
+  },
+  {
+    "id": "adria-music-television",
+    "nome": "Adria Music Television",
+    "categoria": "Músicas",
+    "url": "https://adriaapp.b-cdn.net/1080p/index.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "ae-radio-tv-720p-not-24-7-",
+    "nome": "AE Radio TV (720p) [Not 24/7]",
+    "categoria": "Músicas",
+    "url": "https://tls-cl.cdnz.cl/aeradio/live/playlist.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "afn-tv",
+    "nome": "AFN TV",
+    "categoria": "Músicas",
+    "url": "https://bozztv.com/1gbw5/tintv2/tintv2/playlist.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "afrobeats-1080p-",
+    "nome": "Afrobeats (1080p)",
+    "categoria": "Músicas",
+    "url": "https://stream.ecable.tv/afrobeats/index.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "aghani-aghani-tv-1080p-",
+    "nome": "Aghani Aghani TV (1080p)",
+    "categoria": "Músicas",
+    "url": "https://cdn.streamlane.tv/hls/aghanitv/index.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "albkanale-music-tv-1080p-",
+    "nome": "AlbKanale Music TV (1080p)",
+    "categoria": "Músicas",
+    "url": "https://albportal.net/albkanalemusic.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "alcance-fm-play-tv",
+    "nome": "Alcance FM PLAY TV",
+    "categoria": "Músicas",
+    "url": "https://video.wilohosting.com:19360/alcancefmtv/alcancefmtv.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "alegria-tv-720p-",
+    "nome": "Alegria TV (720p)",
+    "categoria": "Músicas",
+    "url": "https://lbgo.bozztv.com/ssh101/ssh101/confirmatv/playlist.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "amc-1080p-",
+    "nome": "AMC (1080p)",
+    "categoria": "Músicas",
+    "url": "https://amchls.wns.live/hls/stream.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "amedia-1-576p-",
+    "nome": "Amedia 1 (576p)",
+    "categoria": "Músicas",
+    "url": "http://31.148.48.15/A1/index.m3u8",
+    "status": "DEAD_PATTERN",
+    "error": "Dead IP or placeholder pattern"
+  },
+  {
+    "id": "amusic-channel-720p-",
+    "nome": "AMusic Channel (720p)",
+    "categoria": "Músicas",
+    "url": "http://mn-nl.mncdn.com/amusictv/amusicsrt.stream/playlist.m3u8",
+    "status": "ERROR",
+    "error": "fetch failed"
+  },
+  {
+    "id": "andina-rtv-720p-",
+    "nome": "Andina RTV (720p)",
+    "categoria": "Músicas",
+    "url": "https://live-evg8.tv360.bitel.com.pe/bitel/andinatvSRT/playlist.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "andy-haryana-576p-",
+    "nome": "Andy Haryana (576p)",
+    "categoria": "Músicas",
+    "url": "https://mumt03.tangotv.in/Dsly5z3HANDYHARYANA/index.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "antenne-kaernten-720p-",
+    "nome": "Antenne Kaernten (720p)",
+    "categoria": "Músicas",
+    "url": "https://60efd7a2b4d02.streamlock.net/a_kaernten/ngrp:livestream_all/playlist.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "antenne-steiermark-720p-",
+    "nome": "Antenne Steiermark (720p)",
+    "categoria": "Músicas",
+    "url": "https://60efd7a2b4d02.streamlock.net/a_steiermark/ngrp:livestream_all/playlist.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "antenne-vorarlberg-720p-not-24-7-",
+    "nome": "Antenne Vorarlberg (720p) [Not 24/7]",
+    "categoria": "Músicas",
+    "url": "https://5857db5306b83.streamlock.net/antennevorarlberg-live/_definst_/mp4:livestream/playlist.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "arabica-tv-720p-",
+    "nome": "Arabica TV (720p)",
+    "categoria": "Músicas",
+    "url": "http://istream.binarywaves.com:8081/hls/arabica/playlist.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "ary-musik-1080p-",
+    "nome": "ARY Musik (1080p)",
+    "categoria": "Músicas",
+    "url": "https://arymusik.aryzap.com/3fd38b2c62d0c3bbd74aedabb533c03a/6459fa78/v1/01847ac7a4930b8ed5aa6ed04aba/01847ac8f5f70b8ed5aa6ed04abd/main.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "atn-music-360p-",
+    "nome": "ATN Music (360p)",
+    "categoria": "Músicas",
+    "url": "https://app.ncare.live/c3VydmVyX8RpbEU9Mi8xNy8yMDE0GIDU6RgzQ6NTAgdEoaeFzbF92YWxIZTO0U0ezN1IzMyfvcGVMZEJCTEFWeVN3PTOmdFsaWRtaW51aiPhnPTI/atnmusic.stream/playlist.m3u8",
+    "status": "OFFLINE",
+    "statusCode": 404,
+    "error": "HTTP 404"
+  },
+  {
+    "id": "atomic-academy-tv-480p-",
+    "nome": "Atomic Academy TV (480p)",
+    "categoria": "Músicas",
+    "url": "https://atomic.streamnet.ro/academia.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "atomic-tv-360p-",
+    "nome": "Atomic TV (360p)",
+    "categoria": "Músicas",
+    "url": "https://atomic.streamnet.ro/atomictv.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "audiokiss-1080p-",
+    "nome": "Audiokiss (1080p)",
+    "categoria": "Músicas",
+    "url": "https://master.tucableip.com/audiokisstv/index.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "avang-tv-1080p-",
+    "nome": "Avang TV (1080p)",
+    "categoria": "Músicas",
+    "url": "https://hls.avang.live/hls/stream.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "axs-tv-720p-",
+    "nome": "AXS TV (720p)",
+    "categoria": "Músicas",
+    "url": "http://23.239.31.26:8989/axstv/index.m3u8",
+    "status": "DEAD_PATTERN",
+    "error": "Dead IP or placeholder pattern"
+  },
+  {
+    "id": "azahares-radio-multimedia-720p-",
+    "nome": "Azahares Radio Multimedia (720p)",
+    "categoria": "Músicas",
+    "url": "https://streamyes.alsolnet.com/azaharesfm/live/playlist.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "b4u-music-576p-",
+    "nome": "B4U Music (576p)",
+    "categoria": "Músicas",
+    "url": "https://cdn-2.pishow.tv/live/415/master.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "baby-time-576p-",
+    "nome": "Baby Time (576p)",
+    "categoria": "Músicas",
+    "url": "http://178.134.1.158:8081/babytime/index.m3u8",
+    "status": "DEAD_PATTERN",
+    "error": "Dead IP or placeholder pattern"
+  },
+  {
+    "id": "adb-tv-1080p-",
+    "nome": "ADB TV (1080p)",
+    "categoria": "Lazer",
+    "url": "https://live-tv.waytv.pt/adbtv/adbtv/playlist.m3u8",
+    "status": "ONLINE",
+    "statusCode": 200
+  },
+  {
+    "id": "angel-tv-portuguese-720p-",
+    "nome": "Angel TV Portuguese (720p)",
+    "categoria": "Lazer",
+    "url": "https://janya-digimix.akamaized.net/vglive-sk-382409/portuese/ngrp:angelportuguese_all/playlist.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "artv-canal-parlamento-720p-not-24-7-",
+    "nome": "ARTV Canal Parlamento (720p) [Not 24/7]",
+    "categoria": "Notícias",
+    "url": "https://playout172.livextend.cloud/liveiframe/_definst_/liveartvabr/playlist.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "axn-white-portugal-480p-",
+    "nome": "AXN White Portugal (480p)",
+    "categoria": "Lazer",
+    "url": "http://50.7.120.34:8080/AXN_WHITE/index.m3u8",
+    "status": "DEAD_PATTERN",
+    "error": "Dead IP or placeholder pattern"
+  },
+  {
+    "id": "disney-channel-1080p-",
+    "nome": "Disney Channel (1080p)",
+    "categoria": "Lazer",
+    "url": "http://151.80.18.177:86/Disney_Channel_HD/index.m3u8",
+    "status": "DEAD_PATTERN",
+    "error": "Dead IP or placeholder pattern"
+  },
+  {
+    "id": "euronews-portuguese-720p-",
+    "nome": "Euronews Portuguese (720p)",
+    "categoria": "Lazer",
+    "url": "https://jmp2.uk/plu-619e6614c9d9650007a2b171.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "famatv-1080p-not-24-7-",
+    "nome": "Famatv (1080p) [Not 24/7]",
+    "categoria": "Notícias",
+    "url": "https://tv2.fastcast4u.com:3310/live/famatvlive.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "fifa-portuguese-720p-",
+    "nome": "FIFA+ Portuguese (720p)",
+    "categoria": "Lazer",
+    "url": "https://e3be9ac5.wurl.com/master/f36d25e7e52f1ba8d7e56eb859c636563214f541/TEctYnJfRklGQVBsdXNQb3J0dWd1ZXNlX0hMUw/playlist.m3u8",
+    "status": "ONLINE",
+    "statusCode": 206
+  },
+  {
+    "id": "kto-504p-",
+    "nome": "KTO (504p)",
+    "categoria": "Lazer",
+    "url": "http://145.239.5.177/354/index.m3u8",
+    "status": "DEAD_PATTERN",
+    "error": "Dead IP or placeholder pattern"
+  },
+  {
+    "id": "kuriakos-cine-1080p-",
+    "nome": "Kuriakos Cine (1080p)",
+    "categoria": "Lazer",
+    "url": "https://w2.manasat.com/kcine/smil:kcine.smil/playlist.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "kuriakos-kids-1080p-",
+    "nome": "Kuriakos Kids (1080p)",
+    "categoria": "Lazer",
+    "url": "https://w2.manasat.com/kkids/smil:kkids.smil/playlist.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "kuriakos-music-1080p-",
+    "nome": "Kuriakos Music (1080p)",
+    "categoria": "Lazer",
+    "url": "http://195.23.211.179:1935/kmusic/smil:kmusic.smil/playlist.m3u8",
+    "status": "DEAD_PATTERN",
+    "error": "Dead IP or placeholder pattern"
+  },
+  {
+    "id": "kuriakos-tv-1080p-",
+    "nome": "Kuriakos TV (1080p)",
+    "categoria": "Lazer",
+    "url": "https://w1.manasat.com/ktv/smil:ktv.smil/playlist.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "man-church-online-1080p-not-24-7-",
+    "nome": "Maná Church Online (1080p) [Not 24/7]",
+    "categoria": "Notícias",
+    "url": "https://w2.manasat.com/church-online/smil:church-online.smil/playlist.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "man-cirkev-online-1080p-not-24-7-",
+    "nome": "Maná Cirkev Online (1080p) [Not 24/7]",
+    "categoria": "Notícias",
+    "url": "https://w2.manasat.com/cirkev-online/smil:cirkev-online.smil/playlist.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "man-glise-online-1080p-not-24-7-",
+    "nome": "Maná Église Online (1080p) [Not 24/7]",
+    "categoria": "Notícias",
+    "url": "https://w2.manasat.com/eglise-online/smil:eglise-online.smil/playlist.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "man-iglesia-online-1080p-not-24-7-",
+    "nome": "Maná Iglesia Online (1080p) [Not 24/7]",
+    "categoria": "Notícias",
+    "url": "https://w2.manasat.com/iglesia-online/smil:iglesia-online.smil/playlist.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "man-igreja-online-1080p-not-24-7-",
+    "nome": "Maná Igreja Online (1080p) [Not 24/7]",
+    "categoria": "Notícias",
+    "url": "https://w1.manasat.com/igrejaonline/smil:igrejaonline.smil/playlist.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "man-tserkov-onlayn-1080p-not-24-7-",
+    "nome": "Maná Tserkov' Onlayn (1080p) [Not 24/7]",
+    "categoria": "Notícias",
+    "url": "https://w2.manasat.com/tserkov-online/smil:tserkov-online.smil/playlist.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "mcm-top-1080p-",
+    "nome": "MCM Top (1080p)",
+    "categoria": "Lazer",
+    "url": "http://89.33.29.118/MCM/index.m3u8",
+    "status": "DEAD_PATTERN",
+    "error": "Dead IP or placeholder pattern"
+  },
+  {
+    "id": "npc-r-dio-e-tv-720p-",
+    "nome": "NPC Rádio e TV (720p)",
+    "categoria": "Lazer",
+    "url": "https://stmv5.samcast.com.br/nasciparacantartv/nasciparacantartv/playlist.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "on-fm-720p-",
+    "nome": "ON FM (720p)",
+    "categoria": "Lazer",
+    "url": "https://5ce9406b73c33.streamlock.net/ONFM/livestream/playlist.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "porto-canal-720p-",
+    "nome": "Porto Canal (720p)",
+    "categoria": "Lazer",
+    "url": "https://pull-live-156-1.global.ssl.fastly.net/pc5865dc25400thmb-ea6bf03b14fa318f7133/smil:pc1-jhrgyuoqe5865db-68tkgb14fa318f7133f03.smil/playlist.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "r-dio-sines-720p-geo-blocked-",
+    "nome": "Rádio Sines (720p) [Geo-blocked]",
+    "categoria": "Lazer",
+    "url": "https://load-balancer.azotosolutions.com/cdnedge19/smil:live19.smil/playlist.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "rfptv-360p-",
+    "nome": "RFPtv (360p)",
+    "categoria": "Lazer",
+    "url": "https://video03.logicahost.com.br/rfptv/rfptv/playlist.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "1001-noites-720p-not-24-7-",
+    "nome": "1001 Noites (720p) [Not 24/7]",
+    "categoria": "Lazer",
+    "url": "https://cdn.jmvstream.com/w/LVW-8155/ngrp:LVW8155_41E1ciuCvO_all/playlist.m3u8",
+    "status": "OFFLINE",
+    "statusCode": 404,
+    "error": "HTTP 404"
+  },
+  {
+    "id": "a-e-latin-america-brazil-720p-",
+    "nome": "A&E Latin America Brazil (720p)",
+    "categoria": "Lazer",
+    "url": "http://170.83.16.50/AeE/index.m3u8",
+    "status": "DEAD_PATTERN",
+    "error": "Dead IP or placeholder pattern"
+  },
+  {
+    "id": "adesso-tv-720p-",
+    "nome": "Adesso TV (720p)",
+    "categoria": "Lazer",
+    "url": "https://cdn.jmvstream.com/w/LVW-9715/LVW9715_12B26T62tm/playlist.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "adult-swim-latin-america-brazil-720p-",
+    "nome": "Adult Swim Latin America Brazil (720p)",
+    "categoria": "Lazer",
+    "url": "http://168.197.104.22/ADULT_SWIM/index.m3u8",
+    "status": "DEAD_PATTERN",
+    "error": "Dead IP or placeholder pattern"
+  },
+  {
+    "id": "agrobrasil-tv-720p-not-24-7-",
+    "nome": "AgroBrasil TV (720p) [Not 24/7]",
+    "categoria": "Lazer",
+    "url": "http://45.162.230.234:1935/agrobrasiltv/agrobrasiltv/playlist.m3u8",
+    "status": "DEAD_PATTERN",
+    "error": "Dead IP or placeholder pattern"
+  },
+  {
+    "id": "agrocanal-720p-",
+    "nome": "AgroCanal (720p)",
+    "categoria": "Lazer",
+    "url": "https://amazonsat.brasilstream.com.br/hls/amazonsat/index.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "agromais-720p-",
+    "nome": "AgroMais (720p)",
+    "categoria": "Lazer",
+    "url": "https://cdn.live.br1.jmvstream.com/w/LVW-9359/LVW9359_XSyReL0QVf/playlist.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "alpha-channel-720p-",
+    "nome": "Alpha Channel (720p)",
+    "categoria": "Lazer",
+    "url": "https://5b01a3d32b65c.streamlock.net:1936/tvalpha/tvalpha/playlist.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "amazon-sat-1080p-",
+    "nome": "Amazon Sat (1080p)",
+    "categoria": "Lazer",
+    "url": "https://amazonsat.brasilstream.com.br/hls/amazonsat/index.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "araruna-tv",
+    "nome": "Araruna TV",
+    "categoria": "Lazer",
+    "url": "https://video05.logicahost.com.br/ararunatv/ararunatv/playlist.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "aratu-on",
+    "nome": "Aratu On",
+    "categoria": "Lazer",
+    "url": "https://cdn.live.br1.jmvstream.com/w/LVW-9359/LVW9359_XSyReL0QVf/playlist.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "arte-1-720p-",
+    "nome": "Arte 1 (720p)",
+    "categoria": "Lazer",
+    "url": "https://video05.logicahost.com.br/ararunatv/ararunatv/playlist.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "auge-tv-720p-",
+    "nome": "Auge TV (720p)",
+    "categoria": "Lazer",
+    "url": "https://cdn-tiva-video01-logicahost-com-br.smartbit.co/canalaugetv/canalaugetv/playlist.m3u8",
+    "status": "ERROR",
+    "error": "fetch failed"
+  },
+  {
+    "id": "avatar-a-lenda-de-aang",
+    "nome": "Avatar: A lenda de Aang",
+    "categoria": "Lazer",
+    "url": "https://jmp2.uk/plu-6759eeb1bd523200083b4f29.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "awtv-1080p-geo-blocked-",
+    "nome": "AWTV (1080p) [Geo-blocked]",
+    "categoria": "Lazer",
+    "url": "https://awtv.nuvemplay.live/hls/stream.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "babyfirst",
+    "nome": "Babyfirst",
+    "categoria": "Lazer",
+    "url": "https://jmp2.uk/plu-5f4fb4cf605ddf000748e16f.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "band-720p-",
+    "nome": "Band (720p)",
+    "categoria": "Lazer",
+    "url": "http://170.84.165.204/BAND_HD/index.m3u8",
+    "status": "DEAD_PATTERN",
+    "error": "Dead IP or placeholder pattern"
+  },
+  {
+    "id": "bandnews-1080p-",
+    "nome": "BandNews (1080p)",
+    "categoria": "Notícias",
+    "url": "https://cdn-5.nxplay.com.br/BAND_NEWS/index.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "bem-melhor-720p-",
+    "nome": "Bem Melhor (720p)",
+    "categoria": "Lazer",
+    "url": "https://cdn-tiva-video01-logicahost-com-br.smartbit.co/bemmelhor/bemmelhor/playlist.m3u8",
+    "status": "ERROR",
+    "error": "fetch failed"
+  },
+  {
+    "id": "bet-pluto-tv",
+    "nome": "BET Pluto TV",
+    "categoria": "Lazer",
+    "url": "https://jmp2.uk/plu-5ff768b6a4c8b80008498610.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "blitstv",
+    "nome": "Blitstv",
+    "categoria": "Lazer",
+    "url": "https://stmv1.transmissaodigital.com/blitstv/blitstv/playlist.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "bm-c-news-720p-",
+    "nome": "BM&C News (720p)",
+    "categoria": "Notícias",
+    "url": "https://jmp2.uk/plu-666c9c60a7efd40008f552f0.m3u8",
+    "status": "TIMEOUT",
+    "error": "Timeout (>3.5s)"
+  },
+  {
+    "id": "yt-mrbeast",
+    "nome": "MrBeast (Desafios & Entretenimento)",
+    "categoria": "YouTube",
+    "url": "https://www.youtube.com/watch?v=0e3GPea1Tyg",
+    "status": "YOUTUBE"
+  },
+  {
+    "id": "yt-mrbeast-gaming",
+    "nome": "MrBeast Gaming",
+    "categoria": "YouTube",
+    "url": "https://www.youtube.com/watch?v=kJu5VMN3yow",
+    "status": "YOUTUBE"
+  },
+  {
+    "id": "yt-karl",
+    "nome": "Karl Jacobs",
+    "categoria": "YouTube",
+    "url": "https://www.youtube.com/watch?v=6Ka3X_wlZLU",
+    "status": "YOUTUBE"
+  },
+  {
+    "id": "yt-dude-perfect-main",
+    "nome": "Dude Perfect (Trick Shots & Esportes)",
+    "categoria": "YouTube",
+    "url": "https://www.youtube.com/watch?v=LVhFuyABxBE",
+    "status": "YOUTUBE"
+  },
+  {
+    "id": "yt-the-wingrove-family",
+    "nome": "The Wingrove Family (Futebol & Desafios)",
+    "categoria": "YouTube",
+    "url": "https://www.youtube.com/watch?v=d1fMvE-f2z8",
+    "status": "YOUTUBE"
+  },
+  {
+    "id": "yt-mhraps",
+    "nome": "MHRAP (Rap Geek & Animes)",
+    "categoria": "YouTube",
+    "url": "https://www.youtube.com/watch?v=x6VWj8JeyIU",
+    "status": "YOUTUBE"
+  },
+  {
+    "id": "yt-ciencia-todo-dia",
+    "nome": "Ciência Todo Dia (Pedro Loos)",
+    "categoria": "YouTube",
+    "url": "https://www.youtube.com/watch?v=jy0sGTbP3Qs",
+    "status": "YOUTUBE"
+  },
+  {
+    "id": "yt-universo-narrado",
+    "nome": "Universo Narrado (Felipe Guisoli)",
+    "categoria": "YouTube",
+    "url": "https://www.youtube.com/watch?v=aFwcrt0LfjY",
+    "status": "YOUTUBE"
+  },
+  {
+    "id": "yt-mark-rober",
+    "nome": "Mark Rober (Ciência & Invenções)",
+    "categoria": "YouTube",
+    "url": "https://www.youtube.com/watch?v=hFZFjoX2cGg",
+    "status": "YOUTUBE"
+  },
+  {
+    "id": "yt-touzani-tv",
+    "nome": "TOUZANI TV (Street Football & Panna)",
+    "categoria": "YouTube",
+    "url": "https://www.youtube.com/watch?v=0y4ZT2aaK1k",
+    "status": "YOUTUBE"
+  },
+  {
+    "id": "yt-rulas-47",
+    "nome": "Rulas 47 (Freestyle & Skills)",
+    "categoria": "YouTube",
+    "url": "https://www.youtube.com/watch?v=-5DfExCscBE",
+    "status": "YOUTUBE"
+  },
+  {
+    "id": "yt-jesser",
+    "nome": "Jesser (Basquete & 2HYPE)",
+    "categoria": "YouTube",
+    "url": "https://www.youtube.com/watch?v=zbpK7KTLoLg",
+    "status": "YOUTUBE"
+  },
+  {
+    "id": "yt-fc-barcelona",
+    "nome": "FC Barcelona (Barça TV YouTube)",
+    "categoria": "YouTube",
+    "url": "https://www.youtube.com/watch?v=XqSrz6MKVlk",
+    "status": "YOUTUBE"
+  },
+  {
+    "id": "yt-ksi",
+    "nome": "KSI (Música, Boxe & Vlogs)",
+    "categoria": "YouTube",
+    "url": "https://www.youtube.com/watch?v=Y-SqKeCxkv4",
+    "status": "YOUTUBE"
+  },
+  {
+    "id": "yt-airrack",
+    "nome": "Airrack (Desafios Extremos)",
+    "categoria": "YouTube",
+    "url": "https://www.youtube.com/watch?v=nO2dMO3BUO4",
+    "status": "YOUTUBE"
+  },
+  {
+    "id": "yt-nick-digiovanni",
+    "nome": "Nick DiGiovanni (Culinária & MasterChef)",
+    "categoria": "YouTube",
+    "url": "https://www.youtube.com/watch?v=1fGScw5eX0M",
+    "status": "YOUTUBE"
+  },
+  {
+    "id": "yt-fastgoodcuisine",
+    "nome": "FastGoodCuisine (Receitas & Fast Food)",
+    "categoria": "YouTube",
+    "url": "https://www.youtube.com/watch?v=YiOzizJ-PDc",
+    "status": "YOUTUBE"
+  },
+  {
+    "id": "yt-s2g",
+    "nome": "S2G (Futebol & FIFA Gaming)",
+    "categoria": "YouTube",
+    "url": "https://www.youtube.com/watch?v=EALB-7S4Rr8",
+    "status": "YOUTUBE"
+  }
+]

@@ -6,6 +6,8 @@ import {
   Volume2,
   VolumeX,
   AlertCircle,
+  AlertTriangle,
+  RefreshCw,
   X,
   SkipForward,
   Zap,
@@ -28,6 +30,7 @@ import {
   getHlsOptionsForLatencyMode,
   SPORTS_TRIVIA,
   getEmergencyFallbackStream,
+  resolveActiveChannelStream,
   applyQualityToHls,
 } from '@/utils/streamUtils';
 import { PlayerSettingsModal } from './PlayerSettingsModal';
@@ -126,6 +129,8 @@ export function CinemaPlayer({
   const [isBuffering, setIsBuffering] = useState(true);
   const [hasFirstFrame, setHasFirstFrame] = useState(false);
   const [loadSeconds, setLoadSeconds] = useState(0);
+  const [isStreamOffline, setIsStreamOffline] = useState(false);
+  const [offlineAutoAdvanceSeconds, setOfflineAutoAdvanceSeconds] = useState<number | null>(null);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isChannelVideosOpen, setIsChannelVideosOpen] = useState(false);
   const [triviaIndex, setTriviaIndex] = useState(0);
@@ -147,7 +152,12 @@ export function CinemaPlayer({
   const effectiveMuted = isMuted || isAudioTransitionMuted;
 
   const streamsDisponiveis = [canalAtivo.url, ...(canalAtivo.backupUrls || [])];
-  const activeRawStreamUrl = streamsDisponiveis[streamIndex] || canalAtivo.url;
+  const targetRawUrl = streamsDisponiveis[streamIndex] || canalAtivo.url;
+  const activeRawStreamUrl = resolveActiveChannelStream(
+    targetRawUrl,
+    canalAtivo.categoria,
+    streamIndex
+  );
   const rawStreamToPlay = emergencyOverrideUrl || activeRawStreamUrl;
   const finalStreamUrl = emergencyOverrideUrl
     ? emergencyOverrideUrl
@@ -291,59 +301,79 @@ export function CinemaPlayer({
     setIsBuffering(true);
     setHasFirstFrame(false);
     setLoadSeconds(0);
+    setIsStreamOffline(false);
+    setOfflineAutoAdvanceSeconds(null);
     setEmergencyOverrideUrl(null);
   }, [canalAtivo.id, canalAtivo.url, streamIndex, useProxy]);
 
   // Rotaciona curiosidades e dicas esportivas a cada 3.5s enquanto o sinal carrega
   useEffect(() => {
-    if (hasFirstFrame) return;
+    if (hasFirstFrame || isStreamOffline) return;
     const triviaTimer = setInterval(() => {
       setTriviaIndex((prev) => (prev + 1) % SPORTS_TRIVIA.length);
     }, 3500);
     return () => clearInterval(triviaTimer);
-  }, [hasFirstFrame]);
+  }, [hasFirstFrame, isStreamOffline]);
 
   // Watchdog de failover inteligente no modo cinema
   useEffect(() => {
-    if (hasFirstFrame) return;
+    if (hasFirstFrame || isStreamOffline) return;
 
     let seconds = 0;
     const interval = setInterval(() => {
       seconds += 1;
       setLoadSeconds(seconds);
 
-      // Aos 8s: se o sinal direto ainda não abriu e não é YouTube, ativa o proxy seguro
-      if (seconds === 8 && !hasFirstFrame) {
+      // Aos 5s: se o sinal direto ainda não abriu e não é YouTube, ativa o proxy seguro
+      if (seconds === 5 && !hasFirstFrame) {
         if (!useProxy && !isYouTubeChannel) {
           onToggleProxy();
         }
       }
 
-      // Aos 14s: tenta o próximo servidor reserva se disponível
-      if (seconds === 14 && !hasFirstFrame) {
+      // Aos 9s: tenta o próximo servidor reserva se disponível
+      if (seconds === 9 && !hasFirstFrame) {
         if (streamsDisponiveis.length > 1 && streamIndex < streamsDisponiveis.length - 1) {
           onStreamChange(streamIndex + 1);
         }
       }
 
-      // Aos 22s: se ainda não abriu, aciona o sinal de emergência da categoria
-      if (seconds === 22 && !hasFirstFrame) {
+      // Aos 13s: se ainda não abriu, aciona o sinal de emergência da categoria
+      if (seconds === 13 && !hasFirstFrame) {
         const emergencyStream = getEmergencyFallbackStream(canalAtivo?.categoria);
         if (emergencyStream && emergencyStream !== activeRawStreamUrl) {
           setEmergencyOverrideUrl(emergencyStream);
         }
       }
 
-      // Aos 30s: notifica o erro caso nenhum sinal responda
-      if (seconds === 30 && !hasFirstFrame) {
+      // Aos 18s: se persistir sem sinal, ativa tela de resgate offline e auto-avanço
+      if (seconds >= 18 && !hasFirstFrame) {
+        clearInterval(interval);
+        setIsBuffering(false);
+        setIsStreamOffline(true);
+        setOfflineAutoAdvanceSeconds(8);
         setTimeout(() => {
-          onPlayerError?.(new Error('Tempo limite excedido'));
+          onPlayerError?.(new Error('Sinal fora do ar na emissora'));
         }, 0);
       }
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [hasFirstFrame, canalAtivo?.categoria, activeRawStreamUrl, streamsDisponiveis.length, streamIndex, onStreamChange, useProxy, isYouTubeChannel, onToggleProxy, onPlayerError]);
+  }, [hasFirstFrame, canalAtivo?.categoria, activeRawStreamUrl, streamsDisponiveis.length, streamIndex, onStreamChange, useProxy, isYouTubeChannel, onToggleProxy, onPlayerError, isStreamOffline]);
+
+  // Contagem regressiva para auto-avanço no CinemaPlayer
+  useEffect(() => {
+    if (offlineAutoAdvanceSeconds === null || !onNextCanal) return;
+    if (offlineAutoAdvanceSeconds <= 0) {
+      setOfflineAutoAdvanceSeconds(null);
+      onNextCanal();
+      return;
+    }
+    const timer = setTimeout(() => {
+      setOfflineAutoAdvanceSeconds((prev) => (prev !== null ? prev - 1 : null));
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [offlineAutoAdvanceSeconds, onNextCanal]);
 
   // Teclado: ESC fecha cinema, Setas zapam canais, M muta, S alterna modo
   useEffect(() => {
@@ -454,7 +484,7 @@ export function CinemaPlayer({
       {/* FULLSCREEN PLAYER CONTAINER */}
       <div className="w-full h-full flex items-center justify-center p-0 md:p-4 relative">
         {/* POSTER CINEMATOGRÁFICO DE CONEXÃO AO VIVO */}
-        {!hasFirstFrame && (
+        {!hasFirstFrame && !isStreamOffline && (
           <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-zinc-950 overflow-hidden">
             <img
               src={
@@ -485,9 +515,9 @@ export function CinemaPlayer({
                 <span>
                   {loadSeconds < 3
                     ? 'Sincronizando sinal de alta velocidade...'
-                    : loadSeconds < 5
+                    : loadSeconds < 6
                     ? 'Otimizando taxa de bits e buffer...'
-                    : 'Sinal de origem demorando. Alternando rota...'}
+                    : 'Verificando rotas alternativas da emissora...'}
                 </span>
               </div>
 
@@ -562,6 +592,98 @@ export function CinemaPlayer({
                   </button>
                 )}
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* TELA DE SINAL OFFLINE NO MODO CINEMA COM RESGATE AUTOMÁTICO */}
+        {isStreamOffline && (
+          <div
+            id="cinema-stream-offline-overlay"
+            className="absolute inset-0 z-30 flex flex-col items-center justify-center p-6 bg-gradient-to-b from-[#10131a] via-[#090b0e] to-[#040507] select-none text-center"
+          >
+            <div className="relative mb-4 flex items-center justify-center">
+              <div className="w-20 h-20 rounded-2xl bg-zinc-900/90 border border-amber-500/30 p-3 shadow-2xl flex items-center justify-center relative overflow-hidden">
+                <img
+                  src={canalAtivo.logo}
+                  alt={canalAtivo.nome}
+                  className="w-full h-full object-contain opacity-35 grayscale"
+                />
+                <div className="absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-[1px]">
+                  <AlertTriangle className="w-10 h-10 text-amber-400 drop-shadow-md animate-pulse" />
+                </div>
+              </div>
+              <span className="absolute -top-1.5 -right-1.5 px-2.5 py-0.5 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-300 text-[10px] font-extrabold uppercase tracking-wider">
+                Sinal Offline
+              </span>
+            </div>
+
+            <h3 className="text-xl font-black text-white tracking-wide mb-1">
+              {canalAtivo.nome}
+            </h3>
+            <p className="text-xs text-zinc-400 max-w-md leading-relaxed mb-4">
+              A emissora oficial deste canal encontra-se temporariamente sem transmissão no momento.
+            </p>
+
+            {offlineAutoAdvanceSeconds !== null && onNextCanal && (
+              <div className="mb-5 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-zinc-900/90 border border-zinc-700/80 text-xs text-zinc-300 shadow-lg">
+                <span className="w-2 h-2 rounded-full bg-[#00E676] animate-ping" />
+                <span>
+                  Avançando para o próximo canal em <strong className="text-white font-mono">{offlineAutoAdvanceSeconds}s</strong>
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setOfflineAutoAdvanceSeconds(null)}
+                  className="ml-2 text-[11px] font-bold text-zinc-400 hover:text-white underline cursor-pointer"
+                >
+                  Pausar
+                </button>
+              </div>
+            )}
+
+            <div className="flex flex-wrap items-center justify-center gap-3">
+              {onNextCanal && (
+                <button
+                  type="button"
+                  onClick={onNextCanal}
+                  className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-[#00E676] hover:from-emerald-500 hover:to-[#00E676] text-black font-extrabold text-xs flex items-center gap-2 shadow-xl hover:scale-105 active:scale-95 transition cursor-pointer"
+                >
+                  <SkipForward className="w-4 h-4 fill-black" />
+                  <span>Próximo Canal Agora</span>
+                </button>
+              )}
+
+              <button
+                type="button"
+                onClick={() => {
+                  setIsReady(false);
+                  setIsBuffering(true);
+                  setHasFirstFrame(false);
+                  setLoadSeconds(0);
+                  setIsStreamOffline(false);
+                  setOfflineAutoAdvanceSeconds(null);
+                  setEmergencyOverrideUrl(null);
+                }}
+                className="px-4 py-2.5 rounded-xl bg-zinc-800/90 hover:bg-zinc-700 text-zinc-200 text-xs font-semibold border border-zinc-700 flex items-center gap-2 transition cursor-pointer"
+              >
+                <RefreshCw className="w-3.5 h-3.5 text-zinc-300" />
+                <span>Tentar Reconectar</span>
+              </button>
+
+              {streamsDisponiveis.length > 1 && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsStreamOffline(false);
+                    setOfflineAutoAdvanceSeconds(null);
+                    onStreamChange((streamIndex + 1) % streamsDisponiveis.length);
+                  }}
+                  className="px-4 py-2.5 rounded-xl bg-zinc-800/90 hover:bg-zinc-700 text-zinc-200 text-xs font-semibold border border-zinc-700 flex items-center gap-2 transition cursor-pointer"
+                >
+                  <Zap className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Testar Outro Servidor ({streamIndex + 1}/{streamsDisponiveis.length})</span>
+                </button>
+              )}
             </div>
           </div>
         )}
@@ -690,6 +812,12 @@ export function CinemaPlayer({
                 if (!useProxy && !isYouTubeChannel) {
                   onToggleProxy();
                   return;
+                }
+
+                if (loadSeconds >= 10 || streamIndex >= streamsDisponiveis.length - 1) {
+                  setIsBuffering(false);
+                  setIsStreamOffline(true);
+                  setOfflineAutoAdvanceSeconds(8);
                 }
 
                 onPlayerError?.(err);

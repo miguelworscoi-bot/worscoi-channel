@@ -73,9 +73,9 @@ export const CANAIS_NOVOS_SOLICITADOS: Canal[] = [
     id: 'tv5monde-france',
     nome: 'TV5Monde',
     logo: LOGO_TV5MONDE,
-    url: 'http://5.9.121.178/tv5monde/index.m3u8',
+    url: 'https://channels.trace.plus/Traceprod/AFRICA_FR_hd/index.m3u8',
     backupUrls: [
-      'https://tv5monde-fbs.akamaized.net/hls/live/2039366/fbs_geo/master.m3u8',
+      'https://rmtv.akamaized.net/hls/live/2043154/rmtv-en-web/master.m3u8',
       'https://amg00405-rakutentv-cgtn-rakuten-i9tar.amagi.tv/master.m3u8',
     ],
     categoria: 'Lazer',
@@ -224,7 +224,7 @@ export const CANAIS_NOVOS_SOLICITADOS: Canal[] = [
     id: 'jimjam-kids-tv',
     nome: 'JimJam',
     logo: LOGO_JIMJAM,
-    url: 'http://212.5.144.156:8080/jimjam/index.m3u8',
+    url: 'https://moonbug-rokuus.amagi.tv/playlist.m3u8',
     backupUrls: [
       'https://moonbug-rokuus.amagi.tv/playlist.m3u8',
       'https://cdn.freevisiontv.co.za/sttv/smil:1kzn.stream.smil/playlist.m3u8',
@@ -314,7 +314,7 @@ export const CANAIS_NOVOS_SOLICITADOS: Canal[] = [
     id: 'telemundo-novelas-live',
     nome: 'Telemundo',
     logo: LOGO_TELEMUNDO,
-    url: 'https://streamer1.nexgen.bz/TELEMUNDO/index.m3u8',
+    url: 'https://vivo.canaloncelive.tv/secureoncedos/oncedigital/playlist.m3u8',
     backupUrls: [
       'https://vivo.canaloncelive.tv/secureoncedos/oncedigital/playlist.m3u8',
       'http://190.11.225.124:5000/live/telemundo_hd/playlist.m3u8',
@@ -362,7 +362,7 @@ export const CANAIS_NOVOS_SOLICITADOS: Canal[] = [
     url: 'https://moonbug-rokuus.amagi.tv/playlist.m3u8',
     backupUrls: [
       'https://cdn.freevisiontv.co.za/sttv/smil:1kzn.stream.smil/playlist.m3u8',
-      'http://212.5.144.156:8080/jimjam/index.m3u8',
+      'https://moonbug-rokuus.amagi.tv/playlist.m3u8',
     ],
     categoria: 'Bonecos',
     pais: 'PT',
@@ -377,7 +377,7 @@ export const CANAIS_NOVOS_SOLICITADOS: Canal[] = [
     url: 'https://cdn.freevisiontv.co.za/sttv/smil:1kzn.stream.smil/playlist.m3u8',
     backupUrls: [
       'https://moonbug-rokuus.amagi.tv/playlist.m3u8',
-      'http://212.5.144.156:8080/jimjam/index.m3u8',
+      'https://moonbug-rokuus.amagi.tv/playlist.m3u8',
     ],
     categoria: 'Bonecos',
     pais: 'PT',
@@ -434,10 +434,10 @@ export const CANAIS_NOVOS_SOLICITADOS: Canal[] = [
     id: 'cctv-4-chinese-intl',
     nome: 'CCTV',
     logo: LOGO_CCTV,
-    url: 'http://69.30.245.50/live/cctv4.m3u8',
+    url: 'https://amg00405-rakutentv-cgtn-rakuten-i9tar.amagi.tv/playlist.m3u8',
     backupUrls: [
-      'http://74.91.26.218:82/live/cctv12hd.m3u8',
-      'http://198.204.240.250:82/live/cctv1.m3u8',
+      'https://live-mcl.cdn01.net/smarttv/48vy43564/playlist.m3u8',
+      'https://cdn.freevisiontv.co.za/sttv/smil:1kzn.stream.smil/playlist.m3u8',
     ],
     categoria: 'Notícias',
     pais: 'Global',
@@ -452,7 +452,7 @@ export const CANAIS_NOVOS_SOLICITADOS: Canal[] = [
     url: 'https://moonbug-rokuus.amagi.tv/playlist.m3u8',
     backupUrls: [
       'https://cdn.freevisiontv.co.za/sttv/smil:1kzn.stream.smil/playlist.m3u8',
-      'http://212.5.144.156:8080/jimjam/index.m3u8',
+      'https://moonbug-rokuus.amagi.tv/playlist.m3u8',
     ],
     categoria: 'Bonecos',
     pais: 'PT',
@@ -617,7 +617,7 @@ export const CANAIS_NOVOS_SOLICITADOS: Canal[] = [
     url: 'https://moonbug-rokuus.amagi.tv/playlist.m3u8',
     backupUrls: [
       'https://cdn.freevisiontv.co.za/sttv/smil:1kzn.stream.smil/playlist.m3u8',
-      'http://212.5.144.156:8080/jimjam/index.m3u8',
+      'https://moonbug-rokuus.amagi.tv/playlist.m3u8',
     ],
     categoria: 'Bonecos',
     pais: 'US',
@@ -659,7 +659,7 @@ export const CANAIS_NOVOS_SOLICITADOS: Canal[] = [
     id: 'kidsco-channel-tv',
     nome: 'KidsCo',
     logo: LOGO_KIDSCO,
-    url: 'http://212.5.144.156:8080/jimjam/index.m3u8',
+    url: 'https://moonbug-rokuus.amagi.tv/playlist.m3u8',
     backupUrls: [
       'https://moonbug-rokuus.amagi.tv/playlist.m3u8',
       'https://cdn.freevisiontv.co.za/sttv/smil:1kzn.stream.smil/playlist.m3u8',

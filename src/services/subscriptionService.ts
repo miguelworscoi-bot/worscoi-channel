@@ -252,8 +252,12 @@ export function createWhatsAppPaymentProofLink(params: {
   return `https://wa.me/244942472983?text=${encodeURIComponent(lines.join('\n'))}`;
 }
 
+// Configuração mestra de disponibilidade total
+export const FORCE_ALL_CHANNELS_AVAILABLE = true;
+
 /**
  * Verifica se o plano do usuário está expirado
+ * - Quando FORCE_ALL_CHANNELS_AVAILABLE está ativo, todos os canais estão permanentemente liberados
  * - Admins nunca expiram
  * - Usuários gratuitos expiram após 1 dia (24 horas)
  * - Usuários com data de expiração comparam com Date.now()
@@ -264,6 +268,7 @@ export function isUserPlanExpired(profile?: {
   planExpiresAt?: string | null;
   createdAt?: string;
 } | null): boolean {
+  if (FORCE_ALL_CHANNELS_AVAILABLE) return false;
   if (!profile) return false;
   if (profile.role === 'admin') return false;
 
@@ -349,7 +354,8 @@ export function canUserWatchChannel(
   const userPlan = (profile?.plan || 'free') as SubscriptionPlanId;
   const requiredPlan = 'free';
 
-  if (isAdmin) {
+  // Força disponibilidade total de todos os canais
+  if (FORCE_ALL_CHANNELS_AVAILABLE || isAdmin) {
     return { allowed: true, requiredPlan, userPlan };
   }
 

@@ -30,6 +30,9 @@ import { CookieConsentBanner } from '@/components/CookieConsentBanner';
 import { PrivacyPolicyModal } from '@/components/PrivacyPolicyModal';
 import { LandingScreen } from '@/components/LandingScreen';
 import { WorscoiFloatingTour } from '@/components/WorscoiFloatingTour';
+import { CustomPage, getCustomPages } from '@/services/customPagesService';
+import { CustomPageView } from '@/components/CustomPageView';
+import { CreateCustomPageModal } from '@/components/CreateCustomPageModal';
 import { useAuth } from '@/context/AuthContext';
 import { useNotifications } from '@/context/NotificationContext';
 import { autoplayQueueService } from '@/services/autoplayQueueService';
@@ -105,12 +108,18 @@ export default function Home() {
   const [isPrivacyModalOpen, setIsPrivacyModalOpen] = useState(false);
   const [privacyModalDefaultTab, setPrivacyModalDefaultTab] = useState<'terms' | 'cookies'>('terms');
   const [isMiniPlayerDismissed, setIsMiniPlayerDismissed] = useState(false);
+  const [customPages, setCustomPages] = useState<CustomPage[]>(() => getCustomPages());
+  const [isCreateCustomPageModalOpen, setIsCreateCustomPageModalOpen] = useState(false);
   const [celebrationData, setCelebrationData] = useState<{
     isOpen: boolean;
     userName?: string;
     planName?: string;
     message?: string;
   } | null>(null);
+
+  const handleReloadCustomPages = useCallback(() => {
+    setCustomPages(getCustomPages());
+  }, []);
 
   // Carrega favoritos e canais personalizados do localStorage
   useEffect(() => {
@@ -154,6 +163,26 @@ export default function Home() {
     } catch {
       // Ignora erro de acesso ao localStorage
     }
+
+    // Leitura de parâmetros de URL para páginas com links personalizados ou canais diretos
+    if (typeof window !== 'undefined') {
+      try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const paginaSlug = urlParams.get('pagina');
+        if (paginaSlug) {
+          setCurrentView(`custom_${paginaSlug}` as WorscoiView);
+          setIsLandingOpen(false);
+        } else {
+          const match = window.location.pathname.match(/\/pagina\/([a-zA-Z0-9_-]+)/);
+          if (match && match[1]) {
+            setCurrentView(`custom_${match[1]}` as WorscoiView);
+            setIsLandingOpen(false);
+          }
+        }
+      } catch {
+        // Ignora
+      }
+    }
   }, []);
 
   // Carrega lista atualizada de canais da API
@@ -163,15 +192,11 @@ export default function Home() {
       .then((data) => {
         if (Array.isArray(data) && data.length > 0) {
           const seenIds = new Set<string>();
-          const seenUrls = new Set<string>();
           const clean: Canal[] = [];
           for (const item of data) {
             const idKey = (item.id || '').trim();
-            const urlKey = (item.url || '').trim().toLowerCase();
             if (idKey && seenIds.has(idKey)) continue;
-            if (urlKey && seenUrls.has(urlKey)) continue;
             if (idKey) seenIds.add(idKey);
-            if (urlKey) seenUrls.add(urlKey);
             clean.push(item);
           }
           setCanais(clean);
@@ -185,15 +210,11 @@ export default function Home() {
   // Combina canais personalizados com os canais da API sem IDs duplicados
   const todosCanais = useMemo(() => {
     const seenIds = new Set<string>();
-    const seenUrls = new Set<string>();
     const result: Canal[] = [];
     for (const c of [...customChannels, ...canais]) {
       const idKey = (c.id || '').trim();
-      const urlKey = (c.url || '').trim().toLowerCase();
       if (idKey && seenIds.has(idKey)) continue;
-      if (urlKey && seenUrls.has(urlKey)) continue;
       if (idKey) seenIds.add(idKey);
-      if (urlKey) seenUrls.add(urlKey);
       result.push(c);
     }
     return result;
@@ -654,6 +675,7 @@ export default function Home() {
           isCollapsed={isSidebarCollapsed}
           onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
           onOpenCreateNotification={() => setIsCreateNotificationModalOpen(true)}
+          customPages={customPages}
         />
       </div>
 
@@ -692,6 +714,7 @@ export default function Home() {
                 setIsMobileMenuOpen(false);
                 setIsCreateNotificationModalOpen(true);
               }}
+              customPages={customPages}
             />
           </div>
         </div>
@@ -761,6 +784,8 @@ export default function Home() {
                   todosCanais={todosCanais}
                   onSelectCanal={handleSelectCanal}
                   isPlaybackPaused={false}
+                  customPages={customPages}
+                  onNavigateToCustomPage={(slug) => setCurrentView(`custom_${slug}` as WorscoiView)}
                 />
               </motion.div>
             )}
@@ -780,6 +805,7 @@ export default function Home() {
                   onOpenTokenGenerator={() => setIsSubscribersModalOpen(true)}
                   onSelectPlan={() => setIsPaymentModalOpen(true)}
                   onOpenCreateNotification={() => setIsCreateNotificationModalOpen(true)}
+                  onOpenCreateCustomPage={() => setIsCreateCustomPageModalOpen(true)}
                   todosCanais={todosCanais}
                   customChannels={customChannels}
                   onOpenAddChannel={() => setIsModalOpen(true)}
@@ -833,6 +859,56 @@ export default function Home() {
                 />
               </motion.div>
             )}
+
+            {/* VISTA 5: PÁGINAS PERSONALIZADAS COM LINKS DINÂMICOS */}
+            {currentView.startsWith('custom_') && (() => {
+              const slug = currentView.replace('custom_', '');
+              const activePage = customPages.find((p) => p.slug === slug);
+              if (!activePage) {
+                return (
+                  <motion.div
+                    key="screen-view-custom-empty"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="w-full max-w-xl mx-auto my-auto text-center p-8 bg-zinc-900/60 border border-zinc-800 rounded-3xl"
+                  >
+                    <p className="text-lg font-bold text-zinc-200">Página não encontrada</p>
+                    <p className="text-sm text-zinc-400 mt-2">A página personalizada solicitada não existe ou foi removida.</p>
+                    <button
+                      type="button"
+                      onClick={() => setCurrentView('explorar')}
+                      className="mt-6 px-6 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black font-semibold text-sm transition"
+                    >
+                      Voltar para a TV
+                    </button>
+                  </motion.div>
+                );
+              }
+              return (
+                <motion.div
+                  key={`screen-view-custom-${slug}`}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.16, ease: 'easeOut' }}
+                  className="w-full"
+                >
+                  <CustomPageView
+                    page={activePage}
+                    isAdmin={isAdmin}
+                    todosCanais={todosCanais}
+                    onPlayChannel={(canal) => {
+                      setCanalAtivo(canal);
+                      setStreamIndex(0);
+                      setCurrentView('explorar');
+                    }}
+                    onBackToExplore={() => setCurrentView('explorar')}
+                    onPageUpdated={handleReloadCustomPages}
+                  />
+                </motion.div>
+              );
+            })()}
           </AnimatePresence>
 
           {/* REPRODUTOR FLUTUANTE EM MINI-MODO (AO VISITAR O PAINEL OU ASSINANTES) */}
@@ -1119,6 +1195,17 @@ export default function Home() {
           setIsCreateNotificationModalOpen(true);
         }}
       />
+
+      {/* MODAL PARA CRIAÇÃO E EDIÇÃO DE PÁGINAS PERSONALIZADAS */}
+      <CreateCustomPageModal
+        isOpen={isCreateCustomPageModalOpen}
+        onClose={() => setIsCreateCustomPageModalOpen(false)}
+        onCreated={(novaPagina) => {
+          handleReloadCustomPages();
+          setCurrentView(`custom_${novaPagina.slug}` as WorscoiView);
+        }}
+      />
+
       {/* BANNER DE CONSENTIMENTO DE COOKIES */}
       <CookieConsentBanner
         onOpenPrivacyPolicy={() => {

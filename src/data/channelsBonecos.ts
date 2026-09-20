@@ -189,7 +189,7 @@ export const CANAIS_BONECOS: Canal[] = [
   },
   {
     id: 'kuriakos-kids-portugal',
-    nome: 'Kuriakos Kids Portugal (1080p)',
+    nome: 'Kuriakos Kids Portugal HD',
     logo: createSvgLogo('KURIAKOS', 'PORTUGAL', '#007200', '#ffffff', '#ffff3f'),
     url: 'https://w2.manasat.com/kkids/smil:kkids.smil/playlist.m3u8',
     backupUrls: [getPlutoUrl('5f1214a637c6fd00079c652f')],

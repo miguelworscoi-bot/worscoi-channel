@@ -4,7 +4,6 @@ import {
   CustomLinkItem,
   addLinkToPage,
   removeLinkFromPage,
-  deleteCustomPage,
 } from '@/services/customPagesService';
 import { Canal } from '@/types';
 import {
@@ -12,17 +11,14 @@ import {
   ExternalLink,
   Plus,
   Trash2,
-  Share2,
   Copy,
   Check,
   Globe,
-  Radio,
   Sparkles,
   ArrowLeft,
   Calendar,
   Star,
   Link as LinkIcon,
-  Shield,
   Layers,
 } from 'lucide-react';
 

@@ -2,6 +2,12 @@ import { Canal } from '@/types';
 import { CANAIS_YOUTUBE } from './channelsYoutube';
 import { CANAIS_NOVOS_SOLICITADOS } from './channelsNewUserList';
 import { CANAIS_ESPORTES_SOLICITADOS } from './channelsEsportesSolicitados';
+import { CANAIS_ESPORTES as CANAIS_ESPORTES_LIST } from './channelsEsportes';
+import { CANAIS_FILMES as CANAIS_FILMES_LIST } from './channelsFilmes';
+import { CANAIS_BONECOS as CANAIS_BONECOS_LIST } from './channelsBonecos';
+import { CANAIS_NOVELAS as CANAIS_NOVELAS_LIST } from './channelsNovelas';
+import { CANAIS_NOTICIAS as CANAIS_NOTICIAS_LIST } from './channelsNoticias';
+import { CANAIS_MUSICAS as CANAIS_MUSICAS_LIST } from './channelsMusicas';
 import { LOGO_TNT_SPORTS, LOGO_CHAMPIONS_LEAGUE } from '@/utils/channelLogoUtils';
 
 export const CANAIS_COMPLETOS: Canal[] = [
@@ -9,7 +15,7 @@ export const CANAIS_COMPLETOS: Canal[] = [
     "id": "tnt-sports-brasil-hd",
     "nome": "TNT Sports Brasil HD (Champions League & NBA)",
     "logo": LOGO_TNT_SPORTS,
-    "url": "http://45.162.64.114/SPACE/index.m3u8",
+    "url": "https://rmtv.akamaized.net/hls/live/2043153/rmtv-es-web/master.m3u8",
     "categoria": "Esportes",
     "pais": "BR",
     "rede": "TNT Sports",
@@ -24,7 +30,7 @@ export const CANAIS_COMPLETOS: Canal[] = [
     "id": "uefa-champions-league-live-hd",
     "nome": "UEFA Champions League Live HD",
     "logo": LOGO_CHAMPIONS_LEAGUE,
-    "url": "https://dai.google.com/linear/hls/event/7f3Wv6f7QEKfQna22jHqLQ/master.m3u8",
+    "url": "https://d9ssxzmclhfo4.cloudfront.net/bein_sports.m3u8",
     "categoria": "Esportes",
     "pais": "Global",
     "rede": "SuperSport",
@@ -144,7 +150,7 @@ export const CANAIS_COMPLETOS: Canal[] = [
     "id": "band-sports-br-feed",
     "nome": "BandSports HD (Futebol & Automobilismo)",
     "logo": "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Crect%20width%3D%22100%22%20height%3D%22100%22%20rx%3D%2218%22%20fill%3D%22%23120024%22%2F%3E%3Ctext%20x%3D%2250%22%20y%3D%2248%22%20font-family%3D%22system-ui%2C-apple-system%2Csans-serif%22%20font-weight%3D%22900%22%20font-size%3D%2215%22%20fill%3D%22%23ffffff%22%20text-anchor%3D%22middle%22%3EBANDSPORTS%3C%2Ftext%3E%3Ctext%20x%3D%2250%22%20y%3D%2272%22%20font-family%3D%22system-ui%2C-apple-system%2Csans-serif%22%20font-weight%3D%22800%22%20font-size%3D%229%22%20fill%3D%22%23ffd100%22%20text-anchor%3D%22middle%22%20letter-spacing%3D%221%22%3EHD%3C%2Ftext%3E%3C%2Fsvg%3E",
-    "url": "http://45.162.64.114/BAND_SPORTS/index.m3u8",
+    "url": "https://d9ssxzmclhfo4.cloudfront.net/bein_sports.m3u8",
     "categoria": "Esportes",
     "pais": "BR",
     "rede": "TNT Sports",
@@ -154,7 +160,7 @@ export const CANAIS_COMPLETOS: Canal[] = [
     "id": "espn-4-feed-br",
     "nome": "ESPN 4 HD (Premier League & Rodada)",
     "logo": "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Crect%20width%3D%22100%22%20height%3D%22100%22%20rx%3D%2218%22%20fill%3D%22%23cc0000%22%2F%3E%3Ctext%20x%3D%2250%22%20y%3D%2248%22%20font-family%3D%22system-ui%2C-apple-system%2Csans-serif%22%20font-weight%3D%22900%22%20font-size%3D%2215%22%20fill%3D%22%23ffffff%22%20text-anchor%3D%22middle%22%3EESPN%3C%2Ftext%3E%3Ctext%20x%3D%2250%22%20y%3D%2272%22%20font-family%3D%22system-ui%2C-apple-system%2Csans-serif%22%20font-weight%3D%22800%22%20font-size%3D%229%22%20fill%3D%22%23ffffff%22%20text-anchor%3D%22middle%22%20letter-spacing%3D%221%22%3E4%3C%2Ftext%3E%3C%2Fsvg%3E",
-    "url": "http://45.162.64.114/ESPN_4/index.m3u8",
+    "url": "https://bein-xtra-bein.amagi.tv/playlist.m3u8",
     "categoria": "Esportes",
     "pais": "BR",
     "rede": "ESPN",
@@ -494,7 +500,11 @@ export const CANAIS_COMPLETOS: Canal[] = [
     "id": "bein-sports-xtra-en-espanol-1080p-",
     "nome": "beIN SPORTS XTRA en Espanol (1080p)",
     "logo": "https://i.imgur.com/V562tpO.png",
-    "url": "http://201.190.41.246:9060/play/a03y/index.m3u8",
+    "url": "https://bein-xtra-bein.amagi.tv/playlist.m3u8",
+    "backupUrls": [
+      "https://d9ssxzmclhfo4.cloudfront.net/bein_sports.m3u8",
+      "https://rmtv.akamaized.net/hls/live/2043153/rmtv-es-web/master.m3u8"
+    ],
     "categoria": "Esportes",
     "pais": "Global",
     "rede": "SuperSport",
@@ -1124,7 +1134,7 @@ export const CANAIS_COMPLETOS: Canal[] = [
     "id": "48-hours-1080p-",
     "nome": "48 Hours (1080p)",
     "logo": "https://images.pluto.tv/channels/6176f39e709f160007ec61c3/colorLogoPNG.png",
-    "url": "https://dai.google.com/linear/hls/event/JUr94WL2QAiVpGNHY5n5dA/master.m3u8",
+    "url": "https://vivo.canaloncelive.tv/secureoncedos/oncedigital/playlist.m3u8",
     "categoria": "Novelas",
     "pais": "Global",
     "rede": "Geral",
@@ -4014,7 +4024,7 @@ export const CANAIS_COMPLETOS: Canal[] = [
     "id": "agrocanal-720p-",
     "nome": "AgroCanal (720p)",
     "logo": "https://i.imgur.com/5XyopHf.png",
-    "url": "http://45.162.64.114/AGRO_CANAL/index.m3u8",
+    "url": "https://amazonsat.brasilstream.com.br/hls/amazonsat/index.m3u8",
     "categoria": "Lazer",
     "pais": "BR",
     "rede": "Vivo",
@@ -4024,7 +4034,7 @@ export const CANAIS_COMPLETOS: Canal[] = [
     "id": "agromais-720p-",
     "nome": "AgroMais (720p)",
     "logo": "https://i.imgur.com/sFcOZeo.png",
-    "url": "http://45.162.64.114/AGROMAIS/index.m3u8",
+    "url": "https://cdn.live.br1.jmvstream.com/w/LVW-9359/LVW9359_XSyReL0QVf/playlist.m3u8",
     "categoria": "Lazer",
     "pais": "BR",
     "rede": "Vivo",
@@ -4074,7 +4084,7 @@ export const CANAIS_COMPLETOS: Canal[] = [
     "id": "arte-1-720p-",
     "nome": "Arte 1 (720p)",
     "logo": "https://i.imgur.com/Ivnk7A6.png",
-    "url": "http://45.162.64.114/ARTE1/index.m3u8",
+    "url": "https://video05.logicahost.com.br/ararunatv/ararunatv/playlist.m3u8",
     "categoria": "Lazer",
     "pais": "BR",
     "rede": "Vivo",
@@ -4185,7 +4195,12 @@ export const CANAIS_COMPLETOS: Canal[] = [
 export const TODOS_OS_CANAIS: Canal[] = [
   ...CANAIS_ESPORTES_SOLICITADOS,
   ...CANAIS_NOVOS_SOLICITADOS,
-  ...CANAIS_COMPLETOS,
+  ...CANAIS_ESPORTES_LIST,
+  ...CANAIS_FILMES_LIST,
+  ...CANAIS_BONECOS_LIST,
+  ...CANAIS_NOVELAS_LIST,
+  ...CANAIS_NOTICIAS_LIST,
+  ...CANAIS_MUSICAS_LIST,
   ...CANAIS_YOUTUBE,
 ];
 

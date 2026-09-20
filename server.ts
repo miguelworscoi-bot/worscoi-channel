@@ -1,6 +1,5 @@
 import express, { Request as ExpressReq, Response as ExpressRes } from 'express';
 import path from 'path';
-import { fileURLToPath } from 'url';
 import { createServer as createViteServer } from 'vite';
 import dotenv from 'dotenv';
 
@@ -16,9 +15,6 @@ import {
 } from './src/app/api/proxy/route';
 
 dotenv.config();
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = 3000;
