@@ -75,7 +75,7 @@ const FILTROS_CONFIG: Array<{
   { id: 'Portugal', label: 'Portugal', icon: Globe },
   { id: 'Brasil', label: 'Brasil', icon: Globe },
   { id: 'Filmes', label: 'Filmes & Séries', icon: Film },
-  { id: 'Bonecos', label: 'Kids & Animação', icon: Smile },
+  { id: 'Bonecos', label: 'Animes & Desenhos', icon: Sparkles },
   { id: 'Novelas', label: 'Novelas & Dramas', icon: Heart },
   { id: 'Notícias', label: 'Notícias', icon: Newspaper },
   { id: 'Músicas', label: 'Músicas & Shows', icon: Music },
@@ -134,11 +134,16 @@ function getChannelCategoryGroup(canal: Canal): CategoryGroupMeta {
     };
   }
 
-  if (catInfo.categoria === 'Bonecos' || cat === 'bonecos') {
+  if (
+    catInfo.categoria === 'Bonecos' ||
+    cat === 'bonecos' ||
+    canal.rede === 'Anime' ||
+    canal.nome.toLowerCase().includes('jojo')
+  ) {
     return {
       key: 'Bonecos',
-      label: 'Bonecos & Infantis',
-      icon: Smile,
+      label: 'Animes & Desenhos (JoJo)',
+      icon: Sparkles,
       order: 4,
     };
   }

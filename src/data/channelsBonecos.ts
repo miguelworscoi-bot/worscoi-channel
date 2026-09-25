@@ -297,4 +297,20 @@ export const CANAIS_BONECOS: Canal[] = [
     grupo: 'Bonecos & Animes',
     competicoes: ['Jaspion', 'Changeman', 'Jiraiya', 'Tokusatsu'],
   },
+  {
+    id: 'jojo-bizarre-adventure-24h',
+    nome: 'JoJo Bizarre Adventure (Steel Ball Run 24h Dublado)',
+    logo: createSvgLogo('JOJO', 'SBR 24H', '#7209b7', '#ffffff', '#ffd100'),
+    url: 'https://jmp2.uk/plu-604b79c558393100078faeef.m3u8',
+    backupUrls: [
+      getPlutoUrl('604b79c558393100078faeef'),
+      'https://jmp2.uk/plu-5f6df5a173d7340007c559f7.m3u8',
+      'https://jmp2.uk/plu-5f12136385bccc00070142ed.m3u8'
+    ],
+    categoria: 'Bonecos',
+    pais: 'BR',
+    rede: 'Anime',
+    grupo: 'Bonecos & Animes',
+    competicoes: ["JoJo's Bizarre Adventure", 'Steel Ball Run', 'Anime', 'Dublado PT'],
+  },
 ];

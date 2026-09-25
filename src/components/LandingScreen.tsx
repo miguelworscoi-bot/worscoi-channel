@@ -20,7 +20,7 @@ interface LandingScreenProps {
 }
 
 export function LandingScreen({
-  onEnterPlayer: _onEnterPlayer,
+  onEnterPlayer,
   onOpenLogin,
   onOpenRegister,
 }: LandingScreenProps) {
@@ -143,6 +143,14 @@ export function LandingScreen({
         <div className="flex items-center gap-3 sm:gap-4 text-xs">
           <button
             type="button"
+            onClick={() => onEnterPlayer()}
+            className="px-4 py-1.5 rounded-full text-white bg-gradient-to-r from-purple-600 to-[#ed3c5c] hover:opacity-90 font-bold transition cursor-pointer shadow-md flex items-center gap-1.5"
+          >
+            <span>Assistir Agora</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+          </button>
+          <button
+            type="button"
             onClick={() => onOpenLogin()}
             className="px-3.5 py-1.5 rounded-full text-black bg-white hover:bg-zinc-200 font-bold transition cursor-pointer"
           >
@@ -158,17 +166,17 @@ export function LandingScreen({
           className="reveal text-2xl sm:text-3xl font-bold tracking-tight text-white/80"
           style={{ '--reveal-delay': '0.1s' } as React.CSSProperties}
         >
-          Tv ao vivo só na
+          Tv ao vivo & Filmoteca só na
         </h2>
 
         {/* Giant CTA link with center-out underline */}
         <a
-          href="#login"
+          href="#entrar"
           id="cursor-trail-cta-link"
           data-logomark="true"
           onClick={(e) => {
             e.preventDefault();
-            onOpenLogin();
+            onEnterPlayer();
           }}
           className="reveal cta-group font-logomark inline-block mt-4 max-w-full [overflow-wrap:break-word] text-[clamp(2.8rem,9vw,7.5rem)] leading-[1.05] text-[#ed3c5c] hover:text-[#ed3c5c]/85 transition-colors cursor-pointer"
           style={
@@ -178,7 +186,7 @@ export function LandingScreen({
               fontWeight: 400,
             } as React.CSSProperties
           }
-          title="Clique para entrar na sua conta Worscoi"
+          title="Clique para assistir diretamente na Worscoi"
         >
           Worscoi
           <span
@@ -189,15 +197,22 @@ export function LandingScreen({
 
         {/* Botão de início rápido para a plataforma */}
         <div
-          className="reveal mt-8 flex items-center gap-4"
+          className="reveal mt-8 flex flex-wrap items-center justify-center gap-3"
           style={{ '--reveal-delay': '0.35s' } as React.CSSProperties}
         >
           <button
             type="button"
-            onClick={() => onOpenRegister()}
-            className="text-xs text-zinc-400 hover:text-white underline underline-offset-4 cursor-pointer transition font-normal"
+            onClick={() => onEnterPlayer()}
+            className="px-6 py-2.5 rounded-full bg-white text-black font-extrabold text-sm hover:bg-zinc-200 transition cursor-pointer shadow-lg hover:scale-105 active:scale-95"
           >
-            Começar teste grátis de 24h →
+            Acessar TV & Filmoteca →
+          </button>
+          <button
+            type="button"
+            onClick={() => onOpenRegister()}
+            className="px-4 py-2 text-xs text-zinc-300 hover:text-white underline underline-offset-4 cursor-pointer transition font-normal"
+          >
+            Começar teste grátis de 24h
           </button>
         </div>
       </section>

@@ -39,13 +39,14 @@ import { FilmeCard } from '@/components/FilmeCard';
 import { FilmotecaGenreRow } from '@/components/FilmotecaGenreRow';
 import { FilmotecaImdbModal } from '@/components/FilmotecaImdbModal';
 import { ImdbService } from '@/services/imdbService';
+import { CATALOGO_ANIMES } from '@/data/catalogoAnimes';
 
 interface WorscoiFilmotecaViewProps {
   onBackToTV: () => void;
 }
 
-const LOCAL_STORAGE_FILMOTECAS_KEY = 'playsports_filmoteca_cache_v23';
-const LOCAL_STORAGE_FILMOTECAS_TIME_KEY = 'playsports_filmoteca_cache_time_v23';
+const LOCAL_STORAGE_FILMOTECAS_KEY = 'playsports_filmoteca_cache_v28';
+const LOCAL_STORAGE_FILMOTECAS_TIME_KEY = 'playsports_filmoteca_cache_time_v28';
 // Cache de 6 horas
 const CACHE_MAX_AGE_MS = 6 * 60 * 60 * 1000;
 
@@ -78,6 +79,38 @@ export interface SecaoGeneroConfig {
 }
 
 export const SECOES_GENERO: SecaoGeneroConfig[] = [
+  {
+    id: 'jojo-sbr',
+    titulo: "JoJo's Bizarre Adventure: Steel Ball Run & Sagas em Português",
+    subtitulo: 'A saga completa de Hirohiko Araki: Etapas 1, 2 e 3 de Steel Ball Run dubladas e legendadas em PT-BR',
+    icon: <Sparkles className="w-4 h-4 fill-purple-400 text-purple-400" />,
+    corDestaque: 'text-purple-300',
+    badgeBg: 'bg-purple-900/70 text-purple-200 border-purple-600',
+    test: (f) => {
+      const t = (f.titulo || '').toLowerCase();
+      const id = String(f.id || '').toLowerCase();
+      return id.includes('jojo') || t.includes('jojo') || t.includes('steel ball run');
+    }
+  },
+  {
+    id: 'anime',
+    titulo: 'Animes & Animação Japonesa',
+    subtitulo: 'JoJo Bizarre Adventure, Attack on Titan, One Piece, Bleach e shonens lendários',
+    icon: <Sparkles className="w-4 h-4 text-pink-400" />,
+    corDestaque: 'text-pink-300',
+    badgeBg: 'bg-pink-950/60 text-pink-200 border-pink-700',
+    test: (f) => {
+      const g = (f.genero || '').toLowerCase();
+      return (
+        f.tipo === 'anime' ||
+        f.plataforma === 'crunchyroll' ||
+        g.includes('anime') ||
+        g.includes('animacao') ||
+        g.includes('animação') ||
+        g.includes('animation')
+      );
+    }
+  },
   {
     id: 'imdb-top',
     titulo: 'IMDb Top 250 & Aclamados',
@@ -121,25 +154,6 @@ export const SECOES_GENERO: SecaoGeneroConfig[] = [
         g.includes('action') ||
         g.includes('aventura') ||
         g.includes('adventure')
-      );
-    }
-  },
-  {
-    id: 'anime',
-    titulo: 'Animes & Animação',
-    subtitulo: 'Sagas lendárias, produções Crunchyroll e shonens',
-    icon: <Sparkles className="w-4 h-4 text-zinc-300" />,
-    corDestaque: 'text-zinc-200',
-    badgeBg: 'bg-zinc-800 text-zinc-300 border-zinc-700',
-    test: (f) => {
-      const g = (f.genero || '').toLowerCase();
-      return (
-        f.tipo === 'anime' ||
-        f.plataforma === 'crunchyroll' ||
-        g.includes('anime') ||
-        g.includes('animacao') ||
-        g.includes('animação') ||
-        g.includes('animation')
       );
     }
   },
@@ -320,10 +334,19 @@ export function WorscoiFilmotecaView({ onBackToTV }: WorscoiFilmotecaViewProps) 
   const [filmes, setFilmes] = useState<FilmeItem[]>(() => {
     if (typeof window === 'undefined') return [];
     try {
+      // Limpeza de caches obsoletos que não tinham animes / JoJo
+      ['playsports_filmoteca_cache_v23', 'playsports_filmoteca_cache_v22', 'playsports_filmoteca_cache_v21'].forEach((k) => {
+        try { localStorage.removeItem(k); } catch {}
+      });
+
       const salvo = localStorage.getItem(LOCAL_STORAGE_FILMOTECAS_KEY);
       if (salvo) {
         const parsed = JSON.parse(salvo);
-        if (Array.isArray(parsed) && parsed.length > 0) {
+        if (
+          Array.isArray(parsed) &&
+          parsed.length > 0 &&
+          parsed.some((f: FilmeItem) => String(f.id).includes('jojo') || String(f.titulo).toLowerCase().includes('jojo'))
+        ) {
           return parsed;
         }
       }
@@ -339,7 +362,11 @@ export function WorscoiFilmotecaView({ onBackToTV }: WorscoiFilmotecaViewProps) 
       const salvo = localStorage.getItem(LOCAL_STORAGE_FILMOTECAS_KEY);
       if (salvo) {
         const parsed = JSON.parse(salvo);
-        if (Array.isArray(parsed) && parsed.length > 0) {
+        if (
+          Array.isArray(parsed) &&
+          parsed.length > 0 &&
+          parsed.some((f: FilmeItem) => String(f.id).includes('jojo') || String(f.titulo).toLowerCase().includes('jojo'))
+        ) {
           return false;
         }
       }
@@ -430,7 +457,11 @@ export function WorscoiFilmotecaView({ onBackToTV }: WorscoiFilmotecaViewProps) 
           const idade = Date.now() - Number(salvoTimestamp);
           if (idade < CACHE_MAX_AGE_MS) {
             const parsed = JSON.parse(salvo);
-            if (Array.isArray(parsed) && parsed.length > 0) {
+            if (
+              Array.isArray(parsed) &&
+              parsed.length > 0 &&
+              parsed.some((f: FilmeItem) => String(f.id).includes('jojo') || String(f.titulo).toLowerCase().includes('jojo'))
+            ) {
               setFilmes(parsed);
               setIsLoading(false);
               return;
@@ -805,6 +836,7 @@ export function WorscoiFilmotecaView({ onBackToTV }: WorscoiFilmotecaViewProps) 
               {(
                 [
                   { id: 'todos', label: 'Todos' },
+                  { id: 'anime', label: 'Animes & JoJo' },
                   { id: 'filme', label: 'Filmes' },
                   { id: 'serie', label: 'Séries' },
                   { id: 'animacao', label: 'Animações' },
@@ -1391,6 +1423,112 @@ export function WorscoiFilmotecaView({ onBackToTV }: WorscoiFilmotecaViewProps) 
           {/* CASO 3: MODO SEÇÕES AGRUPADAS POR GÊNERO (MODO PADRÃO) */}
           {!busca && generoAtivo === 'todos' && modoVisualizacao === 'secoes' && (
             <div className="flex flex-col gap-6">
+              {/* DESTAQUE OFICIAL JOJO'S BIZARRE ADVENTURE & STEEL BALL RUN */}
+              {(() => {
+                const jojoAnimesList = CATALOGO_ANIMES.filter(
+                  (a) => String(a.id).includes('jojo') || String(a.id).includes('sbr')
+                );
+                const sbrEtapa1 = filmes.find((f) => f.id === 'a-ani-sbr-etapa1') || jojoAnimesList.find((a) => a.id === 'a-ani-sbr-etapa1');
+                const sbrEtapa2 = filmes.find((f) => f.id === 'a-ani-sbr-etapa2') || jojoAnimesList.find((a) => a.id === 'a-ani-sbr-etapa2');
+                const sbrEtapa3 = filmes.find((f) => f.id === 'a-ani-sbr-etapa3') || jojoAnimesList.find((a) => a.id === 'a-ani-sbr-etapa3');
+                const sbrSaga = filmes.find((f) => f.id === 'a-ani-sbr-saga-completa') || jojoAnimesList.find((a) => a.id === 'a-ani-sbr-saga-completa');
+                const jojoClassico = filmes.find((f) => f.id === 'a-ani-jojo') || jojoAnimesList.find((a) => a.id === 'a-ani-jojo');
+
+                const spotlightCards = [
+                  { item: sbrEtapa1, tag: '1ª ETAPA', subtitulo: 'Praia de San Diego (12 eps)' },
+                  { item: sbrEtapa2, tag: '2ª ETAPA', subtitulo: 'Deserto do Arizona (12 eps)' },
+                  { item: sbrEtapa3, tag: '3ª ETAPA', subtitulo: 'Montanhas Rochosas (12 eps)' },
+                  { item: sbrSaga || jojoClassico, tag: 'SAGA COMPLETA', subtitulo: 'Todas as etapas dubladas' },
+                ].filter((c): c is { item: FilmeItem; tag: string; subtitulo: string } => Boolean(c.item));
+
+                return (
+                  <div className="w-full rounded-3xl bg-gradient-to-br from-purple-950/90 via-zinc-950/95 to-black border-2 border-purple-500/50 p-4 sm:p-6 shadow-[0_0_40px_rgba(168,85,247,0.2)] flex flex-col gap-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-purple-500/20 pb-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-11 h-11 rounded-2xl bg-purple-500/20 border border-purple-400/50 flex items-center justify-center text-purple-300 shadow-md">
+                          <Sparkles className="w-6 h-6 text-amber-300" />
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-amber-400 text-black tracking-wide">
+                              ESTREIA NO CATÁLOGO
+                            </span>
+                            <span className="text-xs font-bold text-purple-300">
+                              Dublagem & Legendas em Português
+                            </span>
+                          </div>
+                          <h2 className="text-base sm:text-xl font-black text-white tracking-tight mt-0.5">
+                            JoJo&apos;s Bizarre Adventure & Steel Ball Run (Etapas 1, 2 e 3)
+                          </h2>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 self-start sm:self-center">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setTipoFiltro('anime');
+                            setGeneroAtivo('todos');
+                          }}
+                          className="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs transition cursor-pointer shadow-md hover:scale-105 active:scale-95 flex items-center gap-1.5"
+                        >
+                          <span>Ver Catálogo de Animes</span>
+                          <ArrowLeft className="w-3.5 h-3.5 rotate-180" />
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* CARDS DAS ETAPAS DE JOJO COM BOTÃO PLAY IMEDIATO */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                      {spotlightCards.map(({ item, tag, subtitulo }) => (
+                        <div
+                          key={`spotlight-${item.id}`}
+                          className="group relative rounded-2xl bg-zinc-900/90 hover:bg-zinc-800/90 border border-purple-500/30 hover:border-purple-400 p-3 flex flex-col justify-between gap-3 transition-all duration-200 hover:shadow-lg hover:shadow-purple-900/30 cursor-pointer"
+                          onClick={() => handlePlayDireto(item)}
+                        >
+                          <div className="relative aspect-video rounded-xl overflow-hidden bg-black/60">
+                            <img
+                              src={item.capa}
+                              alt={item.titulo}
+                              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                            />
+                            <span className="absolute top-2 left-2 px-2 py-0.5 rounded-md bg-black/80 backdrop-blur-md text-[10px] font-black text-amber-300 border border-amber-400/40">
+                              {tag}
+                            </span>
+                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                              <div className="w-10 h-10 rounded-full bg-[#FF2D55] text-white flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                                <Play className="w-5 h-5 fill-current ml-0.5" />
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="flex flex-col gap-1 min-w-0">
+                            <h4 className="text-xs font-bold text-white line-clamp-1 group-hover:text-purple-300 transition-colors">
+                              {item.titulo}
+                            </h4>
+                            <p className="text-[11px] text-zinc-400 line-clamp-1">
+                              {subtitulo}
+                            </p>
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handlePlayDireto(item);
+                            }}
+                            className="w-full py-1.5 rounded-xl bg-purple-600/30 hover:bg-purple-600 text-purple-200 hover:text-white border border-purple-500/40 text-xs font-bold transition flex items-center justify-center gap-1.5 group-hover:bg-purple-600 group-hover:text-white"
+                          >
+                            <Play className="w-3 h-3 fill-current" />
+                            <span>Assistir em Português</span>
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()}
+
               {secoesAgrupadas.map((secao) => (
                 <FilmotecaGenreRow
                   key={`row-${secao.id}`}

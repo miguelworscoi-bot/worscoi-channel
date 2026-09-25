@@ -67,6 +67,11 @@ function extrairIdentificadores(filme: { imdbId?: string; tmdbId?: string; id?: 
     imdb = filme.id;
   }
 
+  // Remove sufixos auxiliares de identificação interna (ex: tt2359704-sbr1 -> tt2359704)
+  if (imdb.startsWith('tt') && imdb.includes('-')) {
+    imdb = imdb.split('-')[0];
+  }
+
   return { imdb, tmdb };
 }
 

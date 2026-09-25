@@ -32,7 +32,7 @@ interface WorscoiTopBarProps {
 export function WorscoiTopBar({
   currentView,
   canalAtivo: _canalAtivo,
-  onNavigate: _onNavigate,
+  onNavigate,
   onOpenMobileMenu,
   onOpenRedeemToken,
   onOpenPlans,
@@ -54,14 +54,14 @@ export function WorscoiTopBar({
 
   return (
     <header
-      className={`w-full flex items-center justify-between px-4 sm:px-8 py-3 select-none z-30 transition-all ${
+      className={`w-full flex items-center justify-between px-4 sm:px-8 py-2.5 select-none z-30 transition-all ${
         currentView === 'explorar'
           ? 'bg-transparent border-b border-zinc-900/30'
           : 'border-b border-zinc-900/80 bg-[#050507]/90 backdrop-blur-md sticky top-0'
       }`}
     >
-      {/* LADO ESQUERDO: BOTÃO MENU MOBILE + TÍTULO DA VIEW */}
-      <div className="flex items-center gap-2 sm:gap-3">
+      {/* LADO ESQUERDO: BOTÃO MENU MOBILE + LOGO + ABAS DE NAVEGAÇÃO PRINCIPAL */}
+      <div className="flex items-center gap-2 sm:gap-4">
         <button
           type="button"
           id="tour-mobile-menu-btn"
@@ -75,6 +75,43 @@ export function WorscoiTopBar({
         <div className="lg:hidden">
           <WorscoiLogo size="sm" />
         </div>
+
+        {/* NAVEGAÇÃO DIRETA RÁPIDA: TV AO VIVO vs FILMOTECA (COM DESTAQUE JOJO & ANIMES) */}
+        {onNavigate && (
+          <nav className="flex items-center gap-1.5 p-1 bg-zinc-900/90 border border-zinc-800/90 rounded-full shadow-inner">
+            <button
+              type="button"
+              id="topbar-nav-tv-btn"
+              onClick={() => onNavigate('explorar')}
+              className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                currentView === 'explorar'
+                  ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-[0_0_10px_rgba(6,182,212,0.4)]'
+                  : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/60'
+              }`}
+              title="Transmissão ao vivo de canais de TV"
+            >
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              <span>TV Ao Vivo</span>
+            </button>
+
+            <button
+              type="button"
+              id="topbar-nav-filmoteca-btn"
+              onClick={() => onNavigate('filmoteca')}
+              className={`relative flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                currentView === 'filmoteca'
+                  ? 'bg-gradient-to-r from-purple-600 to-[#FF2D55] text-white shadow-[0_0_12px_rgba(255,45,85,0.45)]'
+                  : 'text-zinc-300 hover:text-white hover:bg-zinc-800/80'
+              }`}
+              title="Filmoteca: Animes, JoJo Bizarre Adventure, Filmes e Séries"
+            >
+              <span>Filmoteca & Animes</span>
+              <span className="text-[9px] font-black uppercase px-1.5 py-0.2 rounded-full bg-amber-400 text-black tracking-wide animate-bounce">
+                JoJo
+              </span>
+            </button>
+          </nav>
+        )}
       </div>
 
       {/* LADO DIREITO: CRONÔMETRO AO VIVO / PLANOS + ATALHO CHAVE + NOTIFICAÇÕES + AVATAR NO ESTILO TIKTOK */}

@@ -786,7 +786,13 @@ export function PlayerHero({
   };
 
   if (!canalAtivo) {
-    const quickChannels = (todosCanais || []).slice(0, 6);
+    const jojoCanal = (todosCanais || []).find(
+      (c) => c.id === 'jojo-bizarre-adventure-24h' || c.nome.toLowerCase().includes('jojo')
+    );
+    const sportsChannels = (todosCanais || []).filter((c) => c.categoria === 'Esportes').slice(0, 4);
+    const quickChannels = jojoCanal
+      ? [jojoCanal, ...sportsChannels]
+      : (todosCanais || []).slice(0, 5);
 
     return (
       <div
@@ -797,7 +803,7 @@ export function PlayerHero({
           {/* Header discreto: Status */}
           <div className="absolute top-5 left-5 right-5 flex items-center justify-between z-10">
             <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.04] border border-white/10 text-zinc-300 text-xs font-medium">
-              <span className="w-2 h-2 rounded-full bg-emerald-400" />
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
               <span>Transmissão Pronta</span>
             </div>
             <span className="text-xs text-zinc-500 font-medium hidden sm:inline-block">
@@ -814,9 +820,32 @@ export function PlayerHero({
             <h3 className="text-lg sm:text-xl font-bold text-white tracking-tight mb-1.5">
               Escolha seu canal para assistir
             </h3>
-            <p className="text-xs sm:text-sm text-zinc-400 max-w-sm leading-relaxed mb-5">
-              Selecione um canal na lista lateral ou toque em um dos destaques:
+            <p className="text-xs sm:text-sm text-zinc-400 max-w-sm leading-relaxed mb-4">
+              Selecione um canal na lista lateral ou clique num dos destaques abaixo:
             </p>
+
+            {/* Destaque Exclusivo JoJo's Bizarre Adventure / Steel Ball Run */}
+            {jojoCanal && onSelectCanal && (
+              <div className="mb-4 w-full max-w-md">
+                <button
+                  type="button"
+                  onClick={() => onSelectCanal(jojoCanal)}
+                  className="w-full px-4 py-2.5 rounded-2xl bg-gradient-to-r from-purple-900/60 via-indigo-900/50 to-pink-900/40 hover:from-purple-800/80 hover:to-pink-800/60 border border-purple-500/50 hover:border-purple-400 text-white text-xs font-bold flex items-center justify-between gap-3 transition-all duration-200 cursor-pointer shadow-[0_0_20px_rgba(168,85,247,0.25)] hover:scale-[1.02] active:scale-95 group"
+                >
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <span className="px-2 py-0.5 rounded-full bg-amber-400 text-black font-black text-[10px] tracking-wider uppercase">
+                      NOVO ANIME
+                    </span>
+                    <span className="font-extrabold text-xs truncate text-purple-100 group-hover:text-white">
+                      JoJo Bizarre Adventure (Steel Ball Run 24h Dublado)
+                    </span>
+                  </div>
+                  <span className="text-purple-300 group-hover:text-white font-bold shrink-0 text-xs">
+                    Assistir Ao Vivo →
+                  </span>
+                </button>
+              </div>
+            )}
 
             {/* Destaques de Canais Rápidos sem Poluição Visual */}
             {quickChannels.length > 0 && onSelectCanal && (
